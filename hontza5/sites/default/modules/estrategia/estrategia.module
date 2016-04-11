@@ -1,0 +1,2551 @@
+<?php
+
+/**
+ * @file
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)checkbox
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in estrategia_schema().
+ */
+
+/**
+ * @defgroup estrategia Example: Node
+ * @ingroup examples
+ * @{
+ * Creating a new content type in a module. (drupal 6)
+ *
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in estrategia_schema().
+ *
+ * This example is part of the Examples for Developers Project which you can download
+ * and experiment with here: http://drupal.org/project/examples
+ */
+require_once('estrategia.inc.php');
+require_once('estrategia.fila.canal.inc.php');
+/**
+ * Implementation of hook_menu().
+ */
+function estrategia_menu() {
+  $items['estrategias'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_list_callback',
+    'access arguments' => array('Ver estrategia_list'),   
+  );
+  $items['estrategias/tabla'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_tabla_callback',
+    'access arguments' => array('Ver estrategia_tabla'),
+  );
+  $items['estrategias/arbol'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_arbol_callback',
+    'access arguments' => array('Ver estrategia_arbol'),
+  );
+  $items['estrategias/tabla_puntuacion_total'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_tabla_puntuacion_total_callback',
+    'access arguments' => array('Ver estrategia_tabla_puntuacion_total'),
+  );
+  $items['estrategias/despliegues'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_subretos_callback',
+    'access arguments' => array('Ver estrategia_subretos'),
+  );
+  $items['estrategias/decisiones'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_decisiones_callback',
+    'access arguments' => array('Ver estrategia_decisiones'),
+  );
+  $items['estrategias/informaciones'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_informaciones_callback',
+    'access arguments' => array('Ver estrategia_informaciones'),
+  );
+  $items['estrategias/arbol_estrategico'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'arbol_estrategico_callback',
+    'access arguments' => array('Ver arbol_estrategico'),
+  );
+  $items['estrategia/importar_estrategia'] = array(
+    'title' => 'Import Strategy',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('estrategia_importar_form'),  
+    //'access arguments' => array('Import strategy'),
+    'access callback'=>'estrategia_importar_estrategia_access_callback',  
+  );
+  $items['resumen_preguntas_clave_canales'] = array(
+    'title' => 'Key Questions - Channels',
+    'page callback' => 'estrategia_resumen_preguntas_clave_canales_callback',
+    'access arguments' => array('Ver estrategia_arbol'),   
+  );
+  $items['resumen_preguntas_clave_canales_fila_canal'] = array(
+    'title' => 'Key Questions - Channels',
+    'page callback' => 'estrategia_resumen_preguntas_clave_canales_fila_canal_callback',
+    'access arguments' => array('Ver estrategia_arbol'),  
+  );
+  $items['download_resumen_preguntas_clave_canales'] = array(
+    'title' => '',
+    'page callback' => 'estrategia_download_resumen_preguntas_clave_canales_callback',
+    'access arguments' => array('Ver estrategia_arbol'),
+  );
+  $items['download_resumen_preguntas_clave_canales_fila_canal'] = array(
+    'title' => '',
+    'page callback' => 'estrategia_download_resumen_preguntas_clave_canales_fila_canal_callback',
+    'access arguments' => array('Ver estrategia_arbol'),
+  );
+  $items['estrategia/update_fecha_controles'] = array(
+    'title' => 'Update all control dates',
+    'page callback' => 'estrategia_update_fecha_controles_callback',
+    'access arguments' => array('root'),   
+  );
+  $items['imprimir_resumen_preguntas_clave_canales'] = array(
+    'title' => '',
+    'page callback' => 'estrategia_imprimir_resumen_preguntas_clave_canales_callback',
+    'access arguments' => array('Ver estrategia_arbol'),
+  );
+  $items['imprimir_resumen_preguntas_clave_canales_fila_canal'] = array(
+    'title' => '',
+    'page callback' => 'estrategia_imprimir_resumen_preguntas_clave_canales_fila_canal_callback',
+    'access arguments' => array('Ver estrategia_arbol'),
+  );
+  $items['estrategias/tabla_csv_download'] = array(
+    'title' => 'Strategy',
+    'page callback' => 'estrategia_tabla_csv_download_callback',
+    'access arguments' => array('Ver estrategia_tabla'),
+  );
+  return $items;
+}
+
+/**
+ * Explain how the module demonstrates a new node type.estrategia.test
+ */
+function estrategia_list_callback() {
+  global $user;
+  estrategia_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  //
+  $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="estrategia"'; 
+  //
+  /*$my_grupo=og_get_group_context();
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+      //$where[]='e.grupo_nid='.$my_grupo->nid;
+      if($user->uid!=1){
+        $where[]="(e.grupo_seguimiento_nid=".$my_grupo->nid." OR e.grupo_seguimiento_nid=0 OR d.grupo_seguimiento_nid=".$my_grupo->nid.")";
+      }
+  }*/
+  $empresa_nid=my_get_empresa_nid();
+  //print 'empresa_nid='.$empresa_nid.'<BR>';
+  /*if(!empty($empresa_nid)){
+  	$where[]='e.empresa_nid='.$empresa_nid;
+  }*/
+  $num_rows = FALSE;
+  $my_limit=variable_get('default_nodes_main', 10);
+  //if(!empty($empresa_nid) || $user->uid){
+  if(is_where_estrategia_por_grupo()){
+      $where_grupo=get_where_estrategia_por_grupo("e","estrategia");
+      //print 'where_grupo='.$where_grupo.'<BR>';
+      if(!empty($where_grupo)){
+          $where[]=$where_grupo;
+      }
+      //
+      //$order_by=' ORDER BY n.sticky DESC, n.created DESC';
+      $order_by=' ORDER BY n.sticky DESC, n.created ASC';
+      //$order_by=' ORDER BY e.peso ASC,n.sticky DESC, n.created ASC';
+      //$order_by=' ORDER BY e.valor_reto ASC,n.sticky DESC, n.created ASC';
+      //
+      $sql='SELECT n.nid, n.sticky, n.created
+      FROM {node} n
+      LEFT JOIN {estrategia} e ON n.nid=e.nid
+      LEFT JOIN {despliegue} d ON e.nid=d.estrategia_nid
+      WHERE '.implode(' AND ',$where)." GROUP BY n.nid ".$order_by;
+      //print $sql;
+      //$result = pager_query(db_rewrite_sql($sql), variable_get('default_nodes_main', 10));
+
+      
+      $result = db_query($sql);
+
+      $output = '';
+      $output = create_menu_estrategias_list();
+
+     // $rows=array();
+      $my_list=array();
+      $kont=0;
+      while ($node = db_fetch_object($result)) {
+        //$my_list[$kont]=node_view(node_load($node->nid), 1);
+        $my_node=node_load($node->nid);
+        //gemini-2013
+        $my_list[$kont]=new stdClass();
+        //$my_node->votingapi_cache_node_average_value=$node->votingapi_cache_node_average_value;
+        $my_list[$kont]->view= node_view($my_node, 1);
+        $votos_list=get_idea_votos_list($node->nid);
+        $my_list[$kont]->suma_votos= get_suma_votos($votos_list);
+        $my_list[$kont]->valor_reto= $my_node->valor_reto;
+        $kont++;        
+        $num_rows = TRUE;
+      }
+
+      if(estrategia_is_grupo_estrellas()){
+        $my_list=array_ordenatu($my_list,'suma_votos','desc',1);
+      }else{
+        $my_list=array_ordenatu($my_list,'valor_reto','asc',1);  
+      }
+      $my_list=my_set_estrategia_pager($my_list,$my_limit);
+      $output.=set_array_view_html($my_list);
+  }
+
+
+  if ($num_rows) {
+    /*$feed_url = url('estrategia_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
+    /*
+	$headers=array('nide','title');
+	$output .= theme('table',$headers,$rows);
+	*/	
+	$output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+ 
+    $output = '<div id="first-time">' .t('There are no challenges'). '</div>';
+  }
+  drupal_set_title(t('List of Challenges'));
+
+  return $output;
+}
+/**
+ * Implementation of hook_node_info().
+ *
+ * This is a required node hook. This function describes the nodes provided by
+ * this module.
+ *
+ * The required attributes are:
+ * - "name" provides a human readable name for the node,
+ * - "module" tells Drupal how the module's functions map to hooks (i.e. if the
+ *   module is estrategia_foo then estrategia_foo_insert will be called
+ *   when inserting the node).
+ * - "description" provides a brief description of the node type, which is
+ *   shown when a user accesses the "Create content" page for that node type.
+ *
+ * The other optional, attributes:
+ * - "has_title" boolean that indicates whether or not this node type has a
+ *   title field.
+ * - "title_label": the label for the title field of this content type.
+ * - "has_body": boolean that indicates whether or not this node type has a
+ *   body field.
+ * - "body_label": the label for the body field of this content type.
+ * - "min_word_count": the minimum number of words for the body field to be
+ *   considered valid for this content type.
+ *
+ * The key in this example, "example_node_type_1", is the "machine name" of the
+ * node type and is stored in {node}.type. The node's type value cannot be
+ * changed through the admin interface.
+ *
+ */
+function estrategia_node_info() {
+  return array(
+    'estrategia' => array(
+      'name' => t('Strategy'),
+      'module' => 'estrategia',
+      'description' => t("Strategy"),
+      'has_title' => TRUE,
+      'title_label' => t('Strategic challenge'),
+      'has_body' => TRUE,
+      'body_label' => t('Full Text'),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_access().
+ *
+ * Node modules may implement node_access() to determine the operations
+ * users may perform on nodes. This example uses a very common access pattern.
+ */
+function estrategia_access($op, $node, $account) { 
+  if ($op == 'create') {
+    return user_access('create estrategia', $account);
+  }
+
+  if ($op == 'update') {
+    if (user_access('edit any estrategia', $account) || (user_access('edit own estrategia', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'delete') {
+    if (user_access('delete any estrategia', $account) || (user_access('delete own estrategia', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Since we are limiting the ability to create new nodes to certain users,
+ * we need to define what those permissions are here. We also define a permission
+ * to allow users to edit the nodes they created.
+ */
+function estrategia_perm() {
+  return array(
+    'create estrategia',
+    'delete own estrategia',
+    'delete any estrategia',
+    'edit own estrategia',
+    'edit any estrategia',
+    'Ver estrategia_list',
+    'Ver estrategia_tabla',
+    'Ver estrategia_arbol',
+    'Ver estrategia_tabla_puntuacion_total',
+    'Ver estrategia_subretos',
+    'Ver estrategia_decisiones',
+    'Ver estrategia_informaciones',
+    'Ver arbol_estrategico',
+    'Import strategy',  
+  );
+}
+
+/**
+ * Implementation of hook_form().
+ *
+ * Now it's time to describe the form for collecting the information
+ * specific to this node type. This hook requires us to return an array with
+ * a sub array containing information for each element in the form.
+ */
+function estrategia_form(&$node, $form_state) {  
+  /*$empresa_nid=my_get_empresa_nid();
+  print 'empresa_nid='.$empresa_nid.'<BR>';*/
+  // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  //gemini-2014
+  if(isset($node->nid) && !empty($node->nid)){
+      drupal_set_title(estrategia_set_title_max_len($node->title));
+  } 
+  estrategia_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  //if(!is_administrador_grupo()){
+  if(!estrategia_is_admin_content()){  
+      drupal_access_denied();
+      exit();
+  }  
+   
+  //gemini-2014
+  $my_grupo=og_get_group_context(); 
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$grupo_nid=$my_grupo->nid; 
+  }
+  if(isset($node->grupo_seguimiento_nid) && !empty($node->grupo_seguimiento_nid)){
+      $grupo_nid=$node->grupo_seguimiento_nid;  
+  }
+  //
+    
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+      //gemini-2014  
+      '#maxlength'=>175,  
+    );
+  }
+
+  if ($type->has_body) {
+    // In Drupal 6, we use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+
+  
+
+  /*$form['valor_reto']=array(
+  '#type' => 'select',
+  '#title' => t('Challenge Value'),
+  '#default_value' => $node->valor_reto,
+  '#options'=>my_get_evaluacion_options('','valor_reto'),
+  '#required' => FALSE
+);*/
+  
+  if(isset($node->nid) && !empty($node->nid)){
+      if(!estrategia_is_grupo_estrellas()){
+        $form['valor_reto_read'] = array('#value'=>estrategia_valor_reto_read_textfield($node));
+      }
+  }
+  
+  if(!estrategia_is_grupo_estrellas()){
+  
+        $form['importancia_reto']=array(
+        '#type' => 'select',
+        '#title' => t('Importance'),
+        '#default_value' => $node->importancia_reto,
+        '#options'=>my_get_evaluacion_options('','importancia_reto'),
+        '#required' => FALSE
+      );
+
+        $form['facilidad_reto']=array(
+        '#type' => 'select',
+        '#title' => t('Feasibility'),
+        '#default_value' => $node->facilidad_reto,
+        '#options'=>my_get_evaluacion_options('','facilidad_reto'),
+        '#required' => FALSE
+      );
+  
+  }
+  
+  $form['grupo_seguimiento_nid'] = array(
+  '#type' => 'select',
+  '#title' => t('Working Group'),
+  '#default_value' => $grupo_nid,
+  '#options'=>my_get_grupo_seguimiento_options(),
+  '#multiple'=>FALSE,
+  //'#size'=>10,
+  '#required' => TRUE,
+  //gemini-2014    
+  '#prefix'=>'<div style="display:none;">',
+  '#suffix'=>'</div>',    
+);
+
+$fecha_cumplimiento=estrategia_define_fecha_cumplimiento($node);
+$no_control_date='';
+if(isset($node->no_control_date) && !empty($node->no_control_date)){
+    $no_control_date=$node->no_control_date;
+}
+estrategia_inc_define_control_date_fs($fecha_cumplimiento,$no_control_date,$form);    
+//    
+
+ /*$form['peso'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Peso'),
+      '#required' => FALSE,
+      '#default_value' => $node->peso,
+      //'#weight' => -5
+    );*/
+
+ 
+
+ //gemini
+ if(!isset($node->nid) || empty($node->nid)){
+    drupal_set_title(t('Add Challenge'));
+ }
+ //
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_validate().
+ *
+ * Our "quantity" field requires a number to be entered. This hook lets
+ * us ensure that the user entered an appropriate value before we try
+ * inserting anything into the database.
+ *
+ * Errors should be signaled with form_set_error().
+ */
+function estrategia_validate($node, &$form) {
+  /*if ($node->quantity) {
+    if (!is_numeric($node->quantity)) {
+      form_set_error('quantity', t('The quantity must be a number.'));
+    }
+  }*/
+  //gemini-2014
+  estrategia_inc_add_no_control_date_js();
+  //
+  if(!isset($node->grupo_seguimiento_nid) || empty($node->grupo_seguimiento_nid)){
+      form_set_error('grupo_seguimiento_nid', t('Working Group is required.'));
+  }
+}
+
+/**
+ * Implementation of hook_insert().
+ *
+ * As a new node is being inserted into the database, we need to do our own
+ * database inserts.
+ */
+function estrategia_insert($node) {
+  global $user;
+  //$fecha=mktime();
+  $origen_uid=$user->uid;
+  $grupo_nid=0;
+  $my_grupo=og_get_group_context(); 
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$grupo_nid=$my_grupo->nid; 
+  }
+  $empresa_nid=my_get_empresa_nid();
+  //
+  $fecha_cumplimiento=my_mktime($node->fecha_cumplimiento);
+  $importancia_reto=0;
+  if(isset($node->importancia_reto) && !empty($node->importancia_reto)){
+      $importancia_reto=$node->importancia_reto;
+  }
+  $facilidad_reto=0;
+  if(isset($node->facilidad_reto) && !empty($node->facilidad_reto)){
+      $facilidad_reto=$node->facilidad_reto;
+  }
+  //
+  $sql=sprintf("INSERT INTO {estrategia} (vid, nid, empresa_nid, origen_uid,grupo_nid,grupo_seguimiento_nid,fecha_cumplimiento,peso,importancia_reto,facilidad_reto,no_control_date) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)", $node->vid, $node->nid, $empresa_nid, $origen_uid,$grupo_nid,$node->grupo_seguimiento_nid,$fecha_cumplimiento,$node->peso,$importancia_reto,$facilidad_reto,$node->no_control_date);
+  db_query($sql);
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ */
+function estrategia_update($node) {
+  $fecha_cumplimiento=my_mktime($node->fecha_cumplimiento);
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    estrategia_insert($node);
+  }
+  else {
+    $importancia_reto=0;
+    if(isset($node->importancia_reto) && !empty($node->importancia_reto)){
+      $importancia_reto=$node->importancia_reto;
+    }
+    $facilidad_reto=0;
+    if(isset($node->facilidad_reto) && !empty($node->facilidad_reto)){
+      $facilidad_reto=$node->facilidad_reto;
+    }  
+    //  
+    db_query("UPDATE {estrategia} SET grupo_seguimiento_nid = %d, fecha_cumplimiento = %d, peso = %d,importancia_reto=%d, facilidad_reto=%d, no_control_date=%d WHERE vid = %d", $node->grupo_seguimiento_nid, $fecha_cumplimiento, $node->peso,$importancia_reto,$facilidad_reto,$node->no_control_date,$node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * When a node revision is deleted, we need to remove the corresponding record
+ * from our table. The only way to handle revision deletion is by implementing
+ * hook_nodeapi().
+ */
+function estrategia_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {estrategia} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ *
+ * When a node is deleted, we need to remove all related records from our table.
+ */
+function estrategia_delete($node) {
+  // Notice that we're matching all revision, by using the node's nid.
+  $estrategia_nid=$node->nid;
+  db_query('DELETE FROM {estrategia} WHERE nid = %d', $node->nid);
+  delete_despliegue_list($estrategia_nid);
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Now that we've defined how to manage the node data in the database, we
+ * need to tell Drupal how to get the node back out. This hook is called
+ * every time a node is loaded, and allows us to do some loading of our own.
+ */
+function estrategia_load($node) {
+  $sql=sprintf('SELECT e.nid as estrategia_nid,e.vid as estrategia_vid,e.empresa_nid,e.origen_uid,e.grupo_nid,e.grupo_seguimiento_nid,e.fecha_cumplimiento, e.peso,e.importancia_reto,e.facilidad_reto,e.no_control_date FROM {estrategia} e WHERE vid = %d', $node->vid);
+  $additions = db_fetch_object(db_query($sql));
+  if(isset($additions->estrategia_nid) && !empty($additions->estrategia_nid)){
+    $additions->grupo_seguimiento_link=get_grupo_seguimiento_link($additions->grupo_seguimiento_nid);
+    $additions->fecha_cumplimiento=set_date_array($additions->fecha_cumplimiento);
+    if(estrategia_is_grupo_estrellas()){
+        //AVISO::::hay que calcularlo con una formula que todavía no está pensada
+        $additions->valor_reto=0;
+    }else{
+        $additions->valor_reto=($additions->importancia_reto+$additions->facilidad_reto)/2;
+    }
+    $additions->valor_reto_name=get_eval_label($additions->valor_reto,'valor_reto');
+    $votos_list=get_idea_votos_list($additions->estrategia_nid);
+    $additions->suma_votos=get_suma_votos($votos_list);
+  }
+  return $additions;
+}
+
+/**
+ * Implementation of hook_view().
+ *
+ * This is a typical implementation that simply runs the node text through
+ * the output filters.
+ */
+function estrategia_view($node, $teaser = FALSE, $page = FALSE) {  
+  $node = node_prepare($node, $teaser);
+  $node->content['myfield'] = array(
+    '#value' => theme('estrategia_order_info', $node),
+    '#weight' => 1,
+  );
+
+  return $node;
+}
+
+/**
+ * Implementation of hook_theme().
+ *
+ * This lets us tell Drupal about our theme functions and their arguments.
+ */
+function estrategia_theme() {
+  return array(
+    'estrategia_order_info' => array(
+      'arguments' => array('node'),
+    ),
+  );
+}
+
+/**
+ * A custom theme function.
+ *
+ * By using this function to format our node-specific information, themes
+ * can override this presentation if they wish. We also wrap the default
+ * presentation in a CSS class that is prefixed by the module name. This
+ * way, style sheets can modify the output without requiring theme code.
+ */
+function theme_estrategia_order_info($node) {
+  $output = '<div class="estrategia_order_info">';
+  $output .= t('The order is for %quantity %color items.', array('%quantity' => check_plain($node->quantity), '%color' => check_plain($node->color)));
+  $output .= '</div>';
+  return $output;
+}
+
+/**
+ * @} End of "defgroup estrategia".
+ */
+ 
+//gemini
+function estrategia_block($op = 'list', $delta = 0, $edit = array()) {
+ 	switch ($op) {
+    	case 'list':
+ 			//$blocks[400]['info'] = t('Gestionar estrategia');
+                        $blocks[400]['info'] = t('Strategic Deployment');
+                        $blocks[800]['info'] = t('Deploy Strategy');
+			return $blocks;
+			break;
+		case 'view':
+			$block=my_estrategia_view_block($delta);
+   			return $block;
+		default:
+			break;
+	}
+}
+
+//gemini
+function my_estrategia_view_block($delta){
+	$block=array();
+	switch($delta){
+		case 400:
+                        if(user_access('Ver estrategia_list')){
+                            $block['subject'] = my_get_title_grupo_reto_block(1,t('Challenges'));
+                            //$block['subject'] = t('Despliegue estratégico');
+                            $block['content'] = get_gestionar_estrategia_content();
+                        }
+                        break;
+                case 800:
+                        if(user_access('Ver arbol_estrategico')){
+                            //intelsat-2015
+                            //block['subject'] = my_get_title_grupo_reto_block(1);
+                            $title=t('Strategy');
+                            $icono=my_get_icono_action('estrategia_main',$title).'&nbsp;';
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = get_desplegar_estrategia_content();
+                        }
+                        break;
+		default:
+			break;	 
+ 	}
+    return $block;
+}
+//gemini
+function get_gestionar_estrategia_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+	$result=array();
+	if(estrategia_is_admin_content()){
+            //intelsat-2015
+            $icono=my_get_icono_action('add_left',t('Add Challenge')).'&nbsp;';
+            $result[]=$icono.l(t('Add Challenge'),'node/add/estrategia');
+        }
+        $result[]=l(t('List of Challenges'),'estrategias');
+	return implode('<BR>',$result);
+}
+//gemini
+function is_estrategia_left(){
+        //gemini-2014
+        if(hontza_social_is_social_learning()){
+            return 0;
+        }
+        $param0=arg(0);
+        if(strcmp($param0,'calendario')==0){
+            $param1=arg(1);
+            if(!empty($param1) && strcmp($param1,'year_tabla')==0){
+                return 0;
+            }
+        }
+        //
+        if(is_estrategia()){
+            if(estrategia_is_resumen_preguntas_clave_canales_pantalla()){
+                return 0;
+            }
+            if(in_array(arg(1),array('tabla','tabla_puntuacion_total'))){
+                return 0;
+            }else{
+		return 1;
+            }
+	}
+	$node=my_get_node();
+	//echo print_r($node,1);exit();
+	if(!empty($node) && isset($node->nid) && !empty($node->nid) && strcmp(arg(2),'edit')==0){
+		//if(in_array($node->type,array('item'))){
+		if(strcmp($node->type,'estrategia')==0){			
+			return 1;
+		}
+	}
+      
+	if(is_ficha_node_left('estrategia','estrategia')){
+		return 1;
+	}			
+	return 0;
+}
+//gemini
+function add_js_estrategia(){
+        if(is_estrategia()){
+	//if(is_estrategia('',1)){
+		my_add_active_trail_js('id_a_estrategia');		
+	}
+}
+//gemini
+function is_estrategia($konp=''){
+//function is_estrategia($konp='',$is_menu=0){
+	if(strcmp(arg(0),'estrategia')==0){
+           return 1;
+	}
+	if(strcmp(arg(0),'estrategias')==0){
+            if(empty($konp)){                
+                return 1;
+            }else{
+                if(strcmp(arg(1),$konp)==0){
+                    return 1;
+                }
+            }
+	}
+	if(is_ficha_node('estrategia')){
+		return 1;
+	}
+        /*if($is_menu){
+            if(strcmp(arg(0),'estrategias')==0){
+                return 1;
+            }
+        }*/
+        if(estrategia_is_resumen_preguntas_clave_canales_pantalla()){
+            return 1;
+        }
+        if(strcmp(arg(0),'calendario')==0){
+            $param1=arg(1);
+            if(!empty($param1) && strcmp($param1,'year_tabla')==0){
+                return 1;
+            }
+        }
+        if(hontza_social_is_social_learning()){
+            return 1;
+        }
+	return 0;
+}
+//gemini
+function my_get_empresa_nid(){
+	global $user;
+    $my_user=user_load($user->uid);
+    //echo print_r($my_user,1);
+	//
+	$param=array('title'=>$my_user->profile_empresa,'type'=>'servicio');
+	$node=node_load($param);
+	if(isset($node->nid) && !empty($node->nid)){
+		return $node->nid;
+	}
+	return '';
+}
+//gemini
+function my_class_primera_estrategia($node,$page){
+	if(empty($page) && is_node_primera_ayuda($node,array('estrategia'))){
+		return ' my_primera_noticia';
+	}
+	return '';
+}
+//gemini
+function my_help_primera_estrategia($node){
+	if(is_node_primera_ayuda($node,array('estrategia'))){
+		if(is_add_primera_proyecto(0,'estrategia')){
+			$my_is_mouse_over=1;
+			//$my_is_mouse_over=0;
+			//return help_popup_window(13179, 'help',my_get_help_link_object(),0,0,2,$my_is_mouse_over);
+			return help_popup_window('', 'help',my_get_help_link_object(),0,0,3,$my_is_mouse_over);
+		}
+	}	
+	return '';
+}
+//gemini
+function delete_despliegue_list($estrategia_nid){
+	$despliegue_list=get_estrategia_despliegue_list($estrategia_nid);
+	if(count($despliegue_list)>0){
+		foreach($despliegue_list as $i=>$row){
+			$node=node_load($row->nid);
+			despliegue_delete($node);
+			//print $node->nid.'<BR>';
+			node_delete($node->nid);
+		}
+	}
+}
+//gemini
+function get_estrategia_despliegue_list($estrategia_nid,$with_grupo=1){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	$where[]="d.estrategia_nid=".$estrategia_nid;
+        //if(is_idea()){
+        if((is_reto_al_que_responde_pantalla() || is_dashboard()) && $with_grupo){
+            $my_grupo=og_get_group_context();
+            if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+              $where[]="(d.grupo_seguimiento_nid=".$my_grupo->nid." OR (d.grupo_seguimiento_nid=0 AND e.grupo_seguimiento_nid=".$my_grupo->nid."))";
+            }
+        }
+	$sql="SELECT n.*,d.peso,d.estrategia_nid,d.grupo_seguimiento_nid 
+	FROM {node} n LEFT JOIN {despliegue} d ON n.nid=d.nid
+        LEFT JOIN {estrategia} e ON d.estrategia_nid=e.nid
+	WHERE ".implode(" AND ",$where);
+	//intelsat-2016
+        //$sql.=" ORDER BY d.peso ASC,n.created ASC";
+        $sql.=" ORDER BY d.peso ASC,n.created,n.nid ASC";
+	
+        //print $sql;exit();
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+//intelsat-2016
+//function estrategia_tabla_callback($is_html=1,$is_key_question_csv=0,$is_tabla_csv_download=0) {
+function estrategia_tabla_callback($is_html=1,$is_key_question_csv=0,$is_tabla_csv_download=0,$compartir_documentos_estrategia_nid='') {    
+  estrategia_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="estrategia"'; 
+  //
+  /*$my_grupo=og_get_group_context(); 
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]='e.grupo_nid='.$my_grupo->nid;
+  }*/
+  $empresa_nid=my_get_empresa_nid();
+  //print 'oportunidad_nid(list)='.$oportunidad_nid.'<BR>';
+  if(!empty($empresa_nid)){
+        //correo 21-05-2012 08:00 ->hemos comentado esto
+  	//$where[]='e.empresa_nid='.$empresa_nid;
+  }
+
+  //correo 21-05-2012 08:00
+  $where_grupo=get_where_estrategia_por_grupo("e","estrategia");
+      //print 'where_grupo='.$where_grupo.'<BR>';
+      if(!empty($where_grupo)){
+          $where[]=$where_grupo;
+      }
+
+  //intelsat-2016
+  if(!empty($compartir_documentos_estrategia_nid)){
+      $where[]='n.nid='.$compartir_documentos_estrategia_nid;
+  }    
+      
+  //
+  //$order_by=' ORDER BY n.sticky DESC, n.created DESC';
+  //$order_by=' ORDER BY n.sticky DESC, n.created ASC';
+  $order_by=' ORDER BY e.peso ASC,n.sticky DESC, n.created ASC';
+  //
+  $sql='SELECT n.nid, n.sticky, n.created 
+  FROM {node} n
+  LEFT JOIN {estrategia} e ON n.nid=e.nid
+  WHERE '.implode(' AND ',$where).$order_by;
+  //print $sql;exit();
+  $my_limit=variable_get('default_nodes_main', 100);
+  
+  if(!$is_html){
+      $my_limit=20000;
+  }
+  
+  //print $sql;
+  //$result = pager_query(db_rewrite_sql($sql), variable_get('default_nodes_main', 10));
+  $result = db_query($sql);
+
+  $output = '';
+  //$output .= my_create_boton_volver('estrategias');  
+  $output .= create_menu_estrategia();
+  $output .= estrategia_define_key_questions_botones();
+  $num_rows = FALSE;
+  $rows=array();
+  $my_list=array();
+  while ($node = db_fetch_object($result)) {
+    //$output .= node_view(node_load($node->nid), 1);
+	$my_node=node_load($node->nid);
+	//echo print_r($my_node,1);
+	//$rows[]=array($my_node->title,$my_node->valor_reto);
+	$my_list[]=$my_node;
+    $num_rows = TRUE;
+  }
+
+
+  /*$my_list=calcular_puntuacion_total($my_list);
+
+  if(is_estrategia('tabla_puntuacion_total')){
+      $my_list=array_ordenatu($my_list,'puntuacion_total','asc',1);
+  }*/
+
+  $tabla=create_tabla($my_list);
+  
+   
+  if(!$is_html && !$is_key_question_csv){
+      return $my_list;
+  }
+  
+  $tabla=calcular_puntuacion_total($tabla);
+ //echo print_r($tabla,1);exit();
+
+  //$tabla_ordenada=array_ordenatu($tabla,'puntuacion_total','asc',1);
+  $tabla_ordenada=array_ordenatu($tabla,'puntuacion_total','desc',1);
+  
+  if(is_estrategia('tabla_puntuacion_total')){
+      $tabla=set_numero_ranking_ordenado($tabla_ordenada);
+  }else{
+      $tabla_ordenada=set_numero_ranking_ordenado($tabla_ordenada);
+      $tabla=set_numero_ranking_sin_ordenar($tabla,$tabla_ordenada);
+  }
+ 
+  if(count($tabla)>0){
+  	foreach($tabla as $i=>$my_row){
+            	$rows[$i]=array();
+                if($is_tabla_csv_download){
+                    $rows[$i][]=$my_row->fecha_control_reto;
+                }
+		$rows[$i][]=$my_row->reto;
+                //intelsat-2015
+		if($is_tabla_csv_download){
+                    $rows[$i][]=$my_row->importancia_reto;  
+                    $rows[$i][]=$my_row->facilidad_reto;  
+                    $rows[$i][]=$my_row->fecha_control_despliegue;                
+                //    
+                }else{
+                    $rows[$i][]=$my_row->valor_reto;                
+                }
+		$rows[$i][]=$my_row->despliegue_del_reto;
+                $rows[$i][]=$my_row->importancia_despliegue;
+		$rows[$i][]=$my_row->decision;
+		$rows[$i][]=$my_row->valor_decision;
+		$rows[$i][]=$my_row->informacion_necesaria;
+		$rows[$i][]=$my_row->importancia;
+		//$rows[$i][]=$my_row->esfuerzo;
+                $rows[$i][]=$my_row->accesibilidad;
+		$rows[$i][]=$my_row->puntuacion_total_zero;
+		$rows[$i][]=$my_row->numero_ranking;
+                //$rows[$i][]=$my_row->grupo_seguimiento;
+	}
+  }
+  
+  if($is_key_question_csv){
+      return estrategia_tabla_strip_tags($rows);
+  }
+  
+  $rows=my_set_estrategia_pager($rows,$my_limit);
+  	 
+ 
+  if ($num_rows) {
+    /*$feed_url = url('estrategia_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
+    
+	/*$headers=array(t('Strategic challenge'),t('Valor reto'),t('Despliegue del reto'),t('Decision'),t('Valor decision'),
+	t('Informacion necesaria'),t('Importance'),t('Esfuerzo'),t('Total punctuation'),t('Ranking'));*/
+	/*$headers=array(t('Strategic challenge'),t('Valor reto'),t('Despliegue del reto'),t('ID'),t('Decision'),t('Valor decision'),
+	t('Informacion necesaria'),t('Imp.'),t('IA'),t('Pt.'),t('R.'));*/
+        /*$headers=array(t('Challenge'),t('Value'),t('SubChallenge'),t('Value'),t('Decision'),t('Value'),
+	t('Information'),t('Value'),t('Accessibility'),t('Score'),t('Ranking'));*/
+        $headers=estrategia_tabla_define_headers();
+	$output .= theme('table',$headers,$rows);
+
+	//print 'pager='.variable_get('default_nodes_main', 10).'<BR>';
+	$output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+ 
+    $output = '<div id="first-time">' .t('There are no challenges'). '</div>';
+  }
+  //drupal_set_title(t('Strategic informations'));
+	
+  /*if(is_estrategia('tabla_puntuacion_total')){
+      drupal_set_title(t('Orden Importancia'));      
+  }else{
+      drupal_set_title(t('Orden Jerárquico'));
+  }*/
+  drupal_set_title(t('Key Questions'));
+	return $output;
+}
+//gemini
+function create_tabla($my_list){
+	$tabla=array();
+	//echo print_r($my_list,1);
+	if(count($my_list)>0){
+		$kont=0;
+		foreach($my_list as $i=>$node){                    
+			//print $node->nid.'<BR>';			
+			$despliegue_list=get_estrategia_despliegue_list($node->nid);
+			if(count($despliegue_list)>0){
+				foreach($despliegue_list as $k=>$despliegue){
+					//echo print_r($row,1);
+					//print $despliegue->nid.'<BR>';
+                                        //print $despliegue->importancia_despliegue.'<BR>';
+                                        //echo print_r($despliegue,1);exit();
+					$decision_list=get_despliegue_decision_list($despliegue->nid);
+					//print count($decision_list).'<BR>';
+					if(count($decision_list)>0){
+						foreach($decision_list as $a=>$decision){
+							//print $decision->nid.'<BR>';
+							$decision_row=node_load($decision->nid);
+                                                        $my_despliegue=node_load($decision_row->despliegue_nid);
+							//echo print_r($decision_row,1);exit();
+							$informacion_list=get_decision_informacion_list($decision->nid);
+							//print count($informacion_list).'<BR>';
+							if(count($informacion_list)>0){
+								foreach($informacion_list as $b=>$informacion){
+									$informacion_row=node_load($informacion->nid);
+									$tabla[$kont]=create_row_tabla($node);
+									//if($k<1 && $a<1){
+                                                                        $tabla[$kont]->fecha_control_reto=estrategia_get_fecha_control($node);
+									$tabla[$kont]->reto=add_link_reto_title($node->title,$node->nid,$node->body);
+									//}
+									$tabla[$kont]->valor_reto=$node->valor_reto;
+									//if($a<1){
+                                                                        $tabla[$kont]->fecha_control_despliegue=estrategia_get_fecha_control($my_despliegue);
+										$tabla[$kont]->despliegue_del_reto=add_link_despliegue_title($despliegue->title,$despliegue->nid,$my_despliegue->body);
+									//}
+									$tabla[$kont]->decision=add_link_decision_title($decision->title,$decision->nid,$decision_row->body);
+									$tabla[$kont]->valor_decision=$decision_row->valor_decision;
+									//$tabla[$kont]->informacion_necesaria=l($informacion->title,'node/'.$informacion->nid);
+                                                                        $tabla[$kont]->informacion_necesaria=add_link_informacion_title($informacion->title, $informacion->nid, $informacion_row->body);
+									$tabla[$kont]->importancia=$informacion_row->importancia;
+									$tabla[$kont]->esfuerzo=$informacion_row->esfuerzo;
+									//$tabla[$kont]->puntuacion_total=$informacion_row->puntuacion_total;
+									$tabla[$kont]->numero_ranking=$informacion_row->numero_ranking;
+									$tabla[$kont]->grupo_seguimiento=get_informacion_grupo_seguimiento_link($informacion_row->grupo_seguimiento_nid,$informacion_row->decision_nid);
+                                                                        //print $informacion_row->grupo_seguimiento_nid.'----'.$informacion_row->decision_nid.'----'.$tabla[$kont]->grupo_seguimiento.'<BR>';
+                                                                        $tabla[$kont]->my_level=3;
+                                                                        $tabla[$kont]->importancia_despliegue=$my_despliegue->importancia_despliegue;
+                                                                        $tabla[$kont]->accesibilidad=$informacion_row->accesibilidad;
+                                                                        $kont++;
+								}
+							}else{
+								$tabla[$kont]=create_row_tabla($node);
+								//if($a<1){
+                                                                $tabla[$kont]->fecha_control_reto=estrategia_get_fecha_control($node);
+									$tabla[$kont]->reto=add_link_reto_title($node->title,$node->nid,$node->body);
+								//}
+								$tabla[$kont]->valor_reto=$node->valor_reto;								
+								//if($a<1){
+                                                                $tabla[$kont]->fecha_control_despliegue=estrategia_get_fecha_control($my_despliegue);
+									$tabla[$kont]->despliegue_del_reto=add_link_despliegue_title($despliegue->title,$despliegue->nid,$my_despliegue->body);
+								//}
+								$tabla[$kont]->decision=add_link_decision_title($decision->title,$decision->nid,$decision_row->body);
+								$tabla[$kont]->valor_decision=$decision_row->valor_decision;
+                                                                //$my_decision=node_load($decision->nid);
+                                                                $tabla[$kont]->grupo_seguimiento=get_decision_grupo_seguimiento_link($decision_row->grupo_seguimiento_nid,$decision_row->despliegue_nid);
+								$tabla[$kont]->my_level=2;
+                                                               
+                                                                $tabla[$kont]->importancia_despliegue=$my_despliegue->importancia_despliegue;
+                                                                $kont++;
+							}
+						}						
+					}else{
+						$tabla[$kont]=create_row_tabla($node);
+						$my_despliegue=node_load($despliegue->nid);
+                                                //if($k<1){
+							$tabla[$kont]->reto=add_link_reto_title($node->title,$node->nid,$node->body);
+						//}
+                                                $tabla[$kont]->fecha_control_reto=estrategia_get_fecha_control($node);        
+						$tabla[$kont]->valor_reto=$node->valor_reto;
+						//if($a<1){
+                                                $tabla[$kont]->fecha_control_despliegue=estrategia_get_fecha_control($my_despliegue);
+							$tabla[$kont]->despliegue_del_reto=add_link_despliegue_title($despliegue->title,$despliegue->nid,$my_despliegue->body);
+						//}
+						//$my_despliegue=despliegue_load($despliegue);
+                                                
+                                                //echo print_r($my_despliegue,1);
+                                                $tabla[$kont]->grupo_seguimiento=get_despliegue_grupo_seguimiento_link($my_despliegue->grupo_seguimiento_nid,$my_despliegue->estrategia_nid);
+                                                //print $my_despliegue->estrategia_nid.'===='.$tabla[$kont]->grupo_seguimiento.'<BR>';
+                                                $tabla[$kont]->my_level=1;
+                                                $tabla[$kont]->importancia_despliegue=$my_despliegue->importancia_despliegue;
+                                                $kont++;
+					}
+				}
+			}else{
+				$tabla[$kont]=create_row_tabla($node);
+				$tabla[$kont]->reto=add_link_reto_title($node->title,$node->nid,$node->body);
+                                $tabla[$kont]->fecha_control_reto=estrategia_get_fecha_control($node);
+				$tabla[$kont]->valor_reto=$node->valor_reto;
+                                $tabla[$kont]->grupo_seguimiento=get_grupo_seguimiento_link($node->grupo_seguimiento_nid);
+				$tabla[$kont]->my_level=0;
+                                $tabla[$kont]->importancia_despliegue=0;
+                                $kont++;
+			}
+		}
+	}
+	return $tabla;
+}
+//gemini
+function create_row_tabla($node){
+	$row=new stdClass;
+        $row->fecha_control_reto='';
+	$row->reto='';
+	$row->valor_reto=0;
+        $row->importancia_reto=0;
+        $row->facilidad_reto=0;
+        //intelsat-2015
+        if($node->type=='estrategia'){
+            $row->importancia_reto=$node->importancia_reto;
+            $row->facilidad_reto=$node->facilidad_reto;
+        }
+        //
+        $row->fecha_control_despliegue='';
+	$row->despliegue_del_reto='';
+        $row->importancia_despliegue=0;
+	$row->decision='';
+	$row->valor_decision=0;
+	$row->informacion_necesaria='';
+	$row->importancia=0;
+	//$row->esfuerzo='';
+        $row->accesibilidad=0;
+	$row->puntuacion_total=0;
+        if(isset($node->nid) && !empty($node->nid)){
+            $row->puntuacion_total=$node->puntuacion_total;
+        }
+	$row->numero_ranking='';        
+	return $row;
+}
+//gemini
+function add_link_reto_title($title_in,$estrategia_nid,$description=''){
+	//return $title;
+	//$img=get_add_img();
+	//print $img.'<BR>';
+	//return $title.'&nbsp;'.l($img,'node/add/despliegue/'.$estrategia_nid,array('html'=>true));
+	//return l($title,'node/add/despliegue/'.$estrategia_nid);
+	//return l($title,'node/'.$estrategia_nid,array('attributes'=>array('title'=>strip_tags($description))));
+        $title=estrategia_set_title_max_len($title_in);
+        //gemini-2014
+        if(estrategia_is_arbol_sin_link()){
+            return $title;
+        }
+        //
+        return l($title,'node/'.$estrategia_nid,array('attributes'=>array('title'=>strip_tags($description)),'query'=>drupal_get_destination()));
+}
+//gemini
+function get_add_img(){
+	//$src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/download_manager.png';
+	$src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/add.png';
+	$img='<img src="'.$src.'"/>';
+	return $img;
+}
+//gemini
+function add_link_despliegue_title($title_in,$despliegue_nid,$description=''){
+	//return $title;
+	//$img=get_add_img();
+	//print $img.'<BR>';
+	//return $title.'&nbsp;'.l($img,'node/add/despliegue/'.$estrategia_nid,array('html'=>true));
+	//return l($title,'node/add/decision/'.$despliegue_nid);
+	//return l($title,'node/'.$despliegue_nid,array('attributes'=>array('title'=>strip_tags($description))));
+        $title=estrategia_set_title_max_len($title_in);
+        //gemini-2014
+        if(estrategia_is_arbol_sin_link()){
+            return $title;
+        }
+        //
+        return l($title,'node/'.$despliegue_nid,array('attributes'=>array('title'=>strip_tags($description)),'query'=>drupal_get_destination()));
+}
+//gemini
+function add_link_decision_title($title_in,$decision_nid,$description=''){
+	//return $title;
+	//$img=get_add_img();
+	//print $img.'<BR>';
+	//return $title.'&nbsp;'.l($img,'node/add/despliegue/'.$estrategia_nid,array('html'=>true));
+	//return l($title,'node/add/informacion/'.$decision_nid);
+	//return l($title,'node/'.$decision_nid,array('attributes'=>array('title'=>strip_tags($description))));
+        $title=estrategia_set_title_max_len($title_in);
+        //gemini-2014
+        if(estrategia_is_arbol_sin_link()){
+            return $title;
+        }
+        //
+        return l($title,'node/'.$decision_nid,array('attributes'=>array('title'=>strip_tags($description)),'query'=>drupal_get_destination()));
+}
+//gemini
+//function my_set_estrategia_pager($rows,$limit=10){
+function my_set_estrategia_pager($rows,$limit=10,$field_pager=''){
+	 global $pager_page_array, $pager_total, $pager_total_items;
+  $result=array();
+  
+  $element=0;  
+  if(empty($field_pager)){
+    $page = isset($_GET['page']) ? $_GET['page'] : '';
+  }else{
+    $page = isset($_GET[$field_pager]) ? $_GET[$field_pager] : '';  
+  }    
+
+  // Substitute in query arguments.
+  $args = func_get_args();
+  $args = array_slice($args, 4);
+  // Alternative syntax for '...'
+  if (isset($args[0]) && is_array($args[0])) {
+    $args = $args[0];
+  }
+
+  // Construct a count query if none was given.
+  //if (!isset($count_query)) {
+  //  $count_query = preg_replace(array('/SELECT.*?FROM /As', '/ORDER BY .*/'), array('SELECT COUNT(*) FROM ', ''), $query);
+  //}
+
+  // Convert comma-separated $page to an array, used by other functions.
+  $pager_page_array = explode(',', $page);
+  // We calculate the total of pages as ceil(items / limit).
+  $pager_total_items[$element] = count($rows);
+  $pager_total[$element] = ceil($pager_total_items[$element] / $limit);
+  $pager_page_array[$element] = max(0, min((int)$pager_page_array[$element], ((int)$pager_total[$element]) - 1));
+  //return db_query_range($query, $args, $pager_page_array[$element] * $limit, $limit);
+  
+  if(empty($page)){
+  	$page=0;
+  }
+  if(!empty($rows)){
+    $result=array_slice($rows,$page*$limit,$limit);
+  }
+  return $result;
+}
+function my_get_grupo_seguimiento_options($with_empty=1){
+    $result=array();
+    if($with_empty){
+        $result[0]='';
+    }
+    $grupo_list=my_get_og_grupo_list('',1);
+    if(count($grupo_list)>0){
+        foreach($grupo_list as $i=>$gr){
+            $result[$gr->nid]=$gr->title;
+        }
+    }
+    return $result;
+}
+function get_grupo_seguimiento_link($grupo_nid){
+    if(!empty($grupo_nid)){
+        $node=node_load($grupo_nid);
+        if(!empty($node) && isset($node->nid) && !empty($node->nid)){
+            //return l($node->title,);
+            $orri_hasi='/dashboard';
+            if(is_user_invitado()){
+                $orri_hasi='/ideas';
+            }
+            return '<a href="'.base_path().$node->purl.$orri_hasi.'">'.$node->title.'</a>';
+        }
+    }
+    return '';
+}
+//gemini
+function estrategia_arbol_callback() {
+  if(!hontza_is_canal_edit() && !hontza_is_canal_formulario()){  
+    estrategia_active_tabs_access();
+    //gemini-2014
+    hontza_grupo_shared_active_tabs_access();
+  }
+  $my_limit=variable_get('default_nodes_main', 200);
+  $my_limit=200;
+  /*$where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="estrategia"';
+  //
+  //$my_grupo=og_get_group_context();
+  //if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+//	$where[]='e.grupo_nid='.$my_grupo->nid;
+  //}
+  $empresa_nid=my_get_empresa_nid();
+  //print 'oportunidad_nid(list)='.$oportunidad_nid.'<BR>';
+  if(!empty($empresa_nid)){
+  	$where[]='e.empresa_nid='.$empresa_nid;
+  }
+  //
+  //$order_by=' ORDER BY n.sticky DESC, n.created DESC';
+  //$order_by=' ORDER BY n.sticky DESC, n.created ASC';
+  $order_by=' ORDER BY e.peso ASC,n.sticky DESC, n.created ASC';
+  //
+  $sql='SELECT n.nid, n.sticky, n.created
+  FROM {node} n
+  LEFT JOIN {estrategia} e ON n.nid=e.nid
+  WHERE '.implode(' AND ',$where).$order_by;
+
+  
+
+  //print $sql;
+  //$result = pager_query(db_rewrite_sql($sql), variable_get('default_nodes_main', 10));
+  $result = db_query($sql);
+
+  $output = '';
+  $num_rows = FALSE;
+  $rows=array();
+  $my_list=array();
+  while ($node = db_fetch_object($result)) {
+    //$output .= node_view(node_load($node->nid), 1);
+	$my_node=node_load($node->nid);
+	//echo print_r($my_node,1);
+	//$rows[]=array($my_node->title,$my_node->valor_reto);
+	$my_list[]=$my_node;
+    $num_rows = TRUE;
+  }
+
+  $rows=create_arbol($my_list);*/
+  $rows=get_estrategia_arbol_rows();
+  if(!hontza_social_is_import_table_html()){
+    $rows=my_set_estrategia_pager($rows,$my_limit);
+  }
+  //if ($num_rows) {
+  if(count($rows)>0){
+    /*$feed_url = url('estrategia_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
+
+	/*$headers=array(t('Strategic challenge'),t('Valor reto'),t('Despliegue del reto'),t('Decision'),t('Valor decision'),
+	t('Informacion necesaria'),t('Importance'),t('Esfuerzo'),t('Total punctuation'),t('Ranking'));*/
+	/*$headers=array(t('Strategic challenge'),t('Valor reto'),t('Despliegue del reto'),t('Decision'),t('Valor decision'),
+	t('Informacion necesaria'),t('Imp.'),t('Esf.'),t('Pt.'),t('R.'),t('Group'));*/
+        //$headers=array(t('Title'),t('Operaciones'));
+        /*$headers=array();
+        $headers[0]='&nbsp;';*/
+        //if(is_idea()){
+        if(is_reto_al_que_responde_pantalla()){
+            $headers=array(t('Title'),'');
+            //intelsat-2015
+            //$headers=array('',t('Title'));
+        }else{
+            //$headers=array(t('Title'),t('Peso'));
+            //$headers=array(t('Title'),t('Group'),t('Actions'));
+            if(is_estrategia('arbol_estrategico')){
+                $headers=array(get_estrategia_simbolo_img(1).t('Challenge').'&nbsp;'.get_menu_gezia_img(2).get_despliegue_simbolo_img(1).t('SubChallenge').'&nbsp;'.get_menu_gezia_img(2).get_decision_simbolo_img(1).t('Decision').'&nbsp;'.get_menu_gezia_img(2).get_informacion_simbolo_img(1).t('Key Question').'&nbsp;'.get_menu_gezia_img(2),t('Status'),t('Action'));
+            }else{
+                $headers=array(t('Strategy'),t('Group'));
+            }
+
+        }
+        $output .= theme('table',$headers,$rows);
+
+	//print 'pager='.variable_get('default_nodes_main', 10).'<BR>';
+	$output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+
+    $output = '<div id="first-time">' .t('There are no challenges'). '</div>';
+  }
+  if(is_estrategia()){
+    if(is_estrategia('arbol')){
+        drupal_set_title(t('Strategy-Groups'));
+    }else{
+        drupal_set_title(t('Deploy Strategy'));
+    }
+  }
+	return $output;
+}
+function create_arbol($my_list,$is_solo_preguntas_clave=0){
+    $arbol=array();
+    $my_padding=50;
+    //$konp=get_idea_responde_konp();
+    $konp_array=get_idea_responde_konp_array();
+    /*if(user_access('root')){
+        echo print_r($konp_array,1);
+    }*/
+    $my_id_array=array();
+    $kont_info=0;
+    //$estrategia_convertir_data_row=0;
+	if(count($my_list)>0){
+		$kont=0;
+		foreach($my_list as $i=>$node){
+
+                    if(!is_reto_del_grupo($node->grupo_seguimiento_nid)){                        
+                        continue;
+                    }
+			//print $node->nid.'<BR>';
+                        $my_img='';
+                        //if(!is_idea()){
+                        $my_img=get_estrategia_simbolo_img();
+                        //}
+                        //gemini-2014
+                        $div_title=estrategia_get_arbol_div_title($node->body);
+                        //intelsat-2016
+                        $estrategia_class=red_copiar_get_title_imported_class($node);
+                        $compartir_link=red_copiar_get_compartir_estrategia_link($node);
+                        //
+                        $arbol[$kont][0]='<div'.$div_title.$estrategia_class.'>'.$compartir_link.$my_img.add_link_reto_title($node->title,$node->nid,$node->body).'</div>';
+                        //$arbol[$kont][1]='operaciones';
+                        if(is_reto_al_que_responde_pantalla()){
+                            $my_id='estrategia_'.$node->nid.'_0_0_0';
+                            //print $my_id.'<BR>';
+                            $my_id_array[]=$my_id;
+                            $checked='';
+                            //if(strcmp($my_id,$konp)==0){
+                            $arbol[$kont][1]='';
+                            //gemini-2014
+                            //if(!hontza_is_canal_formulario() && !red_is_item_formulario()){
+                            //intelsat-2015
+                            //if(!hontza_is_canal_formulario() && !red_is_item_formulario() && !red_is_noticia_de_usuario_formulario()){
+                            if(!estrategia_inc_is_reto_responde_formulario()){    
+                                if(in_array($my_id,$konp_array)){
+                                    $checked=' checked="checked"';
+                                }                            
+                                $arbol[$kont][1]='<input type="checkbox" id="'.$my_id.'" name="estrategia['.$node->nid.']" value="1"'.$checked.'/>';
+                            }
+                            //intelsat-2015
+                            //$arbol[$kont]=array_reverse($arbol[$kont]);
+                        }else{
+                            //$arbol[$kont][1]=$node->peso;
+                            if(is_estrategia('arbol')){
+                                $arbol[$kont][1]=get_grupo_seguimiento_link($node->grupo_seguimiento_nid);
+                            }else{
+                                //$estrategia_convertir_data_row=1;
+                                /*
+                                $arbol[$kont][1]=l("Borrar Reto","node/".$node->nid."/delete",array('query'=>drupal_get_destination()));
+                                $arbol[$kont][1].='<BR>'.l("Edit Challenge","node/".$node->nid."/edit");
+                                $arbol[$kont][1].='<BR>'.l(t("Add SubChallenge"),'node/add/despliegue/'.$node->nid);
+                                */
+                                $borrar_img=my_get_icono_action("delete",t("Delete Challenge"));
+                                //print $borrar_img;
+                                $arbol[$kont][1]=estrategia_get_status_color($node);
+                                //
+                                $arbol[$kont][2]='';
+                                if(estrategia_is_admin_content()){
+                                    $arbol[$kont][2]=l($borrar_img,"node/".$node->nid."/delete",array('html'=>true,'query'=>drupal_get_destination()));
+                                    $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("edit",t("Edit Challenge")),"node/".$node->nid."/edit",array('html'=>true,'query'=>drupal_get_destination()));
+                                    $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("add",t("Add SubChallenge")),'node/add/despliegue/'.$node->nid,array('html'=>true));
+                                }
+                                $arbol[$kont][2]=estrategia_add_div_actions($arbol[$kont][2]);
+                                //                                
+                            }
+                        }
+                        //
+                        $kont++;
+			$despliegue_list=get_estrategia_despliegue_list($node->nid);
+			if(count($despliegue_list)>0){
+                            foreach($despliegue_list as $k=>$despliegue){
+                                $my_img='';
+                                //if(!is_idea()){
+                                $my_img=get_despliegue_simbolo_img();
+                                //}
+                                $my_despliegue=node_load($despliegue->nid);
+                                //gemini-2014
+                                $div_title=estrategia_get_arbol_div_title($my_despliegue->body);
+                                //
+                                $arbol[$kont][0]='<div '.$div_title.'style="padding-left:'.$my_padding.'px">'.$my_img.add_link_despliegue_title($despliegue->title,$despliegue->nid,$my_despliegue->body).'</div>';
+                                 //$arbol[$kont][1]='operaciones';
+                                 if(is_reto_al_que_responde_pantalla()){
+                                     $my_id='estrategia_'.$node->nid.'_'.$despliegue->nid.'_0_0';
+                                     //print $my_id.'<BR>';
+                                     $my_id_array[]=$my_id;
+                                     $checked='';
+                                     //if(strcmp($my_id,$konp)==0){
+                                     $arbol[$kont][1]='';
+                                     //gemini-2014
+                                     //if(!hontza_is_canal_formulario() && !red_is_item_formulario()){
+                                     //intelsat-2015
+                                     //if(!hontza_is_canal_formulario() && !red_is_item_formulario() && !red_is_noticia_de_usuario_formulario()){
+                                     if(!estrategia_inc_is_reto_responde_formulario()){  
+                                        if(in_array($my_id,$konp_array)){
+                                            $checked=' checked="checked"';
+                                        }    
+                                        $arbol[$kont][1]='<input type="checkbox" id="'.$my_id.'" name="estrategia['.$node->nid.'_'.$despliegue->nid.']" value="1"'.$checked.'/>';
+                                     }
+                                     //intelsat-2015
+                                     //$arbol[$kont]=array_reverse($arbol[$kont]);
+                                 }else{
+                                    //$arbol[$kont][1]=$despliegue->peso;
+                                    if(is_estrategia('arbol')){
+                                        $arbol[$kont][1]=get_despliegue_grupo_seguimiento_link($despliegue->grupo_seguimiento_nid,$despliegue->estrategia_nid);
+                                    }else{
+                                        /*$arbol[$kont][1]=l("Delete SubChallenge","node/".$despliegue->nid."/delete",array('query'=>drupal_get_destination()));
+                                        $arbol[$kont][1].='<BR>'.l("Edit Subchallenge","node/".$despliegue->nid."/edit");
+                                        $arbol[$kont][1].='<BR>'.l(t("Add Decision"),'node/add/decision/'.$despliegue->nid);
+                                        */
+                                        $arbol[$kont][1]=despliegue_get_status_color($my_despliegue);
+                                        //
+                                        $arbol[$kont][2]='';
+                                        if(estrategia_is_admin_content()){
+                                            $arbol[$kont][2]=l(my_get_icono_action("delete",t("Delete SubChallenge")),"node/".$despliegue->nid."/delete",array('html'=>true,'query'=>drupal_get_destination()));
+                                            $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("edit",t("Edit Subchallenge")),"node/".$despliegue->nid."/edit",array('html'=>true,'query'=>drupal_get_destination()));
+                                            $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("add",t("Add Decision")),'node/add/decision/'.$despliegue->nid,array('html'=>true));
+                                        }
+                                        $arbol[$kont][2]=estrategia_add_div_actions($arbol[$kont][2]);
+                                    }
+
+                                 }
+                                 $kont++;
+                                 $decision_list=get_despliegue_decision_list($despliegue->nid);
+                                 //print count($decision_list).'<BR>';
+                                 if(count($decision_list)>0){
+                                    foreach($decision_list as $a=>$decision){
+                                        $my_img='';
+                                        //if(!is_idea()){
+                                        $my_img=get_decision_simbolo_img();
+                                        $my_decision=node_load($decision->nid);
+                                        //}
+                                        //gemini-2014
+                                        $div_title=estrategia_get_arbol_div_title($my_decision->body);
+                                        //
+                                        $arbol[$kont][0]='<div '.$div_title.'style="padding-left:'.($my_padding*2).'px">'.$my_img.add_link_decision_title($decision->title,$decision->nid,$my_decision->body).'</div>';
+                                        //$arbol[$kont][1]='operaciones';
+                                        if(is_reto_al_que_responde_pantalla()){
+                                            //$arbol[$kont][1]='';
+                                             $my_id='estrategia_'.$node->nid.'_'.$despliegue->nid.'_'.$decision->nid.'_0';
+                                             //print $my_id.'<BR>';
+                                             $my_id_array[]=$my_id;
+                                             $checked='';
+                                             //if(strcmp($my_id,$konp)==0){
+                                             $arbol[$kont][1]='';
+                                             //gemini-2014
+                                             //if(!hontza_is_canal_formulario() && !red_is_item_formulario()){
+                                             //intelsat-2015
+                                             //if(!hontza_is_canal_formulario() && !red_is_item_formulario() && !red_is_noticia_de_usuario_formulario()){
+                                             if(!estrategia_inc_is_reto_responde_formulario()){  
+                                                if(in_array($my_id,$konp_array)){
+                                                    $checked=' checked="checked"';
+                                                }                                               
+                                                $arbol[$kont][1]='<input type="checkbox" id="'.$my_id.'" name="estrategia['.$node->nid.'_'.$despliegue->nid.'_'.$decision->nid.']" value="1"'.$checked.'/>';
+                                             }    
+                                             //intelsat-2015
+                                             //$arbol[$kont]=array_reverse($arbol[$kont]);   
+                                        }else{
+                                            //$arbol[$kont][1]=$decision->peso;
+                                            if(is_estrategia('arbol')){
+                                                $arbol[$kont][1]=get_decision_grupo_seguimiento_link($decision->grupo_seguimiento_nid,$decision->despliegue_nid);
+                                            }else{
+                                                $arbol[$kont][1]=decision_get_status_color($my_decision);
+                                                //
+                                                $arbol[$kont][2]='';
+                                                if(estrategia_is_admin_content()){
+                                                    $arbol[$kont][2]=l(my_get_icono_action("delete",t("Delete Decision")),"node/".$decision->nid."/delete",array('html'=>true,'query'=>drupal_get_destination()));
+                                                    $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("edit",t("Edit Decision")),"node/".$decision->nid."/edit",array('html'=>true,'query'=>drupal_get_destination()));
+                                                    $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("add",t("Add Key Question")),'node/add/informacion/'.$decision->nid,array('html'=>true));
+                                                }    
+                                                $arbol[$kont][2]=estrategia_add_div_actions($arbol[$kont][2]);
+                                            }
+
+                                        }
+                                        $kont++;
+                                        if(is_estrategia('arbol')){
+                                            continue;
+                                        }
+                                        if(is_add_edit_respuesta()){
+                                            continue;
+                                        }
+                                        $informacion_list=get_decision_informacion_list($decision->nid);
+                                        //print count($informacion_list).'<BR>';
+                                        if(count($informacion_list)>0){
+                                            foreach($informacion_list as $b=>$informacion){
+                                                 $my_img='';
+                                                 //if(!is_idea()){
+                                                 $my_img=get_informacion_simbolo_img();
+                                                 $my_informacion=node_load($informacion->nid);
+                                                 //}
+                                                 //gemini-2014
+                                                 $div_title=estrategia_get_arbol_div_title($my_informacion->body);
+                                                 //
+                                                 $arbol[$kont][0]='<div '.$div_title.'style="padding-left:'.($my_padding*3).'px">'.$my_img.add_link_informacion_title($informacion->title,$informacion->nid,$my_informacion->body).'</div>';
+                                                 //$arbol[$kont][1]='operaciones';
+                                                 if(is_reto_al_que_responde_pantalla()){
+                                                    //$arbol[$kont][1]='';
+                                                     $my_id='estrategia_'.$node->nid.'_'.$despliegue->nid.'_'.$decision->nid.'_'.$informacion->nid;
+                                                     //print $my_id.'<BR>';
+                                                     $my_id_array[]=$my_id;
+                                                     //print $my_id.'===='.$konp.'<BR>';
+                                                     $checked='';
+                                                     //if(strcmp($my_id,$konp)==0){
+                                                     if(in_array($my_id,$konp_array)){
+                                                        $checked=' checked="checked"';
+                                                     }
+                                                    $arbol[$kont][1]='<input type="checkbox" id="'.$my_id.'" name="estrategia['.$node->nid.'_'.$despliegue->nid.'_'.$decision->nid.'_'.$informacion->nid.']" value="1"'.$checked.'/>';
+                                                    //intelsat-2015
+                                                    //$arbol[$kont]=array_reverse($arbol[$kont]);                                                    
+                                                 }else{
+                                                    //$arbol[$kont][1]=$informacion->peso;
+                                                    if(is_estrategia('arbol')){
+                                                        $arbol[$kont][1]=get_informacion_grupo_seguimiento_link($informacion->grupo_seguimiento_nid,$informacion->decision_nid);
+                                                    }else{
+                                                        $arbol[$kont][1]=informacion_get_status_color($my_informacion);
+                                                        //
+                                                        $arbol[$kont][2]='';
+                                                        if(estrategia_is_admin_content()){
+                                                            $arbol[$kont][2]=l(my_get_icono_action("delete",t("Delete Key Question")),"node/".$informacion->nid."/delete",array('html'=>true,'query'=>drupal_get_destination()));
+                                                            $arbol[$kont][2].='&nbsp;'.l(my_get_icono_action("edit",t('Edit Key Question')),"node/".$informacion->nid."/edit",array('html'=>true,'query'=>drupal_get_destination()));
+                                                        }    
+                                                        $arbol[$kont][2]=estrategia_add_div_actions($arbol[$kont][2]);
+
+                                                    }
+                                                 }
+                                                 $kont++;
+                                                 $kont_info++;
+                                            }
+                                        }
+                                    }
+                                 }
+                            }
+                        }
+                }
+        }
+   // echo print_r($my_id_array,1);
+    /*if(is_idea()){
+        add_js_seleccionar_idea_estrategia($my_id_array);
+    }*/
+    if($estrategia_convertir_data_row){
+        $arbol=estrategia_convertir_data_row($arbol);
+    }
+    if($is_solo_preguntas_clave){
+        $arbol=estrategia_set_preguntas_clave_arbol($arbol);    
+    }
+    return $arbol;
+}
+function add_link_informacion_title($title_in,$informacion_nid,$description=''){
+    //return l($title,'node/'.$informacion_nid,array('attributes'=>array('title'=>strip_tags($description))));
+    $title=estrategia_set_title_max_len($title_in);
+    //gemini-2014
+    if(estrategia_is_arbol_sin_link()){
+        return $title;
+    }
+    //
+    return l($title,'node/'.$informacion_nid,array('attributes'=>array('title'=>strip_tags($description)),'query'=>drupal_get_destination()));
+}
+function get_idea_responde_konp($nid=''){
+    if(is_reto_al_que_responde_pantalla()){
+        if(!empty($nid) || (strcmp(arg(0),'node')==0 && is_numeric(arg(1)) && strcmp(arg(2),'edit')==0)){
+            if(!empty($nid)){
+                $idea_nid=$nid;
+            }else{
+                $idea_nid=arg(1);
+            }
+            //
+            $node=node_load($idea_nid);
+            //echo print_r($node,1);
+            return 'estrategia_'.$node->responde_estrategia_nid.'_'.$node->responde_despliegue_nid.'_'.$node->responde_decision_nid.'_'.$node->responde_informacion_nid;
+        }
+    }
+    return '';
+}
+function add_js_seleccionar_idea_estrategia($id_array){
+  	//if(is_usuarios_todos()){
+		$js='
+                    var idea_estrategia_id_array=new Array("'.implode('","',$id_array).'")
+			function set_beste_txek(konp,id_array,modua){
+                          for(var i in id_array){
+                            my_id=id_array[i];
+                            if(my_id!=konp){
+                               $("#"+my_id).attr("checked",modua);
+                            }
+                          }
+                        }
+                        //
+                        $(document).ready(function()
+			{
+			  var my_id=0;
+                          for(var i in idea_estrategia_id_array){
+                            my_id=idea_estrategia_id_array[i];
+                            $("#"+my_id).change(function(){
+                               if($(this).attr("checked")){
+                                   set_beste_txek($(this).attr("id"),idea_estrategia_id_array,false);
+                               }
+                            });
+                          }
+			});';
+
+			drupal_add_js($js,'inline');
+	//}
+}
+function create_menu_estrategia(){
+    $html=array();
+    $html[]='<div class="tab-wrapper clearfix primary-only" style="margin-top:0;">';
+    $html[]='<div class="tabs primary" id="tabs-primary">';
+    $html[]='<ul>';
+    //
+    if(is_estrategia('tabla')){
+        $html[]='<li class="ideas_menu_li active">';
+    }else{
+        $html[]='<li class="ideas_menu_li">';
+    }
+    //if(is_estrategia('tabla')){
+    $html[]=l(t('By Hierarchy'),'estrategias/tabla');
+    /*}else{
+        $html[]=l('Orden Jerárquico','estrategias/tabla');
+    }*/
+    $html[]='</li>';
+    //
+    if(is_estrategia('tabla_puntuacion_total')){
+        $html[]='<li class="ideas_menu_li active">';
+    }else{
+        $html[]='<li class="ideas_menu_li">';
+    }
+    //}
+    /*if(is_estrategia('tabla')){
+        $html[]=l('Orden Importancia','estrategias/tabla_puntuacion_total');
+    }else{*/
+    $html[]=l(t('By Score'),'estrategias/tabla_puntuacion_total');
+    //}
+    $html[]='</li>';
+    //    
+    $html[]='</ul>';
+    $html[]='</div></div>';
+    return $aurretik.implode('',$html);
+}
+//gemini
+function estrategia_tabla_puntuacion_total_callback() {
+    return estrategia_tabla_callback();
+}
+//gemini
+function calcular_puntuacion_total($my_list){
+    //La formula final es R * S * D * [ ( II + IA ) / 2 ]
+    $result=array();
+    if(count($my_list)>0){
+        foreach($my_list as $i=>$row){
+            $result[$i]=$row;
+            //$result[$i]->puntuacion_total=rand(1,10);
+            //echo print_r($row,1);
+            $r=get_value_formula_puntuacion_total($row->valor_reto);
+            $s=get_value_formula_puntuacion_total($row->importancia_despliegue);
+            $d=get_value_formula_puntuacion_total($row->valor_decision);
+            $ii=get_value_formula_puntuacion_total($row->importancia);
+            $ia=get_value_formula_puntuacion_total($row->accesibilidad);
+            //
+            $result[$i]->puntuacion_total=$r*$s*$d*(($ii+$ia)/2);
+            $r=$row->valor_reto;
+            $s=$row->importancia_despliegue;
+            $d=$row->valor_decision;
+            $ii=$row->importancia;
+            $ia=$row->accesibilidad;
+            //
+            $result[$i]->puntuacion_total_zero=$r*$s*$d*(($ii+$ia)/2);
+            $result[$i]->pos_orig=$i+1;
+        }
+    }
+    return $result;
+}
+function get_value_formula_puntuacion_total($v){
+    if(empty($v)){
+        //return 999;
+        return 0;
+    }
+    return $v;
+}
+function set_numero_ranking_ordenado($tabla){
+    $result=array();
+    if(count($tabla)>0){
+        foreach($tabla as $i=>$row){
+            $result[$i]=$row;
+            $result[$i]->numero_ranking=$i+1;
+        }
+    }
+    return $result;
+}
+function set_numero_ranking_sin_ordenar($tabla,$tabla_ordenada){
+   $result=array();
+    if(count($tabla)>0){
+        foreach($tabla as $i=>$row){
+            $result[$i]=$row;
+            $result[$i]->numero_ranking=get_numero_ranking_by_pos_orig($i+1,$tabla_ordenada);
+        }
+    }
+    return $result;
+}
+function get_numero_ranking_by_pos_orig($pos_orig,$tabla_ordenada){
+    if(count($tabla_ordenada)>0){
+        foreach($tabla_ordenada as $i=>$row){
+            //print $row->pos_orig.'<BR>';
+            //echo print_r($row,1);exit();
+            if($row->pos_orig==$pos_orig){
+                return $row->numero_ranking;
+            }
+        }
+    }
+    return -1;
+}
+//gemini
+function create_menu_estrategias_list(){
+    $html=array();
+    //gemini-2014
+    $html[]='<div class="tab-wrapper-flechas clearfix primary-only" style="margin-top:0;">';    
+    $tabs_primary_id='tabs-primary-bigarren';
+    //intelsat-2016
+    //if(hontza_is_sareko_id('GESTION_CLAVES')){
+    if(red_is_claves_activado()){    
+        $tabs_primary_id='tabs-primary';
+    }
+    $html[]='<div class="tabs primary" id="'.$tabs_primary_id.'">';
+    $html[]='<ul>';
+    //
+    if(is_estrategia() && !in_array(arg(1),array('despliegues','decisiones','informaciones'))){
+        $html[]='<li class="ideas_menu_li active" id="li_retos">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_retos">';
+    }
+    //$html[]=l('Últimas ideas','ideas');
+    $html[]=l(t('Challenges'),'estrategias');
+    $html[]='</li>';
+    $html[]='<li class="ideas_menu_li" id="li_retos_arrow">';
+    //$html[]=get_menu_gezia_img();
+    $html[]='</li>';
+    //
+    if(is_estrategia('despliegues') || is_despliegue()){
+        $html[]='<li class="ideas_menu_li active"  id="li_despliegues">';
+    }else{
+        $html[]='<li class="ideas_menu_li"  id="li_despliegues">';
+    }
+    $html[]=l(t('SubChallenges'),'estrategias/despliegues');
+    $html[]='</li>';
+    $html[]='<li class="ideas_menu_li" id="li_despliegues_arrow">';
+    //$html[]=get_menu_gezia_img();
+    $html[]='</li>';
+     //
+    if(is_estrategia('decisiones') || is_decision()){
+        $html[]='<li class="ideas_menu_li active" id="li_decisiones">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_decisiones">';
+    }
+    $html[]=l(t('Decisions'),'estrategias/decisiones');
+    $html[]='</li>';
+    $html[]='<li class="ideas_menu_li" id="li_decisiones_arrow">';
+    //$html[]=get_menu_gezia_img();
+    $html[]='</li>';
+    //
+    if(is_estrategia('informaciones') || is_informacion()){
+        $html[]='<li class="ideas_menu_li active" id="li_informaciones">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_informaciones">';
+    }
+    //$html[]=l('Informaciones','estrategias/informaciones');
+    $html[]=l(t('Key Questions'),'estrategias/informaciones');
+    $html[]='</li>';
+     //
+    $html[]='</ul>';
+    $html[]='</div></div>';
+    //
+    $aurretik='';
+    $aurretik=get_estrategias_list_menu_aurretik();
+    return $aurretik.implode('',$html);
+}
+function estrategia_subretos_callback(){
+    estrategia_active_tabs_access();
+    return despliegue_list_callback();
+}
+function estrategia_decisiones_callback(){
+    estrategia_active_tabs_access();
+    return decision_list_callback();
+}
+function estrategia_informaciones_callback(){
+    estrategia_active_tabs_access();
+    return informacion_list_callback();
+}
+function get_estrategias_list_menu_aurretik(){
+    $html=array();
+    $html[]='<div class="tab-wrapper-flechas clearfix primary-only" style="margin-bottom:0;">';
+    $html[]='<div class="tabs primary" id="tabs-primary-aurretik">';
+    $html[]='<ul>';
+    $active='';
+    if((is_estrategia() && !in_array(arg(1),array('informaciones'))) || is_despliegue() || is_decision()){
+        $active=' active';
+    }
+    $html[]='<li class="ideas_menu_li'.$active.'" id="estrategia_aurretik" style="margin-right:0px;">'.l(t('STRATEGIC DEPLOYMENT'),'estrategias').'</li>';
+    $active='';
+    if(is_estrategia('informaciones') || is_informacion()){
+        $active=' active';
+    }
+    $html[]='<li class="ideas_menu_li'.$active.'" id="informacion_aurretik">'.l(t('INFORMATION'),'estrategias/informaciones').'</li>';
+    //
+    $html[]='</ul>';
+    $html[]='</div></div>';
+    //
+    $js='
+
+                                $(document).ready(function()
+                                {
+                                    var estrategia_wa=$("#li_retos").outerWidth(true);
+                                    estrategia_wa=estrategia_wa+$("#li_despliegues").outerWidth(true);
+                                    estrategia_wa=estrategia_wa+$("#li_decisiones").outerWidth(true);
+                                    estrategia_wa=estrategia_wa+$("#li_retos_arrow").outerWidth(true);
+                                    estrategia_wa=estrategia_wa+$("#li_despliegues_arrow").outerWidth(true);
+                                    estrategia_wa=estrategia_wa+$("#li_decisiones_arrow").outerWidth(true);
+                                    var informaciones_wa=$("#li_informaciones").outerWidth(true);
+                                    $("#estrategia_aurretik").css("width",estrategia_wa);
+                                    $("#estrategia_aurretik a").css("width",estrategia_wa);
+                                    $("#informacion_aurretik").css("width",informaciones_wa);
+                                    $("#informacion_aurretik a").css("width",informaciones_wa);
+                                });';
+
+            //drupal_add_js($js,'inline');
+    return implode('',$html);
+}
+function get_estrategia_arbol_rows($is_link=1){
+  $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="estrategia"';
+  //
+  //$my_grupo=og_get_group_context();
+  //if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+//	$where[]='e.grupo_nid='.$my_grupo->nid;
+  //}
+  $empresa_nid=my_get_empresa_nid();
+  //print 'oportunidad_nid(list)='.$oportunidad_nid.'<BR>';
+  if(!empty($empresa_nid)){
+        //correo 21-05-2012 08:00 ->hemos comentado esto
+  	//$where[]='e.empresa_nid='.$empresa_nid;
+  }
+  //correo 21-05-2012 08:00
+  $where_grupo=get_where_estrategia_por_grupo("e","estrategia");
+      //print 'where_grupo='.$where_grupo.'<BR>';
+      if(!empty($where_grupo)){
+          $where[]=$where_grupo;
+      }
+  //
+  //$order_by=' ORDER BY n.sticky DESC, n.created DESC';
+  //$order_by=' ORDER BY n.sticky DESC, n.created ASC';
+  $order_by=' ORDER BY e.peso ASC,n.sticky DESC, n.created ASC,n.nid ASC';
+  //
+  $sql='SELECT n.nid, n.sticky, n.created
+  FROM {node} n
+  LEFT JOIN {estrategia} e ON n.nid=e.nid
+  WHERE '.implode(' AND ',$where).$order_by;
+
+
+
+  //print $sql;
+  //$result = pager_query(db_rewrite_sql($sql), variable_get('default_nodes_main', 10));
+  $result = db_query($sql);
+
+  $output = '';
+  $num_rows = FALSE;
+  $rows=array();
+  $my_list=array();
+  while ($node = db_fetch_object($result)) {
+    //$output .= node_view(node_load($node->nid), 1);
+	$my_node=node_load($node->nid);
+	//echo print_r($my_node,1);
+	//$rows[]=array($my_node->title,$my_node->valor_reto);
+	$my_list[]=$my_node;
+    $num_rows = TRUE;
+  }
+//echo print_r($my_list,1);
+  if($is_link){
+    $rows=create_arbol($my_list);
+    return $rows;
+  }else{
+      return $my_list;
+  }
+  
+}
+function get_sel_estrategia_arbol_rows($my_list){
+    $my_list=get_estrategia_arbol_rows(0);
+    $arbol=array();
+
+   	if(count($my_list)>0){
+		$kont=0;
+		foreach($my_list as $i=>$node){
+			//print $node->nid.'<BR>';
+                        $arbol[$kont]['title']=$node->title;
+                        $arbol[$kont]['nid']=$node->nid;
+                        $arbol[$kont]['my_level']=1;
+                        $kont++;
+                        //
+			$despliegue_list=get_estrategia_despliegue_list($node->nid);
+			if(count($despliegue_list)>0){
+                            foreach($despliegue_list as $k=>$despliegue){
+                                 $arbol[$kont]['title']=$despliegue->title;
+                                 $arbol[$kont]['nid']=$despliegue->nid;
+                                 $arbol[$kont]['my_level']=2;                          
+                                 $kont++;
+                                 //
+                                 $decision_list=get_despliegue_decision_list($despliegue->nid);
+                                 //print count($decision_list).'<BR>';
+                                 if(count($decision_list)>0){
+                                    foreach($decision_list as $a=>$decision){
+                                        $arbol[$kont]['title']=$decision->title;
+                                        $arbol[$kont]['nid']=$decision->nid;
+                                        $arbol[$kont]['my_level']=3;
+                                        $kont++;
+                                        $informacion_list=get_decision_informacion_list($decision->nid);
+                                        //print count($informacion_list).'<BR>';
+                                        if(count($informacion_list)>0){
+                                            foreach($informacion_list as $b=>$informacion){
+                                                 $arbol[$kont]['title']=$informacion->title;
+                                                 $arbol[$kont]['nid']=$informacion->nid;
+                                                 $arbol[$kont]['my_level']=4;
+                                                 $kont++;
+                                            }
+                                        }
+                                    }
+                                 }
+                            }
+                        }
+                }
+        }
+   // echo print_r($my_id_array,1);
+    if(is_idea()){
+        add_js_seleccionar_idea_estrategia($my_id_array);
+    }
+    return $arbol;
+}
+function prepare_estrategia_arbol_by_pro($rows,$pro){
+    $result=array();
+    if(count($rows)>0){
+        foreach($rows as $i=>$r){
+            if($r['my_level']<=$pro){
+                $result[]=$r;
+            }
+        }
+    }
+    return $result;
+}
+function arbol_estrategico_callback(){
+    if(hontza_social_is_grupo_semantico_social()){
+        drupal_goto('social_learning/collections');        
+    }else{
+        return estrategia_arbol_callback();
+    }    
+}
+function get_estrategia_simbolo_img($is_taula_header=0){
+    $html=array();
+    //gemini-2014
+    $style=estrategia_get_simbolo_style($is_taula_header);    
+    //
+    $html[]='<img '.$style.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/estrategia.png"/>';
+    //gemini-2014
+    if(!$is_taula_header){
+        $html[]='&nbsp;';
+    }
+    return implode('',$html);
+}
+function get_title_estrategia_simbolo_img(){
+    $html=array();
+    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/estrategia_title.png"/>';
+    return implode('',$html);
+}
+function get_desplegar_estrategia_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+    $is_grupo_sel=0;
+    $my_grupo=og_get_group_context();
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $is_grupo_sel=1;
+    }
+    //
+    	$result=array();
+	if(is_administrador_grupo(1) && $is_grupo_sel){
+            $url_importar_estrategia='estrategia/importar_estrategia';        
+            $result[]=l(t('Import Strategy'),$url_importar_estrategia,array('query'=>drupal_get_destination()),array('attributes'=>array('title'=>t('Import Strategy'),'alt'=>t('Import Strategy'))));                             
+        }
+        $result[]=l(t('Deploy Strategy'),'estrategias/arbol_estrategico');
+        $result[]=l(t('Key Questions'),'estrategias/tabla');
+        //$result[]=l(t('Strategy-Groups'),'estrategias/arbol');
+        //$result[]=l(t('Key Questions').' - '.t('Channels'),'resumen_preguntas_clave_canales',array('query'=>drupal_get_destination()));
+	$result[]=l(t('Table Questions - Channels'),'resumen_preguntas_clave_canales',array('query'=>drupal_get_destination()));
+        $result[]=l(t('Download Strategy'),'estrategias/tabla_csv_download',array('query'=>drupal_get_destination()),array('attributes'=>array('title'=>t('Download Strategy'),'alt'=>t('Download Strategy'))));                                                     
+        return implode('<BR>',$result);
+}
+function get_menu_gezia_img($is_class=0){
+    $class='';
+    if(!empty($is_class)){
+        if($is_class==1){
+            $class=' class="menu_gezia_idea_img"';
+        }else if($is_class==2){
+            $class=' class="arbol_titulo_gezia_img"';
+        }else{
+            $class=' class="menu_gezia_idea_img"';
+        }
+    }
+    $html=array();
+    $html[]='&nbsp;';
+    $html[]='<img '.$class.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/menu_gezia.png"/>';
+    $html[]='&nbsp;';
+    return implode('',$html);
+}
+function get_idea_responde_konp_array($nid=''){
+    //intelsat-2015
+    global $user;
+    $result=array();
+    if(is_reto_al_que_responde_pantalla() || !empty($nid)){
+        if(!empty($nid)){
+            $node=node_load($nid);
+        }else{
+            //intelsat-2015
+            if(is_node_add('noticia')){
+                $node=red_get_node_canal_usuario($user->uid,1);
+            }else{    
+                $node=my_get_node();
+            }
+        }
+        //
+        if(!empty($node) && isset($node->nid) && !empty($node->nid)){
+            $idea_nid=$node->nid;
+            $where=array();
+            $where[]="1";
+            //if(is_idea()){
+            //if((is_idea()) && !in_array(arg(1),array('mas_valoradas','mas_comentadas','oportunidades','borrador','aprobados','no_aprobados','oportunidades_mas_valoradas'))){
+            if((is_idea()) && !in_array(arg(1),array('mas_comentadas','oportunidades','borrador','aprobados','no_aprobados','oportunidades_mas_valoradas'))){                
+                $where[]="idea_nid=".$idea_nid;
+                $sql="SELECT * FROM idea_responde_array WHERE ".implode(" AND ",$where)." ORDER BY id ASC";
+            }else if(is_oportunidad() || is_idea('oportunidades') || is_idea('oportunidades_mas_valoradas')){
+                $where[]="oportunidad_nid=".$node->nid;
+                $sql="SELECT * FROM oportunidad_responde_array WHERE ".implode(" AND ",$where)." ORDER BY id ASC";                
+            }else if(is_proyecto() || is_idea('borrador') || is_idea('aprobados') || is_idea('no_aprobados')){
+                $where[]="proyecto_nid=".$node->nid;
+                $sql="SELECT * FROM proyecto_responde_array WHERE ".implode(" AND ",$where)." ORDER BY id ASC";
+            }else if(hontza_is_canal_formulario() && $node->type!='item' && $node->type!='noticia'){
+                $where[]="nid=".$node->nid;
+                $sql="SELECT * FROM {canal_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";
+            }else if(red_is_item_formulario() || $node->type=='item'){
+                $where[]="nid=".$node->nid;
+                $sql="SELECT * FROM {item_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";
+            //intelsat-2015
+            //}else if(red_is_noticia_de_usuario_formulario() || $node->type=='noticia'){
+            }else if((red_is_noticia_de_usuario_formulario() && !$node->type=='canal_usuario') || $node->type=='noticia'){
+                $where[]="nid=".$node->nid;
+                $sql="SELECT * FROM {noticia_de_usuario_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";                
+            //intelsat-2015
+            }else if(hontza_canal_rss_is_debate_formulario() || $node->type=='debate'){
+                $where[]="nid=".$node->nid;
+                $sql="SELECT * FROM {debate_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";
+            }else if(hontza_canal_rss_is_wiki_formulario() || $node->type=='wiki'){
+                $where[]="nid=".$node->nid;
+                $sql="SELECT * FROM {collaboration_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";     
+            //
+            //intelsat-2015    
+            }else if(canal_usuario_is_canal_usuario_formulario() || $node->type=='canal_usuario'){                
+                $where[]="nid=".$node->nid;
+                $sql="SELECT * FROM {canal_usuario_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";     
+            }else{
+                return $result;
+            }
+            /*$res=db_query($sql);
+            
+            while($row=db_fetch_object($res)){
+                
+                $result[]='estrategia_'.$row->responde_estrategia_nid.'_'.$row->responde_despliegue_nid.'_'.$row->responde_decision_nid.'_'.$row->responde_informacion_nid;
+            }*/
+            $result=red_query_responde_konp_array($sql);
+            if(red_is_item_formulario() || $node->type=='item'){
+                if(empty($result)){
+                    $canal=red_get_canal_by_node($node);
+                    if(isset($canal->nid) && !empty($canal->nid)){
+                        $where=array();
+                        $where[]="1";
+                        $where[]="nid=".$canal->nid;
+                        $sql="SELECT * FROM {canal_estrategia} WHERE ".implode(" AND ",$where)." ORDER BY id ASC";
+                        $result=red_query_responde_konp_array($sql);
+                    }    
+                }
+            }
+            if(count($result)<1){
+                //print 'nid='.$nid.'<BR>';
+                $konp=get_idea_responde_konp($nid);
+                if(!empty($konp)){
+                    $result[]=$konp;
+                }
+            }
+        }
+    }
+    //echo print_r($result,1);
+    return $result;
+}
+function is_reto_del_grupo($grupo_seguimiento_nid){
+    if(is_reto_al_que_responde_pantalla()){
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            if($grupo_seguimiento_nid==$my_grupo->nid){
+                return 1;
+            }
+        }
+        return 0;
+    }else{
+        return 1;
+    }
+}
+function is_reto_al_que_responde_pantalla(){
+    //gemini-2014
+    if(is_idea() || is_oportunidad() || is_proyecto() || hontza_is_canal_formulario() || red_is_item_formulario() || red_is_noticia_de_usuario_formulario()){        
+        return 1;
+    }
+    //intelsat-2015
+    if(estrategia_inc_is_reto_responde_formulario()){
+        return 1;
+    }
+    //
+    return 0;
+}
+function my_get_icono_action($name,$label,$type='',$variables=array(),$style_in='',$class_in='',$my_theme_in=''){
+    global $base_url;
+    $html=array();
+    //intelsat-2015
+    $style=$style_in;
+    $my_theme=$my_theme_in;
+    //intelsat-2015
+    if(empty($my_theme)){
+        $my_theme='buho';
+    }    
+    if(in_array($name,array('validar_checkbox','rechazar_checkbox'))){
+        $style=' style="padding-top:2px;"';
+    }
+    if($type=='left_rss'){
+        $style=' style="float:left;padding-top:2px;padding-right:2px;"';
+    }else if($type=='facetapi_active'){
+        $temp_text=hontza_solr_search_get_text_by_profundidad_categoria_tematica($variables['text'],'',$profundidad);
+        $style=' style="float:left;"';
+        if($profundidad>0){
+            $profundidad=15*$profundidad;
+            $padding='padding:5px 0px 5px '.$profundidad.'px';
+            $style=' style="float:left;'.$padding.'"';
+        }
+    }else if(in_array($name,array('add_left')) || in_array($type,array('comentario_link'))){
+        $style=' style="float:left;padding-top:2px;"';
+    }else if(in_array($name,array('no_active','boletin_grupo_active','back_cancel','boletin_personalizado_active','compartir_fuente_left','descargar_fuente_left'))){
+        $style=' style="float:left;"';
+    }else if(in_array($type,array('rss_general'))){
+        $style=' style="padding-left:5px;"';
+    }else if(in_array($name,array('user'))){
+        //intelsat-2015
+        $style=' style="float:left;margin-top:2px;padding-right:2px;"';
+    }
+    //$path=$_SERVER['host'].base_path().'sites/all/themes/'.$my_theme.'/images/';
+    if($my_theme=='buho'){
+        $path=$base_url.'/sites/all/themes/'.$my_theme.'/images/';    
+    }else{
+        $path=$base_url.'/sites/all/themes/'.$my_theme.'/css/images/';
+    }
+    //if(!in_array($type,array('users_left'))){
+    if(!in_array($type,array('users_left')) && !in_array($name,array('user'))){
+        $path.='icons/';
+    }
+    $path.=$name;
+    //
+    $class=$name;
+    if(!empty($class_in)){
+        $class=$class_in;
+    }
+    //
+    $html[]='<img class="'.$class.'" src="'.$path.'.png" alt="'.$label.'" title="'.$label.'"'.$style.'>';
+    return implode('',$html);
+}
+function add_div_actions($content,$with_class=1,$class='',$type=''){
+    if(!in_array($type,array('boletin_grupo','boletin_report'))){
+        if(hontza_solr_search_is_usuario_lector()){
+            return '';
+        }
+    }    
+    $html=array();
+    if($with_class){
+        if(empty($class)){
+            $html[]='<div class="my_div_actions">';
+        }else{
+            $html[]='<div class="'.$class.'">';
+        }    
+    }else{
+        $html[]='<div>';
+    }
+    $html[]=$content;
+    $html[]='</div>';
+    return implode('',$html);
+}
+function my_help_estrategia(){
+    $param=arg(1);
+    //
+    if(strcmp(arg(0),'node')==0 && strcmp(arg(1),'add')==0 && strcmp(arg(2),'estrategia')==0){
+        return help_popup_window(15312, 'help',my_get_help_link_object());
+    }else if(strcmp(arg(0),'estrategias')==0 && empty($param)){
+        return help_popup_window(15308, 'help',my_get_help_link_object());
+    }else if(is_estrategia('arbol_estrategico')){
+        return help_popup_window(15309, 'help',my_get_help_link_object());
+    }else if(is_estrategia('tabla')){
+        return help_popup_window(15310, 'help',my_get_help_link_object());
+    }else if(is_estrategia('arbol')){
+        return help_popup_window(15311, 'help',my_get_help_link_object());
+    }else if(is_estrategia('despliegues')){
+        return help_despliegue_list();
+    }else if(is_estrategia('decisiones')){
+        return help_decision_list();
+    }else if(is_estrategia('informaciones')){
+        return help_informacion_list();
+    }
+
+    return '';
+}
+function is_add_edit_respuesta(){
+    if(strcmp(arg(0),'node')==0 && strcmp(arg(1),'add')==0 && in_array(arg(2),array('idea','oportunidad','proyecto'))){
+        return 1;
+    }
+    //
+    if(strcmp(arg(0),'node')==0 && is_numeric(arg(1)) && strcmp(arg(2),'edit')==0){
+        $nid=arg(1);
+        $node=node_load($nid);
+        if(isset($node->nid) && !empty($node->nid)){
+            if(in_array($node->type,array('idea','oportunidad','proyecto'))){
+                return 1;
+            }
+        }
+    }
+    //
+    return 0;
+}
+function is_where_estrategia_por_grupo(){
+    global $user;
+    if($user->uid==1){
+        return 1;
+    }
+    if(isset($user->og_groups) && !empty($user->og_groups)){
+        return 1;
+    }
+    return 0;
+}
+function get_where_estrategia_por_grupo($aurrizkia_in,$my_type){
+    global $user;
+    //AVISO::::por ahora que todos vean todo
+    //return '';
+    //
+    /*if($user->uid==1){
+        return '';
+    }
+    if(isset($user->og_groups) && !empty($user->og_groups)){
+        $group_nid_array=array_keys($user->og_groups);
+        return $aurrizkia.".grupo_nid IN(".implode(",",$group_nid_array).")";
+    }*/
+     $my_grupo=og_get_group_context();
+      //
+      $where=array();
+      if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $aurrizkia=$aurrizkia_in;
+            return "(".$aurrizkia.".grupo_seguimiento_nid = ".$my_grupo->nid.")";
+      }
+    return '';
+}
+function estrategia_is_grupo_estrellas(){
+    $my_grupo=og_get_group_context();
+    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        //if(empty($my_grupo->og_private)){
+            if(estrategia_is_grupo_publico($my_grupo)){
+                return 1;
+            }
+        //}    
+    }
+    return 0;  
+}
+//intelsat-2016
+function estrategia_is_grupo_publico($my_grupo_in='',$konp=29,$is_publico_colaboratico=0){
+    if(empty($my_grupo_in)){
+        $my_grupo=og_get_group_context();
+    }else{
+        $my_grupo=$my_grupo_in;
+    }
+    //
+    if(isset($my_grupo->taxonomy)){
+        foreach($my_grupo->taxonomy as $tid=>$term){
+            //AVISO::::vid=6 Tipo de grupo
+            if(isset($term->vid) && !empty($term->vid) && $term->vid==6){
+                /*AVISO::::
+                tid=27 Collaboration
+                tid=28 Private
+                tid=29 Public
+                */
+                //intelsat-2016
+                if($is_publico_colaboratico){
+                    if(in_array($term->tid,array(27,29))){
+                        return 1;
+                    }
+                }else{
+                    if($term->tid==$konp){
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+function estrategia_node_delete_confirm_form_alter(&$form,&$form_state,$form_id,$node){
+   estrategia_form_acess($form,$form_state, $form_id);
+   if($node->type=='estrategia'){
+       $form['#redirect']='estrategias';
+   }
+}
+function estrategia_comment_form_alter(&$form, &$form_state, $form_id){
+   estrategia_form_acess($form,$form_state, $form_id);
+}
+function estrategia_form_acess(&$form,&$form_state, $form_id){
+    //if(in_array($form_id,array('node_delete_confirm','comment_form'))){
+    if(in_array($form_id,array('node_delete_confirm'))){
+        $nid=$form['nid']['#value'];
+        $node=node_load($nid);
+        if(isset($node->nid) && !empty($node->nid)){
+            if(in_array($node->type,array('estrategia','despliegue','decision','informacion'))){
+                //if(!is_administrador_grupo()){
+                if(!estrategia_is_admin_content()){    
+                    drupal_access_denied();
+                    exit();
+                }
+            }
+        }
+    }
+}
+function estrategia_valor_reto_read_textfield($node){
+    $html=array();
+    $html[]='<div id="edit-valor-reto-wrapper" class="form-item form-item-textfield">';
+    $html[]='<label for="edit-valor-reto">'.t('Challenge Value').':</label>';
+    $html[]='<input type="text" class="form-text" readonly="readonly" value="'.$node->valor_reto.'" style="width:45px;" id="edit-valor-reto" name="valor_reto" maxlength="128">';
+    $html[]='</div>';
+    return implode('',$html);
+}
+function estrategia_is_admin_content(){
+    return is_administrador_grupo(1);
+}
+function estrategia_get_status_color($node,$field='fecha_cumplimiento'){
+    if(isset($node->$field) && !empty($node->$field)){
+        $fecha_cumplimiento_array=array_values($node->$field);
+        $fecha=implode('-',$fecha_cumplimiento_array);
+        //return estrategia_get_status_fecha_control_color($fecha);
+        return estrategia_get_status_fecha_control_color_html($fecha,$node->no_control_date);
+    }
+    return '';
+}
+function estrategia_convertir_data_row($arbol){
+    if(count($arbol)>0){
+        $result=array();
+        foreach($arbol as $i=>$row){
+            $result[$i]=$row;
+            $color_value=$result[$i][1];
+            if(!empty($color_value)){
+                $result[$i][1]=array('data'=>'&nbsp;','class'=>'td_estrategia_'.$color_value);
+            }else{
+                $result[$i][1]='';
+            }                    
+        }
+        return $result;
+    }
+    return $arbol;
+}
+function estrategia_dias_restantes($fecha_final) {  
+        $fecha_actual = date("Y-m-d");  
+        $s = strtotime($fecha_final)-strtotime($fecha_actual);  
+        $d = intval($s/86400);  
+        $diferencia = $d;  
+        return $diferencia;  
+}
+function estrategia_get_status_fecha_control_color($fecha,$no_control_date=0){
+    if(empty($no_control_date)){
+        $dias=estrategia_dias_restantes($fecha);
+        //print $dias.'<BR>';
+        if($dias>0){
+            if($dias>30){
+                return 'green';
+            }else if($dias>=15 && $dias<=30){
+                return 'yellow';
+            }else if($dias>=8 && $dias<=14){
+                return 'orange';
+            }else if($dias>=1 && $dias<=7){
+                return 'red';
+            }
+        }
+    }
+    //gemini-2014
+    //return '';
+    return 'white';
+}
+function estrategia_get_status_fecha_control_color_html($fecha,$no_control_date=0){
+    $color_value=estrategia_get_status_fecha_control_color($fecha,$no_control_date);    
+    if(!empty($color_value)){
+        $title=t('No Control Date');
+        if(empty($no_control_date)){
+            //intelsat-2015
+            $title=t('Control Date').': '.estrategia_inc_set_fecha_by_language($fecha);
+        }
+        /*if($title=='1970-1-1'){
+            $title='';
+        }*/
+        $html=array();
+        $html[]='<div class="div_estrategia_'.$color_value.'" title="'.$title.'">';
+        $html[]='&nbsp;';
+        $html[]='</div>';    
+        return implode('',$html);
+    }
+    return '';
+}
+function estrategia_add_div_actions($content){
+    return add_div_actions($content,1,'estrategia_div_actions');
+}
+function estrategia_is_arbol_estrategico(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='estrategias'){
+        $param1=arg(1);    
+        if(!empty($param1) && $param1=='arbol_estrategico'){
+            return 1;
+        }
+    }    
+    return 0;
+}
+function estrategia_edit_link($node){
+    return hontza_item_edit_link($node);
+}
+function estrategia_comment_link($node){
+    return hontza_item_comment_link($node);
+}
+function estrategia_delete_link($node){
+    return hontza_item_delete_link($node);
+}
+//intelsat-2015
+function estrategia_get_opciones_item_style(){
+    return ' style="margin-bottom:20px;"';
+}
+//intelsat-2015
+function estrategia_get_my_camino_style(){
+    return ' style="margin:0;"';
+}
+//intelsat-2015
+function estrategia_is_ficha_tabla(){
+    return hontza_canal_rss_is_fuente_ficha_tabla();
+}

@@ -1,0 +1,181 @@
+<?php
+
+/**
+ * Implementation of hook_menu().
+ */
+function stored_views_menu() {
+  $items = array();
+  $items['stored-views/%stored_views_id/delete'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('stored_views_delete_confirm', 1),
+    'access callback' => 'user_access',
+    'access arguments' => array('manage stored views'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function stored_views_perm() {
+  return array('manage stored views');
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function stored_views_block($op = 'list', $delta = 0) {
+  switch ($op) {
+    case 'list':
+      $blocks = array();
+      $blocks['save']['info'] = t('Save current view block');
+      $blocks['save']['cache'] = BLOCK_CACHE_GLOBAL;
+      return $blocks;
+    case 'view':
+      if ($delta == 'save') {
+         return _stored_views_block_save();
+      }
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function stored_views_theme() {
+  return array(
+    'stored_views_form' => array(
+      'arguments' => array('form' => array()),
+    )
+  );
+}
+
+/**
+ * Theme function for stored_views_form().
+ */
+function theme_stored_views_form($form) {
+  return drupal_render($form);
+}
+
+/**
+ * Create a save form.
+ */
+function stored_views_form($form_state){
+  $form = array();
+  //gemini
+  $form['description']['#value'] = '<h1 class="title">'. t('Save Search') .'</h1>';
+  //
+  $form['nombre'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#size' => 15,
+    '#required' => TRUE,  
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+  );
+  $form['#submit'][] = 'stored_views_form_submit';
+  //gemini
+  $form['#validate'][] = 'my_stored_views_validate';
+  //
+  return $form;
+}
+
+/**
+ * Submit stored_views_form.
+ */
+function stored_views_form_submit($form, &$form_state) {
+  global $user;
+  $busqueda = _get_busqueda();
+  //
+  $node = new stdClass();
+  $node->type = 'canal_busqueda';
+  $node->title = $form_state['values']['nombre'];
+  $node->uid = $user->uid;
+  $node->field_canal_busqueda_busqueda[0]['value'] = $busqueda;  
+  $node->field_fuente_canal[0]['value']= 'Search';
+  node_save($node);
+}
+
+/**
+ * Helper function for creating a save block.
+ */
+function _stored_views_block_save() {
+
+  if (user_access('manage stored views')) {
+    //gemini
+	//if ($_GET['search']){
+    if(my_is_busqueda()){
+      //  
+      global $user;
+      $busqueda = _get_busqueda();
+      //gemini-2014
+      //db_query("SELECT * FROM {content_type_canal_busqueda} cb INNER JOIN {node} n ON n.nid = cb.nid WHERE field_canal_busqueda_busqueda_value LIKE '%s' AND n.uid = %d", $busqueda, $user->uid);
+      db_query("SELECT * FROM {content_type_canal_busqueda} cb INNER JOIN {node} n ON n.nid = cb.nid WHERE field_canal_busqueda_busqueda_value LIKE '%s'", $busqueda);      
+      if (!db_affected_rows()){	  
+        $content = drupal_get_form('stored_views_form');
+      }
+      else{
+        //gemini-2014 
+        //$content = t('This search is already saved');
+      }
+      return array(
+        'subject' => '',
+        'content' => $content,
+      );
+    }
+  }
+}
+
+function _get_busqueda(){
+  /*if(hontza_solr_is_solr_activado()){
+      $result=hontza_solr_get_busqueda();
+      return $result;
+  }*/  
+  $query = array();
+  foreach ($_GET as $k => $v) {    
+	if ($k != 'q') {
+      //gemini
+	  //if(in_array($k,array('is_my_submit','is_carpeta_noticia_publica','is_carpeta_noticia_destacada'))){
+          if(in_array($k,array('is_my_submit'))){
+            continue;
+          }
+          //
+          if(in_array($k,array('fecha_inicio','fecha_fin'))){
+	  	//$query[] = "$k=".get_fecha_filter($k,0);
+	  	if(is_array($_GET[$k])){
+			foreach($_GET[$k] as $name=>$value){			
+				//print $k."[".$name."]=".$value."<BR>";
+				$query[] = $k."[".$name."]=".$value;
+			}
+		}
+	  }else{
+	  //	
+		$query[] = "$k=$v";
+          }
+	}
+  }
+  return $_GET['q'].'?'.implode('&', $query);
+}
+
+/**
+ *Implementation of hook_form_alter
+ */
+function stored_views_form_alter(&$form, &$form_state, $form_id){
+ 
+  if($form_id=='views_exposed_form'){
+   // $form['#parameters'][1]['view']->exposed_input['body']=$form['#parameters'][1]['view']->exposed_input['title'];
+  //dprint_r($form);
+  }
+}
+//gemini
+function my_stored_views_validate($form,&$form_state){
+	$nombre=$form_state['values']['nombre'];
+	if(!empty($nombre)){
+		$node=node_load(array('type'=>'canal_busqueda','title'=>$nombre));
+		if(isset($node->nid) && !empty($node->nid)){
+			form_set_error('titulo',hontza_solr_search_get_nombre_busqueda_repetido_mensaje());
+		}
+	}
+}

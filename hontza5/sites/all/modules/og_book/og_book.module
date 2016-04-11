@@ -1,0 +1,201 @@
+<?php
+/**
+ * Implementation of hook_help().
+ */
+function og_book_help($path, $arg) {
+  switch ($path) {
+    case 'admin/modules#description':
+      return t('Organic group books.');
+      break;
+    case 'admin/modules#name':
+      return 'og_book';
+      break;
+    case 'admin/help#modulename':
+      return t("The Organic group Book module restricts the outline to books within your groups.");
+      break;
+    default: return null;
+  }
+}
+
+function og_book_perm(){
+  return array('edit any book structure', 'edit book structure', 'access books outside groups');
+}
+
+function og_book_form_alter(&$form, &$form_state, &$form_id) {
+
+  if (isset($form['type']) && isset($form['#node']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    // Permission check
+    if(!user_access('edit any book structure')){
+
+      $node = $form['#node'];
+      global $user;
+  
+      $subs = og_get_subscriptions($user->uid);
+  
+      $result = db_query("SELECT b.nid AS bid, oga.group_nid AS gnid from {book} b LEFT JOIN {og_ancestry} oga ON b.nid = oga.nid");
+      while($row = db_fetch_array($result)) {
+        if($row['gnid'] != NULL) {
+          if(!$subs[$row['gnid']]) {
+            unset($form['book']['bid']['#options'][$row['bid']]);
+          } 
+        }
+      }
+  
+      $nid = isset($node->nid) ? $node->nid : 'new';  
+      if (!user_access('create new books') && user_access('create personal books')  && ($nid == 'new' || ($nid != $node->book['original_bid']))) {
+        $form['book']['bid']['#options'] = array($nid  => '<'. t('create new book') .'>') + $form['book']['bid']['#options'];
+      }
+    }
+
+  }
+
+}
+
+/**
+ * Implementation of hook_form_alter(). Restrict the book list to user's og books
+ * if user is not granted 'access books outside og' permission
+ *
+ * @see _book_add_form_elements()
+ */
+/*
+function og_book_vamo_form_alter(&$form, &$form_state, &$form_id) {
+// if form is an edit form, an og content type and book content type then go ahead
+if (isset($form['#node']) && $form['#node']->type .'_node_form' == $form_id && og_is_group_post_type($form['#node']->type) && isset($form['book'])) {
+  global $user;
+    // user is part of groups and permission is limited to og books...
+    if (isset($user->og_groups) && count($user->og_groups)>0) {
+        $restricted_books=Array();
+        $restricted_books=og_book_vamo_restricted_groups($user);
+        if (!user_access('access books outside og')) {
+            // restrict group list to the previous list; if no book is present, <none> is default so no empty array warning will be sent out.
+      foreach ($form['book']['bid']['#options'] as $key => $value ) {
+        if (is_numeric($key) && $key > 0 && (!in_array($key, array_keys($restricted_books)))) {
+          unset($form['book']['bid']['#options'][$key]);
+        }
+      }
+    }
+    // in any case, update title of "og books" with group name, this gives more information to users
+  foreach ($restricted_books as $book_nid => $og_nid) {
+    $current_book_title=$form['book']['bid']['#options'][$book_nid];
+    $current_og_title=$form['og_nodeapi']['visible']['og_groups']['#options'][$og_nid];
+    $form['book']['bid']['#options'][$book_nid]=$current_og_title .' - '. $current_book_title;
+  }
+  }
+}
+}
+*/
+function og_book_link_alter (&$links, $node) {
+  global $user;
+  if ($links['book_add_child'] && ($node->book_manager >= 4) && $node->uid != $user->uid) {
+    unset ($links['book_add_child']);
+  }
+}
+
+/**
+* Check a user's membership in a group.
+* spearhead93: depends on jquerymenu (shall we rely on this?)
+* @param gid
+*  An integer or a node object representing the group node.
+* @param $include_admins
+*  Whether or not site admins are considered members.
+* @param $uid
+*   Pass a user id, or pass NULL in order to check current user.
+*/
+function og_book_block($op = 'list', $delta = 0) {
+switch ($op) {
+    case 'list':
+        $block[0]["info"] = t("OG Book Block in current group");
+        $block[1]["info"] = t("OG Book Block (all books created in user's og context)");
+        return $block;
+        break;
+    case 'view':
+        global $user;
+        $block_content='';
+        switch ($delta) {
+            case '0':
+                if ($group_node = og_get_group_context()) {
+                    $gid = $group_node->nid;
+                    // only members can see block or if user has necessary perms
+                    if (in_array($gid, array_keys($user->og_groups)) || user_access('access public books')) {
+                        $sql = "SELECT DISTINCT(b.bid) FROM {og_ancestry} oa INNER JOIN {book} b ON b.nid = oa.nid WHERE oa.group_nid='%d'";
+                        $query = db_query($sql, $gid);
+                        while ($book = db_fetch_object($query)) {
+                            $tree = menu_tree_all_data(book_menu_name($book->bid));
+                            $trail = menu_get_active_trail();
+                            $block_content .= theme('menu_creation_by_array', $tree, $trail);
+                        }
+                    }
+                    $block['subject'] = $group_node->title .' Group Content';
+                    $block['content'] = $block_content;
+                }
+                break;
+            case '1':
+                $gids = array_keys($user->og_groups);
+                if (($gids) || (user_access('access public books'))) {
+                    $sql = "SELECT DISTINCT(b.bid),oa.group_nid FROM {og_ancestry} oa INNER JOIN ({book} b INNER JOIN {node} n ON n.nid = b.nid) ON b.nid = oa.nid WHERE oa.group_nid IN (". db_placeholders($gids, 'int') .") ORDER BY n.title ASC";
+                    //            $sql = "SELECT DISTINCT(b.bid) FROM {og_ancestry} oa INNER JOIN {book} b ON b.nid = oa.nid WHERE oa.group_nid IN (". db_placeholders($gids,'int') .")";
+                    $query = db_query($sql, $gids);
+                    while ($book = db_fetch_object($query)) {
+                        $tree = menu_tree_all_data(book_menu_name($book->bid));
+                        $trail = menu_get_active_trail();
+                        $block_content .= theme('menu_creation_by_array', $tree, $trail);
+                    }
+                    $block['subject'] = $group_node->title .' Group Content';
+                    $block['content'] = $block_content;
+                }
+                break;
+        }
+        if ($block_content == '') {
+            return;
+        }
+        return $block;
+    }
+}
+
+/**
+* Check a user's membership in a group.
+* spearhead93: depends on jquerymenu (shall we rely on this?)
+* @param $user
+*  A user object
+* @return Array restricted_books
+ * Books accessible by user within og context
+*/
+function og_book_restricted_groups($user) {
+    $ingroups=implode(',', array_keys($user->og_groups));
+    $sql = "SELECT DISTINCT (b.bid),(oa.group_nid) FROM {og_ancestry} oa INNER JOIN {book} b ON b.nid = oa.nid WHERE oa.group_nid IN ('%s')";
+    $result = db_query($sql, $ingroups);
+    $restricted_books=Array();
+    while ($row = db_fetch_array($result)) {
+        $restricted_books[$row['bid']]=$row['group_nid'];
+    }
+    return $restricted_books;
+}
+
+
+/**
+ * Implementation of hook_nodeapi().
+ * Add some consistency in case of:
+ * - user selecting a specific og
+ * - user selecting a book outside selected og
+ */
+function og_book_nodeapi(&$node, $op) {
+    global $user;
+    switch ($op) {
+    case 'validate':
+       if (og_is_group_post_type($node->type) && !user_access('access books outside og') && count($node->og_groups)>0 && isset($node->book)) {
+
+    $sql = "SELECT oa.group_nid FROM {og_ancestry} oa INNER JOIN {book} b ON b.nid = oa.nid WHERE b.nid=%d";
+    $result = db_result(db_query($sql, $node->book['bid']));
+    $ingroup=0;
+    foreach ($node->og_groups as $key => $value) {
+        if ($value>0) {
+            ($key==$result)?$ingroup=1:'';
+        }
+    }
+    ($ingroup==0)? form_set_error('book][bid', t('Error on selected book: the book is not part of the target group content.', array('@join' => url('og')))):'';
+      }
+      break;
+    }
+
+}
+

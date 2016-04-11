@@ -1,0 +1,3 @@
+<?php print l(t('Volver a panel de gestión'),'gestion',array('attributes'=>array('class'=>'back')))?>
+<?php print l(t('Crear nuevo usuario'),'admin/user/user/create',array('attributes'=>array('class'=>'add')))?>
+

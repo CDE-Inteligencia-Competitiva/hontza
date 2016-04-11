@@ -1,0 +1,970 @@
+<?php
+require_once('red_servidor.canal.inc.php');
+require_once('red_servidor.facilitador.inc.php');
+require_once('red_servidor.grupo.inc.php');
+require_once('red_servidor.login.inc.php');
+require_once('red_servidor.canal.node.view.inc.php');
+require_once('red_servidor.fix.inc.php');
+require_once('red_servidor.fuente.multiple.inc.php');
+require_once('red_servidor.canal.multiple.inc.php');
+require_once('red_servidor.facilitador.node.view.inc.php');
+require_once('red_servidor.facilitador.multiple.inc.php');
+//intelsat-2015
+require_once('red_servidor.validar_usuario.network.inc.php');
+function red_servidor_perm() {
+    return array('access red_servidor');
+}
+function red_servidor_menu() {
+    $items=array(); 
+    $items['red_servidor/guardar_fuente_hoja']=array(
+        'title'=>'Saving shared source',
+        'page callback'=>'red_servidor_guardar_fuente_hoja_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_fuentes_get_contents']=array(
+        'title'=>'Copy server sources',
+        'page callback'=>'red_servidor_fuentes_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/guardar_canal_hoja']=array(
+        'title'=>'Saving shared channel',
+        'page callback'=>'red_servidor_guardar_canal_hoja_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_canales_get_contents']=array(
+        'title'=>'Copy channels from Network server',
+        'page callback'=>'red_servidor_canales_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/guardar_facilitador_hoja']=array(
+        'title'=>'Saving shared facilitator',
+        'page callback'=>'red_servidor_guardar_facilitador_hoja_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_facilitadores_get_contents']=array(
+        'title'=>'Copy facilitators from Network server',
+        'page callback'=>'red_servidor_facilitadores_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_subdomain_options_get_contents']=array(
+        'title'=>'Get subdomain options',
+        'page callback'=>'red_servidor_subdomain_options_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/guardar_grupo_hoja']=array(
+        'title'=>'Saving shared group',
+        'page callback'=>'red_servidor_grupo_guardar_grupo_hoja_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_grupo_get_user_grupos_red_alerta_get_contents']=array(
+        'title'=>'My Groups Network',
+        'page callback'=>'red_servidor_grupo_get_user_grupos_red_alerta_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/authenticate_red_alerta/%']=array(
+        'title'=>'Login network user',
+        'page callback'=>'red_servidor_login_authenticate_red_alerta_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_grupo_get_user_grupos_red_alerta_mis_grupos_get_contents']=array(
+        'title'=>'My Groups Network',
+        'page callback'=>'red_servidor_grupo_get_user_grupos_red_alerta_mis_grupos_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/user_change']=array(
+        'title'=>'User Network change',
+        'page callback'=>'red_servidor_grupo_user_change_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_grupo_get_user_grupos_otros_subdominios_get_contents']=array(
+        'title'=>'My Groups Network',
+        'page callback'=>'red_servidor_grupo_get_user_grupos_otros_subdominios_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/add_user_group']=array(
+        'title'=>'Add user network group',
+        'page callback'=>'red_servidor_grupo_add_user_group_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/red_servidor_grupo_get_subdominio_array_get_contents']=array(
+        'title'=>'Subdomains',
+        'page callback'=>'red_servidor_grupo_get_subdominio_array_get_contents_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/mensaje_bienvenida_red_alerta']=array(
+        'title'=>'Welcome',
+        'page callback'=>'red_servidor_grupo_mensaje_bienvenida_red_alerta_callback',    
+        'access arguments' => array('access content'),
+    );
+    $items['red_servidor/guardar_no_compartir_grupo_hoja']=array(
+        'title'=>'Disconnect from Network',
+        'page callback'=>'red_servidor_grupo_guardar_no_compartir_grupo_hoja_callback',    
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/fix_sources_and_channels_creator']=array(
+        'title'=>'Script-server sources and channels creator',
+        'page callback'=>'red_servidor_fix_sources_and_channels_creator_callback',    
+        'access arguments' => array('root')
+    );
+     $items['red_servidor/fix_subdominio']=array(
+        'title'=>'Script-subdomains',
+        'page callback'=>'red_servidor_fix_subdominio_callback',    
+        'access arguments' => array('root')
+    );     
+    $items['red_servidor/guardar_fuente_hoja_multiple']=array(
+        'title'=>'Saving shared sources',
+        'page callback'=>'red_servidor_guardar_fuente_hoja_multiple_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/guardar_canal_hoja_multiple']=array(
+        'title'=>'Saving shared channels',
+        'page callback'=>'red_servidor_guardar_canal_hoja_multiple_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/contar_fuente_numero_de_descargas']=array(
+        'title'=>'Download source counter',
+        'page callback'=>'red_servidor_contar_fuente_numero_de_descargas_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/fuente_existe_en_el_servidor']=array(
+        'title'=>'Source',
+        'page callback'=>'red_servidor_fuente_existe_en_el_servidor_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/fuente_multiple_existe_en_el_servidor']=array(
+        'title'=>'Sources',
+        'page callback'=>'red_servidor_fuente_multiple_existe_en_el_servidor_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/canal_existe_en_el_servidor']=array(
+        'title'=>'Channel',
+        'page callback'=>'red_servidor_canal_existe_en_el_servidor_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/canal_multiple_existe_en_el_servidor']=array(
+        'title'=>'Channels',
+        'page callback'=>'red_servidor_canal_multiple_existe_en_el_servidor_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/facilitador_existe_en_el_servidor']=array(
+        'title'=>'Channel',
+        'page callback'=>'red_servidor_facilitador_existe_en_el_servidor_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/facilitador_multiple_existe_en_el_servidor']=array(
+        'title'=>'Channels',
+        'page callback'=>'red_servidor_facilitador_multiple_existe_en_el_servidor_callback',   
+        'access callback' => TRUE,
+    );
+     $items['red_servidor/guardar_facilitador_hoja_multiple']=array(
+        'title'=>'Saving shared facilitators',
+        'page callback'=>'red_servidor_guardar_facilitador_hoja_multiple_callback',   
+        'access callback' => TRUE,
+    );
+     $items['red_servidor/borrarme_del_servidor']=array(
+        'title'=>'Delete',
+        'page callback'=>'red_servidor_borrarme_del_servidor_callback',   
+        'access callback' => TRUE,
+    );
+     $items['red_servidor/probar_borrar_usuario']=array(
+        'title'=>'Delete',
+        'page callback'=>'red_servidor_probar_borrar_usuario_callback',   
+        'access callback' => TRUE,
+    );
+      $items['red_servidor/simular_subdominios_erroneos']=array(
+        'title'=>'Groups',
+        'page callback'=>'red_servidor_grupo_simular_subdominios_erroneos_callback',   
+        'access callback' => TRUE,
+    );
+    //intelsat-2015
+    $items['red_servidor/validar_usuario_network']=array(
+        'title'=>'User',
+        'page callback'=>'red_servidor_validar_usuario_network_callback',   
+        'access callback' => TRUE,
+    );
+    //intelsat-2016
+    $items['red_servidor/validar_usuario_mail_network_para_compartir']=array(
+        'title'=>'User',
+        'page callback'=>'red_servidor_validar_usuario_mail_network_para_compartir_callback',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/validar_usuario_network/save_user_subdominios_network_array']=array(
+        'title'=>'User',
+        'page callback'=>'red_servidor_validar_usuario_network_save_user_subdominios_network_array',   
+        'access callback' => TRUE,
+    );
+    $items['red_servidor/validar_usuario_network/registrados']=array(
+        'title'=>'Users',
+        'page callback'=>'red_servidor_validar_usuario_network_registrados_callback',   
+        'access arguments' =>array('root'),
+    );
+    $items['red_servidor/validar_usuario_network/registrados_todos']=array(
+        'title'=>'Users',
+        'page callback'=>'red_servidor_validar_usuario_network_registrados_callback',   
+        'access arguments' =>array('root'),
+    );
+    $items['red_servidor/facilitador/download_servicios_experto']=array(
+        'title'=>'Experts',
+        'page callback'=>'red_servidor_facilitador_download_servicios_experto_callback',   
+        'access callback' =>TRUE,
+    );
+    $items['red_servidor/facilitador/save_servicios_experto']=array(
+        'title'=>'Experts',
+        'page callback'=>'red_servidor_facilitador_save_servicios_experto_callback',   
+        'access callback' =>TRUE,
+    );
+    return $items;
+}
+function red_servidor_guardar_fuente_hoja_callback(){
+    if(isset($_POST['fuente_enviar']) && !empty($_POST['fuente_enviar'])){
+        $fuente_enviar=unserialize(base64_decode($_POST['fuente_enviar']));
+        $row=red_servidor_get_red_servidor_fuente($fuente_enviar);
+        if(isset($row->id) && !empty($row->id)){
+            return 'The source exist in the network';
+        }else{
+            /*$local_nid=$fuente_enviar->nid; 
+            $local_vid=$fuente_enviar->vid; 
+            $local_uid=$fuente_enviar->uid;
+            $local_group_nid=0;
+            $local_group_nid=red_servidor_get_grupo_nid_by_node($fuente_enviar);
+            $fecha=time();
+            $sareko_id=$fuente_enviar->sareko_id;
+            $node=red_servidor_preparar_fuente($fuente_enviar,$grupo_servidor);
+            if(is_super_admin()){
+                red_servidor_node_save($node);
+            }else{
+                node_save($node);
+            }
+            $vid=$node->vid;
+            $nid=$node->nid;
+            $uid=$node->uid;
+            $group_nid=$grupo_servidor->nid;
+            $sql=sprintf('INSERT INTO {red_servidor_fuente}(local_nid,local_vid,local_uid,local_group_nid,fecha,sareko_id,vid,nid,uid,group_nid) VALUES(%d,%d,%d,%d,%d,"%s",%d,%d,%d,%d)',$local_nid,$local_vid,$local_uid,$local_group_nid,$fecha,$sareko_id,$vid,$nid,$uid,$group_nid);
+            db_query($sql);*/
+            red_servidor_guardar_fuente_enviar($fuente_enviar);
+        }
+    }
+    //return t('Shared source saved').' '.date('Y-m-d H:i:s');
+    //drupal_set_message(t('Shared source saved').' '.date('Y-m-d H:i:s'));
+    //drupal_set_message(t('Source %fuente_title shared',array('%fuente_title'=>$fuente_enviar->title)));
+    drupal_goto('red_publica/fuentes');
+}
+function red_servidor_preparar_fuente($fuente_enviar,&$grupo_servidor){
+    $node=$fuente_enviar;
+    $user_local_uid='';
+    if(isset($fuente_enviar->user_local) && !empty($fuente_enviar->user_local)){
+        $user_local_uid=red_servidor_fuente_enviar_get_uid($fuente_enviar->user_local);
+    }
+    unset($fuente_enviar->user_local);
+    unset($node->nid);
+    unset($node->vid);
+    unset($node->created);
+    unset($node->changed);
+    $node->uid=1;
+    if(!empty($user_local_uid)){
+        $node->uid=$user_local_uid;
+    }
+    unset($node->sareko_id);
+    $grupo_servidor=red_servidor_get_grupo_fuentes();
+    
+    if(isset($node->og_groups)){
+        unset($node->og_groups);
+    }
+    if(isset($node->og_groups_both)){
+        unset($node->og_groups_both);
+    }
+    if(isset($grupo_servidor->nid) && !empty($grupo_servidor->nid)){
+        $grupo_servidor_nid=$grupo_servidor->nid;
+        $node->og_groups[$grupo_servidor_nid]=$grupo_servidor_nid;
+        $node->og_groups_both[$grupo_servidor_nid]=$grupo_servidor->title;
+    }
+    return $node;
+}
+function red_servidor_get_grupo_fuentes(){
+    return red_compartir_get_grupo_fuentes();
+}
+function red_servidor_get_grupos(){
+    return red_compartir_get_grupos();
+}
+function red_servidor_get_red_servidor_fuente($fuente_enviar){
+    $result=array();
+    $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_fuente} WHERE local_nid=%d AND local_vid=%d AND sareko_id="%s"',$fuente_enviar->nid,$fuente_enviar->vid,$fuente_enviar->sareko_id));
+    //print 'red_servidor_get_red_servidor_fuente (sql)='.$sql;exit();
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    //
+    $my_result=new stdClass();
+    return $my_result;
+}
+function red_servidor_get_grupo_nid_by_node($node){
+    if(isset($node->og_groups) && !empty($node->og_groups)){
+        $keys=array_keys($node->og_groups);
+        if(isset($keys[0])){
+            return $keys[0];
+        }
+    }
+    return 0;
+}
+function red_servidor_fuentes_get_contents_callback(){
+    $fuentes_array=red_servidor_get_red_servidor_fuentes_array();
+    //echo print_r($fuentes_array,1);exit();
+    //print serialize($fuentes_array);
+    $result=array();
+    $result['fuentes_array']=$fuentes_array;
+    $result['user_autocomplete_options']=red_servidor_get_user_autocomplete_options();
+    print serialize($result);
+    exit();
+}
+function red_servidor_get_red_servidor_fuentes_array($local_nid=''){
+    $result=array();
+    $where=array();
+    $where[]='1';
+    if(!empty($local_nid)){
+        $where[]='local_nid='.$local_nid;
+    }
+    $grupo_shared=red_servidor_get_grupo_shared();
+    if(isset($grupo_shared->nid) && !empty($grupo_shared->nid)){
+        $where[]='og_ancestry.group_nid='.$grupo_shared->nid;
+    }
+    //$where[]='term_data.vid=1';
+    $is_node_type=1;
+    //
+    $filtro=array();
+    if(isset($_REQUEST['red_alerta_filtro']) && !empty($_REQUEST['red_alerta_filtro'])){
+        $filtro=unserialize(base64_decode($_REQUEST['red_alerta_filtro']));
+        if(!empty($filtro)){
+            foreach($filtro as $f=>$v){
+                switch($f){
+                    case 'fuente_title':
+                        $where[]="n.title LIKE '%%".$v."%%'";
+                        break;
+                    case 'node_type':
+                        $where[]="n.type='".$v."'";
+                        $is_node_type=0;
+                        break;
+                    /*case 'sareko_id':
+                        $where[]="f.sareko_id='".$v."'";                        
+                        break;
+                    case 'clasificacion':
+                        $where[]="term_data.tid=".$v;                        
+                        break;*/
+                    case 'region':
+                        $v=red_regiones_get_region_decode_value($v);                        
+                        if(!empty($v)){
+                            $where[]='content_field_fuente_region.field_fuente_region_value LIKE "%%#'.$v.'#%%"';
+                        }    
+                        break;
+                }
+            }
+        }
+    }
+    if($is_node_type){
+        $where[]='n.type IN("supercanal","fuentedapper")';
+    }
+    //
+    /*$sql='SELECT f.* 
+        FROM {node} n
+        LEFT JOIN {red_servidor_fuente} f ON n.vid=f.vid
+        LEFT JOIN {term_node} term_node ON n.vid=term_node.vid 
+        LEFT JOIN {term_data} term_data ON term_node.tid=term_data.tid 
+        WHERE '.implode(' AND ',$where);*/
+    $sql='SELECT f.id,
+    f.local_nid,
+    f.local_vid,
+    f.local_uid,
+    f.local_group_nid,
+    f.fecha,
+    f.vid,
+    f.uid,
+    f.group_nid,
+    f.sareko_id,
+    f.subdominio,
+        n.nid,
+        n.title AS fuente_title,
+        content_field_fuente_numero_de_descargas.field_fuente_numero_de_descargas_value AS numero_de_descargas 
+        FROM {node} n
+        LEFT JOIN {red_servidor_fuente} f ON n.vid=f.vid
+        LEFT JOIN {content_field_fuente_region} content_field_fuente_region ON n.vid=content_field_fuente_region.vid
+        LEFT JOIN {og_ancestry} ON n.nid=og_ancestry.nid
+        LEFT JOIN {content_field_fuente_numero_de_descargas} content_field_fuente_numero_de_descargas ON n.vid=content_field_fuente_numero_de_descargas.vid 
+        WHERE '.implode(' AND ',$where).' ORDER BY n.created DESC';
+    /*if(user_access('root')){
+    print $sql;exit();
+    }*/
+    $res=db_query($sql);
+    $kont=0;
+    while($row=db_fetch_object($res)){
+        $node=node_load($row->nid);
+        if(isset($node->nid) && !empty($node->nid)){
+            $result[$kont]=$row;
+            if(empty($result[$kont]->id)){
+                $result[$kont]->id=$row->nid.'_servidor';
+            }
+            $result[$kont]->fuente_region=red_regiones_get_region_decode_value($node->field_fuente_region[0]['value']);
+            $result[$kont]->fuente_calidad=hontza_get_fuente_stars_value($node,'calidad',0);
+            $result[$kont]->fuente_exhaustividad=hontza_get_fuente_stars_value($node,'exhaustividad',0);
+            $result[$kont]->fuente_actualizacion=hontza_get_fuente_stars_value($node,'actualizacion',0);
+            $result[$kont]->fuente_rating_suma=$result[$kont]->fuente_calidad+$result[$kont]->fuente_exhaustividad+$result[$kont]->fuente_actualizacion;
+            $result[$kont]->node=$node;
+            $result[$kont]->sareko_id_label=red_red_set_subdomain_name($row->sareko_id);
+            if(isset($row->local_uid) && !empty($row->local_uid)){
+                $user_local=red_servidor_fuente_get_user_local($row);
+            }else{
+                $user_local=red_servidor_fuente_get_user_servidor($node->uid);
+            }            
+            $result[$kont]->user_local=$user_local;
+            $result[$kont]->user_local_name='';
+            if(isset($user_local->name) && !empty($user_local->name)){
+                $result[$kont]->user_local_name=$user_local->name;
+            }
+            $result[$kont]->numero_de_descargas=red_servidor_fuente_get_numero_de_descargas($row);
+            $result[$kont]->node_view=node_view($node);
+            $result[$kont]->taxonomy_lang=red_servidor_get_taxonomy_lang($node->taxonomy);
+            $kont++;
+        }    
+    }
+    
+    /*if(user_access('root')){
+        echo print_r($result,1);
+        exit();
+    }*/
+    
+    //echo 'result===='.print_r($result,1);exit();
+    $result=red_servidor_fuentes_array_repasar_filtro($result,$filtro);    
+    return $result;
+}
+function red_get_servidor_fuente_nid($local_nid){
+    $fuentes_array=red_servidor_get_red_servidor_fuentes_array($local_nid);
+    if(count($fuentes_array)>0){
+        $row=$fuentes_array[0];
+        return $row->nid;
+    }
+    return '';
+}
+function red_servidor_node_save(&$node) {
+  // Let modules modify the node before it is saved to the database.
+  node_invoke_nodeapi($node, 'presave');
+  
+  global $user;
+
+  // Insert a new node.
+  $node->is_new = empty($node->nid);
+
+  if ($node->is_new || !empty($node->revision)) {
+    // When inserting a node, $node->log must be set because
+    // {node_revisions}.log does not (and cannot) have a default
+    // value.  If the user does not have permission to create
+    // revisions, however, the form will not contain an element for
+    // log so $node->log will be unset at this point.
+    if (!isset($node->log)) {
+      $node->log = '';
+    }
+  }
+  elseif (empty($node->log)) {
+    // When updating a node, however, avoid clobbering an existing
+    // log entry with an empty one.
+    unset($node->log);
+  }
+
+  // For the same reasons, make sure we have $node->teaser and
+  // $node->body set.
+  if (!isset($node->teaser)) {
+    $node->teaser = '';
+  }
+  if (!isset($node->body)) {
+    $node->body = '';
+  }
+
+  // Save the old revision if needed.
+  if (!$node->is_new && !empty($node->revision) && $node->vid) {
+    $node->old_vid = $node->vid;
+  }
+
+  $time = time();
+  if (empty($node->created)) {
+    $node->created = $time;
+  }
+  // The changed timestamp is always updated for bookkeeping purposes (revisions, searching, ...)
+  $node->changed = $time;
+
+  $node->timestamp = $time;
+  $node->format = isset($node->format) ? $node->format : FILTER_FORMAT_DEFAULT;
+
+  // Generate the node table query and the node_revisions table query.
+  if ($node->is_new) {
+    _node_save_revision($node, $user->uid);
+    drupal_write_record('node', $node);
+    db_query('UPDATE {node_revisions} SET nid = %d WHERE vid = %d', $node->nid, $node->vid);
+    $op = 'insert';
+  }
+  else {
+    drupal_write_record('node', $node, 'nid');
+    if (!empty($node->revision)) {
+      _node_save_revision($node, $user->uid);
+      db_query('UPDATE {node} SET vid = %d WHERE nid = %d', $node->vid, $node->nid);
+    }
+    else {
+      _node_save_revision($node, $user->uid, 'vid');
+    }
+    $op = 'update';
+  }
+
+  // Call the node specific callback (if any).
+  node_invoke($node, $op);
+  
+  red_servidor_node_invoke_nodeapi($node, $op);
+
+  // Update the node access table for this node.
+  node_access_acquire_grants($node);
+
+  // Clear the page and block caches.
+  cache_clear_all();
+}
+function red_servidor_node_invoke_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  $return = array();
+  foreach (module_implements('nodeapi') as $name) {
+    $function = $name .'_nodeapi';
+    //gemini-2014
+    if(!in_array($name,red_servidor_define_not_node_invoke_name_array())){       
+        $result = $function($node, $op, $a3, $a4);
+        if (isset($result) && is_array($result)) {
+          $return = array_merge($return, $result);
+        }
+        else if (isset($result)) {
+          $return[] = $result;
+        }
+    }    
+  }
+
+  return $return;
+}
+function red_servidor_define_not_node_invoke_name_array(){
+    $result=array('pathauto');
+    return $result;
+}
+function red_servidor_subdomain_options_get_contents_callback(){
+    $result=red_red_define_subdomain_options();
+    print serialize($result);
+    exit();
+}
+function red_servidor_fuentes_array_repasar_filtro($result_in,$filtro){
+    $result=array();
+    $fields=array('fuente_description','numero_de_descargas','user_local_name');
+    $star_fields=array('calidad','exhaustividad','actualizacion');
+    $fields=array_merge($fields,$star_fields);
+    if(!empty($result_in)){
+        $kont=0;
+        //$filtro['fuente_description']='dos';
+        foreach($result_in as $i=>$row){
+            $ok=1;
+            foreach($fields as $k=>$f){
+                    if(isset($filtro[$f]) && !empty($filtro[$f])){
+                        if(in_array($f,$star_fields)){
+                            $v=hontza_get_fuente_stars_value($row->node,$f,0);
+                            //print $v.'====='.$filtro[$f].'<BR>';
+                            if($v<$filtro[$f]){
+                                $ok=0;
+                                break;
+                            }
+                        }else if($f=='fuente_description'){
+                            $v=$filtro[$f];
+                            if(!red_servidor_is_description_like($v,$row->node)){
+                                $ok=0;
+                                break;
+                            }
+                        }else if($f=='user_local_name'){
+                            $v=$filtro[$f];
+                            if(!red_servidor_is_user_local_name_like($v,$row->user_local)){
+                                $ok=0;
+                                break;
+                            }
+                        }else if($f=='numero_de_descargas'){
+                            $rango=red_servidor_get_filtro_rango($filtro[$f]);
+                            $numero_de_descargas=(int) $row->numero_de_descargas;
+                            if($rango['end']=='+'){
+                                if(!($numero_de_descargas>=$rango['ini'])){
+                                    $ok=0;
+                                    break;
+                                }
+                            }else{
+                                if(!($numero_de_descargas>=$rango['ini'] && $numero_de_descargas<=$rango['end'])){
+                                    $ok=0;
+                                    break;
+                                }
+                            }
+                            //
+                        }       
+                    }                
+            }
+            if($ok){
+                $result[$kont]=$row;
+                $kont++;
+            }
+        }    
+    }
+    return $result;
+}
+function red_servidor_fuente_get_user_local($row){
+    /*if(isset($row->id) && !empty($row->id)){
+        $subdominio=red_get_subdominio_by_sareko_id($row->sareko_id);
+        if(!empty($subdominio)){
+            $url='http://'.$subdominio.'/red_compartir/red_compartir_fuente_get_user_local_get_contents/'.$row->local_uid;
+            $content=file_get_contents($url);
+            if(!empty($content)){
+                $content=red_compartir_grupo_decrypt_text($content);
+                $user_local=unserialize(base64_decode($content));
+                return $user_local;
+            }
+        }
+    }
+    $my_result=new stdClass();
+    return $my_result;*/
+    return red_compartir_fuente_get_user_local($row);
+}
+function red_servidor_fuente_get_numero_de_descargas($row){
+    /*$subdominio_array=red_servidor_grupo_get_subdominio_array('',1);
+    if(!empty($subdominio_array)){
+        $kont=0;
+        foreach($subdominio_array as $i=>$subdominio){
+            if(empty($subdominio)){
+                continue;
+            }
+            $konp=red_get_subdominio_by_sareko_id($row->sareko_id);
+            if($subdominio!=$konp){
+                if(!empty($subdominio)){
+                    $url='http://'.$subdominio.'/red_compartir/red_compartir_fuente_get_numero_de_descargas_get_contents/'.$row->nid;
+                    //if(user_access('root')){
+                    //    print $url.'<BR>';
+                    //}
+                    $content=file_get_contents($url);
+                    $content=trim($content);
+                    if(!empty($content)){
+                        $n=(int) $content;
+                        if(!empty($n)){
+                            //print $n;exit();
+                            $kont=$kont+1;
+                        }    
+                    }
+                }    
+            }
+        }
+        return $kont;
+    }
+    return 0;*/
+    if(isset($row->numero_de_descargas)){
+        return $row->numero_de_descargas;
+    }
+    return 0;
+}
+function red_servidor_is_description_like($v,$node){
+    $text='';
+    if(hontza_node_has_body($node)){
+        $text=$node->content['body']['#value'];
+    }
+    /*else if(isset($node->body) && !empty($node->body)){
+        $text=$node->body;
+    }else if(isset($node->teaser) && !empty($node->teaser)){
+        $text=$node->teaser;
+    }*/    
+    //
+    if(!empty($text)){
+        $text=strip_tags($text);
+        $pos=strpos($text,$v);
+        if($pos===FALSE){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_servidor_is_user_local_name_like($v,$user_local){
+    $name='';
+    if(isset($user_local->name) && !empty($user_local->name)){
+        $name=$user_local->name;
+    }
+    //
+    if(!empty($name)){
+        $pos=strpos($name,$v);
+        if($pos===FALSE){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_servidor_get_filtro_rango($value){
+    $result=array();
+    $result['ini']=0;
+    $result['end']=0;
+    $value_array=explode('-',$value);
+    if(isset($value_array[0])){
+        $result['ini']=$value_array[0];
+    }
+    //
+    if(isset($value_array[1])){
+        $result['end']=$value_array[1];
+    }
+    return $result;
+}
+function red_servidor_get_user_autocomplete_options(){
+    $result=array();
+    $sql='SELECT * FROM {users} u WHERE 1 ORDER BY u.name ASC';
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[$row->name]=$row->name;
+    }
+    return $result;
+}
+function red_servidor_get_grupo_shared(){
+    return red_servidor_get_grupo_fuentes();
+}
+function red_servidor_is_grupo_shared($grupo_nid=''){
+    $grupo_shared=red_servidor_get_grupo_shared();
+    if(empty($grupo_nid)){
+        $my_grupo=og_get_group_context();
+    }else{
+        $my_grupo=node_load($grupo_nid);
+    }
+    //
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $group_nid=$my_grupo->nid;
+        if(isset($grupo_shared->nid) && !empty($grupo_shared->nid)){
+            if($group_nid==$grupo_shared->nid){
+                return 1;
+            }
+        }
+    }            
+    return 0;        
+}
+function red_servidor_fuente_update_subdominio($id,$subdominio){
+    db_query('UPDATE {red_servidor_fuente} SET subdominio="%s" WHERE id=%d',$subdominio,$id);    
+}
+function red_servidor_fuente_get_simple_array(){
+    $result=array();
+    $where=array();
+    $where[]='1';
+    $sql='SELECT *   
+        FROM {red_servidor_fuente} 
+        WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_servidor_get_user_local_by_uid($row){
+    if(isset($row->subdominio) && !empty($row->subdominio)){
+        $url='http://'.$row->subdominio.'/red_compartir/red_compartir_get_user_local_by_uid_get_contents/'.$row->local_uid;
+        $content=file_get_contents($url);
+        if(!empty($content)){
+            $content=base64_decode($content);
+            $content=red_compartir_grupo_decrypt_text($content);
+            $content=base64_decode($content);
+            $my_user=unserialize($content);
+            return $my_user;
+        }
+    }
+    //
+    $my_result=new stdClass();
+    return $my_result;
+}
+function red_servidor_fuente_update_uid($row,$uid){
+    db_query('UPDATE {red_servidor_fuente} SET uid=%d WHERE id=%d',$uid,$row->id);    
+}
+function red_servidor_node_update_uid($row,$uid){
+    db_query('UPDATE {node} SET uid=%d WHERE nid=%d',$uid,$row->nid);    
+}
+function red_servidor_get_decrypt_user_local($user_local){
+    $content=base64_decode($user_local);
+    $content=red_compartir_grupo_decrypt_text($content);
+    $content=base64_decode($content);
+    $my_user=unserialize($content);
+    return $my_user;
+}
+function red_servidor_fuente_enviar_get_uid($user_local_in){
+    $user_local=red_servidor_get_decrypt_user_local($user_local_in);
+    if(isset($user_local->mail) && !empty($user_local->mail)){
+        $uid=red_get_user_uid_by_mail($user_local->mail);        
+        return $uid;
+    }
+    //
+    return '';
+}
+function red_servidor_guardar_fuente_enviar($fuente_enviar){
+            $local_nid=$fuente_enviar->nid; 
+            $local_vid=$fuente_enviar->vid; 
+            $local_uid=$fuente_enviar->uid;
+            $local_group_nid=0;
+            $local_group_nid=red_servidor_get_grupo_nid_by_node($fuente_enviar);
+            $fecha=time();
+            $sareko_id=$fuente_enviar->sareko_id;
+            $node=red_servidor_preparar_fuente($fuente_enviar,$grupo_servidor);
+            if(is_super_admin()){
+                red_servidor_node_save($node);
+            }else{
+                node_save($node);
+            }
+            drupal_set_message(t('Source %fuente_title shared',array('%fuente_title'=>$node->title)));
+            $vid=$node->vid;
+            $nid=$node->nid;
+            $uid=$node->uid;
+            $group_nid=$grupo_servidor->nid;
+            $subdominio=$fuente_enviar->subdominio;
+            $sql=sprintf('INSERT INTO {red_servidor_fuente}(local_nid,local_vid,local_uid,local_group_nid,fecha,sareko_id,vid,nid,uid,group_nid,subdominio) VALUES(%d,%d,%d,%d,%d,"%s",%d,%d,%d,%d,"%s")',$local_nid,$local_vid,$local_uid,$local_group_nid,$fecha,$sareko_id,$vid,$nid,$uid,$group_nid,$subdominio);
+            db_query($sql);           
+}
+function red_servidor_contar_fuente_numero_de_descargas_callback(){
+    /*$result=base64_decode($_POST['fuente_contar_numero_de_descargas']);
+    $result=red_compartir_grupo_decrypt_text($result);
+    $result=base64_decode($result);
+    $result=unserialize($result);
+    echo print_r($result,1);
+    exit();*/
+}
+function red_servidor_fuente_existe_en_el_servidor_callback(){
+    $result=array();
+    $result['ok']=0;
+    if(isset($_POST['fuente']) && !empty($_POST['fuente'])){
+        $fuente=$_POST['fuente'];
+        $fuente=base64_decode($fuente);
+        $fuente=red_compartir_grupo_decrypt_text($fuente);
+        $fuente=unserialize(base64_decode($fuente));
+            if($fuente['fuente']->type=='supercanal'){
+                $existe=red_servidor_fuente_existe_en_el_servidor($fuente['fuente'],$sql);
+                if(!empty($existe)){
+                    $result['ok']=1;
+                    $result['existe']=$existe;
+                }
+            }
+        //$result['sql']=$sql;
+    }
+    print serialize($result);
+    exit();
+}
+function red_servidor_fuente_existe_en_el_servidor($fuente,&$sql){
+    $sql=sprintf('SELECT n.* 
+        FROM {node} n 
+        LEFT JOIN {content_type_supercanal} content_type_supercanal ON n.vid=content_type_supercanal.vid
+        WHERE n.title="%s" OR  content_type_supercanal.field_supercanal_fuente_value="%s"',$fuente->title,$fuente->yahoo_pipe_id);
+        
+    if(isset($fuente->yahoo_pipe_id) && !empty($fuente->yahoo_pipe_id)){
+        //        
+        /*$res=db_query('SELECT n.* 
+        FROM {node} n 
+        LEFT JOIN {content_type_supercanal} content_type_supercanal ON n.vid=content_type_supercanal.vid
+        WHERE n.title="%s" OR  content_type_supercanal.field_supercanal_fuente_value="%s"',$fuente->title,$fuente->yahoo_pipe_id);
+        while($row=db_fetch_object($res)){
+            return 1;
+        }*/
+        
+        $res=db_query('SELECT n.* 
+        FROM {node} n 
+        LEFT JOIN {content_type_supercanal} content_type_supercanal ON n.vid=content_type_supercanal.vid
+        WHERE content_type_supercanal.field_supercanal_fuente_value="%s"',$fuente->yahoo_pipe_id);
+        while($row=db_fetch_object($res)){
+            return 1;
+        }
+        
+        $res=db_query('SELECT n.* 
+        FROM {node} n 
+        LEFT JOIN {content_type_supercanal} content_type_supercanal ON n.vid=content_type_supercanal.vid
+        WHERE n.title="%s"',$fuente->title);
+        while($row=db_fetch_object($res)){
+            return 2;
+        }
+        
+    }
+    return 0;
+}
+function red_servidor_delete_red_servidor_fuente(&$node){
+    if(in_array($node->type,array('supercanal','fuentedapper'))){
+        db_query('DELETE FROM {red_servidor_fuente} WHERE nid=%d',$node->nid);        
+    }
+}
+function red_servidor_delete_red_servidor_canal(&$node){
+    if(in_array($node->type,array('canal_de_supercanal','canal_de_yql'))){
+        db_query('DELETE FROM {red_servidor_canal} WHERE nid=%d',$node->nid);        
+    }
+}
+function red_servidor_fuente_get_user_servidor($uid){        
+        $my_user=user_load($uid);
+        if(isset($my_user->uid) && !empty($my_user->uid)){
+            require_once('sites/all/modules/user/user.pages.inc');
+            $my_user->user_html=red_compartir_user_view($my_user);
+            $my_user->user_html=base64_encode($my_user->user_html);
+            unset($my_user->pass);
+            return $my_user;
+        }
+        //
+        $my_result=new stdClass();
+        return $my_result;
+}
+function red_servidor_save_red_servidor_fuente(&$node){
+    if(hontza_is_servidor_red_alerta()){
+        echo print_r($node,1);
+        exit();
+        /*$red_servidor_fuente_row=red_servidor_get_red_servidor_fuente_row($node->nid,$node->vid);
+        if(!(isset($red_servidor_fuente_row->id) && !empty($red_servidor_fuente_row->id))){
+            db_query('INSERT INTO ');
+        }*/
+    }    
+}
+function red_servidor_get_red_servidor_fuente_row($fuente_enviar){
+    $result=array();
+    $res=db_query('SELECT * FROM {red_servidor_fuente} WHERE nid=%d AND vid=%d',$nid,$vid);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    //
+    $my_result=new stdClass();
+    return $my_result;
+}
+function red_servidor_borrarme_del_servidor_callback(){
+    $result=array();
+    $result['ok']='nok';
+    if(isset($_POST['user_enviar']) && !empty($_POST['user_enviar'])){
+        $user_enviar=red_compartir_grupo_decrypt_text($_POST['user_enviar']);
+        $user_enviar=unserialize($user_enviar);
+        $uid=red_get_user_uid_by_mail($user_enviar->mail);
+        if(!empty($uid)){
+            red_servidor_user_delete($uid);
+        }
+        $result['ok']='ok';
+    }
+    print serialize($result);
+    exit();
+}
+function red_servidor_user_delete($uid){
+    db_query('DELETE FROM {red_servidor_usuario} WHERE servidor_uid=%d',$uid);
+    $edit=array();    
+    user_delete($edit,$uid);
+}
+function red_servidor_probar_borrar_usuario_callback(){
+    return 'Funcion desactivada';
+    /*$uid=76;
+    red_servidor_user_delete($uid);
+    return date('Y-m-d H:i');*/
+}
+function red_servidor_get_taxonomy_lang($taxonomy){
+    $result=array();
+    $languages=language_list();
+    if(!empty($taxonomy) && !empty($languages)){
+        foreach($taxonomy as $tid=>$term){
+            foreach($languages as $code=>$lang_row){
+                $term_lang=taxonomy_get_term_by_language($tid,$code);
+                if(isset($term_lang->tid) && !empty($term_lang->tid)){
+                    $result[$code][$tid]=$term_lang;
+                }else{
+                    $result[$code][$tid]=$term;
+                }
+            }
+        }
+    }
+    return $result;
+}
+function red_servidor_cron(){
+    red_servidor_grupo_repasar_subdominios_erroneos();
+}    

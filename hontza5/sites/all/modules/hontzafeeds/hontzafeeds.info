@@ -1,0 +1,5 @@
+; $Id: feedapi_tagger.info,v 1.1 2009/09/22 22:54:48 karlosgliberal Exp $
+name = Hontza feeds
+description = "Json parser for feeds"
+package = Hontza
+core = 6.x

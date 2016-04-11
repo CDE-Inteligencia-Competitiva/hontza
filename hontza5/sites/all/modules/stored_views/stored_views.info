@@ -1,0 +1,10 @@
+name = Stored views (hack investic)
+description = Save a view and its arguments for later display.
+dependencies[] = views
+core = 6.x
+; Information added by fserver
+core = "6.x"
+datestamp = "1258646137"
+project = "stored_views"
+project status url = "http://code.developmentseed.org/fserver"
+version = "6.x-1.0-beta2"

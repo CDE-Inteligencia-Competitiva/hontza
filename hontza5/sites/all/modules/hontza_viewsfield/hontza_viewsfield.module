@@ -1,0 +1,13 @@
+<?php 
+//$Id: hontza_viewsfield,v 1.1.4.2 2010/31/09 18:32:33 investic Exp $
+
+
+
+/**
+ * Implementation hook_views_api
+ */
+function hontza_viewsfield_views_api() {
+  return array(
+    'api' => 2,
+  );
+}

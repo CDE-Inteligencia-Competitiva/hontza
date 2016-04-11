@@ -1,0 +1,75 @@
+<?php
+// $Id: sms_email_gateway.module,v 1.4.2.2 2008/09/17 14:11:50 diggersf Exp $
+
+function sms_email_gateway_gateway_info() {
+  return array(
+    'email' => array(
+      'name' => 'E-mail',
+      'send' => 'sms_email_gateway_send',      
+      'send form' => 'sms_email_gateway_send_form',
+    ),
+  );
+}
+
+/**
+ * Returns custom additions to be added to the send forms
+ */
+function sms_email_gateway_send_form() {  
+  $options = array();
+  $providers = module_invoke_all('sms_email_gateway_providers');
+  asort($providers);
+  $options += $providers;
+    
+  $form['carrier'] = array(
+    '#type' => 'select',
+    '#title' => t('Carrier'),
+    '#multiple' => FALSE,
+    '#description' => t('Select your wireless carrier.'),
+    '#options' => $options,
+    '#default_value' => -1,
+  );
+  
+  return $form;
+}
+
+/**
+ * Callback for sending messages.
+ */
+function sms_email_gateway_send($number, $message, $options) {
+  $from = !empty($options['from']) ? $options['from'] : NULL;
+  $to = $number .'@'. $options['carrier'];
+  $params['message'] = $message;
+  $message = drupal_mail('sms_email_gateway', 'sms', $to, language_default(), $params, $from);
+  if ($message['result']) {
+    return array('status' => TRUE);
+  }
+}
+
+/**
+ * Implementation of hook_mail().
+ */
+function sms_email_gateway_mail($key, &$message, &$params) {
+  $message['body'] = $params['message'];
+  unset($message['params']['message']);
+}
+
+/**
+ * Implementation of hook_sms_email_gateway_providers()
+ */
+function sms_email_gateway_sms_email_gateway_providers() {
+  return array(
+    'msg.acsalaska.com' => t('Alaska Communications Systems'),
+    'message.alltel.com' => t('Alltel Wireless'),
+    'txt.att.net' => t('AT&T/Cingular'),
+    'mobile.celloneusa.com' => t('CellularOne'),
+    'cwemail.com' => t('Centennial Wireless'),
+    'sms.mycricket.com' => t('Cricket'),
+    'messaging.sprintpcs.com' => t('Helio'),
+    'page.nextel.com' => t('Nextel'),
+    'qwestmp.com' => t('Qwest'),
+    'messaging.sprintpcs.com' => t('Sprint'),
+    'tmomail.net' => t('T-Mobile'),
+    'vmobl.com' => t('Virgin Mobile'),
+    'vtext.com' => t('Verizon'),
+  );
+}

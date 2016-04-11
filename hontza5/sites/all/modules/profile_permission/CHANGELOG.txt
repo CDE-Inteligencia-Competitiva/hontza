@@ -1,0 +1,20 @@
+// $Id: CHANGELOG.txt,v 1.10 2010/11/18 16:29:24 boombatower Exp $
+
+Profile permission 6.x-1.2, 2010-11-18
+--------------------------------------
+- Changes:
+   * #368161: Add edit|view own profile_field_name field permission.
+   * Remove version line from .info file.
+   * #957188: Fixing permissions, reset and validation errors on protected fields.
+   * #772570: One Page Profile module incompatibility.
+   * #406146: Installation/Usage Instructions.
+
+Profile permission 6.x-1.1, 2009-01-21
+--------------------------------------
+- Changes:
+   * #360586: support restriction on field access permission.
+   * Add test description.
+
+Profile permission 6.x-1.0, 2008-12-04
+--------------------------------------
+- This is the first fully featured release.

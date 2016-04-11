@@ -1,0 +1,1501 @@
+<?php
+require_once('panel_admin.grupos.inc.php');
+require_once('panel_admin.ayuda.inc.php');
+require_once('panel_admin.items.inc.php');
+require_once('panel_admin.noticias.inc.php');
+require_once('panel_admin.collaboration.inc.php');
+require_once('panel_admin.debate.inc.php');
+require_once('panel_admin.servicios.inc.php');
+require_once('panel_admin.ayuda_popup.inc.php');
+require_once('panel_admin.usuarios.grupos.inc.php');
+require_once('panel_admin.noticias.publicas.inc.php');
+require_once('panel_admin.noticias.destacadas.inc.php');
+require_once('panel_admin.banners.inc.php');
+require_once('panel_admin.contacts.inc.php');
+//intelsat-2016
+require_once('panel_admin.guias.inc.php');
+function panel_admin_perm() {
+  return array();
+}
+function panel_admin_menu() {
+    $items=array();
+    $items['panel_admin'] = array(
+    'title' => 'Management Panel',
+    'page callback' => 'panel_admin_callback',
+    //'access arguments' => array('root'),
+    'access callback'=>'panel_admin_custom_access',    
+  );
+    $items['panel_admin/grupos'] = array(
+    'title' => 'Management of Groups',
+    'page callback' => 'panel_admin_grupos_callback',
+    'access callback'=>'panel_admin_grupos_grupos_access',    
+  );
+    $items['panel_admin/delete_grupos_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_delete_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',   
+    );
+    $items['panel_admin/publish_post_grupos_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_publish_post_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',   
+    );
+    $items['panel_admin/unpublish_post_grupos_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_unpublish_post_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',   
+    );
+    $items['panel_admin/ayuda'] = array(
+    'title' => 'Management of FAQs',
+    'page callback' => 'panel_admin_ayuda_callback',
+    'access callback'=>'panel_admin_admin_access',    
+  );
+    $items['panel_admin/delete_ayuda_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_delete_ayuda_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_ayuda_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_publish_post_ayuda_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_ayuda_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_unpublish_post_ayuda_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/items'] = array(
+    'title' => 'Management of News',
+    'page callback' => 'panel_admin_items_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/delete_items_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_items_delete_items_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_items_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_items_publish_post_items_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_items_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_items_unpublish_post_items_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/noticias'] = array(
+    'title' => 'Management of User News',
+    'page callback' => 'panel_admin_noticias_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/delete_noticias_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_noticias_delete_noticias_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_noticias_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_noticias_publish_post_noticias_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_noticias_confirm']=array(
+    'title' => 'Management of Groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_noticias_unpublish_post_noticias_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/collaboration'] = array(
+    'title' => 'Management of wiki documents',
+    'page callback' => 'panel_admin_collaboration_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/delete_collaboration_confirm']=array(
+    'title' => 'Management of wiki documents',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_collaboration_delete_collaboration_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_collaboration_confirm']=array(
+    'title' => 'Management of wiki documents',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_collaboration_publish_post_collaboration_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_collaboration_confirm']=array(
+    'title' => 'Management of wiki documents',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_collaboration_unpublish_post_collaboration_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/debate'] = array(
+    'title' => 'Management of discussions',
+    'page callback' => 'panel_admin_debate_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/delete_debate_confirm']=array(
+    'title' => 'Management of discussions',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_debate_delete_debate_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_debate_confirm']=array(
+    'title' => 'Management of discussions',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_debate_publish_post_debate_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_debate_confirm']=array(
+    'title' => 'Management of discussions',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_debate_unpublish_post_debate_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+     $items['panel_admin/servicios'] = array(
+    'title' => 'Management of Facilitators',
+    'page callback' => 'panel_admin_servicios_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/delete_servicios_confirm']=array(
+    'title' => 'Management of Facilitators',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_servicios_delete_servicios_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_servicios_confirm']=array(
+    'title' => 'Management of Facilitators',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_servicios_publish_post_servicios_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_servicios_confirm']=array(
+    'title' => 'Management of Facilitators',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_servicios_unpublish_post_servicios_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/ayuda_popup'] = array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'panel_admin_ayuda_popup_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/delete_ayuda_popup_confirm']=array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_popup_delete_ayuda_popup_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/publish_post_ayuda_popup_confirm']=array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_popup_publish_post_ayuda_popup_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_ayuda_popup_confirm']=array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_popup_unpublish_post_ayuda_popup_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/usuarios-grupos'] = array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'panel_admin_usuarios_grupos_callback',
+    'access callback'=>'panel_admin_grupos_grupos_access',    
+    );
+    $items['panel_admin/unpublish_post_ayuda_popup_confirm']=array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_ayuda_popup_unpublish_post_ayuda_popup_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/items/publish_post/%']=array(
+    'title' => 'Publish',
+    'page callback' => 'panel_admin_items_publish_post_callback',
+    'access callback'=>'panel_admin_publish_post_access',     
+    );
+    $items['panel_admin/items/unpublish_post/%']=array(
+    'title' => 'Publish',
+    'page callback' => 'panel_admin_items_unpublish_post_callback',
+    'access callback'=>'panel_admin_publish_post_access',     
+    );
+    $items['panel_admin/%/active_user']=array(
+    'title' => 'Activate',
+    'page callback' => 'panel_admin_active_user_callback',
+    'access arguments'=>array('administer users'),     
+    );
+     $items['panel_admin/%/deactive_user']=array(
+    'title' => 'Deactivate',
+    'page callback' => 'panel_admin_deactive_user_callback',
+    'access arguments'=>array('administer users'),     
+    );     
+     $items['panel_admin/%/edit_user_roles']=array(
+    'title' => 'Modify roles',
+    'page callback' => 'panel_admin_edit_user_roles_callback',
+    'access arguments'=>array('administer users'),     
+    );
+     $items['panel_admin/delete_user_confirm']=array(
+    'title' => 'List of PopUp Help',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_delete_user_confirm_confirm_form'),    
+    'access arguments'=>array('administer users'),      
+     );
+     $items['panel_admin/add_users_grupos_confirm']=array(
+    'title' => 'Add users to groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_add_users_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',      
+     );
+     $items['user-gestion/grupos/add_users_grupos_confirm']=array(
+    'title' => 'Add users to groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_user_gestion_grupos_add_users_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',      
+     );
+     $items['panel_admin/remove_users_grupos_confirm']=array(
+    'title' => 'Remove users to groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_remove_users_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',      
+     );
+     $items['user-gestion/grupos/remove_users_grupos_confirm']=array(
+    'title' => 'Remove users to groups',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_grupos_user_gestion_grupos_remove_users_grupos_confirm_form'),    
+    'access callback'=>'panel_admin_grupos_grupos_access',      
+     );     
+     $items['panel_admin/delete_noticias_destacadas_confirm']=array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_noticias_destacadas_delete_noticias_destacadas_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+     $items['panel_admin/publish_post_noticias_destacadas_confirm']=array(
+    'title' => 'Publish',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_noticias_destacadas_publish_post_noticias_destacadas_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/unpublish_post_noticias_destacadas_confirm']=array(
+    'title' => 'Unpublish',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_noticias_destacadas_unpublish_post_noticias_destacadas_confirm_form'),    
+    'access callback'=>'panel_admin_admin_access',   
+    );
+    $items['panel_admin/banners'] = array(
+    'title' => 'Management of Banners',
+    'page callback' => 'panel_admin_banners_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );    
+    $items['panel_admin/facebook_link_edit'] = array(
+    'title' => 'Edit Facebook link',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_facebook_link_form'),    
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/twitter_link_edit'] = array(
+    'title' => 'Edit Twitter link',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_twitter_link_form'),    
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/linkedin_link_edit'] = array(
+    'title' => 'Edit Linkedin link',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('panel_admin_linkedin_link_form'),    
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/registered'] = array(
+    'title' => 'Registered',
+    'page callback' => 'panel_admin_registered_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/registered/%/view'] = array(
+    'title' => 'Registered',
+    'page callback' => 'panel_admin_registered_view_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/registered/%/delete'] = array(
+    'title' => 'Registered',
+    'page callback' => 'panel_admin_registered_delete_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/copyright/edit']=array(
+    'title' => 'Copyright',
+    'page callback' => 'panel_admin_copyright_edit_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/contacts'] = array(
+    'title' => 'List of Contacts',
+    'page callback' => 'panel_admin_contacts_callback',
+    'access callback'=>'panel_admin_contacts_custom_access',    
+    );
+    $items['panel_admin/contacts/edit/title']=array(
+    'title' => 'Edit Contact',
+    'page callback' => 'panel_admin_contacts_edit_title_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/banners/activar/%']=array(
+    'title' => 'Active',
+    'page callback' => 'panel_admin_banners_activar_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/banners/desactivar/%']=array(
+    'title' => 'Active',
+    'page callback' => 'panel_admin_banners_desactivar_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/menu_color_edit']=array(
+    'title' => 'Edit Menu Color',
+    'page callback' => 'panel_admin_menu_color_edit_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/activate_observatory/edit']=array(
+    'title' => 'Activate Observatory',
+    'page callback' => 'panel_admin_activate_observatory_edit_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    //intelsat-2016    
+    $items['panel_admin/guias'] = array(
+    'title' => 'Management Panel',
+    'page callback' => 'panel_admin_guias_callback',
+    'access callback'=>'panel_admin_guias_access',    
+    );
+    $items['panel_admin/guias/%/upload']=array(
+    'title' => 'Upload guide',
+    'page arguments'=>array('panel_admin_guias_upload_form'),    
+    'page callback' => 'drupal_get_form',
+    'access callback'=>'panel_admin_guias_access',      
+    );
+    return $items;
+}
+function panel_admin_callback(){
+    //return date('Y-m-d H:i:s');
+    /*$result='';
+    $my_view_name = 'gestion_grupos ';
+    $my_display_name = 'page_1';
+    $my_view = views_get_view($my_view_name);
+    if ( is_object($my_view) ) {
+      $my_view->set_display($my_display_name);
+      $my_view->pre_execute();
+      $result=$my_view->render($my_display_name);
+    }
+    drupal_set_title(t('Management of Groups'));
+    return $result;*/
+    return panel_admin_grupos_callback();
+}
+function panel_admin_set_block(&$block){
+    //print $block->delta.'='.$block->title.'<BR>';
+    //if($block->delta==30){
+        //echo print_r($block,1);
+        //exit();
+    //}
+}
+function panel_admin_is_panel_admin_left(){
+    /*if(panel_admin_is_panel_admin_empty()){
+        return 0;
+    }*/
+    if(is_node_add('grupo')){       
+        return 1;
+    }
+    if(panel_admin_is_gestion() && !panel_admin_is_gestion('servicios')){
+        return 1;
+    }
+    if(panel_admin_is_user_create()){
+        return 1;
+    }
+    if(is_node_add('faq')){       
+        return 1;
+    }
+    if(panel_admin_is_estadisticas()){
+        return 1;
+    }
+    if(panel_admin_is_frases_post_formulario()){
+        return 1;
+    }
+    if(panel_admin_is_type_of_sources()){
+        return 1;
+    }
+    if(panel_admin_is_activar_actualizacion_subdominio()){
+        return 1;
+    }
+    /*if(is_node_add('servicio')){       
+        return 1;
+    }*/
+    if(is_node_add('noticias-portada')){       
+        return 1;
+    }
+    if(is_node_add('rss-feed')){       
+        return 1;
+    }
+    if(panel_admin_is_public_news_parametrization()){
+        return 1;
+    }
+    if(panel_admin_is_panel_admin() && !panel_admin_is_panel_admin('servicios')){
+        return 1;
+    }
+    if(panel_admin_is_user_gestion_grupos_propios()){
+        return 1;
+    }
+    if(panel_admin_grupos_is_user_gestion_grupos_propios_add_users_grupos()){
+        return 1;
+    }
+    if(panel_admin_grupos_is_user_gestion_grupos_propios_remove_users_grupos()){
+        return 1;
+    }
+    if(panel_admin_is_edit_contents()){
+        return 1;
+    }
+    //intelsat-2015
+    if(panel_admin_is_grupo_inicio()){
+        return 1;
+    }
+    //intelsat-2015
+    if(panel_admin_is_grupos_ayuda()){
+        return 1;
+    }
+    //intelsat-2016
+    if(panel_admin_is_expertos()){
+        return 1;
+    }
+    return 0;
+}
+function panel_admin_in_delta_panel_admin_left($block){
+    //print $block->delta.'<br>';
+    if(panel_admin_is_panel_admin_left()){
+        /*if(in_array($block->delta,array(20))){
+            return 0;
+        }*/
+        //if(in_array($block->delta,array(7,17))){
+            if(!in_array($block->module,array('hontza'))){
+                return 0;
+            }
+        //}
+        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68))){
+            return 1;
+        }
+    }
+    return 0;
+}
+function panel_admin_define_panel_admin_left_pages($delta){
+    $result='';
+    if(in_array($delta,array(21))){
+        $result='<?php ';
+        $result.='if(panel_admin_is_panel_admin_left()){ ';
+        $result.='return 1; ';
+        $result.='} ';
+        $result.='return 0; ';
+        $result.='?>';
+    }
+    return $result;
+}
+function panel_admin_is_gestion($konp=''){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='gestion'){
+        if(empty($konp)){
+            return 1;
+        }else{
+            $param1=arg(1);
+            if(!empty($param1) && $param1==$konp){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function panel_admin_is_user_create(){
+    $param0=arg(0);
+    if($param0=='admin'){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='user'){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='user'){
+                $param3=arg(3);
+                if(!empty($param3) && $param3=='create'){
+                    return 1;
+                } 
+            }   
+        }    
+    }
+    return 0;
+}
+function panel_admin_set_block_weight(&$block){
+    if($block->delta==25){
+        $block->weight=-47;
+    }else if($block->delta==21){
+        $block->weight=-46;
+    }else if($block->delta==16){
+        $block->weight=-36;
+    }else if($block->delta==20){
+        $block->weight=-33;
+    }else if($block->delta==7){
+        //$block->weight=-2;
+        $block->weight=-45;
+    }else if($block->delta==17){
+        $block->weight=-44;
+    }else if($block->delta==18){
+        $block->weight=-43;
+    }else if($block->delta==15){
+        $block->weight=-40;
+    }else if($block->delta==19){
+        $block->weight=-41;
+    }else if($block->delta==24){
+        $block->weight=-39;
+    }else if($block->delta==23){
+        $block->weight=-42;
+    }else if($block->delta==31){
+        $block->weight=-38;
+    }else if($block->delta==43){
+        $block->weight=-35;
+    }else if($block->delta==50){
+        $block->weight=-34;
+    }else if($block->delta==61){
+        $block->weight=-32;
+    }else if($block->delta==62){
+        $block->weight=-31;
+    }else if($block->delta==63){
+        $block->weight=-30;
+    }else if($block->delta==64){
+        $block->weight=-29;
+    }else if($block->delta==65){
+        $block->weight=-28;
+    //intelsat-2016    
+    }else if($block->delta==68){
+        $block->weight=-27;
+    }
+}
+function panel_admin_is_estadisticas(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='analytics'){
+        $param1=arg(1);
+        if(empty($param1)){    
+            $my_grupo=og_get_group_context();
+            if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                return 0;
+            }else{
+                return 1;
+            }
+        }    
+    }
+    return 0;
+}
+function panel_admin_is_frases_post_formulario(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='frases_post_formulario'){
+        return 1;
+    }
+    return 0;
+}
+function panel_admin_is_type_of_sources(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='admin'){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='content'){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='taxonomy'){
+                $param3=arg(3);
+                if(!empty($param3) && is_numeric($param3) && $param3==1){
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+function panel_admin_is_activar_actualizacion_subdominio(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='activar_actualizacion_subdominio'){
+        return 1;
+    }
+    return 0;
+}
+function panel_admin_is_public_news_parametrization(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='admin'){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='content'){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='hontza'){               
+               $param3=arg(3);
+                if(!empty($param3) && $param3=='settings'){
+                   return 1;
+               } 
+            }        
+        }        
+    }
+    return 0;
+}
+function panel_admin_my_get_rows_gestion_grupos($vars_in){
+    $vars=$vars_in;
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_grupos');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');    
+    return $vars['rows'];
+}
+function panel_admin_set_gestion_grupos_edit_img_link($vars_in,$type='edit',$view_type=''){
+    $link='';
+    $destination=drupal_get_destination();
+    $vars=$vars_in;
+    if($type=='edit'){
+        $find='<td class="views-field views-field-edit-node">';
+    }else if($type=='add_user'){    
+        $find='<td class="views-field views-field-nothing">';
+    }else if($type=='view'){    
+        $find='<td class="views-field views-field-view-node">';            
+    }else{
+        $find='<td class="views-field views-field-delete-node">';
+    }
+    $my_array=explode($find,$vars['rows']);
+    if(!empty($my_array)){
+        foreach($my_array as $i=>$value){
+            if($i>0){
+                $find2='</a>';
+                $pos=strpos($value,$find2);
+                if($pos===FALSE){
+                    continue;
+                }else{
+                    $nid='';
+                    if(isset($vars['view']->result[$i-1])){
+                        $nid=$vars['view']->result[$i-1]->nid;                        
+                    }
+                    $my_value=substr($value,$pos+strlen($find2));
+                    //$my_value=panel_admin_unset_actions($my_value);
+                    if($type=='edit'){
+                        $link=l(my_get_icono_action('edit',t('Edit')),'node/'.$nid.'/edit',array('query'=>$destination,'html'=>true));
+                    }else if($type=='add_user'){
+                        $link=l(my_get_icono_action('edit_add',t('Add users')),'og/users/'.$nid.'/add_user',array('query'=>$destination,'html'=>true));
+                    }else if($type=='view'){
+                        $link=l(my_get_icono_action('viewmag',t('View')),'node/'.$nid,array('query'=>$destination,'html'=>true));                                            
+                    }else{
+                        $link=l(my_get_icono_action('delete',t('Delete')),'node/'.$nid.'/delete',array('query'=>$destination,'html'=>true));
+                    }
+                    $link=panel_admin_add_link($link,$view_type,$nid,$destination);
+                    $my_array[$i]=$link.$my_value;                    
+                }
+            }
+        }
+    }
+    $vars['rows']=implode($find,$my_array);
+    if(in_array($view_type,array('gestion_grupos','gestion_ayuda','gestion_items','gestion_noticias','gestion_area_trabajo_wiki','gestion_area_debate','gestion_servicios','gestion_ayuda_popup'))){
+        $label=t('Edit');
+        if(in_array($view_type,array('gestion_ayuda_popup'))){
+            $label=t('Edit link');
+        }
+        $vars['rows']=str_replace('<th class="views-field views-field-edit-node">'.$label.'</th>','<th class="views-field views-field-edit-node">'.t('Actions').'</th>',$vars['rows']);
+        $vars['rows']=str_replace('<td class="views-field views-field-edit-node">','<td class="views-field views-field-edit-node" style="white-space:nowrap;">',$vars['rows']);    
+        $vars['rows']=str_replace('<th class="views-field views-field-delete-node">','<th class="views-field views-field-delete-node" style="display:none">',$vars['rows']);
+        $vars['rows']=str_replace('<td class="views-field views-field-delete-node">','<td class="views-field views-field-delete-node" style="display:none">',$vars['rows']);        
+        if(in_array($view_type,array('gestion_ayuda','gestion_servicios'))){
+            $vars['rows']=str_replace('<th class="views-field views-field-view-node">','<th class="views-field views-field-view-node" style="display:none">',$vars['rows']);
+            $vars['rows']=str_replace('<td class="views-field views-field-view-node">','<td class="views-field views-field-view-node" style="display:none">',$vars['rows']);         
+        }        
+    }
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_usuarios_grupos($vars_in){
+    $vars=$vars_in;
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'add_user');
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_ayuda($vars_in){
+    $vars=$vars_in;
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_ayuda');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'view');
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_items($vars){
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_items');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');    
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_noticias($vars){
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_noticias');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');    
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_area_trabajo_wiki($vars){
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_area_trabajo_wiki');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');    
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_area_debate($vars){
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_area_debate');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');    
+    return $vars['rows'];
+}
+function panel_admin_my_get_rows_gestion_servicios($vars_in){
+    $vars=$vars_in;
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_servicios');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'view');
+    return $vars['rows'];
+}
+function panel_admin_is_ayuda_popup(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='ayuda_popup'){
+        return 1;
+    }
+    return 0;
+}
+function panel_admin_set_gestion_ayuda_popup_title(){
+    return 'List of PopUp Help';
+}
+function panel_admin_my_get_rows_gestion_ayuda_popup($vars){
+    //$vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'delete');        
+    $vars['rows']=panel_admin_set_gestion_grupos_edit_img_link($vars,'edit','gestion_ayuda_popup');
+    return $vars['rows'];
+}
+function panel_admin_custom_access(){
+    global $user;
+    if ($user->roles[ADMINISTRADOR] or $user->uid == 1) {
+        return TRUE;
+    }
+    return FALSE;
+}
+function panel_admin_add_link($link_in,$view_type,$nid,$destination){
+    $link=$link_in;
+    if(in_array($view_type,array('gestion_grupos','gestion_ayuda','gestion_items','gestion_noticias','gestion_area_trabajo_wiki','gestion_area_debate','gestion_servicios','gestion_ayuda_popup'))){
+        $delete_link=l(my_get_icono_action('delete',t('Delete')),'node/'.$nid.'/delete',array('query'=>$destination,'html'=>true));
+        $link.='&nbsp;'.$delete_link;
+        if(in_array($view_type,array('gestion_ayuda','gestion_servicios'))){
+            $view_link=l(my_get_icono_action('viewmag',t('View')),'node/'.$nid,array('query'=>$destination,'html'=>true));
+            $link.='&nbsp;'.$view_link;
+        }
+    }    
+    return $link;
+}
+function panel_admin_unset_actions($my_value){
+    $find='</td> </tr>';
+    $pos=strpos($my_value,$find);
+    if($pos===FALSE){
+        return $my_value;
+    }
+    $result=substr($my_value,$pos+strlen($find));
+    return $result;
+}
+function panel_admin_admin_access(){
+    if(is_super_admin()){
+        return TRUE;
+    }
+    //intelsat-2015
+    if(red_is_administrador()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function panel_admin_is_panel_admin($konp=''){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        if(empty($konp)){
+            return 1;
+        }else{
+            $param1=arg(1);
+            if(!empty($param1) && $param1==$konp){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function panel_admin_is_panel_admin_empty(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+            $param1=arg(1);
+            if(empty($param1)){
+                return 1;
+            }
+    }
+    return 0;
+}
+function panel_admin_get_statistics_block_content(){
+    //intelsat-2015
+    //$result=l(t('General Statistics'), 'analytics');
+    $result=l(t('Analytics'), 'analytics');
+    //
+    if(panel_admin_is_panel_admin_empty()){
+        return '';
+    }
+    return $result;
+}
+function panel_admin_define_view_access(){
+    $result=array('type'=>'role','role'=>array(1=>1));
+    return $result;
+}
+function panel_admin_repase_access_gestion_grupos(){
+    if(!is_super_admin()){    
+        drupal_access_denied();
+        exit();
+    }    
+}
+function panel_admin_get_node_grupo($node){    
+    if(isset($node->og_groups) && !empty($node->og_groups)){
+        $group_nid_array=array_keys($node->og_groups);
+        $result=node_load($group_nid_array[0]);
+        return $result;
+    }
+    $result=new stdClass();
+    return $result;
+}
+function panel_admin_is_gestion_usuarios_filter_activated(){
+            $fields=hontza_define_gestion_usuarios_filter_fields();
+            if(count($fields)>0){
+                foreach($fields as $i=>$f){
+                    if(isset($_SESSION['gestion_usuarios']['filter'][$f]) && !empty($_SESSION['gestion_usuarios']['filter'][$f])){
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+}
+function panel_admin_is_editar_tiempos_borrados_noticias_grupo($grupo_nid,$grupo_node_in=''){
+    global $user;
+    if(is_administrador_grupo(0,$grupo_nid)){
+        return 1;
+    }
+    if(empty($grupo_nid)){
+        if(hontza_is_creador_de_grupo()){
+            return 1;
+        }
+    }
+    if(isset($grupo_node_in->nid) && !empty($grupo_node_in->nid)){
+        $grupo_node=$grupo_node_in;
+    }else{
+        $grupo_node=node_load($grupo_nid);
+    }
+    $propietario=crear_usuario_get_grupo_propietario($grupo_node);
+    if($propietario->uid==$user->uid){
+        return 1;
+    }
+    return 0;
+}
+function panel_admin_get_gestion_usuarios_name($r,$my_user_in=''){
+    $email=l(my_get_icono_action('users_email',$r->users_mail),'mailto:'.$r->users_mail,array('html'=>true));
+    //intelsat-2015
+    if(isset($my_user_in->uid)){
+        $my_user=$my_user_in;
+    }else{
+        $my_user=user_load($r->uid);    
+    }
+    //$name=$r->profile_values_profile_nombre_value.' '.$r->profile_values_profile_apellidos_value;
+    $name=$my_user->profile_nombre.' '.$my_user->profile_apellidos;
+    $result=$email.' '.l($name,'user/'.$r->uid);
+    return $result;
+}
+function panel_admin_gestion_grupos_propios_is_filter_activated(){
+    $key='gestion_grupos_propios';
+            $fields=panel_admin_define_gestion_grupos_propios_filter_fields();
+            if(count($fields)>0){
+                foreach($fields as $i=>$f){
+                    if(isset($_SESSION[$key]['filter'][$f]) && !empty($_SESSION[$key]['filter'][$f])){
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+}
+function panel_admin_define_gestion_grupos_propios_filter_fields(){
+    $result=array('creador_de_grupo_uid');
+    return $result;
+}
+function panel_admin_publish_post_access(){
+    if(panel_admin_admin_access()){
+        return TRUE;
+    }
+    $nid=arg(3);
+    $node=node_load($nid);
+    if(isset($node->nid) && !empty($node->nid)){
+        if($node->type=='grupo'){
+            if(panel_admin_grupos_access()){
+                return TRUE;
+            }
+        }
+    }    
+    return FALSE;
+}
+function panel_admin_noticias_publicas_delete_confirm_form(){
+    return my_noticias_publicas_confirm_form('delete_node');
+}
+function panel_admin_define_user_status_link($uid,$users_status,$destination){
+    $html='';
+    if($users_status){
+        $html=l(my_get_icono_action('deactive_user',t('Deactivate')),'panel_admin/'.$uid.'/deactive_user',array('query'=>$destination,'html'=>true));
+    }else{
+        $html=l(my_get_icono_action('active_user',t('Activate')),'panel_admin/'.$uid.'/active_user',array('query'=>$destination,'html'=>true));
+    }
+    return $html;
+}
+function panel_admin_active_user_callback(){
+    $uid=arg(1);
+    panel_admin_active_user($uid,1);
+    drupal_goto($_REQUEST['destination']);
+}
+function panel_admin_deactive_user_callback(){
+    $uid=arg(1);
+    panel_admin_active_user($uid,0);
+    drupal_goto($_REQUEST['destination']);
+}
+function panel_admin_active_user($uid,$status){
+    db_query('UPDATE {users} SET status=%d WHERE uid=%d',$status,$uid);
+}
+function panel_admin_edit_user_roles_callback(){
+    $uid=arg(1);
+    $uid_array=array();
+    $uid_array[]=$uid;
+    $_SESSION['modify_user_roles_uid_array']=$uid_array;
+    $_REQUEST['destination']='';
+    drupal_goto('gestion/hontza_modify_user_roles_confirm');
+}
+function panel_admin_get_tipo_grupo_icono($r,$icono_red_alerta,$tid_in,&$title){
+    $title='';
+    $tid='';
+    if(!empty($tid_in)){
+        $tid=$tid_in;
+    }else{
+        $tid=$r->term_data_tid;
+    }
+    if(!empty($icono_red_alerta)){
+        $konp=panel_admin_get_image_filename($icono_red_alerta);
+    }
+    $type='';
+    $variables=array();
+    $style='';
+    $class='icono_grupo_red_alerta';
+    if(empty($icono_red_alerta) || $konp=='grupo_local_no_conectado.png'){
+        if($tid==27){            
+            $title=panel_admin_get_icono_privacidad_title(array(t('Collaborative Group'),t('Local Server'),t('Not connected')));
+            //intelsat-2015
+            $title=panel_admin_set_title_tipo_grupo_icono($title,$r);
+            return my_get_icono_action('grupo_colaborativo_gris',$title,$type,$variables,$style,$class);
+        }else if($tid==28){            
+            $title=panel_admin_get_icono_privacidad_title(array(t('Private Group'),t('Local Server'),t('Not connected')));
+            //intelsat-2015
+            $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+            return my_get_icono_action('grupo_privado_gris',$title,$type,$variables,$style,$class);
+        }else if($tid==29){
+            $title=panel_admin_get_icono_privacidad_title(array(t('Public Group'),t('Local Server'),t('Not connected')));
+            //intelsat-2015
+            $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+            return my_get_icono_action('grupo_publico_gris',$title,$type,$variables,$style,$class);
+        }
+    }else{
+        if($konp=='grupo_local_compartido.png'){
+           if($tid==27){
+                $title=panel_admin_get_icono_privacidad_title(array(t('Collaborative Group'),t('Local Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_colaborativo_verde',$title,$type,$variables,$style,$class);
+            }else if($tid==28){                                
+                $title=panel_admin_get_icono_privacidad_title(array(t('Private Group'),t('Local Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_privado_verde',$title,$type,$variables,$style,$class);
+            }else if($tid==29){
+                $title=panel_admin_get_icono_privacidad_title(array(t('Public Group'),t('Local Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_publico_verde',$title,$type,$variables,$style,$class);
+            }
+        }else if($konp=='grupo_otro_subdominio.png'){
+            if($tid==27){
+                $title=panel_admin_get_icono_privacidad_title(array(t('Collaborative Group'),t('Remote Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_colaborativo_azul',$title,$type,$variables,$style,$class);
+            }else if($tid==28){                         
+                $title=panel_admin_get_icono_privacidad_title(array(t('Private Group'),t('Remote Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_privado_azul',$title,$type,$variables,$style,$class);
+            }else if($tid==29){
+                $title=panel_admin_get_icono_privacidad_title(array(t('Public Group'),t('Remote Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_publico_azul',$title,$type,$variables,$style,$class);
+            }
+        }else if($konp=='grupo_del_servidor_red_alerta.png'){
+            if($tid==27){
+                $title=panel_admin_get_icono_privacidad_title(array(t('Collaborative Group'),t('Network Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_colaborativo_rojo',$title,$type,$variables,$style,$class);
+            }else if($tid==28){                           
+                $title=panel_admin_get_icono_privacidad_title(array(t('Private Group'),t('Network Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_privado_rojo',$title,$type,$variables,$style,$class);
+            }else if($tid==29){
+                $title=panel_admin_get_icono_privacidad_title(array(t('Public Group'),t('Network Server'),t('Connected')));
+                //intelsat-2015
+                $title=panel_admin_set_title_tipo_grupo_icono($title,$r);            
+                return my_get_icono_action('grupo_publico_rojo',$title,$type,$variables,$style,$class);
+            }
+        }
+    }    
+}
+function panel_admin_get_image_filename($icono_red_alerta){
+    $find='src="';
+    $pos=strpos($icono_red_alerta,$find);
+    if($pos===FALSE){
+        return '';
+    }
+    $result=substr($icono_red_alerta,$pos+strlen($find));
+    $pos_end=strpos($result,'"');
+    if($pos_end===FALSE){
+        return '';
+    }
+    $result=substr($result,0,$pos_end);
+    $result=basename($result);
+    return $result;
+}
+function panel_admin_is_user_gestion_grupos_propios(){
+    $param0=arg(0);
+    if($param0=='user-gestion'){
+        $param1=arg(1);
+        if($param1=='grupos'){
+            $param2=arg(2);
+            if($param2=='propios'){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function panel_admin_get_icono_privacidad_title($my_array){
+    $result=implode(' - ',$my_array);
+    return $result;
+}
+function panel_admin_add_gestion_usuarios_delete_bulk_form_field(&$form){
+    if(user_access('administer users')){
+        $title=t('Delete');
+        $form['my_bulk_operations_fs']['delete_user_btn']=array(
+         //'#type'=>'submit',
+         '#type'=>'image_button',               
+         //'#value'=>t('Modify roles'),
+         '#name'=>'delete_user_btn',
+         '#src'=>'sites/all/themes/buho/images/icons/delete.png',
+         '#attributes'=>array('alt'=>$title,'title'=>$title),     
+       );
+    }
+}
+function panel_admin_delete_user_confirm_confirm_form(){
+    drupal_set_title(t('Are you sure you want to delete these users?'));
+    $form=array();
+    $uid_array=array();
+    if(isset($_SESSION['gestion_usuarios_delete_uid_array'])){
+        $uid_array=$_SESSION['gestion_usuarios_delete_uid_array'];
+    }
+    $form['uid_array']=array(
+      '#type'=>'hidden',
+      '#default_value'=>my_get_session_default_value('gestion_usuarios_delete_uid_array'),
+    );
+    $form['edit-confirm']=array(
+      '#type'=>'hidden',
+      '#default_value'=>1,
+      '#name'=>'confirm',
+    );
+    $form['my_content']['#value']=hontza_block_user_confirm_content($uid_array);
+    $form['my_confirm_btn']=array(
+      '#type'=>'submit',
+      '#value'=>t('Confirm'),
+      '#name'=>'my_confirm_btn',
+    );
+    $form['my_cancel']['#value']=l(t('Cancel'),'gestion/usuarios');
+    
+    return $form;
+}
+function panel_admin_delete_user_confirm_confirm_form_submit($form,&$form_state){
+    $uid_array=explode(',',$form_state['values']['uid_array']);
+    if(!empty($uid_array)){
+        foreach($uid_array as $i=>$uid){
+            hontza_grupos_user_delete($uid);
+        }
+    }
+    $destination='gestion/usuarios';
+    if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+        $destination=$_REQUEST['destination'];
+    }
+    drupal_goto($destination);
+}
+function panel_admin_visualizador_left_title(){
+    return t('EDIT CONTENTS');
+}
+function panel_admin_visualizador_get_block_content(){
+    $html=array();
+    if(hontza_canal_rss_is_visualizador_defined()){
+        $activate_url='panel_admin/activate_observatory/edit';
+        $html[]=l(t('Activate Observatory'),$activate_url);        
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        $edit_main_content_url=panel_admin_visualizador_get_edit_main_content_url();
+        $html[]=l(t('Edit Main Content'),$edit_main_content_url);
+        $edit_about_us_url=panel_admin_visualizador_get_edit_about_us_url();
+        $html[]=l(t('Edit About us'), $edit_about_us_url);
+        $edit_legal_warning_url=panel_admin_visualizador_get_edit_legal_warning_url();
+        $html[]=l(t('Edit Legal Warning'), $edit_legal_warning_url);
+        //$html[]=l(t('Edit Website Map'), 'node/142840/edit');
+        $html[]=l(t('Edit Copyright'),'panel_admin/copyright/edit');
+        $html[]=l(t('Edit Contact'),'panel_admin/contacts/edit/title');
+        $edit_home_text_url=panel_admin_visualizador_get_edit_home_text_url();
+        $html[]=l('Edit Home text',$edit_home_text_url);    
+        $edit_bulletin_text_url=panel_admin_visualizador_get_edit_bulletin_text_url();
+        $html[]=l('Edit Bulletin text',$edit_bulletin_text_url);
+        $edit_logo_url=panel_admin_get_edit_logo_url();
+        $html[]=l('Edit Logo',$edit_logo_url,array('query'=>'destination=panel_admin'));
+        //$html[]=l('Edit Menu Color','panel_admin/menu_color_edit',array('query'=>'destination=panel_admin'));
+    }    
+    return implode('<BR>',$html);
+}
+function panel_admin_visualizador_banners_left_title(){
+    return t('BANNERS');
+}
+function panel_admin_visualizador_get_banners_block_content(){
+    $html=array();
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        return '';
+    }
+    $html[]=l(t('Create Banner'), 'node/add/banner');
+    $html[]=l(t('List of Banners'), 'panel_admin/banners');
+    return implode('<BR>',$html);
+}
+function panel_admin_visualizador_redes_sociales_left_title(){
+    return t('SOCIAL NETWORKS');
+}
+function panel_admin_visualizador_get_redes_sociales_block_content(){
+    $html=array();
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        return '';
+    }
+    $html[]=l(t('Edit Facebook link'), 'panel_admin/facebook_link_edit');
+    $html[]=l(t('Edit Twitter link'), 'panel_admin/twitter_link_edit');
+    $html[]=l(t('Edit Linkedin link'), 'panel_admin/linkedin_link_edit');
+    return implode('<BR>',$html);
+}
+function panel_admin_facebook_link_form(){
+    $facebook_url=variable_get('facebook_url_observatorio','https://www.facebook.com');
+    $form['facebook_url_observatorio']=array(
+        '#type'=>'textfield',
+        '#default_value'=>$facebook_url,
+    );
+    $form['save_btn']=array('#type'=>'submit','#name'=>'save_btn','#value'=>t('Save'));
+    return $form;
+}
+function panel_admin_twitter_link_form(){
+    $twitter_url=variable_get('twitter_url_observatorio','https://twitter.com');
+    $form['twitter_url_observatorio']=array(
+        '#type'=>'textfield',
+        '#default_value'=>$twitter_url,
+    );
+    $form['save_btn']=array('#type'=>'submit','#name'=>'save_btn','#value'=>t('Save'));
+    return $form;
+}
+function panel_admin_facebook_link_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        if($form_state['clicked_button']['#name']=='save_btn'){
+            if(isset($form_state['values']['facebook_url_observatorio']) && !empty($form_state['values']['facebook_url_observatorio'])){
+                variable_set('facebook_url_observatorio',$form_state['values']['facebook_url_observatorio']);
+                drupal_set_message(t('Facebook link saved'));
+            }    
+        }
+    }
+}
+function panel_admin_twitter_link_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        if($form_state['clicked_button']['#name']=='save_btn'){
+            if(isset($form_state['values']['twitter_url_observatorio']) && !empty($form_state['values']['twitter_url_observatorio'])){
+                variable_set('twitter_url_observatorio',$form_state['values']['twitter_url_observatorio']);
+                drupal_set_message(t('Twitter link saved'));
+            }    
+        }
+    }
+}
+function panel_admin_linkedin_link_form(){
+    $linkedin_url=variable_get('linkedin_url_observatorio','https://www.linkedin.com');
+    $form['linkedin_url_observatorio']=array(
+        '#type'=>'textfield',
+        '#default_value'=>$linkedin_url,
+    );
+    $form['save_btn']=array('#type'=>'submit','#name'=>'save_btn','#value'=>t('Save'));
+    return $form;
+}
+function panel_admin_linkedin_link_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        if($form_state['clicked_button']['#name']=='save_btn'){
+            if(isset($form_state['values']['linkedin_url_observatorio']) && !empty($form_state['values']['linkedin_url_observatorio'])){
+                variable_set('linkedin_url_observatorio',$form_state['values']['linkedin_url_observatorio']);
+                drupal_set_message(t('Linkedin link saved'));
+            }    
+        }
+    }
+}
+function panel_admin_visualizador_registered_left_title(){
+    return t('REGISTERED USERS');
+}
+function panel_admin_visualizador_get_registered_block_content(){
+    $html=array();
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        return '';
+    }
+    $html[]=l(t('Registered Users'), 'panel_admin/registered');
+    return implode('<BR>',$html);
+}
+function panel_admin_registered_callback(){
+    $result='';
+    if(hontza_canal_rss_is_publico_activado()){
+        return publico_register_registered();
+    }
+    return $result;
+}
+function panel_admin_registered_view_callback(){
+    $result='';
+    if(hontza_canal_rss_is_publico_activado()){
+        return publico_register_registered_view();
+    }
+    return $result;
+}
+function panel_admin_registered_delete_callback(){
+    $result='';
+    if(hontza_canal_rss_is_publico_activado()){
+        return publico_register_registered_delete_html();
+    }
+    return $result;
+}
+function panel_admin_visualizador_contact_left_title(){
+    return t('CONTACT');
+}
+function panel_admin_copyright_edit_callback(){
+    $result='';
+    if(hontza_canal_rss_is_publico_activado()){
+        return publico_copyright_edit_html();
+    }
+    return $result;
+}
+function panel_admin_visualizador_get_contact_block_content(){
+    $html=array();
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        return '';
+    }
+    $html[]=l(t('Create Contact'), 'node/add/visualizador-contacto',array('query'=>'destination='.'panel_admin/contacts'));
+    $html[]=l(t('List of Contacts'), 'panel_admin/contacts');
+    return implode('<BR>',$html);
+}
+function panel_admin_menu_color_edit_callback(){
+    return '';
+    //return drupal_get_form('panel_admin_menu_color_edit_form');
+}
+function panel_admin_menu_color_edit_form(){
+    $form=array();
+    $visualizador_menu_color=variable_get('visualizador_menu_color','#2E5753');
+    $value='<div><label><b>'.t('Menu color').':&nbsp;</b></label><input id="html5colorpicker" name="visualizador_menu_color" class="form-control" type="color" value="'.$visualizador_menu_color.'" onchange="clickColor(0, -1, -1, 5)"></div>';
+    $form['visualizador_menu_color']=array(
+        '#value'=>$value,
+    );
+    $form['save_btn']=array(
+        '#type'=>'submit',
+        '#default_value'=>t('Save'),
+        '#name'=>'save_btn',
+    );
+    $form['cancel_btn']=array(
+        '#value'=>l(t('cancel'),'panel_admin'),
+    );
+    return $form;
+}
+function panel_admin_menu_color_edit_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        if($form_state['clicked_button']['#name']=='save_btn'){
+            if(isset($_POST['visualizador_menu_color']) && !empty($_POST['visualizador_menu_color'])){
+                variable_set('visualizador_menu_color',$_POST['visualizador_menu_color']);
+                drupal_set_message(t('Menu color saved'));
+            }    
+        }
+    }
+}
+function panel_admin_gestion_publicar_access(){
+    if(user_access('Public sources management')){
+        return TRUE;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(red_is_administrador()){
+            return TRUE;
+        }
+    }    
+    return FALSE;
+}
+function panel_admin_is_edit_contents(){
+    if(hontza_canal_rss_is_publico_activado()){
+        return publico_panel_admin_is_edit_contents();
+    }
+    return 0;
+}
+//intelsat-2015
+function panel_admin_is_grupo_inicio(){
+     if(is_node_add('grupo-inicio')){
+        return 1;
+    }
+    $my_node=my_get_node();
+    if(isset($my_node->type) && !empty($my_node->type) && $my_node->type=='grupo_inicio'){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2015
+function panel_admin_is_grupos_ayuda(){
+    if(is_node_add('grupos-ayuda')){
+        return 1;
+    }
+    $my_node=my_get_node();
+    if(isset($my_node->type) && !empty($my_node->type) && $my_node->type=='grupos_ayuda'){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2015
+function panel_admin_set_title_tipo_grupo_icono($title,$r){
+    if(isset($r->title_orig)){
+        return $r->title_orig."\r".$title;
+    }
+    return $title;
+}
+//intelsat-2015
+function panel_admin_get_edit_logo_url(){
+    $result='admin/build/themes/settings/buho';
+    if(defined('_IS_EDIT_LOGO_URL') && _IS_EDIT_LOGO_URL==1){
+        if(defined('_EDIT_LOGO_URL')){
+            return _EDIT_LOGO_URL;
+        }
+    }
+    return $result;
+}
+//intelsat-2015
+function panel_admin_visualizador_settings_left_title(){
+    
+}
+//intelsat-2015
+function panel_admin_visualizador_get_edit_main_content_url(){
+    $result='';
+    $nid=visualizador_get_project_nid();
+    if(empty($nid)){
+        $result='node/add/visualizador-proyecto';
+    }else{
+        $result='node/'.$nid.'/edit';
+    }
+    return $result;
+}
+function panel_admin_visualizador_get_edit_about_us_url(){
+    $result='';
+    $nid=visualizador_get_sobre_proyecto_nid();
+    if(empty($nid)){
+        $result='node/add/visualizador-sobre-proyecto';
+    }else{
+        $result='node/'.$nid.'/edit';
+    }
+    return $result;
+}
+function panel_admin_visualizador_get_edit_legal_warning_url(){
+    $result='';
+    $nid=visualizador_get_aviso_legal_nid();
+    if(empty($nid)){
+        $result='node/add/visualizador-aviso-legal';
+    }else{
+        $result='node/'.$nid.'/edit';
+    }
+    return $result;
+}
+function panel_admin_visualizador_get_edit_home_text_url(){
+    $result='';    
+    $nid=visualizador_inicio_get_texto_nid();
+    if(empty($nid)){
+        $result='node/add/visualizador-inicio-texto';
+    }else{
+        $result='node/'.$nid.'/edit';
+    }
+    return $result;        
+}
+function panel_admin_visualizador_get_edit_bulletin_text_url(){
+    $result='';    
+    $nid=publico_alerta_user_get_texto_mis_boletines_grupo_nid();
+    if(empty($nid)){
+        $result='node/add/visualizador-boletin-texto';
+    }else{
+        $result='node/'.$nid.'/edit';
+    }
+    return $result;
+}
+function panel_admin_activate_observatory_edit_callback(){
+    return drupal_get_form('panel_admin_activate_observatory_edit_form');
+}
+function panel_admin_activate_observatory_edit_form(){
+    $form=array();
+    $form['activate_observatory']=array(
+        '#title'=>t('Activate Observatory'),
+        '#type'=>'checkbox',        
+    );
+    $activate_observatory=variable_get('is_visualizador',0);
+    if($activate_observatory){
+        $form['activate_observatory']['#attributes']=array('checked'=>'checked');
+    }
+    $form['save_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Save'),
+        '#name'=>'save_btn',
+    );
+    $url_cancel='panel_admin';
+    $form['cancel_btn']=array(
+        '#value'=>l(t('Cancel'),$url_cancel),        
+    );
+    return $form;
+}
+function panel_admin_activate_observatory_edit_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        if($form_state['clicked_button']['#name']=='save_btn'){
+            $activate_observatory=0;                
+            if(isset($form_state['values']['activate_observatory']) && !empty($form_state['values']['activate_observatory'])){
+                if($form_state['values']['activate_observatory']==1){
+                    $activate_observatory=1;
+                }
+            }
+            variable_set('is_visualizador',$activate_observatory);
+            drupal_set_message(t('Activate observatory saved'));           
+        }
+    }
+}
+//intelsat-2015
+function panel_admin_is_show_devel_switch_link($r){
+    if(is_super_admin()){
+        if(module_exists('devel')){    
+            if(isset($r->uid) && !empty($r->uid)){
+                return 1;
+            }
+        }    
+    }
+    return 0;
+}
+//intelsat-2015
+function panel_admin_get_devel_switch_link($r){
+    global $base_url;
+    $destination='node';
+    $url=$base_url.'/devel/switch/'.$r->users_name;
+    //return l(my_get_icono_action('devel_switch',t('Switch User')),$url,array('query'=>'destination='.$destination,'html'=>true));
+    return l(my_get_icono_action('devel_switch',t('Switch User')),$url,array('html'=>true));
+}
+//intelsat-2016
+function panel_admin_is_expertos(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='facilitador'){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='facilitadores'){
+            return 1;
+        }
+    }
+    return 0;
+}

@@ -1,0 +1,12 @@
+name = Taxonomy Image Link Alter
+description = Modify taxonomy term links to use Taxonomy Image.
+dependencies[] = taxonomy_image
+core = 6.x
+package = Taxonomy Image
+
+; Information added by drupal.org packaging script on 2012-08-28
+version = "6.x-1.7"
+core = "6.x"
+project = "taxonomy_image"
+datestamp = "1346174881"
+

@@ -1,0 +1,13 @@
+name = "A Node module access tests"
+; copied from Drupal 7 node_access_test
+description = "Support module for node permission testing."
+package = Testing
+core = 6.x
+hidden = TRUE
+
+; Information added by Drupal.org packaging script on 2014-04-29
+version = "6.x-3.0-rc2"
+core = "6.x"
+project = "apachesolr"
+datestamp = "1398757128"
+

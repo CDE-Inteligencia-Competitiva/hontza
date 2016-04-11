@@ -1,0 +1,12 @@
+; $Id: drpager.info,v 1.3 2009/09/19 21:55:08 mattyoung Exp $
+name = "Minimax pager"
+description = "Theme pager with text field input for direct random access to any page"
+package = User interface
+core = "6.x"
+
+; Information added by drupal.org packaging script on 2010-10-13
+version = "6.x-1.11"
+core = "6.x"
+project = "drpager"
+datestamp = "1287000361"
+

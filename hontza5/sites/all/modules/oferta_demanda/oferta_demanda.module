@@ -1,0 +1,555 @@
+<?php
+require_once('oferta_demanda.organizacion.inc.php');
+require_once('oferta_demanda.experto.inc.php');
+require_once('oferta_demanda.grupo.investigacion.inc.php');
+require_once('oferta_demanda.proyecto.inc.php');
+require_once('oferta_demanda.instalacion.inc.php');
+require_once('oferta_demanda.financiador.inc.php');
+require_once('oferta_demanda.centro.formacion.inc.php');
+require_once('oferta_demanda.evento.inc.php');
+require_once('oferta_demanda.tipo.organizacion.inc.php');
+require_once('oferta_demanda.rol.inc.php');
+require_once('oferta_demanda.area.tecnologica.inc.php');
+require_once('oferta_demanda.sector.actividad.inc.php');
+function oferta_demanda_perm() {
+  return array();
+}
+function oferta_demanda_menu() {
+    $items=array();
+    $items['oferta_demanda'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/organizaciones'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_organizacion_organizaciones_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/expertos'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_experto_expertos_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/grupos_investigacion'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_grupo_investigacion_grupos_investigacion_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/proyectos'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_proyecto_proyectos_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+     $items['oferta_demanda/instalaciones'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_instalacion_instalaciones_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/financiadores'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_financiador_financiadores_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/centros_formacion'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_centro_formacion_centros_formacion_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/eventos'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_evento_eventos_callback',
+    'access callback'=>'oferta_demanda_custom_access',    
+  );
+    $items['oferta_demanda/tipos_organizacion'] = array(
+    'title' => 'Offer-Request',
+    'page callback' => 'oferta_demanda_tipo_organizacion_tipos_organizacion_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+  );
+    $items['oferta_demanda/tipo_organizacion/%/edit']=array(
+    'title' => 'Edit',
+    'page callback' => 'oferta_demanda_tipo_organizacion_edit_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/tipo_organizacion/add/term']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_tipo_organizacion_add_term_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/tipos_organizacion_temp']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_tipo_organizacion_tipos_organizacion_temp_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/tipo_organizacion/%/delete']=array(
+    'title' => 'Delete',
+    'page callback' => 'oferta_demanda_tipo_organizacion_delete_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/roles'] = array(
+    'title' => 'Roles',
+    'page callback' => 'oferta_demanda_rol_roles_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+  );
+    $items['oferta_demanda/rol/%/edit']=array(
+    'title' => 'Edit',
+    'page callback' => 'oferta_demanda_rol_edit_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/rol/add/term']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_rol_add_term_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/roles_temp']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_rol_roles_temp_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/rol/%/delete']=array(
+    'title' => 'Delete',
+    'page callback' => 'oferta_demanda_rol_delete_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/areas_tecnologicas'] = array(
+    'title' => 'Roles',
+    'page callback' => 'oferta_demanda_area_tecnologica_areas_tecnologicas_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+  );
+    $items['oferta_demanda/area_tecnologica/%/edit']=array(
+    'title' => 'Edit',
+    'page callback' => 'oferta_demanda_area_tecnologica_edit_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/area_tecnologica/add/term']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_area_tecnologica_add_term_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/areas_tecnologicas_temp']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_area_tecnologica_areas_tecnologicas_temp_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/area_tecnologica/%/delete']=array(
+    'title' => 'Delete',
+    'page callback' => 'oferta_demanda_area_tecnologica_delete_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/sectores_actividad'] = array(
+    'title' => 'Roles',
+    'page callback' => 'oferta_demanda_sector_actividad_sectores_actividad_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+  );
+    $items['oferta_demanda/sector_actividad/%/edit']=array(
+    'title' => 'Edit',
+    'page callback' => 'oferta_demanda_sector_actividad_edit_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/sector_actividad/add/term']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_sector_actividad_add_term_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/sectores_actividad_temp']=array(
+    'title' => 'Add',
+    'page callback' => 'oferta_demanda_sector_actividad_sectores_actividad_temp_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    $items['oferta_demanda/sector_actividad/%/delete']=array(
+    'title' => 'Delete',
+    'page callback' => 'oferta_demanda_sector_actividad_delete_callback',
+    'access callback'=>'oferta_demanda_clasificacion_edit_access',    
+    );
+    return $items;
+}
+function oferta_demanda_callback(){
+    return oferta_demanda_organizacion_organizaciones_callback();
+}
+function oferta_demanda_custom_access(){
+    global $user;
+    /*if(is_super_admin()){
+        return 1;
+    }*/
+    if(isset($user->uid) && !empty($user->uid)){
+        return 1;
+    }
+    return 0;
+}
+function oferta_demanda_block($op = 'list', $delta = 0, $edit = array()) {
+ 	switch ($op) {
+    	case 'list':
+ 			$blocks[1400]['info'] =oferta_demanda_organizacion_get_organizaziones_title();
+                        $blocks[1401]['info'] =oferta_demanda_experto_get_expertos_title();
+                        $blocks[1402]['info'] =oferta_demanda_grupo_investigacion_get_grupo_investigacion_title();
+                        $blocks[1403]['info'] =oferta_demanda_proyecto_get_proyectos_title();
+                        $blocks[1404]['info'] =oferta_demanda_instalacion_get_instalaciones_title();
+                        $blocks[1405]['info'] =oferta_demanda_financiador_get_financiadores_title();
+                        $blocks[1406]['info'] =oferta_demanda_centro_formacion_get_centros_formacion_title();
+                        $blocks[1407]['info'] =oferta_demanda_evento_get_eventos_title();
+                        $blocks[1408]['info'] =oferta_demanda_tipo_organizacion_get_tipos_organizacion_title();
+                        $blocks[1409]['info'] =oferta_demanda_rol_get_roles_title();
+                        $blocks[1410]['info'] =oferta_demanda_area_tecnologica_get_areas_tecnologicas_title();
+                        $blocks[1411]['info'] =oferta_demanda_sector_actividad_get_sectores_actividad_title();
+			return $blocks;
+			break;
+		case 'view':
+			$block=oferta_demanda_view_block($delta);
+   			return $block;
+		default:
+			break;
+	}
+}
+function oferta_demanda_view_block($delta){
+	$block=array();
+	switch($delta){
+		case 1400:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_organizacion_get_organizaziones_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_organizacion_get_organizaciones_block_content();
+                        }
+			break;
+                case 1401:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_experto_get_expertos_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_experto_get_expertos_block_content();
+                        }
+			break;
+                case 1402:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_grupo_investigacion_get_grupo_investigacion_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_grupo_investigacion_get_grupo_investigacion_block_content();
+                        }
+			break;
+                case 1403:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_proyecto_get_proyectos_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_proyecto_get_proyectos_block_content();
+                        }
+			break;
+                case 1404:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_instalacion_get_instalaciones_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_instalacion_get_instalaciones_block_content();
+                        }
+			break;
+                case 1405:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_financiador_get_financiadores_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_financiador_get_financiadores_block_content();
+                        }
+			break;
+                 case 1406:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_centro_formacion_get_centros_formacion_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_centro_formacion_get_centros_formacion_block_content();
+                        }
+			break;
+                 case 1407:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_evento_get_eventos_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_evento_get_eventos_block_content();
+                        }
+			break;
+                 case 1408:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_tipo_organizacion_get_tipos_organizacion_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_tipo_organizacion_get_tipos_organizacion_block_content();
+                        }
+			break;
+                case 1409:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_rol_get_roles_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_rol_get_roles_block_content();
+                        }
+			break;
+                 case 1410:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_area_tecnologica_get_areas_tecnologicas_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_area_tecnologica_get_areas_tecnologicas_block_content();
+                        }
+			break;
+                 case 1411:
+                        if(oferta_demanda_custom_access()){
+                            $title=oferta_demanda_sector_actividad_get_sectores_actividad_title();
+                            $icono='';
+                            //$icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            $block['content'] = oferta_demanda_sector_actividad_get_sectores_actividad_block_content();
+                        }
+			break;       
+                default:
+			break;	 
+ 	}
+    return $block;
+}
+function oferta_demanda_form_alter(&$form, &$form_state, $form_id) {
+    /*$form_id_array=array('oferta_demanda_organizacion_node_form','oferta_demanda_experto_node_form','oferta_demanda_grupo_investigaci_node_form',
+    'oferta_demanda_proyecto_node_form','oferta_demanda_instalacion_node_form','oferta_demanda_financiador_node_form','oferta_demanda_centro_formacion_node_form',
+    'oferta_demanda_evento_node_form');*/
+    $form_id_array=taxonomy_hontza_get_oferta_demanda_form_node_array();
+    if(in_array($form_id,$form_id_array)){
+        oferta_demanda_unset_form_fields($form);
+        if($form_id=='oferta_demanda_organizacion_node_form'){
+            oferta_demanda_organizacion_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_experto_node_form'){
+            oferta_demanda_experto_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_grupo_investigaci_node_form'){
+            oferta_demanda_grupo_investigacion_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_proyecto_node_form'){
+            oferta_demanda_proyecto_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_instalacion_node_form'){
+            oferta_demanda_instalacion_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_financiador_node_form'){
+            oferta_demanda_financiador_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_centro_formacion_node_form'){
+            oferta_demanda_centro_formacion_node_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='oferta_demanda_evento_node_form'){
+            oferta_demanda_evento_node_form_alter($form,$form_state,$form_id);
+        }        
+    }
+}
+function oferta_demanda_unset_form_fields(&$form){
+    //echo print_r($form,1);exit();
+    $fields=array('menu','revision_information','attachments','path','author','comment_settings','options');
+    if(!empty($fields)){
+        foreach($fields as $i=>$field){
+            if(isset($form[$field])){
+                unset($form[$field]);
+            }
+        }
+    }
+    if(isset($form['body_field']['format'])){
+        $form['body_field']['format']['#prefix']='<div style="display:none">';
+        $form['body_field']['format']['#sufffix']='</div>';
+    }
+    if(isset($form['body_field']['teaser_include'])){
+        $form['body_field']['teaser_include']['#prefix']='<div class="teaser-checkbox" style="display:none;">';
+    }
+    if(isset($form['buttons']['preview'])){
+        unset($form['buttons']['preview']);
+    }
+}
+function oferta_demanda_is_activado(){
+    //if(is_super_admin()){
+        if(defined('_IS_OFERTA_DEMANDA') && _IS_OFERTA_DEMANDA==1){
+            return 1;
+        }
+    //}
+    return 0;
+}
+function oferta_demanda_is_oferta_demanda_node(){
+    $node_type_array=array('oferta_demanda_organizacion','oferta_demanda_experto','oferta_demanda_grupo_investigaci','oferta_demanda_proyecto',
+    'oferta_demanda_instalacion','oferta_demanda_financiador','oferta_demanda_centro_formacion','oferta_demanda_evento');
+    $node=my_get_node();
+    foreach($node_type_array as $i=>$value){
+        $add_value=str_replace('_','-',$value);
+        if(is_node_add($add_value)){
+            return 1;
+        }
+        if($node->type==$value){
+            return 1;
+        }
+    }
+    return 0;
+}
+function oferta_demanda_get_tags_title($vocabulary){
+    return t('Tags');
+}
+function oferta_demanda_is_tags_oferta_demanda($vocabulary){
+    $vocabulary_name_array=array('Etiquetas expertos','Etiquetas grupos investigacion','Etiquetas oferta demanda proyectos','Etiquetas instalaciones',
+    'Etiquetas financiador','Etiquetas centro formacion','Etiquetas evento');
+    if(in_array($vocabulary->name,$vocabulary_name_array)){
+        return 1;
+    }
+    return 0;
+}
+function oferta_demanda_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+      case 'presave':
+          oferta_demanda_evento_presave($node);
+          break;
+      default:
+          break;
+  }
+}
+function oferta_demanda_is_tipo_organizacion($vocabulary){
+  $vocabulary_name_array=array('Oferta Demanda Tipo Organizacion');
+    if(in_array($vocabulary->name,$vocabulary_name_array)){
+        return 1;
+    }
+    return 0;  
+}
+function oferta_demanda_get_tipo_organizacion_title($vocabulary){
+    return t('Type of organisation');
+}
+function oferta_demanda_is_rol($vocabulary){
+  $vocabulary_name_array=array('Oferta Demanda Rol');
+    if(in_array($vocabulary->name,$vocabulary_name_array)){
+        return 1;
+    }
+    return 0;  
+}
+function oferta_demanda_get_rol_title($vocabulary){
+    return t('Role (in technology transfer)');
+}
+function oferta_demanda_is_area_tecnologica($vocabulary){
+  $vocabulary_name_array=array('Oferta Demanda Area tecnologica');
+    if(in_array($vocabulary->name,$vocabulary_name_array)){
+        return 1;
+    }
+    return 0;  
+}
+function oferta_demanda_get_area_tecnologica_title($vocabulary){
+    return t('Technological Areas');
+}
+function oferta_demanda_is_sector_actividad($vocabulary){
+  $vocabulary_name_array=array('Oferta Demanda Sectores Actividad');
+    if(in_array($vocabulary->name,$vocabulary_name_array)){
+        return 1;
+    }
+    return 0;  
+}
+function oferta_demanda_get_sector_actividad_title($vocabulary){
+    return t('Activity sector(s)');
+}
+function oferta_demanda_is_oferta_demanda($konp=''){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='oferta_demanda'){
+        if(empty($konp)){
+            return 1;
+        }else{
+            $param1=arg(1);
+            if(!empty($param1) && $param1==$konp){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function oferta_demanda_is_oferta_demanda_clasificaciones(){
+    $my_array=array('tipos_organizacion','tipo_organizacion','roles','rol','areas_tecnologicas','area_tecnologica','sectores_actividad','sector_actividad');
+    if(!empty($my_array)){
+        foreach($my_array as $i=>$value){
+            if(oferta_demanda_is_oferta_demanda(($value))){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function oferta_demanda_get_url_clasificacion_terminos($url,$is_temp=0){
+    if(oferta_demanda_is_oferta_demanda('tipos_organizacion') || oferta_demanda_is_oferta_demanda('tipo_organizacion')){
+        if($is_temp){
+            return 'oferta_demanda/tipos_organizacion_temp';
+        }else{
+            return 'oferta_demanda/tipos_organizacion';        
+        }
+    }else if(oferta_demanda_is_oferta_demanda('roles') || oferta_demanda_is_oferta_demanda('rol')){
+        if($is_temp){
+            return 'oferta_demanda/roles_temp';
+        }else{
+            return 'oferta_demanda/roles';        
+        }
+    }else if(oferta_demanda_is_oferta_demanda('areas_tecnologicas') || oferta_demanda_is_oferta_demanda('area_tecnologica')){
+        if($is_temp){
+            return 'oferta_demanda/areas_tecnologicas_temp';
+        }else{
+            return 'oferta_demanda/areas_tecnologicas';        
+        }
+    }else if(oferta_demanda_is_oferta_demanda('sectores_actividad') || oferta_demanda_is_oferta_demanda('sector_actividad')){
+        if($is_temp){
+            return 'oferta_demanda/sectores_actividad_temp';
+        }else{
+            return 'oferta_demanda/sectores_actividad';        
+        }
+    }
+    return $url;
+}
+function oferta_demanda_get_term_edit_link($term){
+    $value=oferta_demanda_get_term_type();
+    $result=array('#value' => l(my_get_icono_action('edit',t('Edit')), 'oferta_demanda/'.$value.'/'.$term->tid.'/edit', array('query' => drupal_get_destination(),'html'=>true)));    
+    return $result;
+}
+function oferta_demanda_clasificacion_edit_access(){
+    global $user;
+    //
+    if(isset($user->roles) && !empty($user->roles)){
+        $roles_keys=array_keys($user->roles);
+        return in_array(ADMINISTRADOR,$roles_keys);
+    }
+    return 0;
+}
+function oferta_demanda_get_term_delete_link($tid){
+    $value=oferta_demanda_get_term_type();
+    return l(my_get_icono_action('delete',t('Delete')),'oferta_demanda/'.$value.'/'.$tid.'/delete', array('query' => drupal_get_destination(),'html'=>true));
+}
+function oferta_demanda_get_term_type(){
+    $result='tipo_organizacion';
+    if(oferta_demanda_is_oferta_demanda('roles')){
+        $result='rol';
+    }else if(oferta_demanda_is_oferta_demanda('areas_tecnologicas')){
+        $result='area_tecnologica';
+    }else if(oferta_demanda_is_oferta_demanda('sectores_actividad')){
+        $result='sector_actividad';
+    }
+    return $result;
+}
+function oferta_demanda_set_title_edit_clasificacion($vocabulary){
+    if($vocabulary->vid==25){
+        $title=t('Edit Type of Organisation');        
+    }else if($vocabulary->vid==26){
+        $title=t('Edit Role');  
+    }else if($vocabulary->vid==27){
+        $title=t('Edit Technological Area');  
+    }else if($vocabulary->vid==28){
+        $title=t('Edit Activity sector');  
+    }
+    drupal_set_title($title);
+}
+function oferta_demanda_set_taxonomy_form_field(&$form,$form_id){
+    /*if(oferta_demanda_is_oferta_demanda_node()){
+        if(isset($form['taxonomy'])){
+            /*foreach($form['taxonomy'] as $tid=>$row){
+                if(isset($form['taxonomy'][$tid]['#weight'])){
+                    $form['taxonomy'][$tid]['#weight']=999;
+                }
+            }*/
+            //$form['taxonomy']['#weight']=999;
+        //} 
+    //}
+    $form['#content_extra_fields']['taxonomy']['weight'] = 999;
+}

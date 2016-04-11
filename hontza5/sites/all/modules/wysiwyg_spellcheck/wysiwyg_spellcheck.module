@@ -1,0 +1,78 @@
+<?php
+
+
+/**
+ * @file
+ * wysiwyg_spellcheck is a plugin for wysiwyg editors
+ */
+
+function _wysiwyg_spellcheck_default_path($editor) {
+  // Get base path.
+  $path = function_exists('wysiwyg_get_path')
+    ? wysiwyg_get_path($editor)
+    : 'sites/all/libraries/' . $editor;
+
+  // Get spellcheck plugin path.
+  switch ($editor) {
+    case 'tinymce':
+      $path .= '/jscripts/tiny_mce/plugins/spellchecker';
+      break;
+    case 'ckeditor':
+      $path .= '/plugins/aspell';
+      break;
+  }
+  return $path;
+}
+
+function _wysiwyg_spellcheck_path($editor) {
+  // Default will be used if there is no such variable yet.
+  $path = variable_get('wysiwyg_spellcheck_' . $editor . '_spellchecker_location', _wysiwyg_spellcheck_default_path($editor));
+  return $path;
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function wysiwyg_spellcheck_help($path, $arg) {
+  if ($path == 'admin/modules#description') {
+    return t('Enables the TinyMCE spellchecker or CKEditor ASpell plugin in Wysiwyg editor.');
+  }
+}
+
+/**
+* Implementation of hook_wysiwyg_plugin().
+*/
+function wysiwyg_spellcheck_wysiwyg_plugin($editor) {
+  $path = _wysiwyg_spellcheck_path($editor);
+  switch ($editor) {
+    case 'tinymce':
+      if (file_exists("$path/editor_plugin.js")) {
+        return array(
+          // SEE http://drupal.org/files/issues/wysiwyg_api_documentation.patch
+          'spellchecker' => array(
+            // SEE http://drupal.org/node/767550
+            'path' => $path,
+            'filename' => 'editor_plugin.js',
+            'buttons' => array('spellchecker' => t('Spell Check')),
+            'url' => 'http://wiki.moxiecode.com/index.php/TinyMCE:Plugins/spellchecker',
+            'load' => TRUE,
+          ),
+        );
+      }
+      break;
+
+    case 'ckeditor':
+      if (file_exists("$path/plugin.js")) {
+        return array(
+          'aspell' => array(
+            'path' => $path,
+            'buttons' => array('SpellCheck' => t('Server Side Spell Check')),
+            'url' => 'http://cksource.com/forums/viewtopic.php?p=40830#p40830',
+            'load' => TRUE,
+          ),
+        );
+      }
+      break;
+  }
+}
+

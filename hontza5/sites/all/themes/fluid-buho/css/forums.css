@@ -1,0 +1,194 @@
+/* @override http://skinr/sites/skinr/themes/sky/css/forums.css?a */
+/* @group Layout */
+.forum-post {
+  width: 100%;
+  float: left;
+  position: static;
+  border: solid 1px #ddd;
+  margin: 0 0 1em 0;
+}
+.forum-wrapper-left {
+  float: left;
+  width: 23%;
+  overflow: hidden;
+}
+.forum-wrapper-right {
+  float: right;
+  overflow: hidden;
+  width: 76.8%;
+  border-left: solid 1px #ddd;
+}
+.with-picture {
+  min-height: 225px;
+}
+.without-picture {
+  min-height: 145px;
+}
+.forum-post .content {
+  padding: 0;
+  overflow: hidden;
+  float: left;
+  width: 100%;
+  position: relative;
+}
+.forum-post .content .inner ul,
+.forum-post .content .inner ol {
+  margin-left: 2em;
+}
+.forum-post .content .inner {
+  padding: 0.5em 1em;
+}
+/* @end */
+/* @group Top Post Only */
+.forum-post-top .meta-post {
+  background: #eee;
+  float: left;
+  text-align: right;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  border-bottom: solid 1px #ddd;
+  width: 100%;
+}
+.forum-post .meta-post li span,
+.forum-post .meta-post li label {
+  margin: 0 0.5em;
+  line-height: 2.5em;
+}
+/* @end */
+/* @group Replies */
+.forum-post .meta-author {
+  padding: 0;
+  margin: 1.5em;
+  list-style: none;
+}
+.forum-post-reply .meta-post {
+  background: #eee;
+  float: left;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  border-bottom: solid 1px #ddd;
+  width: 100%;
+}
+.forum-post-reply h2.title {
+  background: #b3b3b3 url('../images/bg-shade-medium.png') repeat-x 0 100%;
+  color: #fff;
+  padding: 0.5em;
+  margin: 0;
+  font-size: 1.3em;
+  color: #fff!important;
+}
+.forum-post-reply h2.title a,
+.forum-post-reply h2.title a:visited {
+  text-shadow: #555 1px 1px 1px;
+  color: #fff;
+}
+.forum-post-reply .meta-post {
+  float: left;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  display: inline;
+}
+.forum-post-reply .meta-post li {
+  float: left;
+  position: relative;
+  display: inline;
+}
+.forum-post-reply .meta-post li.date {
+  text-align: left;
+  width: 76.8%;
+  margin: 0;
+  padding: 0;
+}
+.forum-post-reply .meta-post li.comment-link {
+  text-align: right!important;
+  width: 23%;
+  margin: 0;
+  padding: 0;
+}
+/* @end */
+/* @group Links */
+.forum-post div.links {
+  float: left;
+  width: 100%;
+  border-top: solid 1px #ddd;
+  background: #fff url('../images/bg-shade-light.png') repeat-x bottom left;
+  line-height: 24px;
+  height: 24px;
+  padding: 0;
+  text-align: right;
+}
+.forum-post .links ul {
+  display: inline;
+  margin: 0 0 1em 0;
+  padding: 0;
+  clear: both;
+}
+.forum-post .links li {
+  background: #fff url('../images/bg-shade-light.png') repeat-x 0 100%;
+  margin: 0!important;
+  outline: 0;
+  text-decoration: none;
+  list-style: none;
+  font-weight: normal;
+  padding: 0 1em;
+  line-height: 24px;
+  text-shadow: #fff 1px 1px 1px;
+  display: inline-block;
+}
+.forum-post .links li:hover {
+  background: #b3b3b3 url('../images/bg-shade-medium.png') repeat-x 0 100%;
+  color: #333;
+  text-shadow: #ddd 1px 1px 1px;
+}
+.forum-post .links li a {
+  color: #555;
+}
+.forum-post .links li:hover a,
+.forum-post .links li:hover a:hover {
+  color: #fff;
+  text-shadow: #555 1px 1px 1px;
+}
+/* @end */
+#comments {
+  padding: 0!important;
+  clear: both;
+}
+#comments a.active {
+  font-weight: 400;
+}
+#forum ul {
+  clear: both;
+  position: relative;
+}
+#forum td.icon {
+  padding: 10px;
+}
+#forum .name a {
+  padding: 5px;
+  font-size: 1.3em;
+}
+#forum .forum-indented .name {
+  font-size: 1.1em;
+  border-bottom: none;
+  padding-left: 25px;
+}
+#forum .description {
+  font-size: 0.9em;
+}
+#forum .forum-indented .description {
+  padding-left: 25px;
+}
+#forum table + table .last-reply,
+#forum table + table .replies {
+  background: none;
+}
+td.icon img {
+  display: block;
+  margin-right: 8px;
+}
+.forum-topic-navigation {
+  display: none;
+}

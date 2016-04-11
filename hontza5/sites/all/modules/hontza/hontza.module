@@ -1,0 +1,3993 @@
+<?php  // $Id: hontza.module,v 1.0 2010/10/12 00:15:21 karlosgliberal Exp $
+
+/**
+ * @file
+ * First module on hontza distribution
+ */
+//TODO problem in conversion hontza to distribute whith role. in this module the contro is create 
+//whith de role id, and in profile installation role ide geinerate is diferent.
+define('ANONIMO',  _role_id('anonymous user'));
+define('AUTHENTICATED', _role_id('authenticated user'));
+define('ADMINISTRADOR', _role_id('Administrador'));
+define('CREADOR', _role_id('Creador de grupos'));
+define('TRADUCTORES', _role_id('Traductores'));
+//gemini
+define('ADMINISTRADOR_DE_GRUPO',_role_id('Administrador de Grupo'));
+//gemini-2014
+define('RED_ALERTA_GRUPO_SHARED_NID',140028);
+
+//gemini
+require_once('hontza.funciones.php');
+require_once('hontza.scr.php');
+require_once('hontza.lag.php');
+require_once('hontza.mas.php');
+require_once('hontza.user.add.php');
+require_once('hontza.html.rss.php');
+require_once('hontza.a.php');
+require_once('hontza.b.php');
+require_once('hontza.c.php');
+require_once('hontza.d.php');
+require_once('hontza.e.php');
+require_once('hontza.f.php');
+//
+//gemini-2014
+require_once('hontza.solr.inc.php');
+require_once('hontza.social.inc.php');
+require_once('hontza.simular.inc.php');
+require_once('hontza.solr.funciones.inc.php');
+require_once('hontza.canal.comodin.inc.php');
+require_once('hontza.solr.search.inc.php');
+require_once('hontza.canal.rss.inc.php');
+//
+//intelsat-2016
+require_once('hontza.registrar.inc.php');
+require_once('hontza.crm.inc.php');
+require_once('hontza.canal.json.inc.php');
+//gemini
+function hontza_help($path, $arg) {
+  /*switch ($path) {
+    // Main module help for the block module
+    case 'admin/help#block':
+      return '<p>' . t('Blocks are boxes of content rendered into an area, or region, of a web page. The default theme Garland, for example, implements the regions "left sidebar", "right sidebar", "content", "header", and "footer", and a block may appear in any one of these areas. The <a href="@blocks">blocks administration page</a> provides a drag-and-drop interface for assigning a block to a region, and for controlling the order of blocks within regions.', array('@blocks' => url('admin/structure/block'))) . '</p>';
+
+      // Help for another path in the block module
+    case 'admin/build/block':	
+      return '<p>' . t('This page provides a drag-and-drop interface for assigning a block to a region, and for controlling the order of blocks within regions. Since not all themes implement the same regions, or display regions in the same way, blocks are positioned on a per-theme basis. Remember that your changes will not be saved until you click the <em>Save blocks</em> button at the bottom of the page.') . '</p>';
+  }*/
+}
+
+
+/**
+ * Implements hook_perm().
+ */
+function hontza_perm() {
+  //gemini-2013
+  //return array(
+  $result=array(
+  //
+    'Public sources management',
+    'View channel statistics',
+    'View tag statistics',
+	//gemini
+	'Delete dynamic folder',
+	'Source link view does not exist',
+	'Debate source link view does not exist',
+	'Ver my_noticia_de_usuario',
+	'Ver cat_servicio_view',
+	'Ver my_download',
+	'Interactive view',
+        'Ver my_doc_list',
+        'Ver noticia_canal_home',
+        'Ver destacar_item',
+        'Ver no_destacar_item',
+        'Ver noticias_parametrizacion',
+        'Ver publicar_noticia_usuario',
+        'Ver destacar_noticia_usuario',
+        'Ver no_publicar_noticia_usuario',
+        'Ver no_destacar_noticia_usuario',
+        'Ver evaluar_doc',
+        'Ver my_noticias_publicas',
+        'Ver publicar_item',
+        'Ver no_publicar_item',
+        'Ver my_noticias_destacadas',
+        'Ver my_noticias_publicas_confirm_form',
+        'Ver usuarios_captacion_informacion',
+        'Ver usuarios_aportacion_valor',
+        'Ver usuarios_generacion_ideas',
+        'Ver my_copiar_ayuda',
+        'Ver user_demo_caducado',
+        'Ver download_servicios_documento',
+        'Ver gracias_demo',
+        'Ver gracias_consultores_en_inteligencia_competitiva',
+        'Ver gracias_facilitador',
+        'Ver frases_post_formulario',
+        'Ver borrar_items_canal_no_existe',
+        'Ver confirm_borrar_items_canal_no_existe',
+        'Ver mensaje_items_borrados_canal_no_existe',
+        'Ver my_access_denied',
+        'Ver grupo_sin_seleccionar',
+        'Ver exportar_claves_traducciones',
+        'Ver traducciones_ingles',
+        'Ver traducciones_ingles_edit',
+        'Ver importar_pagina_html_form',
+        'Ver traducir_castellano',
+        'Ver borrar_url_alias',
+        'Ver cambiar_idioma',
+        'Ver user_login_by_lang',
+        'Ver importar_fuente_html_form',
+        'Ver limpiar_db',
+        'Ver probar_open_calais',
+        'Ver node_opencalais',
+        'Ver probar_alchemy',
+        'Ver node_alchemy',
+        'Ver canales_my_categorias',
+        'Ver group_api_keys',
+        //
+  );
+  //gemini-2013
+  $result=beste_hontza_perm($result);
+  return $result;
+  //
+}
+
+/**
+ * Implementation of hook_menu
+ */
+function hontza_menu() {
+  $items = array();
+  $items['crear/fuente-supercanal'] = array(
+    'title' => t('Add Yahoo Pipes Source'),
+    'page callback' => 'supercanal_wizard',
+    'access arguments' => array('create supercanal content'),
+    'file' => 'wizards/supercanal.wizard.inc',
+  );
+  $items['crear/fuente-dapper'] = array(
+    'title' => t('Add Dapper Source'),
+    'page callback' => 'fuentedapper_wizard',
+    'access arguments' => array('create supercanal content'),
+    'file' => 'wizards/fuentedapper.wizard.inc',
+  );
+  $items['crear/canal-supercanal'] = array(
+    'title' => t('Add channel from a source'),
+    'page callback' => 'canal_wizard',
+    'access arguments' => array('create canal_de_supercanal content'),
+    'file' => 'wizards/canal.wizard.inc',
+  );
+  $items['crear/canal-yql'] = array(
+    'title' => t('Create Channel RSS Filter'),
+    'page callback' => 'yql_wizard',
+    'access arguments' => array('create canal_de_yql content'),
+    'file' => 'wizards/yql.wizard.inc',
+  );
+
+  //Canales con estadisticas....
+  $items['estadisticas/canales/%'] = array(
+    'page callback' => 'estadisticas_modal_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('View channel statistics'),
+  );
+  $items['estadisticas'] = array(
+    //'title' => 'Listado de canales del grupo',
+    'title' => t('Channel Analysis'),
+    'page callback' => 'drupal_get_form',    
+    //gemini
+    //'page arguments'   => array('lista_canales_estadisticas', 2),
+    'page arguments'   => array('lista_canales_estadisticas'),
+    'type' => MENU_CALLBACK,
+    //'access callback' => TRUE,
+    'access arguments' => array('View channel statistics'),
+  );
+
+    //Panel de gestion fuentes publicas
+  $items['gestion/publicar'] = array(
+    'title' => 'Share Sources',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('publicar_fuentes_form', 2),
+    'type' => MENU_CALLBACK,
+    //gemini
+    //'access callback' => TRUE,
+    //gemini-2014  
+    //'access arguments' => array('Gestion fuentes publicas'),
+    //intelsat-2015
+    //'access arguments' => array('Public sources management'),
+    'access callback'=>'panel_admin_gestion_publicar_access',  
+  );
+  $items['gestion/lista-publicas'] = array(
+    'title' => 'List of public sources',
+    'page callback' => 'drupal_get_form',
+    //gemini-2013
+    //'page arguments'   => array('fuentes_publicas_form', 2),
+    'page arguments'   => array('fuentes_publicas_form'),
+    //
+    'type' => MENU_CALLBACK,
+    //gemini
+    //'access callback' => TRUE,
+    //gemini-2014  
+    //'access arguments' => array('Gestion fuentes publicas'),
+    //'access arguments' => array('Public sources management'),
+    'access callback'=>'panel_admin_gestion_publicar_access',  
+  );
+  
+  //Etiquetas con estadisticas....
+  $items['stat/etiquetas/%'] = array(
+    'page callback' => 'estadisticas_etiquetas_modal_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('View tag statistics'),
+  );
+  $items['stat/etiquetas'] = array(
+    'title' => 'Most used tags',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('lista_etiquetas_estadisticas', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('View tag statistics'),
+  );
+  $items['stat/item'] = array(
+    'title' => 'Validated Contents',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('lista_items_validados', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('Ver estadisticas validadas'),
+  );
+  
+  //gemini
+  $items['carpeta_dinamica/borrar'] = array(
+    'page callback' => 'carpeta_dinamica_borrar_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Delete dynamic folder'),
+	//'type' => MENU_CALLBACK,
+  );  
+  //
+  
+   //gemini
+  $items['no_existe_enlace_origen'] = array(
+    'page callback' => 'no_existe_enlace_origen_callback',
+    'access arguments' => array('Source link view does not exist'),	
+  );  
+  //
+  
+   //gemini
+  $items['no_existe_enlace_origen_debate'] = array(
+    'page callback' => 'no_existe_enlace_origen_debate_callback',
+    'access arguments' => array('Debate source link view does not exist'),	
+  );  
+  //
+  
+  //gemini
+  $items['my_noticia_de_usuario/%'] = array(
+    'page callback' => 'my_noticia_de_usuario_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver my_noticia_de_usuario'),
+  );  
+  //
+  
+   //gemini
+  $items['cat_servicio_view/%'] = array(
+    'page callback' => 'cat_servicio_view_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver cat_servicio_view'),
+  );  
+  //
+  
+   //gemini
+  $items['my_download/%'] = array(
+    'page callback' => 'my_download_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver my_download'),
+  );  
+  //
+  
+  /*
+  //gemini
+  $items['interactiva'] = array(
+    'page callback' => 'interactiva_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Interactive view'),
+  );  
+  //
+  */
+  
+  //gemini
+  $items['chat_list'] = array(
+    'page callback' => 'chat_list_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Interactive view'),
+  );
+  $items['my_doc_list'] = array(
+    'page callback' => 'my_doc_list_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver my_doc_list'),
+  );
+  $items['noticia_canal_home/%']=array(
+    'page callback' => 'noticia_canal_home_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver noticia_canal_home'),
+  );
+  $items['destacar_item/%'] = array(
+    'page callback' => 'destacar_item_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver destacar_item'),
+  );
+  $items['no_destacar_item/%'] = array(
+    'page callback' => 'no_destacar_item_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver no_destacar_item'),
+  );
+  $items['admin/content/hontza/settings'] = array(
+    //intelsat-2015
+    'title' => 'Settings - Public/Highlighted News',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hontza_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+    'file' => 'hontza.admin.inc.php',
+  );
+  $items['usuarios_estadisticas/%'] = array(
+    'page callback' => 'usuarios_estadisticas_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver usuarios_estadisticas'),
+  );
+  $items['publicar_noticia_usuario/%'] = array(
+    'page callback' => 'publicar_noticia_usuario_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver publicar_noticia_usuario'),
+  );
+  $items['destacar_noticia_usuario/%'] = array(
+    'page callback' => 'destacar_noticia_usuario_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver destacar_noticia_usuario'),
+  );
+  $items['no_publicar_noticia_usuario/%'] = array(
+    'page callback' => 'no_publicar_noticia_usuario_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver no_publicar_noticia_usuario'),
+  );
+  $items['no_destacar_noticia_usuario/%'] = array(
+    'page callback' => 'no_destacar_noticia_usuario_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver no_destacar_noticia_usuario'),
+  );
+   $items['evaluar_doc/%'] = array(
+    'title' => 'Evaluate document',
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('evaluar_doc_form'),
+    //'type' => MENU_CALLBACK,
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver evaluar_doc'),
+  );
+  $items['admin/content/hontza/my_idea_settings'] = array(
+    'title' => t('Settings - Proposals Module'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hontza_my_idea_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+    'file' => 'hontza.admin.inc.php',
+  );
+  //
+  $items['gestion/my_noticias_publicas'] = array(
+    //intelsat-2015
+    'title'=>'List of Public News',  
+    'page callback' => 'panel_admin_noticias_publicas_callback',
+    //'page callback' => 'drupal_get_form',
+    //'page arguments' => array('my_noticias_publicas_form'),
+    //
+    'access arguments' => array('Ver my_noticias_publicas'),
+  );
+  $items['publicar_item/%'] = array(
+    'page callback' => 'publicar_item_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver publicar_item'),
+  );
+  $items['no_publicar_item/%'] = array(
+    'page callback' => 'no_publicar_item_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver no_publicar_item'),
+  );
+   $items['gestion/my_noticias_destacadas'] = array(
+    //intelsat-2015
+    'title'=>'List of Highlighted News',   
+    'page callback' => 'panel_admin_noticias_destacadas_callback',
+    //   
+    'access arguments' => array('Ver my_noticias_destacadas'),
+  );
+   $items['gestion/my_noticias_publicas_confirm_form']=array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('panel_admin_noticias_publicas_delete_confirm_form'),
+    'access arguments' => array('Ver my_noticias_publicas_confirm_form'),
+   );
+   $items['gestion/my_noticias_publicas_publish_post_confirm_form']=array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('my_noticias_publicas_publish_post_confirm_form'),
+    'access arguments' => array('Ver my_noticias_publicas_publish_post_confirm_form'),
+   );
+   $items['gestion/my_noticias_publicas_unpublish_post_confirm_form']=array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('my_noticias_publicas_unpublish_post_confirm_form'),
+    'access arguments' => array('Ver my_noticias_publicas_unpublish_post_confirm_form'),
+   );
+   $items['usuarios_captacion_informacion/%'] = array(
+    'page callback' => 'usuarios_captacion_informacion_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver usuarios_captacion_informacion'),
+  );
+   $items['usuarios_aportacion_valor/%'] = array(
+    'page callback' => 'usuarios_aportacion_valor_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver usuarios_aportacion_valor'),
+  );
+   $items['usuarios_generacion_ideas/%'] = array(
+    'page callback' => 'usuarios_generacion_ideas_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver usuarios_generacion_ideas'),
+  );
+   $items['my_copiar_ayuda'] = array(
+    'page callback' => 'my_copiar_ayuda_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver my_copiar_ayuda'),
+  );
+
+  $items['user_demo_caducado'] = array(
+    'title' => t('User demo expired'),
+    'page callback' => 'user_demo_caducado_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver user_demo_caducado'),
+  );
+  
+  $items['download_servicios_documento/%'] = array(
+    'page callback' => 'download_servicios_documento_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver download_servicios_documento'),
+  );
+
+  $items['gracias_demo'] = array(
+    'title' => t('Thanks'),
+    'page callback' => 'gracias_demo_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver gracias_demo'),
+  );
+  $items['admin/content/hontza/post_formulario_settings'] = array(
+    'title' => t('Welcome Messages'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hontza_post_formulario_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+    'file' => 'hontza.admin.inc.php',
+  );
+  $items['gracias_consultores_en_inteligencia_competitiva'] = array(
+    'title' => t('Thanks'),
+    'page callback' => 'gracias_consultores_en_inteligencia_competitiva_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver gracias_consultores_en_inteligencia_competitiva'),
+  );
+
+  $items['gracias_facilitador'] = array(
+    'title' => t('Thanks'),
+    'page callback' => 'gracias_facilitador_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver gracias_facilitador'),
+  );
+
+  $items['frases_post_formulario'] = array(
+    'title' => t('List of Welcome Messages'),
+    'page callback' => 'frases_post_formulario_callback',
+    //'page arguments' => array(1),
+    'access arguments' => array('Ver frases_post_formulario'),
+  );
+
+  $items['admin/settings/hontza'] = array(
+    'title' => t('No reply email'),
+    'description' => t('No reply email'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hontza_admin_email_settings'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'hontza.admin.inc.php',
+  );
+  $items['borrar_items_canal_no_existe/%'] = array(
+    'page callback' => 'borrar_items_canal_no_existe_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver borrar_items_canal_no_existe'),
+  );
+  $items['confirm_borrar_items_canal_no_existe/%'] = array(
+    'page callback' => 'confirm_borrar_items_canal_no_existe_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver confirm_borrar_items_canal_no_existe'),
+  );
+  $items['mensaje_items_borrados_canal_no_existe'] = array(
+    'page callback' => 'mensaje_items_borrados_canal_no_existe_callback',
+    'access arguments' => array('Ver mensaje_items_borrados_canal_no_existe'),
+  );
+  $items['my_access_denied'] = array(
+    'page callback' => 'my_access_denied_callback',
+    'access arguments' => array('Ver my_access_denied'),
+  );
+  $items['grupo_sin_seleccionar'] = array(
+    'page callback' => 'grupo_sin_seleccionar_callback',
+    'access arguments' => array('Ver grupo_sin_seleccionar'),
+  );
+  $items['exportar_claves_traducciones'] = array(
+    'page callback' => 'exportar_claves_traducciones_callback',
+    'access arguments' => array('Ver exportar_claves_traducciones'),
+  );
+
+  $items['traducciones_ingles'] = array(
+    'page callback' => 'traducciones_ingles_callback',
+    'access arguments' => array('Ver traducciones_ingles'),
+  );
+ 
+  $items['traducciones_ingles/%/edit'] = array(    
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('traducciones_ingles_edit_form'),   
+    'access arguments' => array('Ver traducciones_ingles_edit'),
+  );
+
+  $items['importar_pagina_html'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('importar_pagina_html_form'),
+    'access arguments' => array('Ver importar_pagina_html_form'),
+  );
+
+  $items['traducir_castellano'] = array(
+    'page callback' => 'traducir_castellano_callback',
+    'access arguments' => array('Ver traducir_castellano'),
+  );
+
+  $items['borrar_url_alias'] = array(
+    'title' => t('delete url alias'),
+    'page callback' => 'borrar_url_alias_callback',
+    'access arguments' => array('Ver borrar_url_alias'),
+  );
+
+  $items['cambiar_idioma'] = array(
+    'title' => t('Change language'),
+    'page callback' => 'cambiar_idioma_callback',
+    'access arguments' => array('Ver cambiar_idioma'),    
+  );
+
+  $items['user_login_by_lang'] = array(
+    'title' => t('user_login_by_lang'),
+    'page callback' => 'user_login_by_lang_callback',
+    'access arguments' => array('Ver user_login_by_lang'),
+  );
+
+  $items['importar_fuente_html'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('importar_fuente_html_form'),
+    'access arguments' => array('Ver importar_fuente_html_form'),
+  );
+
+   $items['limpiar_db'] = array(
+    'title' => t('limpiar_db'),
+    'page callback' => 'limpiar_db_callback',
+    'access arguments' => array('Ver limpiar_db'),
+  );
+
+  $items['probar_open_calais'] = array(
+    'title' => t('probar_open_calais'),
+    'page callback' => 'probar_open_calais_callback',
+    'access arguments' => array('Ver probar_open_calais'),
+  );
+
+  //gemini
+  $items['node/%/opencalais'] = array(
+    'title'=>t('Opencalais'),
+    'page callback' => 'node_opencalais_callback',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 100,
+    'access arguments' => array('Ver node_opencalais'),
+  );
+  //
+
+  $items['probar_alchemy'] = array(
+    'title' => t('probar_alchemy'),
+    'page callback' => 'probar_alchemy_callback',
+    'access arguments' => array('Ver probar_alchemy'),
+  );
+
+  //gemini
+  $items['node/%/alchemy'] = array(
+    'title'=>t('Alchemy'),
+    'page callback' => 'node_alchemy_callback',
+    'page arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 101,
+    'access arguments' => array('Ver node_alchemy'),
+  );
+  $items['canales/my_categorias/%'] = array(
+    'title'=>t('Channels by Category'),
+    'page callback' => 'canales_my_categorias_callback',
+    //'page arguments' => array(1),
+    //'type' => MENU_LOCAL_TASK,
+    //'weight' => 101,
+    'access arguments' => array('Ver canales_my_categorias'),
+  );
+  $items['group_api_keys/%'] = array(
+    'title'=>t('API Keys'),
+    'page callback' => 'group_api_keys_callback',
+    'access arguments' => array('Ver group_api_keys'),
+  );
+  $items['ajax_save_source_key'] = array(
+    'title'=>t('Save Ajax source key'),
+    'page callback' => 'ajax_save_source_key_callback',
+    'access callback' => TRUE,
+  );
+  //gemini_2013
+  $items=beste_menu_items($items);
+  //
+  return $items;
+}
+
+
+/**
+ * Implements hook_init().
+ */
+function hontza_init() {
+ /*global $base_url;
+ print 'base_url===='.$base_url.'<BR>';*/
+ drupal_add_js(drupal_get_path('module', 'hontza') .'/hontza.js', 'module');
+ //gemini
+ /*menu_rebuild();
+ exit();*/
+ /*node_access_rebuild();
+ exit();*/
+ my_hontza_init();
+ //
+}
+
+
+/**
+ * Implements hook_nodeapi().
+ */
+
+function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+	//print 'op='.$op.'<BR>';
+	
+  switch ($op) {
+  	case 'prepare':
+		//gemini
+                my_servicio_access($node);
+                my_prepare_node_taxonomy($node);
+                //
+		break;
+    case 'insert':
+        /*
+		//gemini		
+		  if(strcmp($node->type,'chat')==0){
+			echo print_r($node,1);
+			exit();
+		  }
+		  //
+		 */ 	  
+	  //Cambiar el atributo og_public a FALSE para las noticias
+      global $user;
+	  //print $node->og_public;exit();	  
+      if ($node->type == 'noticia' and $user->roles[ADMINISTRADOR] and $user->roles[CREADOR] ) {
+		$node->og_public = FALSE;
+      }
+      //gemini-2014
+      hontza_on_insert_noticia_de_usuario($node);
+      /*
+      //gemini-2013
+      //AVISO::::hasta averiguar porque las noticias de usuario van a la home publica
+      if ($node->type == 'noticia'){
+          $node->og_public = FALSE;
+      }*/
+      //gemini
+      alerta_notif_save($node);
+      //on_boletin_cabecera_or_pie_save($node);
+      set_administrador_de_grupo_role($node);
+      save_grupo_fuentehtml($node);
+      my_save_faq($node);
+      //on_node_insert($node);
+      on_save_grupo($op,$node);
+      hontza_on_debate_save($op,$node);
+      hontza_on_wiki_save($op,$node);
+      boletin_report_on_bulletin_text_save($op,$node);
+      red_on_item_save($op,$node);
+      hontza_on_save_source($op,$node);
+      red_regiones_on_save_canal($op, $node);
+      //gemini-2014
+      red_on_noticia_de_usuario_save($op,$node);
+      //red_on_servidor_save($op,$node);
+      hontza_social_on_form_node_save($op,$node);
+      //
+      //intelsat-2015
+      panel_admin_contacts_on_visualizador_contacto_save($node, $op);
+      hontza_canal_rss_usuario_basico_on_grupo_inicio_save($node, $op);
+      //intelsat-2015
+      red_on_canal_usuario_save($op,$node);
+      red_despacho_on_node_save($op,$node);
+      break;
+    
+    case 'presave':
+      //
+      /*
+		//gemini		
+		  if(strcmp($node->type,'collection_item')==0){
+			echo print_r($node,1);
+			exit();
+		  }
+		  //*/
+		   
+      if ($node->type == 'item') {
+        /*if(user_access('root')){
+            echo print_r($node,1);
+            exit();  
+        }*/
+        $madre = node_load($node->feeds_node_item->feed_nid);
+        $node->og_groups = $madre->og_groups;
+        if ($madre->type == 'canal_de_supercanal' or $madre->type == 'canal_de_yql') {
+          $node->field_item_canal_reference[0]['nid'] = $madre->nid;
+        }		
+      }
+	  //gemini
+          my_hontza_presave($node, $op, $a3, $a4);
+	  //
+        
+        /*  
+        //gemini-2013
+        //AVISO::::hasta averiguar porque las noticias de usuario van a la home publica
+        if ($node->type == 'noticia'){
+            $node->og_public = FALSE;
+        }*/
+    break;
+    
+    case 'delete':
+	   	  
+	  if ($node->type == 'canal_de_supercanal') {
+              hontza_canal_delete_reto_al_que_responde($node->nid, $node->vid);
+	  	//print $node->type.'<BR>';
+        $items = db_query($sql=sprintf("SELECT nid FROM {feeds_node_item} WHERE feed_nid = %d", $node->nid));        
+		
+		while ($item_nid = db_result($items)) {		  
+		  node_delete($item_nid);
+		}
+		
+		//gemini
+		my_delete_item_list($node->nid);
+                //
+	  }
+	  
+      if ($node->type == 'canal_de_yql') {
+          hontza_canal_delete_reto_al_que_responde($node->nid, $node->vid);
+          hontza_delete_canal_yql_parametros($node);
+        $items = db_query("SELECT nid FROM {feeds_node_item} WHERE feed_nid = %d", $node->nid);
+        while ($item_nid = db_result($items)) {
+          node_delete($item_nid);
+        }
+		
+		//gemini
+		my_delete_item_list($node->nid);
+	    my_delete_opml_file($node);
+		//		
+      }
+	  
+	  //gemini
+	  if($node->type == 'supercanal'){
+	  	//print $node->type.'<BR>';
+	  	borrar_canales_fuente($node);
+	  }
+	  //
+	  
+	 
+	 //gemini
+	 //OHARRA::::bestela oraingoz ez ditu denak ezabatzen	 
+	 /* 
+     //Redirigir url cuando se elimina contenido
+      if(og_get_group_context()->purl) {
+        drupal_goto(og_get_group_context()->purl .'/dashboard');
+      }
+      else {
+        drupal_goto('node');
+      }
+	  */
+      //gemini-2014
+      red_on_node_delete($node);
+    break;
+    case 'update':
+      //gemini      
+      alerta_notif_save($node,'node','update');
+      set_administrador_de_grupo_role($node);
+      save_grupo_fuentehtml($node);
+      my_save_faq($node);
+      on_canal_save($op,$node);
+      on_save_grupo($op,$node);
+      red_on_item_save($op,$node);
+      hontza_on_save_source($op,$node);
+      red_regiones_on_save_canal($op, $node);
+      //gemini-2014
+      red_on_noticia_de_usuario_save($op,$node);
+      //red_on_servidor_save($op,$node);
+      //intelsat-2015
+      hontza_on_debate_save($op,$node);
+      hontza_on_wiki_save($op,$node);
+      panel_admin_contacts_on_visualizador_contacto_save($node, $op);
+      //
+      //intelsat-2015
+      red_on_canal_usuario_save($op,$node);
+      red_despacho_on_node_save($op,$node);
+      break;
+    case 'load':
+      //define('IS_AREA_DEBATE',TRUE);
+      global $user; 
+      my_on_load_node($node);      
+    break;
+    case 'view': 
+      my_hontza_nodeapi_view($node,$op,$a3,$a4);
+    break;
+  }
+}
+
+/**
+ *Implementation of hook_form_alter
+ */
+function hontza_form_alter(&$form, &$form_state, $form_id) {
+  /**
+   *Realizar relacion entre item-noticia -> debate o trabajo mediante un enlace
+   */
+   /*if(user_access('root')){ 
+        print $form_id.'<BR>';
+   }*/
+   //gemini
+   set_my_help_node_form($form,$form_state, $form_id);	      
+   if(in_array($form_id,array('taxonomy_form_term','taxonomy_additions_form_term_delete'))){
+   		my_set_taxonomy_form_term($form,$form_state, $form_id);		
+   }   
+   hontza_set_node_delete_confirm($form,$form_state,$form_id);
+   set_my_help_filter($form,$form_state,$form_id);
+   my_set_fuentes_filter($form,$form_state,$form_id);
+   my_set_bulk_operations_form($form,$form_state,$form_id);
+   //my_set_canal_busqueda_filter_form($form,$form_state,$form_id);
+   my_set_contenidos_del_grupo_filter_form($form,$form_state,$form_id);
+   //gemini-2014
+   //if(strcmp($form['#id'],'views-exposed-form-canal-busqueda-page-1')==0){
+   if(hontza_is_carpeta_dinamica_form_filter($form['#id'])){
+  	my_set_carpeta_dinamica_form_filter($form, $form_state, $form_id);    
+   }
+   my_set_taxonomy_overview_terms($form, $form_state, $form_id);
+   my_canal_de_supercanal_node_form_alter($form, $form_state, $form_id);
+   my_item_node_form_alter($form, $form_state, $form_id);
+   beste_form_alter($form, $form_state, $form_id);  
+   //gemini
+   if(in_array($form_id,array('supercanal_wizard_nombre_form','supercanal_node_form'))){
+    $form['#validate'][] = 'hontza_supercanal_wizard_nombre_validate';
+   }
+   //
+      
+  //Debate  	   
+  if ($form_id == 'debate_node_form') {  
+    $arguments = explode('/', $_GET['q']);
+    //$nodo=node_load($arguments[3]);
+    global $base_url;
+    //$form['field_enlace_debate'][0]['#default_value']['title']=$nodo->title;
+    //$form['field_enlace_debate'][0]['#default_value']['url']=$base_url . '/node/' . $arguments[3];
+    set_enlace_fields($form,'debate');
+    //gemini
+	/*if(isset($arguments[3])){
+		my_add_debate_list($form,$form_state,$form_id,$nodo);
+	}*/
+	//
+    my_debate_node_form_alter($form,$form_state,$form_id);
+  }
+  //Trabajo
+  if ($form_id == 'wiki_node_form') {
+    $arguments = explode('/', $_GET['q']);
+    //$nodo=node_load($arguments[3]);
+    global $base_url;
+    /*$form['field_enlace_wiki'][0]['#default_value']['title']=$nodo->title;
+    $form['field_enlace_wiki'][0]['#default_value']['url']=$base_url .'/node/'. $arguments[3];*/
+    set_enlace_fields($form,'wiki');
+    my_wiki_node_form_alter($form,$form_state,$form_id);
+  }
+   
+  //Ocultar campo de publicar en todos los grupos los canales
+  global $user;
+  if ($user->uid != 1) {
+    if (!$user->roles[ADMINISTRADOR] AND ($form_id == 'canal_de_yql_node_form' OR $form_id == 'supercanal_node_form' OR $form_id == 'fuentedapper_node_form')) {   
+	unset($form['field_tematica_gupos']);
+    }
+  }
+  
+  //Ocultar campo de Advanced options al añadir un termino
+  if ($url[0] == 'admin' AND $url[1] == 'content' AND $url[2]== 'taxonomy' AND $url[3] AND $url[4]== 'add' AND $url[5]== 'term' AND $user->uid!=1) {
+	unset($form['advanced']);
+    
+  }
+  
+  if ($form_id == 'user_register') {
+    $form['Empresa']['responsable'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Email of responsible person'),
+      '#maxlength' => 255,
+      '#description' =>  t('Email address of the person to be notified.'),
+      '#required' => 1,
+      //'#weight'=>"-9",
+    );
+    $form['#validate'][] = 'hontza_responsable_validate';
+    //gemini
+    my_user_register_form_alter($form, $form_state, $form_id);
+  }
+  
+  /*
+  //gemini  
+  if($form_id=='community_tags_form'){ 
+	  $form['actions']['cancel'] = array(
+		//'#type' => 'markup',
+		'#value' => l(t('Return'), $_REQUEST['destination'],array('attributes' => array('class'=>'back_left'))),
+	  );
+  }  
+  // 
+   */
+  
+  //gemini
+  if($form_id=='comment_form'){
+  	hontza_comment_form_alter($form, $form_state, $form_id);
+  }
+  
+  //gemini
+  if($form_id=='feeds_import_tab_form' || my_is_simple_progress($form_state,$form_id)){
+  	$form['irudi']=array('#value'=>'<div id="my_progress"></div><div id="my_initializing">'.t('Initializing').'.</div>');
+  }
+  //
+  
+  //Ocultar los 4 ultimos campos de todos los tipos de contenido
+  //print $form_id.'<BR>';
+   if ( $user->uid != 1 and ($form_id == 'wiki_node_form' or $form_id == 'canal_de_yql_node_form' or
+                             $form_id == 'supercanal_node_form' or $form_id == 'fuentedapper_node_form' or
+                             $form_id == 'debate_node_form' or $form_id == 'canal_busqueda_node_form' or
+                             $form_id == 'canal_de_supercanal_node_form' or $form_id == 'canal_de_yql_node_form' or
+                             $form_id == 'debate_node_form' or $form_id == 'servicio_node_form' or
+                             $form_id == 'faq_node_form' or $form_id == 'grupo_node_form' or
+                             $form_id == 'item_node_form' or $form_id == 'noticia_node_form' or
+                             $form_id == 'noticias_portada_node_form' or $form_id == 'page_node_form' or $form_id=='my_report_node_form')) {
+	   /*
+	   //gemini
+	   if($user->roles[CREADOR]){
+	   	$form['author']['#access']=1;				
+	   }else{
+	   //
+	   */
+       
+           //Campos genericos
+                //gemini
+                //unset($form['revision_information']);
+		repase_revision_information($form,$form_state,$form_id);
+                unset($form['flag']);
+		unset($form['comment_settings']);
+		unset($form['path']);
+		unset($form['author']);
+		unset($form['options']);
+	 
+		//Campos de algunos contenidos
+		unset($form['field_tematica_gupos']);
+		unset($form['menu']);
+		//unset($form['attachments']);
+   	  //}
+   }
+   //gemini
+   if(isset($form['revision_information'])){
+       $form['revision_information']['#collapsed']=true;
+   }
+   if(isset($form['path'])){
+       $form['path']['#collapsed']=true;
+   }
+   //   
+}
+
+function hontza_responsable_validate(&$form, &$form_state) {
+  //gemini
+  return '';
+  //
+  $mail = $form_state['values']['responsable'];
+  
+  $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail LIKE '%s'", $mail));
+  if (!db_affected_rows()) {
+    //gemini
+	//form_set_error('responsable', t('El mail que has introducido no es correcto'));
+	form_set_error('responsable', t('The email does not exist in the user list'));
+    //
+  }  
+}
+
+/**
+ *Implementation of hook_user
+ *
+*/
+function hontza_user($op, &$edit, &$account, $category = NULL) {
+  if ($op == 'insert' AND isset($edit['responsable'])) {
+    $mail = $edit['responsable'];
+    $responsable = user_load(array('mail' => $mail));
+    $params['responsable'] = $responsable;
+    $params['user'] = $account;
+    drupal_mail('hontza', 'aviso-responsable', $mail, '', $params);
+  }
+  //gemini
+  my_hontza_user($op, $edit, $account, $category);
+  //intelsat-2016
+  hontza_registrar_goto();
+  //menu_rebuild();
+}
+
+function get_grupos() {
+  global $user;
+  $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {og_uid} ou ON n.nid = ou.nid WHERE ou.uid = %d", $user->uid);
+  $grupos = array();
+  while ($row = db_fetch_object($result)) {
+    $grupos[$row->nid] = $row->title;
+  }
+  return $grupos;
+}
+
+/***
+ * Window modal ctools
+ */
+function preview_test_modal_callback($js = FALSE) {
+  $nid = arg(3);
+  $filtro = arg(4);
+  $nodo = node_load($nid);
+  $pipe_id = explode('#', $nodo->field_pipe_args[0]['value']);
+  $output = $pipe_id[0];
+  $output .= $pipe_id[1];
+  $output .= $filtro;
+  $output .= t('<p>cosicas cosi</p>');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    ctools_modal_render($title, $output);
+    // above command will exit().
+  }
+  else {
+    drupal_set_title($title);
+    return $output;
+  }
+}
+
+
+function generar_opml($nid) {
+  $items = array();
+  $node = node_load($nid);
+  if ($node->type == 'supercanal') {
+    foreach ($node->field_supercanal_fuente as $id => $fuente) {
+      $fuente = node_load($fuente['nid']);
+      $items[$id]['title'] = $fuente->title;
+      $items[$id]['text'] = $fuente->title;
+      $items[$id]['xmlurl'] = $fuente->field_tematica_url[0]['value'];
+    }
+  }
+  print get_opml($items, $node->title);
+}
+
+/**
+ * Generate a OPML file with diferents feeds.
+ * @param $items A array with the elements.
+ * @param $name The name of the OPML you want to generate.
+ */
+function get_opml($items, $name) {
+  $output = '<?xml version="1.0" encoding="UTF-8"?>';
+  $output .= '<opml version="1.0">';
+  $output .= '<head>';
+  $output .= "<title>$name</title>";
+  $output .= '</head>';
+  $output .= '<body>';
+  //We start with the loop to rescue all the elements in the $items array
+  foreach ($items as $item) {
+    $output .= '<outline text="'. $item['text'] .'" title="'. $item['title'] .'" type="rss" xmlUrl="'. $item['xmlurl'] .'"/>';   
+  }
+  $output .= '</body>';
+  $output .= '</opml>';
+  return $output;
+}
+
+/**
+ * Implementation of hook_views_pre_render().
+ */
+function hontza_views_pre_render(&$view) {
+  //print $view->name.'='.$view->display_handler->display->display_plugin.'<BR>';
+  if ($view->display_handler->display->display_plugin === 'page') {
+    
+    $input = $view->get_exposed_input();
+    if (!empty($input['search'])) {
+      //gemini
+      if(is_area_trabajo() || is_area_debate()){
+          //
+      }else{
+      //
+          drupal_set_title(check_plain($input['search']));
+      }
+    }
+  }
+  my_hontza_views_pre_render($view);
+}
+
+
+/**
+ * Implementation of hook_mail().
+ */
+function hontza_mail($key, &$message, $params) {
+  /*switch ($key) {
+    case 'aviso-responsable':
+  $headers = array(
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+        'Content-Transfer-Encoding' => '8Bit',
+        'X-Mailer' => 'Drupal'
+      );
+      foreach ($headers as $key => $value) {
+        $message['headers'][$key] = $value;
+      }
+      $message['subject'] .= t('A new record');
+      $message['body'][] = t('Hi !nombre', array('!nombre' => $params['responsable']->name));
+      //gemini
+      //$message['body'][] = t('The user !nom is registered in !site with email !mail', array('!nom' => $params['user']->name, '!sitio' => variable_get('site_name', ''), '!mail' => $params['user']->mail));
+      //$message['body'][] = t('The user !nom is registered in !site with email !mail', array('!nom' => $params['user']->name, '!site' => variable_get('site_name', ''), '!mail' => $params['user']->mail));
+      $my_msg=t('The user !nom is registered in !site with email !mail', array('!nom' => $params['user']->name, '!site' => variable_get('site_name', ''), '!mail' => $params['user']->mail));
+      $message['body'][] =set_message_site_name($my_msg);
+      //
+      $message['body'][] = t('and made you responsible');
+    break;
+  }*/
+  //intelsat-2015
+  /*if(red_despacho_is_activado()){  
+    if(isset($params['attachments'])){
+        $message['attachments'] = $params['attachments'];
+    }
+  }*/
+}
+
+
+/**
+ * Implementation of hook_cron()
+ * 
+ */
+function hontza_cron() {
+    //intelsat-2015
+    hontza_solr_search_actualizar();
+}
+
+/**
+ * Implementación del hook_block
+ *
+ * Bloque de categorias del grupo
+ */
+function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
+  //print 'delta='.$delta.'<BR>';
+  switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('Categories of the Channel');
+      $blocks[1]['info'] = t('Block to add users to the group.');
+      $blocks[2]['info'] = t('Menu - General');
+      $blocks[3]['info'] = t('Menu - General Management');
+      $blocks[4]['info'] = t('Block to add sources (Admin)');
+      $blocks[5]['info'] = t('Block with the name of the group');
+      $blocks[7]['info'] = t('SOURCES Management (Admin)');
+      $blocks[8]['info'] = t('Modify group categories');
+      
+      $blocks[11]['info'] = t('Menu - Add to Discussion Area');
+      $blocks[12]['info'] = t('Menu - Add channel');
+      //gemini
+      //$blocks[13]['info'] = t('Menu Añadir página a Área de trabajo');
+      $blocks[13]['info'] = t('Menu - Add page to Collaborative Area');
+      $blocks[14]['info'] = t('Menu - Searches');
+      //gemini
+      //$blocks[15]['info'] = t('Menu Gestión ÁREA DE TRABAJO');
+      $blocks[15]['info'] = t('Management Menu - COLLABORATIVE AREA');
+      $blocks[16]['info'] = t('Management Menu - HELP');
+      $blocks[17]['info'] = t('Management Menu - CHANNELS');
+      $blocks[18]['info'] = t('Management Menu - NEWS');
+      $blocks[19]['info'] = t('Management Menu - DISCUSSION');
+      $blocks[20]['info'] = t('Management Menu - STATISTICS');
+      $blocks[21]['info'] = t('Management Menu - GROUPS');
+      $blocks[22]['info'] = t('Management Menu - USER NEWS');
+      $blocks[23]['info'] = t('Management Menu - PUBLIC NEWS');
+      $blocks[24]['info'] = t('Management Menu - SERVICES');
+      $blocks[25]['info'] = t('Management Menu - USERS');
+      $blocks[26]['info'] = t('Menu - My Contents');
+      $blocks[27]['info'] = t('Menu - User News');
+      $blocks[28]['info'] = t('Menu - View Sources');
+      $blocks[29]['info'] = t('Menu - Links');
+	  //gemini
+	  $blocks[30]['info'] = t('Management Menu - SOURCE TYPES');
+	  $blocks[31]['info'] = t('Management Menu - POPUP HELP');
+	  $blocks[32]['info'] = t('Simple Search');
+	  $blocks[33]['info'] = my_get_title_gestionar_servicios_block();
+	  $blocks[34]['info'] = my_get_title_tipos_de_servicios_block();
+	  $blocks[35]['info'] = my_get_title_chat_block();
+          $blocks[36]['info'] = my_get_title_grupo_reto_block();
+          $blocks[37]['info'] = t('Simple Search of Wikis');
+          $blocks[38]['info'] = t('Simple Search of Discussions');
+          $blocks[39]['info'] = t('Public News from canal_de_supercanal');
+          $blocks[40]['info'] = t('Highlighted news from canal_de_supercanal');
+          $blocks[41]['info'] = t('Users - Statistics by companies');
+          $blocks[42]['info'] = t('Settings - Ideas');
+          $blocks[43]['info'] = t('MESSAGES');
+          $blocks[45]['info'] = t('Translations');
+          $blocks[46]['info'] = t('API Keys');
+      //gemini-2013    
+          $blocks[47]['info'] = 'Registrarse/Register';
+          $blocks[48]['info'] = hontza_get_title_grupo_response_block();
+          $blocks[49]['info'] = t('Menu - Reports');
+          $blocks[50]['info'] = hontza_get_title_gestion_pass();
+          $blocks[51]['info'] = calendario_get_title();
+          $blocks[52]['info'] = t('Source-Download');
+          $blocks[53]['info'] = t('Manage Group');
+          $blocks[54]['info'] = t('Users');
+          $blocks[55]['info'] = 'Delete solr filters';
+          $blocks[56]['info'] = 'Collections';
+          $blocks[57]['info'] = 'Api';
+          $blocks[58]['info'] = 'My Filter';
+          $blocks[59]['info'] = 'Download Txt';
+          $blocks[60]['info'] =contenidos_left_title();
+          $blocks[61]['info'] =panel_admin_visualizador_left_title();
+          $blocks[62]['info'] =panel_admin_visualizador_banners_left_title();
+          $blocks[63]['info'] =panel_admin_visualizador_redes_sociales_left_title();
+          $blocks[64]['info'] =panel_admin_visualizador_registered_left_title();
+          $blocks[65]['info'] =panel_admin_visualizador_contact_left_title();
+          //$blocks[66]['info'] =panel_admin_visualizador_settings_left_title();
+          $blocks[67]['info'] =red_despacho_get_source_types_title();
+          $blocks[68]['info'] =panel_admin_guias_left_title();
+      //
+      return $blocks;
+    break;
+		    
+	case 'view':
+          switch ($delta) {
+        case 0:
+          global $user;
+          //intelsat-2015
+          //if ($user->uid ) {
+          if ($user->uid || hontza_canal_rss_is_publico_activado()) {
+            if(hontza_canal_rss_is_publico_activado()){
+              if(publico_is_pantalla_publico('vigilancia')){
+                  if(!$is_publico){
+                       $block['content']='';
+                       break;
+                  }
+              }
+            }  
+          //$block['subject']=t('Channels by Category');
+          //$block['subject']=t('Filter by Category').'/'.l(t('All'),'cambiar_consulta_canales_my_categorias_block');
+          //intelsat-2015
+          $block['subject']=hontza_solr_search_categories_left_title();
+          //gemini-2014
+          if(!red_funciones_is_show_shared_block_menu_left()){
+              $block['content']='';
+              break;
+          }
+          //gemini-2014
+          $my_selected_categoria=red_funciones_get_filtro_por_categoria();
+          //
+          if (og_get_group_context()) {
+            //Obtener el ID del grupo en el que se esta
+            $id_categoria = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid = '%s'", og_get_group_context()->nid));
+            
+            //Funcion del modulo taxonomy que dado un el id de una categoria devuelve todos los terminos de la misma
+            $categorias=taxonomy_get_tree($id_categoria);
+            foreach ($categorias as $id => $contenido) {
+              //gemini
+              $categoria_rss='';
+              if(hontza_canal_rss_is_visualizador_activado()){
+                  $categoria_rss=publico_vigilancia_get_categoria_rss_link($contenido->tid);
+              }
+                
+              //gemini-2014
+              $pro=profundidad($contenido->tid);
+              //$pro=variable_get('profundidad_valor', 0);
+              /*
+              //Consulta para obtener el numero de items de cada categoria
+              $num_items = db_result(db_query("SELECT COUNT(DISTINCT(node.nid)) AS num_records
+                                              FROM node node LEFT JOIN {term_node term_node} ON node.vid = term_node.vid
+                                              LEFT JOIN {term_data} term_data ON term_node.tid = term_data.tid
+                                              WHERE (node.type in ('canal_busqueda', 'canal_de_supercanal', 'canal_de_yql')) AND term_data.vid=%d AND term_data.tid=%d
+                                              GROUP BY term_data.name", $id_categoria, $contenido->tid));*/
+              
+              
+              
+              $my_canales=hontza_get_canales_por_categoria($id_categoria, $contenido->tid);
+              $num_items=count($my_canales);                            
+              //intelsat-2015
+              $num_items=hontza_canal_rss_get_categoria_noticia_num_items($contenido->tid,$num_items);
+              //
+              //gemini
+              $contenido_name=set_category_name_t($contenido->name);
+              $cat_lang=taxonomy_get_term_by_language($contenido->tid);
+              $cat_description='';
+              if(isset($cat_lang->description) && !empty($cat_lang->description)){
+                  $cat_description=$cat_lang->description;
+              }
+              //
+
+              $url_cat='canales/my_categorias/'. $contenido->tid;
+              if(!hontza_is_canales_por_categorias_filtrador($my_canales)){
+                  $url_cat.='/validados';
+              }else{
+                  $url_cat.='/ultimas';
+              }
+              //intelsat-2015
+              if(hontza_canal_rss_is_visualizador_activado()){
+                  $url_cat=publico_vigilancia_get_url_categoria($contenido->tid,$url_cat);
+              }
+              //Es padre 
+              if (_taxonomy_term_children($contenido->tid)) {
+                
+                if ($num_items) {
+                  //intelsat-2015
+                  $url_cat_bakup=$url_cat;  
+                  $attributes=array('attributes'=>array('title'=>$cat_description));
+                  $my_img='';
+                  if($my_selected_categoria==$contenido->tid){
+                        $attributes['attributes']['class']='active';
+                        //intelsat-2015
+                        //if(hontza_solr_is_solr_activado()){
+                            $attributes['html']=true;
+                            $my_img=my_get_icono_action('delete_solr_filter', t('Delete filter'));
+                            $url_cat='cambiar_consulta_canales_my_categorias_block';
+                        //}
+                        //
+                  }
+                  //intelsat-2015
+                  if(hontza_canal_rss_is_visualizador_activado()){
+                      $categorias_info=publico_vigilancia_get_categorias_info($url_cat_bakup,$url_cat,$my_img);
+                      $url_cat=$categorias_info['url_cat'];
+                      $my_img=$categorias_info['img'];
+                  }
+                  //gemini
+                  //$salida .='<li class=nivel' . $pro .'>'. l($contenido_name .' ('. $num_items .')', 'canales/categorias/'. $contenido->tid) .'</li>';
+                  //$salida .='<li class=nivel' . $pro .'>'. l($contenido_name .' ('. $num_items .')', $url_cat,array('attributes'=>array('title'=>$cat_description))) .'</li>';
+                  $salida .='<li class=nivel' . $pro .'>'.$categoria_rss.l($my_img.$contenido_name, $url_cat,$attributes) .'</li>';            
+                  //
+                }
+                elseif (hijoscontieneitems($contenido->tid, $id_categoria)) {
+                  //$salida .='<li class=nivel'. $pro .'>'. $contenido_name .'</li>';
+                  $salida .='<li class=nivel' . $pro .'>'.$categoria_rss.l($contenido_name,'',array('fragment'=>' ','external'=>TRUE,'attributes'=>array('title'=>$cat_description))) .'</li>';
+                }
+              }
+              //Es hoja (final)
+              else{
+                if ($num_items!=0) {
+                    $attributes=array('attributes'=>array('title'=>$cat_description));
+                    $my_img='';
+                    if($my_selected_categoria==$contenido->tid){
+                        $attributes['attributes']['class']='active';
+                        //intelsat-2015
+                        //if(hontza_solr_is_solr_activado()){
+                            $attributes['html']=true;
+                            $my_img=my_get_icono_action('delete_solr_filter', t('Delete filter'));
+                            $url_cat='cambiar_consulta_canales_my_categorias_block';
+                        //}
+                        //
+                    }
+                    //gemini
+                    //$salida .='<li class=nivel'. $pro .'>'. l($contenido_name .' ('. $num_items .')', 'canales/categorias/'. $contenido->tid) .'</li>';
+                    //$salida .='<li class="nivel'.$pro.'">'. l($contenido_name .' ('. $num_items .')', $url_cat,$attributes) .'</li>';
+                    $salida .='<li class="nivel'.$pro.'">'.$categoria_rss.l($my_img.$contenido_name, $url_cat,$attributes) .'</li>';
+                    //
+                }
+              }
+            }
+          
+		  	//gemini
+			if(is_show_modificar_vocab()){
+		    	$enlace=my_get_enlace_modificar_vocab(og_get_group_context()->nid);
+           	 	$salida= '<li class="nivel0 my_separacion">'.red_funciones_get_create_link(t('Create/Edit Categories'),$enlace).'</li>'.$salida;
+			}
+			//
+		  }
+        }        
+        //gemini-2014
+        if(!empty($my_selected_categoria)){
+            /*$clean='<li class="my_separacion">'.l(t('Clean'),'cambiar_consulta_canales_my_categorias_block').'</li>';
+            $salida='<li class="my_separacion" style="background-color: #2E5753;color: #FFFFFF;font-weight: bold;">'.t('Filter Activated').'</li>'.$clean.$salida;*/
+            /*$clean=l(t('Clean'),'cambiar_consulta_canales_my_categorias_block');
+            $salida='<li class="my_separacion"><div '.red_funciones_get_filter_activated_style().'>'.t('Filter Activated').'</div>&nbsp;| '.$clean.'</li>'.$salida;*/
+        }
+        //        
+        $block['content'] = $salida;
+        //gemini-2014
+        $block['cache']=BLOCK_CACHE_PER_USER;
+        break;
+  
+  case 1:
+  //gemini
+  //$block['subject'] = t('Añadir usuarios al grupo');
+  $block['subject'] = t('Manage Users');
+  //
+  $block['content'] = hontza_add_users_block();
+        break;
+  
+  case 2:
+  
+  global $user, $base_url;
+  //Menu usuario registrado
+  if ($user->roles[AUTHENTICATED]) {
+  //	global $base_url;
+  //	print $base_url;
+  //gemini
+  /*$enlaces = '<li class="first"><a href="'.$base_url.'user">Mi perfil</a></li>
+											<li class="first"><a href="'.$base_url.'/mis-contenidos">Mis contenidos</a></li>
+											<li class="first"><a href="'.$base_url.'/mis-grupos">My Groups</a></li>
+											<li class="first"><a href="'.$base_url.'/user/suscripciones">Mis suscripciones</a></li>
+											<li><a href="'.$base_url.'/faq">Help</a></li>
+											<li class="last"><a href="'.$base_url.'/logout">Logout</a></li>
+											<span style="padding: 4px; background-color: #E5E5E5; "><a href="'.$base_url.'/cron.php">Actualizar</a></span>';*/ 
+	$enlaces='';
+        //gemini-2014
+        //$enlaces.='<ul>';        
+        /*
+        $enlaces.='<li class="first">'.l(t('My Profile'),'user').'</li>
+	<li class="first">'.l(t('My Contents'),'mis-contenidos').'</li>
+	<li class="first">'.l(t('My Groups'),'mis-grupos').'</li>
+	<li class="first">'.l(t('My Alerts'),'alerta_user/'.$user->uid.'/my_list').'</li>
+	<li>'.l(t('Help'),'faq').'</li>
+	<li class="last">'.l(t('Logout'),'logout').'</a></li>';
+        */
+        //$enlaces.='<li class="last">'.l(t('Help'),'faq').'</li>';
+	//$enlaces.='<li class="last">'.l(t('Logout'),'logout').'</a></li>';
+        //$enlaces.='</ul>';
+	//<span style="padding: 4px; background-color: #E5E5E5; ">'.l(t('Actualizar'),'cron.php').'</span>';
+	//
+  }
+  //Menu usuario anónimo
+  elseif ($user->roles[ANONIMO]) {
+        //gemini
+	//$enlaces='<li ><a href="'.$base_url.'/user">Log In / Login</a></li>';
+        //$enlaces='<li>'.l(t('Log In / Login'),'user').'</li>';
+        //$enlaces='<li>'.l('Inicio de sesión / Login','user').'</li>';
+        //$enlaces='<li>'.get_cambiar_idioma_modo_select().l(t('Log In / Login'),'user').'</li>';
+        //$enlaces='<li>'.l('Inicio de sesión / Login','user_login_by_lang',array('query'=>'my_idioma=en')).'</li>';
+        //$enlaces='<li>'.l('Inicio de sesión','user').' / '.l('Login','user',array('query'=>'my_idioma=en')).'</li>';
+      
+      $enlaces='<li>'.l('Inicio de sesión','user').' / <a href="'.$base_url.'/user?my_idioma=en">Login</a></li>';
+
+    //
+  }
+  
+  //$block['content'] = $enlaces;
+  $block['content'] = theme('hontza', $enlaces);
+
+        break;
+  
+  case 3:
+  global $user,$base_url;
+  $links='';
+  //gemini-2014
+  /*
+  //Menu con el panel de gestion
+  if ($user->roles[ADMINISTRADOR] or $user->uid == 1) {
+  	//gemini
+	//$links .= '<li><a href="'.$base_url.'/gestion">Management panel</a></li>';
+    $links .= '<li>'.l(t('Management panel'),'gestion').'</li>';
+	//
+  }
+  //Menu gestion grupos
+  if ($user->roles[CREADOR] or $user->uid == 1) {
+      $links.=hontza_get_gestion_creador_links_string();
+  }
+  
+  //gemini-2013
+  //if ($user->roles[TRADUCTORES] or $user->uid == 1) {
+  if ($user->roles[TRADUCTORES]) {
+    $links .='<li>|&nbsp;'.l(t('Translate interface'),'admin/build/translate').'</li>';	        
+  }  
+  if(hontza_is_sareko_id_red()){
+      if(!hontza_is_user_anonimo()){
+        //if(hontza_user_access_gestion_red()){ 
+        //   $links .='<li>|&nbsp;'.l(t('Management migration'),'red_migracion/gestion').'</li>';
+        //}
+        if(hontza_user_access_recursos_red_alerta()){ 
+           $links .='<li>|&nbsp;'.l(t('Network'),'red_red/fuentes').'</li>';
+        }
+        if(hontza_user_access_red_local()){ 
+           $links .='<li>|&nbsp;'.l(t('Shared'),'red_local/fuentes_local').'</li>';
+        }
+      }
+  }
+  //
+  //$links .='<li>'.l(t('Strategic Deployment'),'estrategias').'</li>';
+  */
+  $block['content'] = $links;
+        break;
+  //Menu añadir fuentes
+  case 4:
+  $block['subject'] = hontza_solr_search_add_source_left_title();
+  $block['content'] = hontza_add_fuentes_block();
+        break;
+  //Etiqueta grupo actual
+  case 5:
+  global $user;
+  if (og_get_group_context()->title and $user->uid) {
+  	$block['content'] = l(og_get_group_context()->title, "dashboard");
+  }
+        break;
+      
+        case 7:
+  global $user;
+  $enlaces;
+  //Bloque con los enlaces de gestion de las views de fuentes
+  //if ($user->roles[ADMINISTRADOR] or $user->uid == 1) {
+  if ($user->roles[ADMINISTRADOR] || $user->uid == 1 || red_despacho_is_gestionar_tipos_fuente()){
+            $block['subject'] = t('SOURCES');
+            //gemini-2014
+            if(!hontza_is_sareko_id_red()){
+                if(!red_despacho_is_gestionar_tipos_fuente()){
+                    $block['content']=l(t('Share Sources'),'gestion/publicar').'<br>';
+                    $block['content'].=l(t('List of shared sources'),'gestion/lista-publicas').'<br>';
+                }    
+            }
+            //intelsat-2015
+            $block['content'].=l(t('Add Source type'),'admin/content/taxonomy/1/add/term').'<br>';
+            //
+            $block['content'].=l(t('List of Source types'), my_get_categoria_fuente_ele());			
+  }
+        break;
+        
+        //Modificar categorias del grupo
+  case 8:
+         //gemini
+		 /*
+		  global $user;
+  if ($user->roles[ADMINISTRADOR] or $user->uid == 1 or (og_get_group_context()->nid AND $user->uid)) {
+            $is_admin=db_result(db_query("SELECT o.is_admin FROM {og_uid} o  WHERE o.nid = %d and o.uid = %d",  og_get_group_context()->nid, $user->uid));
+            if ($is_admin == 1 or $user->uid == 1 or $user->roles[ADMINISTRADOR]) {
+              $enlace= "node/". og_get_group_context()->nid ."/og/vocab";
+              $block['subject'] = t('Gestion de categorías');
+              //gemini
+			  //$block['content']= '<a href="'. $enlace .'" TARGET="_blank">&nbsp;&nbsp;&nbsp;Modificar vocabulario</a>';
+			  $block['content']= l('Modificar vocabulario',$enlace,array('attributes'=>array('target'=>'_blank')));
+              //
+			}
+          }*/
+        break;
+      
+        case 11:
+		  //gemini
+		  //$block['subject'] = t('Añadir a Área de debate');
+		  //$block['subject'] = t('Add Debate');
+		  $block['subject'] = my_get_title_anadir_debate_block();
+          //
+		  //$block['content'] =l(t('Create Discussion'), 'node/add/debate');
+		  $block['content']=my_get_anadir_debate_content();
+		break;
+        case 12:
+                  //intelsat-2015  
+		  $block['subject'] = hontza_solr_search_add_channel_left_title();
+		  //gemini
+		  //$block['content'] =l(t('Crear Canal de una Fuente'), 'crear/canal-supercanal') .'<br>'. l(t('Crear Canal-Filtro de RSS'), 'crear/canal-yql');
+                  $block['content'] =hontza_get_block_content_anadir_canal();
+                  if(is_vigilancia_left(1)){
+                    $block['weight'] =999;
+                  }
+                  //
+		break;
+        case 13:
+                  //gemini
+		  global $user;
+                  //$block['subject'] = t('Añadir página a Área de trabajo');
+		  $block['subject'] = t('Add Wiki Page');
+                  /*if(isset($user->uid) && !empty($user->uid)){
+                    //gemini-2014
+                    //$block['content'] =l(t('Create Wiki Document'), 'node/add/wiki');
+                    $block['content']=hontza_get_add_wiki_page_block_content();    
+                  }*/
+                  //gemini-2014
+                  $block['content']='';
+        break;
+        case 14:
+		  //gemini
+		  /*$block['subject'] = t('Búsquedas');
+		  //gemini
+		  //$block['content'] =l(t('Crear búsqueda persistente'), 'busqueda');
+		  $block['content'] =l(t('Crear carpeta dinámica'), 'busqueda');*/
+		  //
+		  //
+        break;
+        case 15:
+          //gemini
+          //$block['subject'] = t('Gestión ÁREA DE TRABAJO');
+          $block['subject'] = t('COLLABORATIVE AREA');
+          //intelsat-2015  
+          //$block['content'] =l(t('List of wiki pages'), 'panel_admin/collaboration');
+          $block['content'] =panel_admin_collaboration_block_content();          
+          //  
+        break;
+        case 16:
+  $block['subject'] = t('FAQ');
+        //intelsat-2015  
+        //$block['content'] =l(t('Create new FAQ'), 'node/add/faq') .'<br>'. l(t('List of Help pages'), 'panel_admin/ayuda');
+        $block['content']=panel_admin_ayuda_block_content();
+        //    
+        break;
+        case 17:
+  $block['subject'] = t('CHANNELS');
+  //gemini-2014
+  //$block['content'] =l(t('List of channels'), 'gestion/canales');
+  $block['content'] =hontza_get_gestion_canales_block_content();      
+        break;
+        case 18:
+  			$block['subject'] = t('NEWS');
+          	//gemini
+			//$block['content'] =l(t('Listado de ítems'), 'gestion/items');
+			//intelsat-2015
+                        /*$block['content'] =l(t('List of news'), 'panel_admin/items').'<br>';
+                        $block['content'].=l(t('List of user news'), 'panel_admin/noticias');*/
+                        $block['content']=panel_admin_items_block_content();
+			//
+        break;
+        case 19:
+  $block['subject'] = t('DISCUSSION AREA');
+          //intelsat-2015  
+          //$block['content'] =l(t('List of discussions'), 'panel_admin/debate');
+          $block['content'] =panel_admin_debate_block_content();
+          //  
+        break;
+        case 20:
+  $block['subject'] = t('SITE');
+            //intelsat-2015
+            //$block['content'] =l(t('General Statistics'), 'analytics');
+            $block['content'] =panel_admin_get_statistics_block_content();
+        break;
+        case 21:
+  $block['subject'] = t('GROUPS');
+          $block['content'] =l(t('Create Group'), 'node/add/grupo') .'<br>'
+                              . l(t('List of groups'), 'panel_admin/grupos') .'<br>'.
+                              l(t('Add users to groups'), 'panel_admin/usuarios-grupos');
+          if(red_crear_usuario_is_activado()){
+              $block['content'].='<br>';
+              $block['content'].=crear_usario_get_grupos_ayuda_link();
+          }
+        break;
+      
+        case 22:
+  		  $block['subject'] = t('USER NEWS');
+          //gemini
+		  //$block['content'] =l(t('List of news'), 'gestion/noticias');
+		  //$block['content'] =l(t('List of user news'), 'gestion/noticias');
+                  $block['content']='';
+          //
+		break;
+        case 23:
+          $block['subject'] = t('PUBLIC NEWS');
+          $block['content']=my_get_gestion_noticias_publicas_content();
+        break;
+            
+        case 24:
+          //gemini
+          //$block['subject'] = t('Gestión SERVICIOS');
+          $block['subject'] = t('EXPERTS');
+          //intelsat-2015  
+          /*$block['content'] =l(t('Create Facilitator'), 'node/add/servicio') .'<br>'.
+                              l(t('List of Facilitators and Services'), 'panel_admin/servicios');*/
+          $block['content']=panel_admin_servicios_block_content();  
+          //  
+        break;
+                  
+        case 25:
+  $block['subject'] = t('USERS');
+          $block['content'] =l(t('Create User'), 'admin/user/user/create') .'<br>'.
+                              l(t('List of Users'), 'gestion/usuarios');
+        break;
+
+        case 26:
+  		  //$block['subject'] = t('Mis contenidos');
+  		  //gemini
+		  /*	
+          $block['content'] ='<ul class="menu sf-js-enabled"><li class="leaf first"><a href="/mis-contenidos/fuentes" title="">My sources</a></li>
+                              <li class="leaf"><a href="/mis-contenidos/canales" title="">My Channels</a></li>
+                              <li class="leaf"><a href="/mis-contenidos/items" title="">Mis noticias</a></li>
+                              <li class="leaf"><a href="/mis-contenidos/debates" title="">My Discussion</a></li>
+                              <li class="leaf last"><a href="/mis-contenidos/area-trabajo" title="">Mis aportaciones al área de trabajo</a></li>
+                              </ul>';
+          */
+		  $block['content'] =hontza_create_menu_mis_contenidos_block();
+		  //
+		break;
+        case 27:
+        $block['subject'] = t('User News');
+        //gemini
+		/*$block['content'] =l(t('Crear una noticia nueva'), 'node/add/noticia') .'<br>'.
+                              l(t('Ver todas las noticias'), 'canal-usuarios');*/
+		//$block['content']=get_user_news_block_content();
+                //gemini-2014                
+                $block['content']='';
+                if(is_vigilancia_left(1)){
+                    $block['weight'] =998;
+                }
+        //
+		break;
+        case 28:
+  		/*
+		$block['subject'] = t('Ver fuentes');
+		//gemini
+  		//$block['content'] =l(t('Ver fuentes Pipe'), 'fuentes-pipes') .'<br>'.l(t('Ver fuentes  Dapper'), 'fuentes-dapper');
+		$block['content'] =l(t('Ver fuentes Pipe'), 'fuentes-pipes/todas') .'<br>'.l(t('Ver fuentes  Dapper'), 'fuentes-dapper');					  
+        //
+		*/
+		break;
+        case 29:
+  $block['subject'] = t('Links');
+          $block['content'] =l(t('View statistics for each channel'), 'estadisticas') .'<br>'
+                              . l(t('View statistics of tags'), 'stat/etiquetas') .'<br>'.
+                              l(t('View statistics of Items'), 'stat/item');
+        break;
+	    //gemini
+	    case 30:
+  		  $block['subject'] = t('SOURCE TYPES');
+          //$block['content'] =l(t('Listado tipos de fuente'), 'gestion/tipos_fuente');
+		  //$block['content'] =l(t('Listado tipos de fuente'), 'admin/content/taxonomy/1');
+		  //$block['content'] =l(t('List of Source types'), my_get_categoria_fuente_ele());
+                    $block['content'] ='';
+        break;
+		//gemini
+	    case 31:
+  		  $block['subject'] = t('POPUP HELP');
+          $block['content'] =l(t('List of PopUp Help'), 'panel_admin/ayuda_popup');
+        break;
+		case 32:
+  		  $block['subject'] = hontza_solr_search_busqueda_simple_left_title();
+          $block['content'] =my_get_busqueda_simple_content();
+        break;
+		case 33:
+  		  $block['subject'] = my_get_title_gestionar_servicios_block();
+          $block['content'] =my_get_gestionar_servicios_content();
+        break;
+		case 34:
+  		  $block['subject'] = my_get_title_tipos_de_servicios_block();
+          $block['content'] =my_get_gestionar_tipos_de_servicios_content();
+        break;
+		case 35:
+  		  $block['subject'] = my_get_title_chat_block();
+          $block['content'] =my_get_gestionar_chat_content();
+        break;
+        case 36:
+          $block['subject'] = my_get_title_grupo_reto_block(1);
+          $block['content'] =my_get_grupo_reto_content();
+        break;
+        case 37:
+          $block['subject'] = hontza_solr_search_busqueda_simple_left_title();
+          $block['content'] =my_get_busqueda_simple_wiki_content();
+        break;
+        case 38:
+          $block['subject'] = hontza_solr_search_busqueda_simple_left_title();
+          $block['content'] =my_get_busqueda_simple_debate_content();
+          break;
+         case 39:
+          //$block['subject'] = t('Noticias publicas de canales');
+          $block['subject'] = t('Public News');
+             /*$html=array();
+        $html[]=l(t('Create Report'), 'node/add/my-report');
+        $html[]=l(t('View all'), 'boletin_report/report_view_list');
+        return implode('<BR>',$html);*/
+          $block['content'] =my_get_noticias_publicas_canales_content();
+        break;
+        case 40:
+          //$block['subject'] = t('Noticias destacadas de canales');
+          $block['subject'] = t('Highlighted News');
+          $block['content'] =my_get_noticias_destacadas_canales_content();
+        break;
+        case 41:
+          $block['subject'] = hontza_grupos_mi_grupo_entidades_left_title();
+          $block['content'] =my_get_usuarios_estadisticas_por_empresa_content();
+        break;
+        case 42:
+          $block['subject'] = t('PROPOSALS');
+          $block['content'] =my_get_parametrizacion_ideas_content();
+          break;
+        case 43:
+          $block['subject'] = t('MESSAGES');
+          $block['content'] =my_get_post_formulario_content();
+        break;
+        case 44:
+          $block['subject'] = my_get_title_grupo_descripcion_block();
+          $block['content'] =my_get_grupo_descripcion_content();
+        break;
+        case 45:
+          $block['subject'] = t('Translations');
+          $block['content'] =l(t('English translation list'), 'traducciones_ingles');
+        case 46:
+          $block['subject'] = t('API keys');
+          $block['content'] =get_api_keys_content();
+        //gemini-2013
+        case 47:
+          $block['subject'] = 'Registrarse/Register';
+          $block['content'] =get_register_red_hontza_content();          
+          break;
+        case 48:
+          $block['subject'] = hontza_get_title_grupo_response_block();
+          $block['content'] =hontza_get_grupo_response_content();
+        break;
+        case 49:
+  		 //$block['subject'] = t('Reports Area');
+		 //$block['subject'] =l(t('Reports Area'),'boletin_report/report_view_list');
+                 $block['subject'] =hontza_solr_search_reports_area_left_title();
+                 $block['content'] =hontza_get_reports_content();
+        break;
+        case 50:
+  		 $block['subject'] = hontza_get_title_gestion_pass();
+		 $block['content'] =hontza_get_gestion_pass_content();
+        break;
+        case 51:
+  		 $block['subject'] = calendario_get_title();
+		 $block['content'] =calendario_get_content();
+        break;
+        case 52:
+  		 $block['subject']=red_get_source_download_block_title(1);
+		 $block['content']=red_get_source_download_block_content();
+        break;
+        case 53:
+  		 $block['subject']=hontza_solr_search_grupo_left_title();
+		 $block['content']=hontza_grupos_mi_grupo_get_manage_group_content();
+        break;
+        case 54:
+  		 $block['subject']=hontza_solr_search_users_left_title();
+		 $block['content']=hontza_grupos_mi_grupo_get_users_content();
+        break;
+        case 55:
+  		 $block['subject']=hontza_solr_search_active_filters_left_title();
+		 $block['content']=hontza_solr_get_delete_filters_content();
+        break;
+        case 56:
+  		 $block['subject']=t('Collections');
+		 $block['content']=hontza_social_get_collections_block_content();
+        break;
+        case 57:
+  		 $block['subject']='Social Learning Api';
+		 $block['content']=hontza_social_get_api_block_content();
+        break;
+        case 58:
+  		 $block['subject']=hontza_solr_search_active_filters_left_title();
+		 $block['content']=hontza_solr_funciones_get_active_filters_block_content();
+        break;
+        case 59:
+  		 $block['subject']=hontza_canal_rss_get_download_txt_left_title();
+		 $block['content']=hontza_canal_rss_get_download_txt_block_content();
+        break;
+        case 60:
+  		 $block['subject']=contenidos_left_title();
+		 $block['content']=contenidos_get_block_content();
+        break;
+        case 61:
+  		 $block['subject']=panel_admin_visualizador_left_title();
+		 $block['content']=panel_admin_visualizador_get_block_content();
+        break;
+        case 62:
+  		 $block['subject']=panel_admin_visualizador_banners_left_title();
+		 $block['content']=panel_admin_visualizador_get_banners_block_content();
+        break;
+        case 63:
+  		 $block['subject']=panel_admin_visualizador_redes_sociales_left_title();
+		 $block['content']=panel_admin_visualizador_get_redes_sociales_block_content();
+        break;
+        case 64:
+  		 $block['subject']=panel_admin_visualizador_registered_left_title();
+		 $block['content']=panel_admin_visualizador_get_registered_block_content();
+        break;
+        case 65:
+  		 $block['subject']=panel_admin_visualizador_contact_left_title();
+		 $block['content']=panel_admin_visualizador_get_contact_block_content();
+        break;
+        case 67:
+                 $block['subject']=red_despacho_get_source_types_title();
+                 $block['content']=red_despacho_get_source_types_block_content();
+        break;
+        //intelsat-2016
+        case 68:
+                 $block['subject']=panel_admin_guias_left_title();        
+                 $block['content']=panel_admin_guias_get_block_content();         
+        break;    
+      }
+    return $block;
+  }
+}
+
+
+
+/**
+ * Registra el tema para este módulo. En este caso utilizamos un tpl que
+ * está ubicado en el directorio del módulo.
+ */
+function hontza_theme() {
+  return array(
+    'hontza' => array(
+      'arguments' => array(
+        'enlaces' => NULL
+      ),
+      'template' => 'hontza',
+      'path' => drupal_get_path('module', 'hontza')
+    )
+  );
+}
+
+function hontza_add_users_block() {
+  return '';  
+  global $user;
+  if(!hontza_grupo_shared_active_tabs_access(1)){
+      return '';
+  }
+  $nid = og_get_group_context()->nid;
+  if ($user->uid == 1 ||  db_result(db_query("SELECT is_admin FROM {og_uid} WHERE uid = %d AND nid = %d", $user->uid, $nid))) {
+    //gemini
+	//return l(t('Añadir usuarios'), 'og/users/'. $nid);
+    return l(t('Manage Users'), 'og/users/'. $nid);
+    //
+  }
+}
+
+function hontza_add_fuentes_block() {
+  global $user;
+  if(!red_funciones_is_show_shared_block_menu_left()){
+      return '';
+  }
+  //intelsat-2015
+  if(hontza_solr_search_is_usuario_lector()){
+      return '';
+  }
+  //
+  if(isset($user->uid) && !empty($user->uid)){
+    $nid = og_get_group_context()->nid;
+
+    //gemini
+    //if ($user->uid == 1 || $user->roles[ADMINISTRADOR] || db_result(db_query("SELECT is_admin FROM {og_uid} WHERE uid = %d AND nid = %d", $user->uid, $nid))) {
+    //
+    //return l(t('   Add Source (Yahoo Pipes)'), 'crear/fuente-supercanal') .'<br>'. l(t('   Add Source (Dapper)'), 'crear/fuente-dapper');
+    $html=array();
+    //intelsat-2015
+    /*$icono=my_get_icono_action('add_left',t('Add Source (Yahoo Pipes)')).'&nbsp;';
+    $html[]=$icono.l(t('Add Source (Yahoo Pipes)'), 'crear/fuente-supercanal');*/
+    //$html[]=l(t('Add Source (Dapper)'), 'crear/fuente-dapper');
+    //$html[]=l(t('Add Source (HTML)'), 'node/add/fuentehtml',array('query'=>drupal_get_destination().'&tid='.$_REQUEST['tid']));
+    //intelsat-2015-kimonolabs
+    if(hontza_canal_rss_is_kimonolabs_activado()){
+        $kimonolabs_label=t('Add Source (Kimonolabs)');
+        $icono=my_get_icono_action('add_left',$kimonolabs_label).'&nbsp;';
+        //$html[]=$icono.l($kimonolabs_label,'crear/fuente-supercanal',array('query'=>'is_kimonolabs=1'));
+    }
+    //
+    /*
+    if(is_super_admin()){
+        $html[]=l(t('(Beta) Add Source - HTML'), 'node/add/fuentehtml',array('query'=>drupal_get_destination()));
+    }*/    
+    return implode("<br>",$html);
+    //}
+  }
+}
+
+//ESTADISTICAS DE CANALES
+//gemini
+//function lista_canales_estadisticas(&$form, &$form_state) {
+function lista_canales_estadisticas() {
+//
+  global $user;
+  
+  //gemini-2013
+  drupal_access_denied();
+  
+  if ($user->uid and og_get_group_context()->nid) {
+    
+    ctools_include('modal');
+    ctools_modal_add_js();
+    //Obtener canales
+    //gemini
+    //AVISO::::hemos añadido n.title ASC
+    $canales = db_query("SELECT n.title, n.nid FROM {node} n LEFT OUTER JOIN {og_ancestry} o  ON n.nid = o.nid WHERE (n.type = 'canal_busqueda' OR n.type = 'canal_de_supercanal'
+                        OR n.type = 'canal_de_yql') AND o.group_nid = '%d' ORDER BY n.title ASC,n.created DESC", og_get_group_context()->nid);
+    $form['item']= array(
+      '#type' => 'fieldset',
+      '#title' => t('Channel Analysis'),
+    );
+    while ($canal = db_fetch_array($canales)) {
+      $form['item']['canales'][] = array(
+        '#type' => 'item',
+        '#value' => '<li>'. l($canal['title'], 'estadisticas/canales/'. $canal['nid'], array('attributes' => array('class' => 'ctools-use-modal'))) .'</li>',
+      );
+    }
+  }
+  else{
+    $form['item']['canales']['a'] = array(
+      '#type' => 'item',
+      '#title' => t('It should be in any group'),
+    );
+  }
+  return $form;
+
+}
+
+
+function estadisticas_modal_callback($js = FALSE) {
+  //gemini-2013  
+  /*
+  $salida = '<p>'.t('Number of new items in the channel').': '. node_load(arg(2))->title.'</p>';
+  $title = t('Statistics from last month.');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    
+    $period = strtotime('-1 month');
+    $quant = new stdClass;
+    $quant->id = 'canales_chart';
+ $quant->label = t('Number of items');  // The title of the chart
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    $quant->query = "SELECT n.created FROM {content_type_item} c INNER JOIN {node} n ON n.nid = c.nid
+                    WHERE n.created >= %d AND field_item_canal_reference_nid = ". arg(2) ."
+                    ORDER BY created DESC"; // We can provide a custom query instead
+    $quant->table = 'og';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+  $quants[] = $quant;
+  
+  
+  
+  $salida .= '<p>'. quant_process($quant, $period) .'</p>';
+  
+  ctools_modal_render($title, $salida);
+  
+  }
+  else {
+    drupal_set_title($titulo);
+    return $salida;
+  }*/
+  my_estadisticas_modal($js);  
+}
+
+//ESTADISTICAS DE ETIQUETAS
+
+function lista_etiquetas_estadisticas(&$form, &$form_state) {
+  global $user;
+  if ($user->uid and og_get_group_context()->nid) {
+    
+    ctools_include('modal');
+    ctools_modal_add_js();
+    //Obtener canales
+    $valores = db_query("SELECT term_data.name AS term_data_name,
+                      COUNT(node.nid) AS num_records, term_node.tid as nid 
+                      FROM {node} node 
+                      LEFT JOIN {term_node} term_node ON node.vid = term_node.vid
+                      LEFT JOIN {term_data} term_data ON term_node.tid = term_data.tid
+                      LEFT JOIN {og_ancestry} og ON node.nid = og.nid
+                      WHERE (term_data.vid in ('3')) AND (node.status <> 0) AND og.group_nid = %d
+                      GROUP BY term_data_name
+                      ORDER BY num_records DESC", og_get_group_context()->nid);
+    $form['item']= array(
+      '#type' => 'fieldset',
+      '#title' => t('List of added tags'),
+    );
+    while ($etiquetas = db_fetch_array($valores)) {
+      //Muestra etiquetas que aparecen alguna vez.
+      
+      if ($etiquetas['num_records']!=0) {
+        $form['item']['canales'][] = array(
+          '#type' => 'item',
+          '#value' => '<li>'. l($etiquetas['term_data_name'], 'stat/etiquetas/'. $etiquetas['nid'], array('attributes' => array('class' => 'ctools-use-modal'))) .' -> '. $etiquetas['num_records'] .'</li>',
+        );
+      }
+    }
+  }
+  else {
+    $form['item']['canales']['a'] = array(
+        '#type' => 'item',
+        '#title' => t('It should be in any group'),
+      );
+  }
+return $form;
+
+}
+
+
+function estadisticas_etiquetas_modal_callback($js = FALSE) {
+  
+  $salida = t('<p>Most used TAGS</p>');
+  $title = t('Statistics from last month.');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    
+    
+    $period = strtotime('-1 month');
+    $quant = new stdClass;
+    $quant->id = 'etiquetas_chart';
+  $quant->label = t('Number of items');  // The title of the chart
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    $quant->query = "SELECT n.created FROM {term_node} t INNER JOIN {node} n ON n.nid = t.nid
+                 WHERE n.created >= %d AND t.tid = ". arg(2);
+    $quant->table = 'node';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+  $quants[] = $quant;
+  
+  
+  $salida .= '<p>'. quant_process($quant, $period) .'</p>';
+
+  ctools_modal_render($title, $salida);
+  }
+  else {
+    drupal_set_title($titulo);
+    return $salida;
+  }
+}
+
+
+
+
+//ESTADISTICAS DE FLAG VALIDACIÓN
+
+function lista_items_validados(&$form, &$form_state) {
+  global $user;
+  if ($user->uid and og_get_group_context()->nid) {
+    //Obtener canales
+    $validadas = db_result(db_query("SELECT count(*) FROM {flag_content} fc LEFT JOIN {node} n ON n.nid = fc.content_id
+                      LEFT JOIN {og_ancestry} og ON n.nid = og.nid
+                      WHERE   n.type = 'item' AND  og.group_nid = %d  AND  fc.fid = 2", og_get_group_context()->nid));
+    $rechazadas = db_result(db_query("SELECT count(*) FROM {flag_content} fc LEFT JOIN {node} n ON n.nid = fc.content_id
+                      LEFT JOIN {og_ancestry} og ON n.nid = og.nid
+                      WHERE   n.type = 'item' AND  og.group_nid = %d  AND  fc.fid = 3", og_get_group_context()->nid));
+    $total = $validadas + $rechazadas;
+    $form['item']= array(
+        '#type' => 'fieldset',
+        '#title' => t('Valued Items'),
+        '#description' => t('Total items (item) of this group: ') . $total,
+      );
+    $form['item']['valid'] = array(
+        '#type' => 'item',
+        '#value' => '<strong>'. t('Currently there are ') . $validadas . t(' validated items.') .'</strong>',
+      );
+    $form['item']['invalid'] = array(
+        '#type' => 'item',
+        '#value' => '<strong>'. t('Currently there are ') . $rechazadas . t(' rejected items.') .'</strong>',
+      );
+    
+  }
+  else {
+    $form['canales']['a'] = array(
+        '#type' => 'item',
+        '#title' => t('It should be in any group'),
+      );
+  }
+return $form;
+
+}
+
+/*
+ *Función que verifica si alguno de los sub-nodos tiene items asociados
+ */
+function hijoscontieneitems($tid, $id_categoria) {
+  $tree=taxonomy_get_children($tid);
+  foreach ($tree as $id => $contenido) {
+    //Consulta para obtener el numero de items de cada categoria
+    $num_items = db_result(db_query("SELECT COUNT(DISTINCT(node.nid)) AS num_records
+                                    FROM node node LEFT JOIN {term_node term_node} ON node.vid = term_node.vid
+                                    LEFT JOIN {term_data} term_data ON term_node.tid = term_data.tid
+                                    WHERE (node.type in ('canal_busqueda', 'canal_de_supercanal', 'canal_de_yql')) AND term_data.vid=%d AND term_data.tid=%d
+                                    GROUP BY term_data.name", $id_categoria, $contenido->tid));
+    if ($num_items) {
+      return TRUE;
+      break;
+    }else{
+      if (_taxonomy_term_children($contenido->tid)) {
+        return hijoscontieneitems($contenido->tid, $id_categoria);
+      }else{
+        //intelsat-2015
+        $num_items=hontza_canal_rss_get_categoria_noticia_num_items($contenido->tid,$num_items);
+        if ($num_items) {
+            return TRUE;
+        }
+        //
+      }    
+    }  
+  }
+  return FALSE;
+}
+
+/*
+ *Funcion recursiva que devuelve la profundiad de un termino
+ */
+//gemini-2014
+//AVISO::::lo hemos comentado e implementado un poco más abajo
+/*function profundidad($tid) {
+  variable_set('profundidad_valor', 0);
+  $parent = db_result(db_query('SELECT parent FROM {term_hierarchy} WHERE tid = %d', $tid));
+  if ($parent!=0) {
+    $num=variable_get('profundidad', 0);
+    $num=$num+1;
+    variable_set('profundidad', $num);
+    profundidad($parent);
+  }
+  else{
+    $val=variable_get('profundidad', 0);
+    variable_set('profundidad', 0);
+    variable_set('profundidad_valor', $val);
+  } 
+}*/
+
+function profundidad($tid,$prof=0) {
+  $prof_valor=0;
+  $parent = db_result(db_query('SELECT parent FROM {term_hierarchy} WHERE tid = %d', $tid));
+  if ($parent!=0) {
+    $num=$prof;
+    $num=$num+1;    
+    return profundidad($parent,$num);
+  }
+  else{
+    $val=$prof;
+    //$prof=0;
+    return $val;
+  } 
+}
+
+
+
+//Estadisticas con quant(estadisticas)
+
+function hontza_quants() {
+  $quants = array();
+    
+     // Group Creation
+    $quant = new stdClass;
+    $quant->id = 'group_creation1';
+    $quant->label = t('Groups Creation');
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    $quant->query = "SELECT n.created FROM {og} g INNER JOIN {node} n 
+      ON g.nid = n.nid WHERE n.created >= %d 
+      ORDER BY n.created DESC"; // We can provide a custom query instead
+    $quant->table = 'og';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+    $quants[] = $quant;
+    
+    
+  
+  // Content Creation
+  $quant = new stdClass;
+  $quant->id = 'content_creation1';
+  $quant->label = t('Content Creation');
+  $quant->labelsum = TRUE;
+  $quant->table = 'node';
+  $quant->field = 'created';
+  $quant->query = quant_node_query();
+  $quant->dataType = 'single';
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+  
+  // Comment Creation
+  if (module_exists('comment')) {
+  $quant = new stdClass;
+  $quant->id = 'comment_creation1';
+  $quant->label = t('Comments Creation');
+  $quant->labelsum = TRUE;
+  $quant->table = 'comments';
+  $quant->field = 'timestamp';
+  $quant->dataType = 'single';
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+  }
+  
+  // Content Creation by Type
+  $quant = new stdClass;
+  $quant->id = 'node_creation_by_type1';
+  $quant->label = t('Creation of Content by type');
+  $quant->labelsum = TRUE;
+  $quant->table = 'node';
+  $quant->field = 'created';
+  $quant->group = 'type'; // Which db field to group items by
+  $quant->query = quant_node_query(array($quant->group));
+  $quant->dataType = 'multiple'; // See $quant->group
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+
+  // User Creation
+  $quant = new stdClass;	
+  $quant->id = 'user_creation1';
+  $quant->label = t('Users Creation');
+  $quant->labelsum = TRUE;
+  $quant->table = 'users';
+  $quant->field = 'created';
+  $quant->dataType = 'single';
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+  //intelsat-2015
+  $quants=hontza_grupos_mi_grupo_add_quants($quants);
+  //
+  return $quants;
+}
+
+
+function publicar_fuentes_form() {
+  //gemini
+  //drupal_set_title("Publicar fuentes");
+  drupal_set_title(t("Share Sources"));
+  $form = array();
+  
+  $form['fuentes'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Available sources'),
+    '#collapsible' => 1,
+    '#collapsed' => FALSE,
+    '#description' => t('List of sources')
+  );
+  $canales = db_query("SELECT title, nid FROM {node} WHERE type = 'fuentedapper' OR type = 'supercanal' OR type='fuentehtml' GROUP BY title");
+  while ($canal = db_fetch_array($canales)) {  
+    $form['fuentes'][$canal['nid']] = array(
+      '#type' => 'checkbox',
+      '#title' => $canal['title'],
+    );
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  return $form;
+}
+
+/**
+ * 
+ *
+ */
+function publicar_fuentes_form_submit(&$form, &$form_state) {
+  $count=0;
+  foreach ($form_state['values'] as $tid => $cont) {
+    if ($cont==1) {
+      
+      //obtener el id del grupo del nodo
+      $no_group=db_result(db_query("SELECT group_nid FROM {og_ancestry} WHERE nid = %d", node_load($tid)->nid));
+      
+      //Obtener todos los grupos disponibles
+      $result=db_query("SELECT nid FROM {og} WHERE nid<> %d", $no_group);
+      while ($new = db_result($result)) {
+          $canal = node_load($tid);
+          unset($canal->nid);
+          $canal->og_groups=array($new => $new);
+          $titulo=db_result(db_query("SELECT title FROM {node} WHERE nid=%d", $new));
+          $canal->og_groups_both=array($new => $titulo);
+          
+          $existe_nodo=db_result(db_query("SELECT count(*) FROM {node} n LEFT OUTER JOIN {og_ancestry} o ON n.nid = o.nid WHERE n.type = '%s'  AND n.title = '%s' AND o.group_nid = '%s'", $canal->type, $canal->title, $new));
+
+          if ($existe_nodo==0) {
+            node_save($canal);
+            $count++;
+          }
+      }
+    }
+  }
+  drupal_set_message('Se han creado '. $count .' fuentes nuevas para otros grupos', 'status'); 
+}
+
+//gemini-2013
+//function fuentes_publicas_form(&$form, &$form_state) {
+function fuentes_publicas_form(){
+//
+    drupal_set_title(t("List of shared sources"));
+    
+    $form = array();
+    $numero_grupos=db_result(db_query("SELECT count(*) FROM {og}"));
+
+    $form['fuentes'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Public sources'),
+      '#collapsible' => 1,
+      '#collapsed' => FALSE,
+      '#description' => 'Existen '. $numero_grupos .' grupos en HONTZA.<br><br>'. t('List of sources that have been published in several groups')
+    );
+    
+    $canales = db_query("SELECT title, nid FROM {node} WHERE type = 'fuentedapper' OR type = 'supercanal' OR type='fuentehtml' GROUP BY title");
+    while ($canal = db_fetch_array($canales)) {
+          $cont_fuentes=db_result(db_query("SELECT count(*) FROM {node}  WHERE (type = 'fuentedapper' OR type = 'supercanal' OR type='fuentehtml') AND title = '%s'", $canal['title']));
+     
+      if ($cont_fuentes!=1) {
+        $form['fuentes'][] = array(
+          '#type' => 'item',
+          '#title' => l($canal['title'], 'node/'. $canal['nid']) .', fuente publicada en: '. $cont_fuentes .' grupos',
+        );
+      }
+    }
+    return $form;
+  }
+
+/*
+ *Función auxiliar que dado un rol devuelve su identificador
+ *
+ */
+function _role_id($role) {
+  return db_result(db_query("SELECT rid FROM {role} WHERE name = '%s'", $role));
+}
+//gemini
+function my_drupal_get_destination($grupo='') {
+
+  /*if (isset($_REQUEST['destination'])) {
+    return 'destination='. urlencode($_REQUEST['destination']);
+  }
+  else {*/
+    // Use $_GET here to retrieve the original path in source form.
+    $path = isset($_GET['q']) ? $_GET['q'] : '';
+	//echo $path.'<BR>';
+    $query = drupal_query_string_encode($_GET, array('q','destination'));
+	//echo 'query='.$query.'<BR>';
+    if ($query != '') {
+      $path .= '?'. $query;
+    }
+    if(empty($grupo)){
+		return 'destination='. urlencode($path);
+	}else{
+		return 'destination='.urlencode($grupo.'/'.$path);
+	}	
+  //}
+}
+//gemini
+function htmlkarakter($string)
+{
+   $string = str_replace(array("&lt;", "&gt;", '&amp;', '&#039;', '&quot;','&lt;', '&gt;'), array("<", ">",'&','\'','"','<','>'), htmlspecialchars_decode($string, ENT_NOQUOTES));
+
+   return $string;  
+}
+//gemini
+function hontza_views_pre_execute(&$view) {
+ /*print "##################<BR>";
+  print $view->build_info['query'].'<BR>';
+  print $view->name.'<BR>';
+  print "##################<BR>";*/  
+  if(in_array($view->name,array('og_fuentes_pipes','og_fuentes_calidad','og_fuentes_exahustivo','og_fuentes_actualizacion'))){
+        my_pipes_views_pre_execute($view);
+  }else if($view->name=='gestion_ayuda_popup'){
+  	my_ayuda_popup_views_pre_execute($view);
+  }else if($view->name=="og_vigilancia_ultimas") {
+	my_vigilancia_ultimas_pre_execute($view);	
+  }else if($view->name=="og_vigilancia_pendientes") {
+	my_vigilancia_pendientes_pre_execute($view);	
+  }else{
+  	my_besteak_pre_execute($view);
+  }       
+}
+function my_vigilancia_ultimas_pre_execute(&$view){
+    	 $sql='';
+	 $q='';
+	 $my_grupo=og_get_group_context();
+         $where=array();
+         if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]="(og_ancestry.group_nid = ".$my_grupo->nid.")"; 
+         }
+         $where[]=hontza_get_vigilancia_where_filter();
+         
+         $konp='admin/build/views/ajax/preview/og_vigilancia_ultimas';
+	 if(isset($_REQUEST['q']) && !empty($_REQUEST['q'])){		
+	 	$q=$_REQUEST['q'];	 	
+	 }
+	 if(!empty($q) && $q==$konp){
+			 $sql="SELECT DISTINCT(node.nid) AS nid,
+			 node.created AS node_created
+			 FROM node node
+			 LEFT JOIN flag_content flag_content_node ON node.nid = flag_content_node.content_id
+			 WHERE (node.status <> 0) AND (node.type in ('%s', '%s')) AND flag_content_node.uid IS NULL
+			 GROUP BY nid ORDER BY node_created DESC";
+			 //$view->build_info['query']=$sql;				 	 
+	 }else{
+             $where[]="node.status <> 0";
+             $where[]="node.type in ('item', 'noticia')";
+             //$where[]="flag_content_node.uid IS NULL";
+             
+	 	$sql="SELECT DISTINCT(node.nid) AS nid, node.created AS node_created 
+		FROM {node} node
+		LEFT JOIN flag_content flag_content_node ON node.nid = flag_content_node.content_id 
+		LEFT JOIN {og_ancestry} og_ancestry ON node.nid = og_ancestry.nid 
+		WHERE ".implode(" AND ",$where)." 
+		GROUP BY nid ORDER BY node_created DESC"; 
+         }
+	          
+	 $view->build_info['query']=$sql; 	    
+     $view->build_info['count_query']=$sql;
+}
+//gemini
+function my_delete_item_list($nid){
+	//print 'my_delete_item_list(nid)='.$nid.'<BR>';
+	$items = db_query($sql=sprintf("SELECT nid FROM {content_type_item} WHERE field_item_canal_reference_nid = %d", $nid));        
+	//echo $sql.'<BR>';
+	while ($item_nid = db_result($items)) {
+		//print $item_nid.'<BR>';
+		node_delete($item_nid);
+    }	
+}
+//gemini
+function borrar_canales_fuente($node){
+	//echo 'borrar_fuente(node_nid)='.$node->nid.'<BR>';exit();
+	//$nids_canales = db_query($sql=sprintf("SELECT c.nid FROM {node} n LEFT OUTER JOIN {content_field_nombrefuente_canal} c ON n.title = c.field_nombrefuente_canal_value WHERE (n.type = 'fuentedapper' OR n.type = 'supercanal' )  AND n.nid = %d", $node->nid));
+    $nids_canales = db_query($sql=sprintf("SELECT c.nid FROM content_field_nombrefuente_canal c WHERE c.field_nombrefuente_canal_value = '%s'", $node->title));
+    //echo $sql.'<BR>';
+	while ($row = db_fetch_array($nids_canales)) {
+		//$canal=node_load($row['nid']);
+		//echo print_r($canal,1);
+		node_delete($row['nid']);
+	}	
+}
+//gemini
+function hontza_supercanal_wizard_nombre_validate(&$form, &$form_state) {
+    $clicked=0;
+    if(isset($form_state['clicked_button']['#submit'][0]) && !empty($form_state['clicked_button']['#submit'][0])){
+        $clicked=1;
+    }else{
+        if(isset($form_state['clicked_button']['#next'][0]) && !empty($form_state['clicked_button']['#next'][0])){
+            $clicked=1;            
+        }
+    }
+    
+    //if(isset($form_state['clicked_button']['#submit'][0]) && !empty($form_state['clicked_button']['#submit'][0])){
+    if($clicked){   
+      
+          //
+	  $my_btn=$form_state['clicked_button']['#submit'][0];
+  
+  	  if(strcmp($my_btn,'node_form_delete_submit')==0){
+	  	//
+	  }else{	
+		//intelsat-2015
+                hontza_canal_rss_existe_titulo_fuente_grupo($form_state);
+                //
+	  }	  
+  }
+}
+function my_pipes_views_pre_execute(&$view){
+
+$sql=my_get_sql_fuentes_pipes_todas();
+//node_created DESC
+//print $sql;exit();
+//echo print_r($where,1);exit();
+$view->build_info['query']=$sql; 	
+$view->build_info['count_query']=$sql;
+}  
+//gemini
+function my_get_stars($vars,$i,$field){
+	//$field1=$field;
+	$field1='calidad';
+	$field2=$field;
+	/*if($vars['view']->name=='og_fuentes_pipes'){
+		$field1='calidad';
+	}*/
+	//echo print_r($vars['view']->result,1);exit();
+	if(strcmp($vars['view']->result[$i]->node_type,'supercanal')==0){	
+		$f='node_data_field_supercanal_'.$field1.'_field_supercanal_'.$field2.'_rating';
+        }else if(strcmp($vars['view']->result[$i]->node_type,'fuentehtml')==0){
+		$f='node_data_field_fuentehtml_'.$field1.'_field_fuentehtml_'.$field2.'_rating';
+	}else{
+		$f='node_data_field_fuentedapper_'.$field1.'_field_fuentedapper_'.$field2.'_rating';
+	}
+	/*if(!isset($vars['view']->result[$i]->$f)){
+		if($vars['view']->name=='og_fuentes_pipes'){
+			$field1='calidad';
+			$f='node_data_field_supercanal_'.$field1.'_field_supercanal_'.$field2.'_rating';
+		}
+	}*/
+	
+	$v=$vars['view']->result[$i]->$f;
+	
+	$v=($v/20);
+	//echo 'vvvvv='.$v.'<BR>';
+	/*if(empty($v)){
+		echo 'fffff='.$field.'<BR>';
+		echo 'vvvvv='.$v.'<BR>';
+	}*/
+	
+	$result=my_create_stars_view($v,1);
+	
+	/*$result='<div class="fivestar-widget-static fivestar-widget-static-vote fivestar-widget-static-5 clear-block" style="text-align:center;">';
+	//$result.='<table style="border:0px;width:51px;"><tr>';
+	$result.='<div style="width:51px;">';
+	for($i=0;$i<5;$i++){
+		$on='off';
+		if($i<$v){
+			$on='on';
+		}
+		//$result.='<td style="border-bottom:0px;padding:0px;border-right: 0px;width:17px;height:15px;">';
+		//
+		//$img='<img src="/hontza3/sites/all/themes/buho/images/star.gif" style="background-repeat:no-repeat;"/>';		
+		if($on=='on'){
+			if($i>0){
+				$even='even';
+				if(($i%2)==1){
+					$even='odd';
+				}
+				if($i==3){
+					$result.='<div class="star star-1 star-odd star-'.$even.'" style="clear:both;">';										
+				}else{		
+					$result.='<div class="star star-1 star-odd star-'.$even.'">';
+				}
+				$result.='<span class="'.$on.'"></span>';
+				//$result.=$img;		
+			}else{				
+				$result.='<div class="star star-1 star-odd star-first">';
+				//$result.='<span class="'.$on.'">'.$v.'</span>';
+				$result.='<span class="'.$on.'"></span>';
+				//$result.=$img;	
+			}			
+			$result.='</div>';		
+		}//else{
+			//$result.='&nbsp;';
+		//}				
+		//$result.='</td>';
+		//if($i==2){
+		//	$result.='</tr><tr>';
+		//}	
+	}
+	//$result.='</tr></table>';
+	$result.='</div>';
+	$result.='</div>';*/
+	return $result;
+}
+//gemini
+function my_get_rows($vars_in){
+        $vars=$vars_in;
+        //gemini-2013
+        $is_admin_grupo=is_administrador_grupo();
+        add_ajax_fuente_api_txek($is_admin_grupo,$vars);
+        //
+	$my_list=array('calidad','exhaustividad','actualizacion');
+        $vars['rows']=hontza_fuentes_pipes_add_popup_en_indices($vars);
+	$vars['rows']=my_get_tr_fuentes_pipes($vars['rows'],$my_list);
+	$vars['rows']=str_replace('<td class="views-field views-field-type">&nbsp;Fuente DAPPER&nbsp;</td>','<td class="views-field views-field-type">Dapper</td>',$vars['rows']);
+	foreach($my_list as $k=>$field){		
+		$a='<td class="views-field views-field-field-supercanal-'.$field.'-rating">';
+		$my_array=explode($a,$vars['rows']);
+		//echo print_r($my_array,1);exit();	
+		if(count($my_array)==1){
+			$a='<td class="views-field views-field-field-supercanal-'.$field.'-rating active">';			
+			$my_array=explode($a,$vars['rows']);
+		}
+		if(!empty($my_array)){
+			//echo print_r($my_array,1);			
+			foreach($my_array as $i=>$my_value){
+				if($i>0){
+					//print $field.'='.$i.'='.$my_value.'<BR>';					
+					$pos=strpos($my_value,'</td>');
+					if($pos!==FALSE){					
+						$s=trim(substr($my_value,0,$pos));
+						//print $field.'='.$i.'='.$s.'<BR>';		
+						/*if(empty($s)){
+							//echo strlen($s).'<BR>';exit();
+							$my_array[$i]=my_get_stars($vars,$i-1,$field).$my_array[$i];					
+						}*/
+                                                $my_array[$i]=my_get_stars($vars,$i-1,$field).substr($my_value,$pos);                                                                                                
+                                        }
+				}
+			}
+		}
+		//echo print_r($my_array,1);exit();
+		$vars['rows']=implode($a,$my_array);
+	}
+        //gemini-2013
+        $vars['rows']=add_sources_vars_rows_apply_api($vars,$is_admin_grupo);
+        //
+	$view = views_get_current_view();
+
+        $table_num='<table style="margin:0px;border-left:0px;border-top:0px;"><tr><td style="border-bottom:0px;border-right:0px;padding:0px;">';
+	$table_num.='<b>'.t('Number of sources:').'</b>&nbsp;'.$view->total_rows;
+	$table_num.='</td></tr></table>';
+	$vars['rows']=$table_num.$vars['rows'];
+	if($vars['view']->name=='og_fuentes_pipes'){
+            $vars['rows']=red_fuente_set_og_fuentes_pipes($vars);
+        }
+        return $vars['rows'];
+}
+function my_set_fuentes_filter(&$form, &$form_state, $form_id) {
+	$bai=0;
+ 	
+	/*OHARRA::::hau php header-en jarrita dagokion view-ean numero de resultados ematen du
+	$view = views_get_current_view();
+    print '$view->total_rows; 
+	*/
+	
+	//		
+	if(my_is_supercanal_filter($form['#id'],'')){  	  		
+		$bakup_filter_tid=$form['#info']['filter-tid'];
+		unset($form['#info']['filter-tid']);
+		
+		//$form['#info']['filter-field_supercanal_calidad_rating']=my_get_info_filter('calidad','Information Quality');
+		$form['#info']['filter-field_my_texto']=my_get_info_filter('my_texto','Full Text','textfield');
+		$form['field_supercanal_my_texto']=my_get_input_filter('textfield','Full Text');
+		//
+		$form['#info']['filter-field_my_tipo']=my_get_info_filter('my_tipo','Origin','tipo_fuente');
+		$form['field_supercanal_my_tipo']=my_get_input_filter('tipo_fuente','Origin');
+		//
+		$form['#info']['filter-tid']=$bakup_filter_tid;
+		$bai=1;		
+	}
+	//
+	if(my_is_supercanal_filter($form['#id'],'calidad')){  	  
+		//$form['#info']['filter-field_supercanal_calidad_rating']=my_get_info_filter('calidad','Information Quality');
+		//$form['#info']['filter-field_supercanal_calidad_rating']=my_get_info_filter('calidad','Calidad');
+		$form['#info']['filter-field_supercanal_calidad_rating']=my_get_info_filter('calidad','Quality');
+                $form['field_supercanal_calidad_rating']=my_get_input_filter('','','calidad');
+		//echo print_r($form,1);
+		$bai=1;
+	}
+	//
+	//print $form['#id'].'<BR>';
+	if(my_is_supercanal_filter($form['#id'],'exahustivo')){  	  
+		$form['#info']['filter-field_supercanal_exhaustividad_rating']=my_get_info_filter('exhaustividad','Coverage');
+		$form['field_supercanal_exhaustividad_rating']=my_get_input_filter('','','exahustivo');
+		$bai=1;
+	}
+	//
+	if(my_is_supercanal_filter($form['#id'],'actualizacion')){  	  
+		$form['#info']['filter-field_supercanal_actualizacion_rating']=my_get_info_filter('actualizacion','Update');
+		$form['field_supercanal_actualizacion_rating']=my_get_input_filter('','','actualizacion');
+		$bai=1;
+	}	
+	//
+	if($bai){		
+		/*$form['buttons']['cancel'] = array(
+		'#type' => 'markup',
+		'#class'=>'button',
+		'#value' => l('<img>', my_get_cancel_ele($form['#id'])),
+		'#weight' => 20,
+		);*/		
+		
+		$js='
+		var my_url="'.url(my_get_cancel_ele($form['#id'])).'";
+		$(document).ready(function()
+		{
+		   $("#edit-reset").click(function(){
+				//alert(my_url);
+				window.location.href=my_url;
+				return false;
+		   });
+		});';
+ 		
+		drupal_add_js($js,'inline');
+		
+		$form['buttons']['reset'] = array(
+		'#type' => 'button',
+		'#value' => t('Reset'),
+		'#submit' => false,
+		);
+	}     		 	
+}
+//gemini
+function my_is_supercanal_filter($my_id,$field){
+	 if($my_id=='views-exposed-form-og-fuentes-pipes-page-1'){
+	 	return 1;
+	 }
+	 //
+	 if(!empty($field)){
+		 if($my_id=='views-exposed-form-og-fuentes-'.$field.'-page-1'){
+			return 1;
+		 }
+	 }	
+	 // 
+	 return 0;
+}
+//gemini
+function my_get_info_filter($field,$my_text,$my_type=''){	
+	if(in_array($my_type,array('textfield','tipo_fuente'))){
+		$result=array(
+		  'operator' => 'field_supercanal_'.$field.'_op',
+		  'value' => 'field_supercanal_'.$field,
+		  //'label' => t($my_text.' (múltiplos de 20)'));
+		  'label'=>t($my_text));
+	}else{	
+		$result=array(
+		  'operator' => 'field_supercanal_'.$field.'_rating_op',
+		  'value' => 'field_supercanal_'.$field.'_rating',
+		  //'label' => t($my_text.' (múltiplos de 20)'));
+		  'label'=>t($my_text));
+		 //echo print_r($result,1); 
+	}  
+	//  
+	return $result;  	
+}
+//gemini
+function my_get_input_filter($my_type='',$title='',$my_field_in=''){
+	if($my_type=='textfield'){
+		$result=array(
+				//'#title'=>t($title),
+				'#type' => 'textfield',
+				'#size' => 30,
+				//'#size' => 15,
+				//'#weight'=>-100,
+				'#default_value' =>'');			
+	}else if($my_type=='tipo_fuente'){
+		$result=array(
+			'#type' => 'select',
+			//'#size' => 30,
+			'#options'=>my_get_tipo_fuente_options());
+			//'#default_value' =>'');
+	}else{
+			$result=array(
+					'#type' => 'select',
+					//'#size' => 30,
+					'#options'=>my_get_star_options($my_field_in));
+					//'#default_value' =>'');
+			//echo print_r($result,1);exit();				
+	}		
+			
+	return $result;		
+}
+//gemini
+function my_get_cancel_ele($my_id){
+	if($my_id=='views-exposed-form-og-fuentes-pipes-page-1'){
+		//return 'fuentes-pipes';
+		return 'fuentes-pipes/todas';
+	}
+	
+	$my_list=array('calidad','exahustivo','actualizacion');
+	foreach($my_list as $i=>$field){
+		$f=$field;
+		if($f=='exahustivo'){
+			//echo $my_id.'<BR>';
+			$f='exhaustividad';
+		}
+		//
+		if($my_id=='views-exposed-form-og-fuentes-'.$field.'-page-1'){
+			return 'fuentes-pipes/'.$f;
+		}
+	}
+	
+	return '';
+}
+//gemini
+function is_categoria_de_la_fuente($tid,&$term){
+	if(!empty($tid) && is_numeric($tid)){
+		//print $tid;		
+		$term=taxonomy_get_term($tid);
+		if(!empty($term)){
+			//print 'vid='.$term->vid.'<BR>';
+			/*$v=taxonomy_vocabulary_load($term->vid);
+			if($v->name=='Categoría de la fuente'){
+				return 1;
+			}*/
+			return my_is_vocabulary($term->vid,'Categoría de la fuente');			
+		}
+	}
+	return 0;	 
+}
+//gemini
+function my_is_vocabulary($vid,$konp_in=''){
+	$konp='Categoría de la fuente';
+	if(!empty($konp_in)){
+		$konp=$konp_in;
+	}
+	 //AVISO::::antes se llamaba así, ahora tiene un nuevo nombre
+	if(strcmp($konp,'Categoría de la fuente')==0){
+  		$konp='Tipos de fuentes';
+    }
+	//
+	if(!empty($vid)){		
+		$v=taxonomy_vocabulary_load($vid);
+		//print $v->name.'='.$konp.'<BR>';
+		if($v->name==$konp){
+			//print 'hemen';
+			return 1;
+		}
+	}	
+	return 0;
+}
+//gemini
+function my_vocabulary_load($my_name_in) {
+  $voc='';
+  $my_name=$my_name_in;
+  //AVISO::::antes se llamaba así, ahora tiene un nuevo nombre
+  if(strcmp($my_name,'Categoría de la fuente')==0){
+  	$my_name='Tipos de fuentes';
+  }
+//print $my_name.'<BR>';
+    //$result = db_query('SELECT v.*, n.type FROM {vocabulary} v LEFT JOIN {vocabulary_node_types} n ON v.vid = n.vid WHERE v.name = "%s"', $my_name);
+    $result = db_query($sql=sprintf('SELECT v.* FROM {vocabulary} v WHERE v.name = "%s"', $my_name));
+    //print $sql;
+	while ($voc = db_fetch_object($result)) {
+    	return $voc;
+    }
+  
+
+  return $voc;
+}
+//gemini
+function my_get_categoria_fuente_ele(){
+	$v=my_vocabulary_load('Categoría de la fuente');
+	//echo print_r($v,1);
+	if(!empty($v)){
+		return 'admin/content/taxonomy/'.$v->vid;
+	}
+}
+//gemini
+function my_show_help_icon(){
+	/*$q=$_GET['q'];
+	$my_array=explode('/',$q);*/
+	
+	$result='';
+	
+	if(arg(0)=='vigilancia'){
+		$result=my_help_vigilancia();
+	}else if(arg(0)=='fuentes'){
+		$result=my_help_fuentes();
+	}else if(arg(0)=='crear'){
+		$result=my_help_crear();
+	}else if(arg(0)=='fuentes-pipes'){
+		$result=my_help_fuentes_pipes();
+	}else if(strcmp(arg(0),'analisis')==0){
+		$result=my_help_analisis();
+	}else if(strcmp(arg(0),'contenidos-del-grupo')==0){
+		$result=my_help_contenidos_del_grupo();
+	}else if(strcmp(arg(0),'servicios')==0){
+		$result=my_help_servicios();
+	}else{
+		$result=my_help_besteak();
+	}
+	//return '';
+	//return help_popup_window('', 'help',my_get_help_link_object());
+	if(empty($result)){
+		return my_help_empty();
+	}else{
+		return $result;
+	}
+}
+//gemini
+function my_help_vigilancia(){
+    global $user;
+    if(isset($user->uid) && !empty($user->uid)){
+		if(arg(1)=='' || arg(1)=='pendientes'){
+			return help_popup_window(2381, 'help',my_get_help_link_object());
+		}
+		if(arg(1)=='ultimas'){
+			return help_popup_window(5397, 'help',my_get_help_link_object());
+		}
+		if(arg(1)=='lo-mas-valorado'){
+			return help_popup_window(2382, 'help',my_get_help_link_object());
+		}
+		if(arg(1)=='lo-mas-comentado'){
+			return help_popup_window(2383, 'help',my_get_help_link_object());
+		}
+		if(arg(1)=='validados'){
+			return help_popup_window(2384, 'help',my_get_help_link_object());
+		}
+		if(arg(1)=='rechazados'){
+			return help_popup_window(2385, 'help',my_get_help_link_object());
+		}
+    }           
+    return '';	
+}
+//gemini
+function my_help_fuentes_pipes(){
+	if(arg(1)==''){
+		return help_popup_window(2388, 'help',my_get_help_link_object());
+	}else if(arg(1)=='calidad'){
+		return help_popup_window(2389, 'help',my_get_help_link_object());
+	}else if(arg(1)=='todas'){
+		return help_popup_window(5396, 'help',my_get_help_link_object());
+	}
+}
+//gemini
+function my_help_fuentes(){
+	if(arg(1)=='todas'){
+		return help_popup_window(2390, 'help',my_get_help_link_object());
+	}
+}
+//gemini
+function my_get_help_link_object(){
+	//return '';
+	//$src='/hontza3/sites/all/modules/help_popup/help.gif';
+	//$src=url('sites/all/modules/help_popup/help.gif');
+	$my_url='http://'.$_SERVER['HTTP_HOST'].base_path();
+	$src=$my_url.'sites/all/modules/help_popup/help.gif';
+	$html='<img class="iconhelp" alt="help" src="'.$src.'" />';
+	return $html;
+}
+//gemini
+function set_my_help_node_form(&$form, &$form_state, $form_id) {
+	if($form_id=='my_help_node_form'){
+            if(is_node_add('my-help')){
+                drupal_set_title(t('Create PopUp Help'));
+            }    
+                $form['title']['#title']=t('Title');
+                $form['body_field']['body']['#title']=t('Body');
+            
+		//$form['my_volver']=array('#value'=>l(t('Back to management panel'),'gestion',array('attributes'=>array('class'=>'back_text'))),'#weight'=>-10);
+		$form['my_volver']=array('#value'=>'<div class="div_back">'.l(t('Back to management panel'),'panel_admin',array('attributes'=>array('class'=>'back_text'))).'</div>','#weight'=>-10);
+	}  
+}
+function set_my_help_filter(&$form, &$form_state, $form_id) {
+	if($form['#id']=='views-exposed-form-gestion-ayuda-popup-page-1'){		
+		$form['#info']=array('filter-title' => array(
+       	'operator' => 'title_op',
+        'value' => 'title',
+        'label' => t('Title')));
+		//
+		$form['title'] = array(
+        '#type' => 'textfield',
+        '#size' => 30,
+        '#default_value' =>'');
+		//
+		$js='
+		var my_url="'.url('panel_admin/ayuda_popup').'";
+		$(document).ready(function()
+		{
+		   $("#edit-reset").click(function(){
+				//alert(my_url);
+				window.location.href=my_url;
+				return false;
+		   });
+		});';
+ 		
+		drupal_add_js($js,'inline');
+		
+		$form['buttons']['reset'] = array(
+		'#type' => 'button',
+		'#value' => t('Reset'),
+		'#submit' => false,
+		);
+	}					     		 	
+}
+//gemini
+function my_ayuda_popup_views_pre_execute(&$view){
+//intelsat-2015
+$sql=panel_admin_ayuda_popup_get_gestion_ayuda_popup_sql();
+//    
+$view->build_info['query']=$sql; 	    
+$view->build_info['count_query']=$sql;
+}
+//gemini
+function my_set_bulk_operations_form(&$form,&$form_state,$form_id){
+	if($form_id=='views_bulk_operations_form__1'){
+		if(arg(0)=='gestion' && arg(1)=='ayuda_popup'){
+			$js='
+			$(document).ready(function()
+			{
+			   $("#edit-node-publish-action").hide();
+			});';
+			
+			drupal_add_js($js,'inline');
+		}		
+	}
+}
+//gemini
+function my_set_canal_busqueda_filter_form(&$form,&$form_state,$form_id){
+	if($form['#id']=='views-exposed-form-canal-busqueda-page-1'){
+		 	
+	}
+}
+//gemini
+function my_help_empty(){
+	 /*$new_node = (object) array('type' => 'my_help', 'uid' => '1', 'status' => 1, 'comments' => 2 , 'promote' => 0, 'title' => '','field_my_path'=>array(0=>array('value'=>$_GET['q'])));
+  	 //echo print_r($new_node,1);
+	 node_save($new_node);*/
+	 //print 'node->nid='.$new_node->nid.'<BR>';
+	return '';
+}
+//gemini
+function my_add_debate_list(&$form,&$form_state,$form_id,$node){
+	return '';
+	if($form_id=='debate_node_form'){
+		//print $_GET['q'].'<BR>';
+		//echo print_r($node,1);
+		$debate_list=my_get_debate_list();
+		if(!empty($debate_list)){
+			$v='';
+			foreach($debate_list as $i=>$row){
+				//echo print_r($row,1); 
+				$v=l($row['node_title'],'node/'.$row['nid']).'<BR>';				
+			}
+			if(!empty($v)){
+				$v='<label>'.t('Select discussion').'</label><div>'.$v.'</div>';
+				$form['my_select_debate']=array('#value'=>$v,'#weight'=>-10);
+			}			
+		}
+	}
+}
+//gemini
+function my_get_debate_list(){
+  $my_grupo=og_get_group_context();
+  //
+  $where=array();
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+  	$where[]="(og_ancestry.group_nid = ".$my_grupo->nid.")"; 
+  }
+  $where[]="(node.status <> 0)"; 
+  $where[]="(node.type in ('debate'))";
+     
+   //og_area_debate-ko query-an oinarritua  
+   $sql="SELECT node.nid AS nid, node.title AS node_title, node_comment_statistics.comment_count AS node_comment_statistics_comment_count, users.name AS users_name, users.uid AS users_uid, node.created AS node_created, node_comment_statistics.last_comment_timestamp AS node_comment_statistics_last_comment_timestamp, COALESCE(ncs_users.name, node_comment_statistics.last_comment_name) AS node_comment_statistics_last_comment_name, ncs_users.name AS ncs_users_name, node_comment_statistics.last_comment_uid AS node_comment_statistics_last_comment_uid 
+   FROM {node} node 
+   LEFT JOIN {og_ancestry} og_ancestry ON node.nid = og_ancestry.nid 
+   INNER JOIN {node_comment_statistics} node_comment_statistics ON node.nid = node_comment_statistics.nid 
+   INNER JOIN {users} users ON node.uid = users.uid 
+   LEFT JOIN {users} ncs_users ON node_comment_statistics.last_comment_uid = ncs_users.uid AND ncs_users.uid != '0' 
+   WHERE ".implode(" AND ",$where);
+   $result=db_query($sql);
+   
+   $debate_list=array();
+   while($row=db_fetch_array($result)){
+   	//echo print_r($row,1);exit();
+    $debate_list[]=$row;
+   }
+   return $debate_list;
+}
+//gemini
+function my_get_star_options($field=''){
+	$result=array();
+	$result=my_get_star_texto_options($field);
+        if(empty($field) || empty($result)){
+            $result['All']='<'.t('Any').'>';
+            $result[20]=1;
+            $result[40]=2;
+            $result[60]=3;
+            $result[80]=4;
+            $result[100]=5;
+        }
+	//echo print_r($result,1);exit();
+	return $result;
+}
+//gemini
+function my_is_all($s){
+	$konp=strtolower($s);
+	if(strcmp($konp,'all')==0){
+		return 1;
+	}
+	return 0;	
+}
+//gemini
+function my_get_tipo_fuente_options($with_all=1){
+	$result=array();
+	if($with_all){
+            $result['All']='<'.t('Any').'>';
+        }else{
+            $result[0]='';
+        }
+	$result['fuentedapper']=t('Dapper');
+	$result['supercanal']=t('Yahoo Pipes');
+        $result['fuentehtml']=t('HTML Source');
+	return $result;
+}
+//gemini
+function get_order_fuentes_pipes_todas(){
+	$result='';		
+	if(isset($_REQUEST['order']) && !empty($_REQUEST['order']) && isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
+		$order=$_REQUEST['order'];
+		$sort=$_REQUEST['sort'];
+		$result='';
+		if($order=='title'){
+			$result='node.title ';
+		}
+		if($order=='type'){
+			$result='node.type ';
+		}
+		if($order=='name'){
+			$result='term_data.name ';
+		}
+		if(strcmp($order,'name_1')==0){
+			$result='u.name ';
+		}
+		if(in_array($order,array('field_supercanal_calidad_rating','field_supercanal_exhaustividad_rating','field_supercanal_actualizacion_rating'))){
+			$result=$order.' ';	
+		}
+		if(!empty($result)){
+			$result.=' '.strtoupper($sort);				
+		}
+	}else{
+		$result='node.title asc';
+	}
+	
+	if(!empty($result)){
+		return $result;
+	}
+	return 'node_created DESC';
+}
+//gemini
+function help_popup_block($nid,$is_block=1,$is_online=1){
+    //intelsat-205
+    if($is_online){
+        return help_popup_window($nid, 'help',my_get_help_link_object(),0,0,$is_block);
+    }else{
+        return help_popup_window($nid, 'help',my_get_help_link_object(),0,0,$is_block,0,$is_online);	
+    }    
+}
+//gemini
+function my_get_nid_by_form(&$form){	
+	if($form['nid'] && isset($form['nid']['#value']) && !empty($form['nid']['#value'])){
+		//print 'nid='.$form['nid']['#value'].'<BR>';
+		$nid=$form['nid']['#value'];
+		return $nid;
+	}
+	return '';
+}
+//gemini
+function my_get_canales_by_fuente($title){			
+	$result=array();
+	$canales = db_query($sql=sprintf("SELECT n.* FROM content_field_nombrefuente_canal c LEFT JOIN node n ON c.nid=n.nid WHERE c.field_nombrefuente_canal_value = '%s'", $title));
+    //echo $sql.'<BR>';
+	while ($row = db_fetch_array($canales)) {
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function my_get_html_list($node_list){
+	$result='';
+	if(!empty($node_list)){
+		$result='<ul>';
+		$num=count($node_list);
+		foreach($node_list as $i=>$n){
+			$class='';
+			if($i==0){
+				$class=' class ="first"';
+			}else if($i==($num-1)){
+				$class=' class ="last"';
+			}
+			$result.='<li'.$class.'>'.$n['title'].'</li>';
+		}
+		$result.='</ul>';
+	}
+	return $result;
+}
+//gemini
+function my_vigilancia_pendientes_pre_execute(&$view){
+global $user;
+
+$my_grupo=og_get_group_context();
+//
+$where=array();
+if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]="(og_ancestry.group_nid = ".$my_grupo->nid.")"; 
+}
+$where[]="(node.status <> 0)"; 
+$where[]="(node.type in ('item'))";
+$where[]="(node_data_field_responsable_uid.field_responsable_uid_uid = ".$user->uid." OR node_data_field_responsable_uid2.field_responsable_uid2_uid = ".$user->uid.")";
+$where[]="flag_content_node.uid IS NULL";
+//gemini-2013
+$where[]=hontza_get_vigilancia_where_filter();
+
+$sql="SELECT DISTINCT(node.nid) AS nid, node.created AS node_created
+FROM {node} node
+LEFT JOIN {content_type_item} ct ON node.nid=ct.nid
+LEFT JOIN {node} my_canal ON ct.field_item_canal_reference_nid=my_canal.nid  
+LEFT JOIN content_field_responsable_uid node_data_field_responsable_uid ON my_canal.vid = node_data_field_responsable_uid.vid
+LEFT JOIN content_field_responsable_uid2 node_data_field_responsable_uid2 ON my_canal.vid = node_data_field_responsable_uid2.vid
+LEFT JOIN flag_content flag_content_node ON node.nid = flag_content_node.content_id 
+LEFT JOIN {og_ancestry} og_ancestry ON node.nid = og_ancestry.nid 
+WHERE ".implode(" AND ",$where)."
+GROUP BY nid 
+ORDER BY node_created DESC"; 
+ 
+$view->build_info['query']=$sql; 	    
+$view->build_info['count_query']=$sql;
+}
+//gemini
+function get_resumen_etiqueta($node_taxonomy,$is_ficha_completa=0,$node=''){
+    return hontza_get_resumen_etiqueta($node_taxonomy,$is_ficha_completa,$node);
+}
+//gemini
+function my_get_user_info($node,$is_mail=0,$bg=''){
+    	global $base_path,$base_root;	
+	//	
+	$info=array();
+	$info['username']='';
+	$uid='';
+        //intelsat-2015
+        $file_name='defektuzkoa.png';
+	$result=my_get_user_img_src($file_name);
+		
+	if(strcmp($node->type,'item')==0){
+                //gemini-2014
+                $uid=red_funciones_flag_get_validador_node_uid($node->nid);
+                if(empty($uid)){
+                //    
+                    $uid=my_get_flag_content_uid($node->nid);
+                    //print $uid;
+                    if(empty($uid)){
+                            $canal=node_load($node->field_item_canal_reference[0]['nid']);
+                            if(!empty($canal)){			
+
+                                    $responsable=my_get_responsable_user($canal->nid);
+                                    if(!empty($responsable) && isset($responsable->uid) && !empty($responsable->uid)){
+                                            $uid=$responsable->uid;
+                                    }else{
+                                        $secundario=hontza_get_responsable_secundario_user($canal->nid);
+                                        if(!empty($secundario) && isset($secundario->uid) && !empty($secundario->uid)){
+                                            $uid=$secundario->uid;
+                                        }else{
+                                            $uid=$canal->uid;
+                                        }    
+                                    }
+                            }
+                    }
+                }    
+	}else if(strcmp($node->type,'noticia')==0){
+                //intelsat-2015
+                if(!hontza_canal_rss_is_visualizador_activado() || !empty($node->uid)){
+                    //gemini-2014
+                    $uid=red_funciones_flag_get_validador_node_uid($node->nid);
+                    if(empty($uid)){
+                        //  
+                        $uid=my_get_flag_content_uid($node->nid);
+                        if(empty($uid)){
+                                $uid=$node->uid;
+                        }
+                    }    
+                    //print 'uid='.$uid.'<BR>';
+                }  
+	}else if(in_array($node->type,array('idea','oportunidad','proyecto','estrategia','despliegue','decision','informacion','chat'))){	
+		$uid=$node->origen_uid;
+		if(empty($uid)){
+			$uid=$node->uid;
+		}				
+	}else{            
+		$uid=$node->uid;
+	}
+	
+	//print 'uid='.$uid.'<BR>';
+	
+	/*if(empty($uid)){
+		$canal=node_load($node->field_item_canal_reference[0]['nid']);
+		if(!empty($canal)){
+			$uid=$canal->uid;
+		}
+	}*/
+		 
+	$bai=0;	 
+	if(!empty($uid)){
+		$my_user=user_load(array('uid'=>$uid));
+		if(!empty($my_user)){
+			//echo print_r($my_user,1);exit();
+			if(!empty($my_user->picture)){					
+				if(file_exists($my_user->picture)){
+					$result=my_get_user_img_src('',$my_user->picture,$my_user->name,$uid,$is_mail,$bg);
+					$bai=1;
+				}
+			}
+			$info['username']=$my_user->name;
+		}
+	//intelsat-2015       
+        }else{
+            if(hontza_canal_rss_is_visualizador_activado()){
+                $info['username']=publico_vigilancia_get_info_username_noticia($node);
+            }
+        }
+	
+	if(!$bai){
+            //intelsat-2015
+            if(!empty($uid) && $uid==1){
+                //$file_name='admin2.png';
+                $file_name='admin.png';
+            }
+            $result=my_get_user_img_src($file_name,'',$info['username'],$uid,$is_mail,$bg);
+	}
+	
+	//
+	$info['img']=$result;
+	
+	return $info;
+}
+//gemini
+function my_get_user_img_src($file_name_in='',$picture='',$username='',$uid='',$is_mail=0,$bg='',$is_pantalla_grupo=0,$faktore_in=''){
+        global $base_path,$base_root;
+        //intelsat-2015
+        if(red_despacho_is_activado()){
+            if($is_mail){
+                return '';
+            }
+        }
+        //intelsat-2015
+        $faktore=$faktore_in;
+        $file_name='defektuzkoa.png';
+        //intelsat-2015
+        if(!empty($uid) && $uid==1){
+            //$file_name='admin2.png';
+            $file_name='admin.png';
+        }
+        //
+	if(alerta_is_alerta_show_user_photo($is_mail)){
+            if(!empty($file_name_in)){
+                    $file_name=$file_name_in;
+            }
+        }
+        $src=$base_root.$base_path.'/sites/default/files/pictures/'.$file_name;
+        if(alerta_is_alerta_show_user_photo($is_mail,$bg)){
+            if(!empty($picture)){
+                    //intelsat-2015
+                    if(!file_exists($picture)){
+                        $picture=$src=$base_root.'/'.$picture;
+                    }
+                    if(file_exists($picture)){
+                        if(hontza_is_private_download($picture,1)){
+                            $src=$base_root.$base_path.'system/files/pictures/'.basename($picture);
+                        }else{
+                            $src=$base_root.$base_path.$picture;
+                        }                        
+                    }
+            }
+        }else{
+            return '';
+        }    
+	//OHARRA::::hau seguruna comment.tpl-n gertatuko da 
+	if(empty($username) && !empty($uid)){
+	//
+		$my_user=user_load($uid);
+		if(!empty($my_user) && isset($my_user->uid) && !empty($my_user->uid)){	
+			$title=$my_user->name;
+			$alt=$my_user->name;
+		}
+	}else{
+		$title=$username;
+		$alt=$username;
+	}
+        //intelsat-2015
+        //$result='<img title="'.$title.'" alt="'.$alt.'" src="'.$src.'">';
+        $faktore=red_movil_get_user_img_faktore($faktore);
+        $result=hontza_grupos_mi_grupo_get_user_img_factor($title,$alt,$src,$faktore);
+        //
+	if(!empty($uid)){
+            if($is_mail){
+                $url='http://'.$_SERVER['HTTP_HOST'].base_path().'user/'.$uid;
+                $result='<a href="'.$url.'">'.$result.'</a>';
+                //$result.=$url;
+            }else{
+                $url_view='user/'.$uid;
+                if($is_pantalla_grupo){
+                    $url_view='hontza_grupos/'.$uid.'/user_view';
+                }
+                $result=l($result,$url_view,array('html'=>true));
+            }
+        }
+	return $result;
+}
+//gemini
+function my_get_responsable_uid($username){
+	if(!empty($username)){
+		$my_user = user_load(array('name' => check_plain($username)));
+		if(!empty($my_user)){			
+			return $my_user->uid;
+		}
+	}
+	return '';
+}
+//gemini
+function my_validate_responsable(&$form, &$form_state){  
+  //gemini	
+  $responsable_uid=my_get_responsable_uid($form_state['values']['responsable_uid']);    
+  if(empty($responsable_uid)){
+  	form_error($form['responsable_uid'], t("The user selected as filter responsible does not exist"));
+  }
+  /*$responsable_uid2=my_get_responsable_uid($form_state['values']['responsable_uid2']);    
+  if(empty($responsable_uid2)){
+  	form_error($form['responsable_uid2'], t("The user selected as filter responsible does not exist"));
+  }*/
+}
+//gemini
+function my_is_simple(&$form_state){
+	if(isset($_REQUEST['simple'])){
+		if(!empty($_REQUEST['simple'])){
+			return 1;
+		}else{
+			return 0;
+		}
+	}
+	if(isset($form_state['yql_obj']->is_simple)){
+		if(!empty($form_state['yql_obj']->is_simple)){
+			return 1;
+		}else{
+			return 0;
+		}	
+	}
+	return 0;
+}
+//gemini
+function my_is_simple_progress(&$form_state,$form_id){
+	if(in_array($form_id,array('agregar_fuente_form','filtros_form','previsualizar_form')) && (my_is_simple($form_state) || my_is_opml($form_state))){
+		return 1;
+	}
+	return 0;
+}
+//gemini
+function my_is_opml(&$form_state){
+	if(isset($_REQUEST['is_opml'])){
+		if(!empty($_REQUEST['is_opml'])){
+			return 1;
+		}else{
+			return 0;
+		}
+	}
+	if(isset($form_state['yql_obj']->is_opml)){
+		if(!empty($form_state['yql_obj']->is_opml)){
+			return 1;
+		}else{
+			return 0;
+		}	
+	}
+	return 0;
+}
+//gemini
+function my_delete_opml_file($node){
+	if(isset($node->field_fuente_canal) && isset($node->field_fuente_canal[0]) && isset($node->field_fuente_canal[0]['value'])){
+		$konp=$node->field_fuente_canal[0]['value'];
+		if(!empty($konp) && strcmp($konp,'OPML')==0){
+			if(isset($node->field_my_opml) && isset($node->field_my_opml[0]) && isset($node->field_my_opml[0]['value'])){
+				$name=$node->field_my_opml[0]['value'];
+				if(!empty($name)){
+					$xml_path="sites/default/files/my_opml/$name";
+					if(file_exists($xml_path)){
+						unlink($xml_path);
+						//print 'ezabatua='.$xml_path;exit();
+					}
+				}	
+			}	
+		}	
+	}
+}
+//gemini
+function my_hontza_presave(&$node, $op, $a3 = NULL, $a4 = NULL){
+	global $user;
+        
+        //echo print_r($node,1);exit();
+        
+        on_repasar_node_uid_save($node);
+	//	
+	if($user->uid!=1){
+	//if($user->uid!=1 && in_array($node->type,array('item','noticia'))){
+		if(!isset($node->comment)){
+			//AVISO::::comment_setting read/write radio button
+			$node->comment=2;
+		}
+	}
+	//
+        if(strcmp($node->type,'item')==0){
+            on_node_insert($node);
+            //intelsat-2015
+            hontza_canal_rss_on_item_presave($node,$op);
+            //
+        }
+        //
+        if(strcmp($node->type,'noticia')==0){
+           	/*
+                //AVISO::::sino no se guarda la noticia creada por comercial-ascensoreslift
+		if(!isset($node->uid) || empty($node->uid)){
+			$node->uid=$user->uid;
+		}*/
+                hontza_on_noticia_presave($node);
+	}else if(in_array($node->type,array('supercanal','fuentedapper'))){		
+		my_save_node_uid($node);
+        }else if(in_array($node->type,array('grupo'))){
+            my_presave_grupo($node);
+        }else if(strcmp($node->type,'my_report')==0){
+            hontza_on_my_report_presave($node);    
+        }else if(strcmp($node->type,'debate')==0){
+            hontza_on_debate_presave($node);
+        }else if(strcmp($node->type,'wiki')==0){
+            hontza_on_wiki_presave($node);
+        }else if(strcmp($node->type,'canal_usuario')==0){
+            //intelsat-2015
+            canal_usuario_on_presave_canal_usuario_node($node);
+        }else{
+            my_save_node_uid($node);            
+	}
+   if($node->type!='noticia'){     
+    on_canal_presave($node);
+   }
+   //intelsat-2015
+   red_despacho_node_item_source_tid_presave($node);
+}
+//gemini
+function my_get_responsable_user($nid,$is_secundario=0){
+    return red_funciones_get_responsable($nid,$is_secundario);
+}
+/*
+//gemini
+function hontza_flag($action, $flag, $content_id, $account) {
+	my_update_flag_uid($content_id);
+	//$flag_content=my_get_flag_content($content_id);
+	//echo print_r($flag_content,1);exit();
+}
+*/
+//gemini
+function my_get_flag_content($content_id,$fid=''){
+	$where=array();
+	$where[]='1';
+	if(!empty($content_id)){
+		$where[]='fc.content_id='.$content_id;
+	}
+	if(!empty($fid)){
+		$where[]='fc.fid='.$fid;
+	}
+	$sql='SELECT fc.* FROM flag_content fc WHERE '.implode(' AND ',$where);
+	
+	$result = db_query($sql);
+	 
+	  while ($row = db_fetch_object($result)) {		
+		return $row;
+	  }
+			
+	$my_result=(object) array();
+			
+	return $my_result;
+}
+//gemini
+function my_update_flag_uid($content_id){
+	global $user;
+	$sql='UPDATE flag_content SET uid= '.$user->uid.' WHERE content_id='.$content_id;	
+	//print $sql.'<BR>';
+	@db_query($sql);
+}
+//gemini
+function my_get_flag_content_uid($content_id){
+	$row=my_get_flag_content($content_id);
+	if(!empty($row) && isset($row->uid) && !empty($row->uid)){
+		return $row->uid;
+	}
+	return '';
+}
+//gemini
+function my_hontza_unflag($content_id, $fid) {
+    db_query($sql=sprintf("DELETE FROM {flag_content} WHERE fid = %d AND content_id = %d", $fid,$content_id));
+	//print $sql;exit();
+	my_hontza_flag_update_count($content_id,$fid);
+}
+//gemini
+function my_hontza_flag_update_count($content_id,$fid) {
+    $count = db_result(db_query("SELECT COUNT(*) FROM {flag_content} WHERE fid = %d AND content_id = %d", $fid, $content_id));
+    if ($count == 0) {
+      db_query("DELETE FROM {flag_counts} WHERE fid = %d AND content_id = %d", $fid, $content_id);
+    }
+    else {
+      db_query("UPDATE {flag_counts} SET count = %d WHERE fid = %d AND content_id = %d", $count, $fid, $content_id);
+      if (!db_affected_rows()) {
+        db_query("INSERT INTO {flag_counts} (fid, content_type, content_id, count) VALUES (%d, '%s', %d, %d)", $fid, 'node', $content_id, $count);
+      }
+    }
+  }
+//gemini
+function my_hontza_is_flagged($content_id,$flag){
+	$row=my_get_flag_content($content_id,$flag->fid);
+	if(!empty($row) && isset($row->content_id) && !empty($row->content_id)){
+		return 1;
+	}
+	return 0;
+}
+//gemini
+function my_hontza_td_content($field,$content,$row_in=array()){
+	$result=$content;
+	//return $result;
+	if(strcmp(arg(0),'fuentes-pipes')==0){
+		if(strcmp($field,'title')==0){
+			//return 'Normativa Edificación: Ascensores'; 
+			$my_array=explode('">',$result);
+			if(count($my_array)>0){
+				$s=str_replace('</a>','',$my_array[1]);
+				/*
+				//simulatzeko
+				if(strcmp($s,'5f7ed5a475116581c4f77eee7cf44648')==0){
+					$s.=' 5f7ed5a475116581c4f77eee7cf44648';
+				}
+				//
+				*/
+				$len=strlen($s);			
+				//
+				$max_len=20;			
+				if(is_max_len($s,$max_len)){
+					$luze_array=str_split_utf8($s,$max_len);
+					$result=implode('<BR>',$luze_array);
+					$result=$my_array[0].'">'.$result.'</a>';
+					return $result;
+				}else{
+					return $result;
+				}
+			}
+			return $result;
+		}else if(strcmp($field,'type')==0){
+                        //print $result.'<BR>';
+			if(strcmp($result,'Fuente PIPE')==0){
+				//return 'Yahoo Pipes';
+                                return t('PIPE Source');
+                        }else if(strcmp($result,'Fuente HTML')==0){
+				return 'Fuente HTML';
+                        }else if(strcmp($result,'Fuente DAPPER')==0){
+				return t('DAPPER Source');
+                        }else{
+				//return 'Dapper';
+                                return $result;
+			}
+		}
+	}else if(strcmp(arg(0),'contenidos-del-grupo')==0){
+		$result=my_replace_contenidos_del_grupo_table($field,$result,$row_in);
+	}else{		
+		return beste_td_content($field,$result,$row_in);
+	}
+		
+	return $result;
+}
+//gemini
+function str_split_utf8 ($string, $split_length = 1)
+{
+ $length = (int) $split_length;
+ $string = (string) $string;
+  
+ if ($length < 1)
+ {
+  return false;
+ }
+  
+ return preg_split("/(.{{$length}})/us", $string, -1,
+  PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+}
+//gemini
+function is_with_spaces($s){
+	$my_array=explode(' ',$s);
+
+	if(count($my_array)>1){
+		return 1;
+	}
+
+	return 0;
+}
+//gemini
+function is_max_len($s,$max_len){
+	if(is_with_spaces($s)){
+		$my_array=explode(' ',$s);
+		foreach($my_array as $i=>$v){
+			if(strlen($v)>$max_len){
+				return 1;
+			}
+		}
+	}else{
+		if(strlen($s)>$max_len){
+			return 1;
+		}
+	}
+	return 0;
+}
+//gemini
+function my_get_term_data($name=''){
+	if(og_get_group_context()){
+		$where=array();
+		$where[]="1";
+		if(!empty($name)){
+			$where[]="d.name='".$name."'";
+		}
+		$where[]="og.nid=".og_get_group_context()->nid;
+		//  		
+		$result= db_query("SELECT d.* FROM term_data d LEFT JOIN {og_vocab} og ON d.vid=og.vid WHERE ".implode(" AND ",$where));
+		//
+		while ($row = db_fetch_object($result)) {		
+			return $row;
+	    }	
+	}	
+	$my_result=(object) array();			
+	return $my_result;	
+}
+//gemini
+function my_get_term_data_tid($name=''){
+	$d=my_get_term_data($name);
+	if(!empty($d) && isset($d->tid) && !empty($d->tid)){
+		return $d->tid;
+	}
+	//
+	return '';
+}
+//gemini
+function my_hay_categorias($with_array=0,$categorias_in=array()){
+	if($with_array){
+		return hay_categorias_seleccionables($categorias_in);
+	}else{
+		if(og_get_group_context()){
+			//Obtener el ID del grupo en el que se esta
+			$id_categoria = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s",og_get_group_context()->nid));
+			
+			//Funcion del modulo taxonomy que dado un el id de una categoria devuelve todos los terminos de la misma
+			$categorias=taxonomy_get_tree($id_categoria);
+			return hay_categorias_seleccionables($categorias);
+		}
+		return 1;
+	}	
+}
+//gemini
+function hay_categorias_seleccionables($categorias){	
+	$num=count($categorias);
+	if($num>0){
+		if($num>1){
+			return 1;
+		}else{
+			$indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+			if(!empty($indefinida_tid)){
+				$values=array_values($categorias);
+				if($values[0]->tid==$indefinida_tid){
+					return 0;
+				}
+			}
+			return 1;	
+		}
+	}
+	return 0;
+}
+//gemini
+function my_get_description_categorias(){
+  $s='';
+  if(og_get_group_context()){  
+  //$enlace= "node/". og_get_group_context()->nid ."/og/vocab";  
+	  $aqui='<u>'.'aquí'.'</u>';
+	  if(is_show_modificar_vocab()){
+		$enlace=my_get_enlace_modificar_vocab(og_get_group_context()->nid);
+		$aqui=l(t('here'),$enlace);
+	  }
+	  /*$s='<i>Tienes que seleccionar al menos una categoría. Si todavía no has creado las categorias tematicas, el canal se asignará automáticamente a la “categoria indefinida”.
+	Para crear las categorias temáticas, pulsa '.$aqui.'
+	(o bien Para crear las categorias temáticas, pulsa en los menús Vigilancia > Modificar Vocabulario > list terms)</i>';*/
+	//$s='<i>'.t('It is mandatory to select at least one subject category. If not already created, the channel is automatically assigned to a "undefined category". To create or edit the thematic categories, press').' <u>'.$aqui.'</u></i>';
+  }else{
+  	return '<u>'.t('Please select at least ONE category').'</u>';
+  }
+  
+  return $s;
+}
+//gemini
+function my_get_enlace_modificar_vocab($og_nid){   	
+	$vocab_list=my_get_og_vocab_list(array('nid'=>$og_nid));
+	//echo print_r($vocab_list,1);
+	if(count($vocab_list)==1){
+		return "node/".$og_nid."/og/vocab/terms/".$vocab_list[0]->vid; 
+	}else{
+		return "node/".$og_nid."/og/vocab";  
+	}
+}
+//gemini
+function is_show_modificar_vocab(){
+	global $user;
+        $my_grupo=og_get_group_context();
+		
+	if (($user->roles[ADMINISTRADOR] or $user->roles[ADMINISTRADOR_DE_GRUPO]) or $user->uid == 1 or (isset($my_grupo->nid) AND !empty($my_grupo->nid) AND $user->uid)) {
+            $is_admin=db_result(db_query("SELECT o.is_admin FROM {og_uid} o  WHERE o.nid = %d and o.uid = %d",  og_get_group_context()->nid, $user->uid));
+            if ($is_admin == 1 or $user->uid == 1 or $user->roles[ADMINISTRADOR] or $user->roles[ADMINISTRADOR_DE_GRUPO]) {
+                return 1;
+            }
+	}
+        //
+        if(($user->roles[ADMINISTRADOR_DE_GRUPO])){
+            return 1;
+        }
+        //intelsat-2015
+        if(($user->roles[ADMINISTRADOR])){
+            return 1;
+        }
+        if(($user->roles[CREADOR])){
+            return 1;
+        }
+	return 0;		
+}
+function my_get_sql_fuentes_pipes_todas(){
+//gemini
+$where=array();
+//$where[]="node.type in ('supercanal','fuentedapper')";
+$where[]="node.type in ('supercanal','fuentedapper','fuentehtml')";
+$where[]="node.status <> 0";
+
+$my_grupo=og_get_group_context();
+if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]="(og_ancestry.group_nid = ".$my_grupo->nid.")"; 
+}else{
+    //AVISO::::para que cuando el grupo esté sin seleccionar devuelva una lista vacía
+    $where[]="(og_ancestry.group_nid = ".get_grupo_sin_seleccionar_nid().")";
+}
+
+
+/*
+//echo print_r($_REQUEST,1);exit();
+if(isset($_REQUEST['my_reset'])){
+	$_REQUEST['field_supercanal_calidad_rating']='';
+}else{*/
+	
+	
+	if(isset($_REQUEST['field_supercanal_my_texto']) && !empty($_REQUEST['field_supercanal_my_texto'])){
+		$konp=trim($_REQUEST['field_supercanal_my_texto']);
+		$or=array();
+		$or[]="node.title LIKE '%%".$konp."%%'";
+		$or[]="node_revisions.body LIKE '%%".$konp."%%'";
+		$where[]='('.implode(" OR ",$or).')';
+	}
+		
+	if(isset($_REQUEST['field_supercanal_my_tipo']) && !empty($_REQUEST['field_supercanal_my_tipo'])){
+		$konp=trim($_REQUEST['field_supercanal_my_tipo']);
+		if(!my_is_all($konp)){
+                        //intelsat-2016
+			//$where[]="node.type='".$konp."'";
+                        $where[]=red_solr_inc_get_fuente_origin_where($konp);
+		}	
+	}
+	
+	if(isset($_REQUEST['tid']) && !empty($_REQUEST['tid'])){
+		//$tid=strtolower($_REQUEST['tid']);
+		//if(strcmp($tid,'all')==0){
+		if(my_is_all($_REQUEST['tid'])){
+			//
+		}else{
+			$where[]='term_data.tid='.$_REQUEST['tid'];
+		}
+	}
+	
+	if(isset($_REQUEST['field_supercanal_calidad_rating']) && !empty($_REQUEST['field_supercanal_calidad_rating'])){
+		if(!my_is_all($_REQUEST['field_supercanal_calidad_rating'])){
+			//$where[]='node_data_field_supercanal_calidad.field_supercanal_calidad_rating='.$_REQUEST['field_supercanal_calidad_rating'];
+			$my_or=array();
+			$my_or[]='node_data_field_supercanal_calidad.field_supercanal_calidad_rating>='.$_REQUEST['field_supercanal_calidad_rating'];
+			$my_or[]='node_data_field_fuentedapper_calidad.field_fuentedapper_calidad_rating>='.$_REQUEST['field_supercanal_calidad_rating'];
+			$my_or[]='node_data_field_fuentehtml_calidad.field_fuentehtml_calidad_rating>='.$_REQUEST['field_supercanal_calidad_rating'];
+
+                        $where[]='('.implode(" OR ",$my_or).')';
+		}
+	}
+	if(isset($_REQUEST['field_supercanal_exhaustividad_rating']) && !empty($_REQUEST['field_supercanal_exhaustividad_rating'])){
+		if(!my_is_all($_REQUEST['field_supercanal_exhaustividad_rating'])){
+			//$where[]='node_data_field_supercanal_calidad.field_supercanal_exhaustividad_rating='.$_REQUEST['field_supercanal_exhaustividad_rating'];
+			$my_or=array();
+			$my_or[]='node_data_field_supercanal_calidad.field_supercanal_exhaustividad_rating>='.$_REQUEST['field_supercanal_exhaustividad_rating'];
+			$my_or[]='node_data_field_fuentedapper_calidad.field_fuentedapper_exhaustividad_rating>='.$_REQUEST['field_supercanal_exhaustividad_rating'];		
+			$my_or[]='node_data_field_fuentehtml_calidad.field_fuentehtml_exhaustividad_rating>='.$_REQUEST['field_supercanal_exhaustividad_rating'];
+
+                        $where[]='('.implode(" OR ",$my_or).')';
+		}
+	}
+	if(isset($_REQUEST['field_supercanal_actualizacion_rating']) && !empty($_REQUEST['field_supercanal_actualizacion_rating'])){
+		if(!my_is_all($_REQUEST['field_supercanal_actualizacion_rating'])){
+			//$where[]='node_data_field_supercanal_calidad.field_supercanal_actualizacion_rating='.$_REQUEST['field_supercanal_actualizacion_rating'];
+			$my_or=array();
+			$my_or[]='node_data_field_supercanal_calidad.field_supercanal_actualizacion_rating>='.$_REQUEST['field_supercanal_actualizacion_rating'];	
+			$my_or[]='node_data_field_fuentedapper_calidad.field_fuentedapper_actualizacion_rating>='.$_REQUEST['field_supercanal_actualizacion_rating'];
+			$my_or[]='node_data_field_fuentehtml_calidad.field_fuentehtml_actualizacion_rating>='.$_REQUEST['field_supercanal_actualizacion_rating'];
+
+                        $where[]='('.implode(" OR ",$my_or).')';
+		}
+	}
+	//echo print_r($where,1);
+
+//}
+
+$sql="SELECT node.nid,
+   node.title AS node_title,
+   node.type AS node_type,
+   term_data.name AS term_data_name,
+   term_data.vid AS term_data_vid,
+   term_data.tid AS term_data_tid,
+   node_data_field_supercanal_calidad.field_supercanal_calidad_rating AS node_data_field_supercanal_calidad_field_supercanal_calidad_rating,
+   node_data_field_supercanal_calidad.field_supercanal_calidad_target AS node_data_field_supercanal_calidad_field_supercanal_calidad_target,
+   node.vid AS node_vid,
+   node_data_field_supercanal_calidad.field_supercanal_exhaustividad_rating AS node_data_field_supercanal_calidad_field_supercanal_exhaustividad_rating,
+   node_data_field_supercanal_calidad.field_supercanal_exhaustividad_target AS node_data_field_supercanal_calidad_field_supercanal_exhaustividad_target,
+   node_data_field_supercanal_calidad.field_supercanal_actualizacion_rating AS node_data_field_supercanal_calidad_field_supercanal_actualizacion_rating,
+   node_data_field_supercanal_calidad.field_supercanal_actualizacion_target AS node_data_field_supercanal_calidad_field_supercanal_actualizacion_target,
+   node.created AS node_created,
+   node.uid AS node_uid,
+   u.name AS users_name,
+   node_data_field_fuentedapper_calidad.field_fuentedapper_calidad_rating AS node_data_field_fuentedapper_calidad_field_fuentedapper_calidad_rating,
+   node_data_field_fuentedapper_calidad.field_fuentedapper_calidad_target AS node_data_field_fuentedapper_calidad_field_fuentedapper_calidad_target,
+   node_data_field_fuentedapper_calidad.field_fuentedapper_exhaustividad_rating AS node_data_field_fuentedapper_calidad_field_fuentedapper_exhaustividad_rating,
+   node_data_field_fuentedapper_calidad.field_fuentedapper_exhaustividad_target AS node_data_field_fuentedapper_calidad_field_fuentedapper_exhaustividad_target,
+   node_data_field_fuentedapper_calidad.field_fuentedapper_actualizacion_rating AS node_data_field_fuentedapper_calidad_field_fuentedapper_actualizacion_rating,
+   node_data_field_fuentedapper_calidad.field_fuentedapper_actualizacion_target AS node_data_field_fuentedapper_calidad_field_fuentedapper_actualizacion_target,
+   node_data_field_fuentehtml_calidad.field_fuentehtml_calidad_rating AS node_data_field_fuentehtml_calidad_field_fuentehtml_calidad_rating,
+   node_data_field_fuentehtml_calidad.field_fuentehtml_calidad_target AS node_data_field_fuentehtml_calidad_field_fuentehtml_calidad_target,
+   node_data_field_fuentehtml_calidad.field_fuentehtml_exhaustividad_rating AS node_data_field_fuentehtml_calidad_field_fuentehtml_exhaustividad_rating,
+   node_data_field_fuentehtml_calidad.field_fuentehtml_exhaustividad_target AS node_data_field_fuentehtml_calidad_field_fuentehtml_exhaustividad_target,
+   node_data_field_fuentehtml_calidad.field_fuentehtml_actualizacion_rating AS node_data_field_fuentehtml_calidad_field_fuentehtml_actualizacion_rating,
+   node_data_field_fuentehtml_calidad.field_fuentehtml_actualizacion_target AS node_data_field_fuentehtml_calidad_field_fuentehtml_actualizacion_target
+ FROM node node
+ LEFT JOIN term_node term_node ON node.vid = term_node.vid
+ LEFT JOIN term_data term_data ON term_node.tid = term_data.tid
+ LEFT JOIN content_type_supercanal node_data_field_supercanal_calidad ON node.vid = node_data_field_supercanal_calidad.vid
+ LEFT JOIN content_type_fuentedapper node_data_field_fuentedapper_calidad ON node.vid = node_data_field_fuentedapper_calidad.vid
+ LEFT JOIN content_type_fuentehtml node_data_field_fuentehtml_calidad ON node.vid = node_data_field_fuentehtml_calidad.vid
+ LEFT JOIN node_revisions ON node.vid = node_revisions.vid
+ LEFT JOIN users u ON node.uid=u.uid
+ LEFT JOIN {og_ancestry} og_ancestry ON node.nid = og_ancestry.nid
+ WHERE ".implode(" AND ",$where)."
+ GROUP BY nid
+  ORDER BY ".get_order_fuentes_pipes_todas();
+  return $sql;
+}
+//gemini
+function my_save_node_uid(&$node){
+	global $user;
+	if(!isset($node->uid) || empty($node->uid)){
+		if(isset($node->nid) && !empty($node->nid)){	
+			$my_node=node_load($node->nid);
+			if(!empty($my_node) && isset($my_node->uid) && !empty($my_node->uid)){
+				$node->uid=$my_node->uid;
+			}
+		}else{
+			$node->uid=$user->uid;	
+		}
+	}
+}

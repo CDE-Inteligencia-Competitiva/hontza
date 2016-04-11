@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * @file
+ * Adds a button to a node to share on a user's Facebook stream
+ */
+
+/**
+ * Implements hook_help()
+ */
+function facebookshare_help($path, $arg) {
+  switch ($path) {
+    case 'admin/settings/facebookshare':
+    case 'admin/help#facebookshare':
+      return '<p>'. t('Provides a way for viewers to share a link to a node on' .
+        ' their Facebook stream.') .'</p>';
+  }
+}
+
+/**
+ * Implements hook_perm()
+ */
+function facebookshare_perm() {
+  return array(
+    'administer facebookshare',
+    'access facebookshare'
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function facebookshare_menu() {
+  $item['admin/settings/facebookshare'] = array(
+    'title' => 'Facebook Share',
+    'description' => 'Provides the configuration options for how Facebook Share operates on the site.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebookshare_admin_settings'),
+    'access arguments' => array('administer facebookshare'),
+    'file' => 'facebookshare.admin.inc',
+  );
+  
+  return $item;
+}
+
+/**
+ * Implements hook_nodeapi()
+ */
+function facebookshare_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  if ($op == 'view') {
+    // Make sure we're on the right content type.
+    if (!in_array($node->type, variable_get('facebookshare_types', array()), TRUE)) {
+      return NULL;
+    }
+
+    // Make sure we're actually building the page to render in a browser.
+    if ($node->build_mode != NODE_BUILD_NORMAL) {
+      return NULL;
+    }
+
+    // Make sure the user has access to use Facebook Share.
+    if (!user_access('access facebookshare')) {
+      return NULL;
+    }
+    
+    // Retrieve the location where we should show it, the style and the URL of the button.
+    $location = variable_get('facebookshare_location', array());
+    $url = url('node/' . $node->nid, array('absolute' => TRUE));
+    $weight = check_plain(variable_get('facebookshare_weight', -10));
+
+    // Check in the teaser and full view.
+    if (($teaser && !empty($location['teasers'])) || (!$teaser && !empty($location['content']))) {
+      drupal_add_css(drupal_get_path('module', 'facebookshare') . '/facebookshare.css');
+      $node->content['facebookshare'] = array(
+        '#value' => theme('facebookshare', $url),
+        '#weight' => is_numeric($weight) ? (int)$weight : -10,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_theme()
+ */
+function facebookshare_theme($existing, $type, $theme, $path) {
+  return array(
+    'facebookshare' => array(
+      'arguments' => array(
+        'url' => NULL,
+      ),
+    ),
+    'facebookshare_button' => array(
+      'arguments' => array(
+        'url' => NULL,
+        'size' => NULL,
+        'text' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Themes facebook share button box
+ */
+function theme_facebookshare($url) {
+  $output = '<div class="facebookshare-box">';
+  $output .= theme(
+    'facebookshare_button',
+    $url,
+    check_plain(variable_get('facebookshare_size', '')),
+    check_plain(variable_get('facebookshare_text', ''))
+  );
+  $output .= '</div>';
+  
+  return $output;
+}
+
+/**
+ * Themes facebook share button
+ */
+function theme_facebookshare_button($url, $size, $text) {
+  $output = '<a name="fb_share" ' .
+   'type="' . $size . '" share_url="' . $url . '">' .
+   $text . '</a>' .
+   '<script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" ' .
+   'type="text/javascript"></script>';
+  
+  return $output;
+}

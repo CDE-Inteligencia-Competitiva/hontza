@@ -1,0 +1,11 @@
+
+name = Red servidor
+description = Servidor de fuentes y canales compartidos de la red
+core = 6.x
+package = Hontza
+
+; Information added by drupal.org packaging script on 2011-10-01
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "hontza"
+datestamp = "1317427974"

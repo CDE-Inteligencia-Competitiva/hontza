@@ -1,0 +1,34 @@
+; $Id: API.txt,v 1.1.2.2 2010/08/10 23:23:21 mikestefff Exp $
+
+API - PROVIDE YOUR OWN QUANT CHARTS
+--------------------------------------
+
+The real power of Quant lies in it's ability to generate these charts with very 
+little provided information. Quant offers a simple, yet flexible API to allow 
+developers to include quant charts with their modules.
+
+API example
+
+Provide a quant chart of comment creation over time
+
+function hook_quants() {
+  $quants = array();
+
+  $quant = new stdClass;
+  $quant->id = 'comment_creation';	 // Unique ID
+  $quant->label = t('Comment creation');	 // The title of the chart
+  $quant->labelsum = TRUE;	 // Add the sum of items over time to the title
+  $quant->table = 'comments';	 // The database table
+  $quant->field = 'timestamp';	 // The column that stores the timestamp
+  $quant->dataType = 'single';	 // Only one datapoint used
+  $quant->chartType = 'line';	 // The type of chart
+  $quants[] = $quant;
+
+  return $quants;
+}
+
+
+MORE, COMPLEX EXAMPLES
+--------------------------------------
+
+See what else you can do with quant in the file quant.quants.inc.

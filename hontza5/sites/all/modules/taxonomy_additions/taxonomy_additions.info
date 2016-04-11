@@ -1,0 +1,12 @@
+; $Id: taxonomy_additions.info,v 1.1 2011/02/01 00:20:14 amateescu Exp $
+name = Taxonomy Additions
+description = "Adds various improvements to the core Taxonomy module."
+core = 6.x
+dependencies[] = taxonomy
+
+; Information added by drupal.org packaging script on January 1, 1970 - 00:00
+version = "6.x-1.0-beta1"
+core = "6.x"
+project = "taxonomy_additions"
+datestamp = "1296520038"
+

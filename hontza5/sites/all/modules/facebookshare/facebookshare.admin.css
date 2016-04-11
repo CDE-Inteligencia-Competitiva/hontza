@@ -1,0 +1,14 @@
+
+/**
+ * @file
+ * CSS styles for the admin settings of the Facebook Share module boxes
+ */
+
+#facebookshare-admin-settings .form-radios .form-item {
+  width: 130px;
+  float: left;
+}
+
+#edit-facebookshare-text-wrapper {
+  clear: both;
+}

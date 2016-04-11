@@ -1,0 +1,562 @@
+<?php
+require_once('movil.vigilancia.inc.php');
+require_once('movil.grupo.inc.php');
+require_once('movil.idioma.inc.php');
+require_once('movil.solr.inc.php');
+function movil_perm() {
+  return array();
+}
+function movil_menu() {
+  $items=array();
+  $items['movil/vigilancia/%'] = array(
+    'title' => 'Monitoring',
+    'page callback' => 'movil_vigilancia_callback',
+    'access callback'=>'movil_vigilancia_access',    
+  );
+  $items['movil/grupo/seleccionar_grupo'] = array(
+    'title' => 'Select group',
+    'page callback' => 'movil_grupo_seleccionar_grupo_callback',
+    'access callback'=>'movil_vigilancia_access',    
+  );
+  $items['movil/idioma/seleccionar_idioma'] = array(
+    'title' => 'Select language',
+    'page callback' => 'movil_idioma_seleccionar_idioma_callback',
+    'access callback'=>'movil_vigilancia_access',    
+  );
+  $items['movil/seleccionar_vigilancia'] = array(
+    'title' => 'Monitoring',
+    'page callback' => 'movil_vigilancia_seleccionar_vigilancia_callback',
+    'access callback'=>'movil_vigilancia_access',    
+  );
+  $items['movil/seleccionar_pantalla'] = array(
+    'title' => 'Monitoring',
+    'page callback' => 'movil_seleccionar_pantalla_callback',
+    'access callback'=>'movil_vigilancia_access',    
+  );
+  $items['movil/solr/busqueda_simple'] = array(
+    'title' => 'Simple Search',
+    'page arguments' => array('movil_solr_busqueda_simple_form'),
+    'page callback'=>'drupal_get_form',  
+    'access callback'=>'movil_vigilancia_access',  
+  );
+  $items['movil/solr/busqueda_simple_resultados'] = array(
+    'title' => 'Results',
+    'page callback'=>'movil_solr_busqueda_simple_resultados_callback',  
+    'access callback'=>'movil_vigilancia_access',  
+  );
+  $items['movil/is_movil_installed'] = array(
+    'title' => 'Exist',
+    'page callback'=>'movil_is_movil_installed_callback',  
+    'access callback'=>true,  
+  );
+  $items['movil/iframea'] = array(
+    'title' => '',
+    'page callback'=>'movil_iframea_callback',  
+    'access callback'=>true,  
+  );
+  return $items;
+}
+function movil_is_show_menu_primary_local_tasks(){
+    if(red_movil_is_pantalla_login()){
+        return 0;
+    }
+    /*$my_node=my_get_node();
+    if(in_array($my_node->type,array('noticia'))){
+        return 1;
+    }*/    
+    return 0;
+}
+function movil_is_show_breadcrumb(){
+    return 0;
+    /*if(red_movil_is_pantalla_login()){
+        return 0;
+    }
+    return 1;*/
+}
+function movil_get_site_name($site_name){
+    return '';
+    /*$result=$site_name;
+    if(!movil_is_show_site_name()){
+        return '';
+    }
+    return $result;*/
+}
+function movil_is_show_site_name(){
+    if(red_movil_is_pantalla_login()){
+        return 0;
+    }
+    return 1;
+}
+function movil_get_title($title){
+    $result=$title;
+    if(!movil_is_show_title()){
+        return '';
+    }
+    return $result;
+}
+function movil_is_show_title(){
+    if(red_movil_is_pantalla_login()){
+        return 0;
+    }
+    return 1;
+}
+function movil_get_pagina_de_arranque(){
+    global $base_url;
+    $result=movil_get_inicio_url_relative();
+    $my_lang='/es';
+    $group_nid=red_movil_get_default_grupo_nid();
+    if(!empty($group_nid)){
+        $grupo=node_load($group_nid);
+            if(isset($grupo->purl) && !empty($grupo->purl)){
+                /*$pestana='/vigilancia/pendientes';
+                if(!hontza_is_show_vigilancia_pendientes_tab()){
+                    $pestana='/vigilancia/validados';
+                }*/
+                $pestana='/'.$result;
+                $result=$base_url.$my_lang.'/'.$grupo->purl.$pestana;                
+            }
+    }                
+    return $result;
+}
+function movil_get_logo($logo,$with_auth=0){
+    global $base_url;
+    $result=$logo;
+    $theme_buho_settings=variable_get('theme_fusion_mobile_settings','');    
+    $src=$theme_buho_settings['logo_path'];
+    $result=$base_url.'/system/files/'.basename($src);    
+    if(!$with_auth){    
+        if(!hontza_is_user_anonimo()){
+            return '';
+        }
+    }    
+    return $result;
+}
+function movil_get_user_menus(){
+    global $user;
+    $html=array();
+    //if(!hontza_is_user_anonimo()){
+        $html[]='<div class="menu-user">';
+        /*$html[]='<li style="float:left;padding-left:0px;">';
+        $html[]=red_funciones_get_actualizacion_activado_menu_icono();
+        $html[]=red_funciones_get_subdominio_activado_menu_icono();
+        //$html[]=red_funciones_get_language_menu_icono();
+        //$html[]=get_language_selection_li();
+        $html[]='</li><li class="user-m" style="float:left;background-position: top left;">';
+        $html[]=red_funciones_get_user_menu_icono();
+        $html[]=hontza_define_user_menu_input_select().hontza_get_rol_base_user($user);
+        $html[]='</li>';
+        //$html[]=red_funciones_define_user_menu_net_resources_input_select_html();
+        //$html[]=red_funciones_get_gestion_menu_icono();
+        //$html[]=hontza_define_user_menu_management_input_select_html();*/
+        //$html[]='<ul id="ul_movil_user_menus">';
+        //$html[]='<li id="li_movil_user_menus">';
+        //$html[]=red_funciones_get_user_menu_icono();
+        //$html[]=movil_get_input_select_menu();
+        $html[]=movil_get_botoi_select_menu();
+        //$html[]='</li>';
+        //$html[]='</ul>';
+        $html[]='</div>';
+    //}
+    return implode('',$html);
+}
+function movil_get_input_select_menu(){
+    global $user;
+    $result=array();
+    $destination=movil_get_inicio_url_relative();
+    $result[]='<select id="menu_user_select" name="menu_user_select" style="clear:both;padding-left:0px;">';
+    $selected=' selected="selected"';
+    $result[]='<option value="none"'.$selected.'>'.$user->name.'</option>';    
+    //$result[]='<option value="'.url('user').'">'.t('My Profile').'</option>';
+    $result[]='<option value="'.url('movil/grupo/seleccionar_grupo').'">'.t('Select group').'</option>';
+    $result[]='<option value="'.url('movil/idioma/seleccionar_idioma').'">'.t('Select language').'</option>';
+    //$vigilancia_url=url('movil/vigilancia/ultimas');
+    $vigilancia_url=url('movil/seleccionar_vigilancia');
+    $result[]='<option value="'.$vigilancia_url.'">'.t('Monitoring').'</option>';
+    $result[]='<option value="'.url('node/add/noticia',array('query'=>'destination='.$destination)).'">'.t('Create User News').'</option>';    
+    $result[]='<option value="logout">'.t('Logout').'</option>';
+    $result[]='</select>';
+    return implode('',$result);
+}
+function movil_add_js(&$vars){
+    if(!hontza_is_user_anonimo()){
+        //movil_add_input_select_menu_js();
+        movil_add_botoi_select_menu_js();
+        $vars['scripts'] = drupal_get_js();
+    }    
+}
+function movil_add_input_select_menu_js(){
+$js='
+        $(document).ready(function()
+        {
+            $("#menu_user_select option")[0].selected=true;
+            $("#menu_user_select").change(function()
+            {
+                var my_menu_user_url=$(this).attr("value");
+                if(my_menu_user_url=="logout"){
+                    location.href="'.url('logout').'";
+                }else if(my_menu_user_url!="none"){
+                    location.href=my_menu_user_url;
+                    //window.open(my_menu_user_url);
+                    $("#menu_user_select option")[0].selected=true;
+                }
+                //alert(my_menu_user_url);                
+            });            
+	});';
+
+    drupal_add_js($js,'inline');
+}
+function movil_get_item_resumen($node){
+    return hontza_content_resumen($node,125);
+}
+function movil_is_wysiwyg_form_alter(&$form,&$form_state){
+    return 0;
+}
+function movil_taxonomy_form_alter(&$form, $form_state, $form_id){
+    if(in_array($form_id,array('noticia_node_form'))){    
+        if(isset($form['taxonomy'])){
+            unset($form['taxonomy']);
+        }
+    }    
+}
+function movil_is_node_notifications(){
+    return 0;
+}
+function movil_get_inicio_url(){
+    global $base_url,$language;
+    $url='user';
+    $grupo_value='';
+        if(hontza_is_user_anonimo()){
+            if(red_movil_is_language_default()){
+                $url='/'.$url;
+                $url=red_movil_set_movil_inicio_language('es',$url);
+            }
+        }else{
+            $my_grupo_nid=red_movil_get_grupo_nid();
+            $grupo_value=boletin_report_get_grupo_purl($my_grupo_nid);
+            $url='/'.$grupo_value.'/'.movil_get_inicio_url_relative();
+            $url=red_movil_set_movil_inicio_language($language->language,$url);
+        }
+    return $url;    
+}
+function movil_get_inicio_url_relative(){
+    $result='user';
+    if(!hontza_is_user_anonimo()){
+        $result='movil/vigilancia/ultimas';
+    }
+    return $result;
+}
+function movil_menu_primary_local_tasks($level = 0, $return_root = FALSE){
+  static $tabs;
+  static $root_path;
+
+  if (!isset($tabs)) {
+    $tabs = array();
+
+    $router_item = menu_get_item();
+    if (!$router_item || !$router_item['access']) {
+      return '';
+    }
+    // Get all tabs and the root page.
+    $result = db_query("SELECT * FROM {menu_router} WHERE tab_root = '%s' ORDER BY weight, title", $router_item['tab_root']);
+    $map = arg();
+    $children = array();
+    $tasks = array();
+    $root_path = $router_item['path'];
+
+    while ($item = db_fetch_array($result)) {
+      //intelsat-2015
+      if(!movil_is_show_menu_node_item($router_item,$item)){
+          continue;
+      }  
+      _menu_translate($item, $map, TRUE);
+      if ($item['tab_parent']) {
+        // All tabs, but not the root page.
+        $children[$item['tab_parent']][$item['path']] = $item;
+      }
+      // Store the translated item for later use.
+      $tasks[$item['path']] = $item;
+    }
+
+    // Find all tabs below the current path.
+    $path = $router_item['path'];
+    // Tab parenting may skip levels, so the number of parts in the path may not
+    // equal the depth. Thus we use the $depth counter (offset by 1000 for ksort).
+    $depth = 1001;
+    while (isset($children[$path])) {
+      $tabs_current = '';
+      $next_path = '';
+      $count = 0;
+      foreach ($children[$path] as $item) {
+        if ($item['access']) {
+          $count++;
+          // The default task is always active.
+          if ($item['type'] == MENU_DEFAULT_LOCAL_TASK) {
+            // Find the first parent which is not a default local task.
+            for ($p = $item['tab_parent']; $tasks[$p]['type'] == MENU_DEFAULT_LOCAL_TASK; $p = $tasks[$p]['tab_parent']);
+            $link = theme('menu_item_link', array('href' => $tasks[$p]['href']) + $item);
+            $tabs_current .= theme('menu_local_task', $link, TRUE);
+            $next_path = $item['path'];
+          }
+          else {
+            $link = theme('menu_item_link', $item);
+            $tabs_current .= theme('menu_local_task', $link);
+          }
+        }
+      }
+      $path = $next_path;
+      $tabs[$depth]['count'] = $count;
+      $tabs[$depth]['output'] = $tabs_current;
+      $depth++;
+    }
+
+    // Find all tabs at the same level or above the current one.
+    $parent = $router_item['tab_parent'];
+    $path = $router_item['path'];
+    $current = $router_item;
+    $depth = 1000;
+    while (isset($children[$parent])) {
+      $tabs_current = '';
+      $next_path = '';
+      $next_parent = '';
+      $count = 0;
+      foreach ($children[$parent] as $item) {
+        if ($item['access']) {
+          $count++;
+          if ($item['type'] == MENU_DEFAULT_LOCAL_TASK) {
+            // Find the first parent which is not a default local task.
+            for ($p = $item['tab_parent']; $tasks[$p]['type'] == MENU_DEFAULT_LOCAL_TASK; $p = $tasks[$p]['tab_parent']);
+            $link = theme('menu_item_link', array('href' => $tasks[$p]['href']) + $item);
+            if ($item['path'] == $router_item['path']) {
+              $root_path = $tasks[$p]['path'];
+            }
+          }
+          else {
+            $link = theme('menu_item_link', $item);
+          }
+          // We check for the active tab.
+          if ($item['path'] == $path) {
+            $tabs_current .= theme('menu_local_task', $link, TRUE);
+            $next_path = $item['tab_parent'];
+            if (isset($tasks[$next_path])) {
+              $next_parent = $tasks[$next_path]['tab_parent'];
+            }
+          }
+          else {
+            $tabs_current .= theme('menu_local_task', $link);
+          }
+        }
+      }
+      $path = $next_path;
+      $parent = $next_parent;
+      $tabs[$depth]['count'] = $count;
+      $tabs[$depth]['output'] = $tabs_current;
+      $depth--;
+    }
+    // Sort by depth.
+    ksort($tabs);
+    // Remove the depth, we are interested only in their relative placement.
+    $tabs = array_values($tabs);
+  }
+
+  if ($return_root) {
+    return $root_path;
+  }
+  else {
+    // We do not display single tabs.
+    return (isset($tabs[$level]) && $tabs[$level]['count'] > 1) ? $tabs[$level]['output'] : '';
+  }
+}
+function movil_is_show_menu_node_item($router_item,$item){
+  if($router_item['tab_root']=='node/%'){
+     $path_array=array('node/%/view','node/%/edit');
+     if(in_array($item['path'],$path_array)){
+         return 1;
+     }
+  }
+  return 0;
+}
+function movil_get_user_img_faktore(){
+  $result=50;
+  return $result;
+}
+function movil_get_botoi_select_menu(){
+  global $user;  
+  $title=$user->name;
+  $html=array();
+  $class='btn_inicio';
+  $icono=movil_get_icono_action('movil_menu',t('Menu')).'&nbsp;';
+  $url='movil/seleccionar_pantalla';
+  $url=movil_add_grupo_lang_url($url);
+  //$html[]='<div class="button-wrap-inner div_movil_menu">'.l($icono.$title,$url,array('attributes'=>array('class'=>$class),'html'=>true)).'</div>';
+  if(red_is_subdominio_proyecto_alerta()){
+    $html[]='<div class="movil_header_proyecto_alerta">';
+  }else if(movil_is_sareko_id_despacho()){  
+    $html[]='<div class="movil_header_despacho">';
+  }else{
+    $html[]='<div class="movil_header">';  
+  }
+  $logo=movil_get_logo('',1);
+  $icono_inicio=movil_get_icono_action('inicio',t('Home')).'&nbsp;';
+  $url_inicio=movil_get_inicio_url_relative();
+  $url_inicio=movil_add_grupo_lang_url($url_inicio);
+  $icono_back=movil_get_icono_action('back_movil',t('Back')).'&nbsp;';
+  if(!hontza_is_user_anonimo()){
+    $html[]='<div id="id_div_movil_inicio_link" class="div_movil_inicio_link">'.l($icono_inicio,$url_inicio,array('html'=>true,'attributes'=>array('id'=>"id_a_movil_inicio_link"))).'</div>'; 
+    $html[]='<div id="id_div_movil_back_link" class="div_movil_back_link">'.l($icono_back,'#',array('html'=>true,'attributes'=>array('id'=>"id_a_movil_back_link",'onclick' =>"window.history.back();return false;"))).'</div>'; 
+  
+  }
+  $html[]='<div class="div_movil_logo"><img src="'.$logo.'" height="32"></div>';
+  if(!hontza_is_user_anonimo()){
+    $html[]='<div id="id_div_movil_menu_link" class="div_movil_menu_link">'.l($icono,$url,array('html'=>true,'attributes'=>array('id'=>"id_a_movil_menu_link"))).'</div>';
+  }
+  $html[]='<div>';
+  //movil_add_botoi_select_menu_js();
+  return implode('',$html);
+}
+function movil_get_icono_action($name,$label){
+  return my_get_icono_action($name,$label,'',array(),'','','fusion_mobile');  
+}
+function movil_seleccionar_pantalla_callback(){
+  global $base_url,$language;
+    $html=array();
+    $html[]='<div class="div_seleccionar_vigilancia">';
+    $class=movil_get_btn_class();
+    $my_grupo=red_movil_get_current_grupo_node();
+    $grupo_value='';
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $grupo_value=$my_grupo->purl;
+    }
+    $my_lang='/';
+    if($language->language!='en'){
+        $my_lang='/'.$language->language.'/';
+    }
+    $pantalla_array=movil_get_pantalla_array();
+    if(!empty($pantalla_array)){
+        foreach($pantalla_array as $i=>$row){
+            $class=movil_get_btn_class();
+            /*if($row->nid==$my_grupo_nid){
+                $class='btn_selected';
+            }*/
+            $url=$row['url'];
+            $url=$base_url.$my_lang.$grupo_value.'/'.$url;
+            $html[]='<div class="button-wrap-inner">'.l(t($row['title']),$url,array('attributes'=>array('class'=>$class))).'</div>';        
+        }
+    }
+    $html[]='</div>';
+    $output=implode('',$html);
+    movil_add_seleccionar_pantalla_js();
+    drupal_set_title('');
+    return $output;
+}
+function movil_get_pantalla_array(){
+    $result=array();
+    $row=array();
+    $row['title']=t('Select language');
+    $row['url']='movil/idioma/seleccionar_idioma';
+    $result[]=$row;    
+    $row=array();
+    $row['title']=t('Select group');
+    $row['url']='movil/grupo/seleccionar_grupo';
+    $result[]=$row;
+    $row=array();
+    //$vigilancia_url='movil/vigilancia/ultimas';
+    $vigilancia_url='movil/seleccionar_vigilancia';    
+    $row['title']=t('Monitoring');
+    $row['url']=$vigilancia_url;
+    $result[]=$row;
+    $row=array();
+    $row['title']=t('Create User News');
+    $row['url']='node/add/noticia';
+    $result[]=$row;
+    $row=array();
+    $row['title']=t('Simple Search');
+    $row['url']='movil/solr/busqueda_simple';
+    $result[]=$row;    
+    $row=array();
+    $row['title']=t('Logout');
+    $row['url']='logout';
+    $result[]=$row;
+    return $result;
+}
+function movil_add_seleccionar_pantalla_js(){
+    movil_grupo_add_seleccionar_grupo_js();
+}
+function movil_add_botoi_select_menu_js(){
+    $js='
+        $(document).ready(function()
+        {
+            $("#id_a_movil_inicio_link").click(function()
+            {
+                $(".div_movil_inicio_link").addClass("div_movil_inicio_link_selected");
+                //$(".div_movil_inicio_link").removeClass("div_movil_inicio_link");
+            });
+            $("#id_a_movil_menu_link").click(function()
+            {
+                $(".div_movil_menu_link").addClass("div_movil_menu_link_selected");
+                //$(".div_movil_menu_link").removeClass("div_movil_menu_link");
+            });
+	});';
+    drupal_add_js($js,'inline');
+}
+function movil_add_grupo_lang_url($url,$grupo_nid=''){
+    global $base_url,$language;
+    $result='';
+    if(empty($grupo_nid)){
+        $my_grupo=red_movil_get_current_grupo_node();
+    }else{
+        $my_grupo=node_load($grupo_nid);
+    }
+    $grupo_value='';
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $grupo_value=$my_grupo->purl;
+    }
+    $my_lang='/';
+    if($language->language!='en'){
+        $my_lang='/'.$language->language.'/';
+    }
+    $result=$base_url.$my_lang.$grupo_value.'/'.$url;
+    return $result;        
+}
+function movil_comment_form_alter(&$form,&$form_state,$form_id){
+    $form['attachments']['#collapsed']=false;
+}
+function movil_is_view_user_field($title){
+    $my_array=array();
+    $my_array[]='Adjuntar documento con los servicios que ofrece tu empresa';
+    $my_array[]='Tu empresa tiene relación comercial con otros proveedores de soluciones VTIC?';
+    //print $title.'<br>';
+    if(in_array($title,$my_array)){
+        return 0;
+    }
+    return 1;
+}
+function movil_is_movil_installed_callback(){
+    $result=array();
+    $result['is_movil_installed']=1;
+    $result['logo_src']=alerta_get_introduccion_logo_by_subdominio();
+    print json_encode($result);
+    exit();
+}
+function movil_iframea_callback(){
+    print '<iframe src="'.movil_get_movil_iframe_url().'" width="100%" height="100%">';
+    exit();
+}
+function movil_get_btn_class(){
+    $result='btn';
+    if(movil_is_sareko_id_despacho()){
+        $result="btn btn_despacho";
+    }
+    return $result;
+}
+function movil_is_sareko_id_despacho(){
+    if(defined('_IS_MOVIL_SAREKO_ID_DESPACHO') && _IS_MOVIL_SAREKO_ID_DESPACHO==1){
+        return 1;
+    }
+    return 0;
+}
+function movil_get_movil_iframe_url(){
+    if(defined(_MOVIL_IFRAME_URL)){
+        return _MOVIL_IFRAME_URL;
+    }
+    return '';
+}    

@@ -1,0 +1,87 @@
+/* @group PNG Transparency Support */
+/* @group Inline Images */
+/**
+ * Transparency Support (DISABLED BY DEFAULT)
+ * See README.txt for instructions
+ * 
+ */
+#header img {
+  /*behavior: url('/path/from/root/to/sky/scripts/iepngfix.htc');*/
+}
+/* @end */
+
+/* @end */
+.block pre {
+  overflow: hidden; /* needs width: 100% too; overflow alone doesn't work */
+  width: 100%; /* weird, but stops overflow for IE6, displays don't */
+}
+
+/* @group Footer */
+#footer-inner {
+  height: 1em;
+}
+
+/* @end */
+/* @group Menus */
+ul.menu {
+  float: left;
+  overflow: hidden;
+  margin: 0 0 0 0!important;
+  padding: 0 0 0 0!important;
+}
+ul.menu li {
+  margin: 0!important;
+  padding: 0!important;
+  display: inline-block;
+}
+ul.menu a {
+  width: auto;
+  display: block;
+}
+/* @end */
+
+/* @group Navigation */
+#navigation {
+  text-align: center;
+}
+#navigation .wrap-center {
+ display: inline-block;
+}
+#navigation .expanded a {
+  background: url('../images/icn-arrow-down-light.png') no-repeat 96% 51%;
+}
+
+/* @end */
+/* @group Panels */
+/* Module ships with 50% 50% */
+.panel-col-left {
+  width: 49%;
+}
+/* @end */
+.node-teaser {
+  padding-bottom: 2em;
+}
+/* @group Comment Layout */
+.comment .links li {
+  display: inline;
+}
+/* @end */
+/* @group Forum Layout */
+.forum-post .links li {
+  display: inline;
+}
+/* min-height fixes */
+.with-picture {
+  padding-bottom: 150px;
+}
+.without-picture {
+  padding-bottom: 95px;
+}
+.with-photo .meta {
+  height: 7.25em;
+}
+/* @end */
+.form-item-required .form-required {
+  left: -0.75em;
+  line-height: 0.75em;
+}

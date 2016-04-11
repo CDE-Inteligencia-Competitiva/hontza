@@ -1,0 +1,1703 @@
+<?php
+require_once('red.funciones.inc.php');
+require_once('red.fuente.inc.php');
+require_once('red.canal.inc.php');
+require_once('red.facilitador.inc.php');
+require_once('red.regiones.inc.php');
+require_once('red.script.inc.php');
+require_once('red.fix.estrategia.inc.php');
+require_once('red.fix.respuesta.inc.php');
+require_once('red.fix.validar.alerta.inc.php');
+require_once('red.fix.botones.resumen.inc.php');
+require_once('red.vcard.inc.php');
+//intelsat-2015
+require_once('red.destacados.inc.php');
+require_once('red.copiar.inc.php');
+require_once('red.solr.inc.php');
+require_once('red.crear_usuario.inc.php');
+require_once('red.visualizador.inc.php');
+require_once('red.usuario.basico.inc.php');
+require_once('red.node.inc.php');
+require_once('red.movil.inc.php');
+require_once('red.despacho.inc.php');
+//intelsat-2016
+require_once('red.fields.inc.php');
+require_once('red.validar_usuario.network.inc.php');
+function red_perm(){
+    $perm_array=array();    
+    return $perm_array;
+}
+function red_menu(){
+    $items['red/fuentes-pipes/todas'] = array(
+    'title' => 'Sources',
+    'page callback' => 'red_fuentes_pipes_todas_callback',
+    'access arguments' => array('access content'),
+    );
+    $items['red/canales/todas'] = array(
+    'title' => 'Search for Channels',
+    'page callback' => 'red_canales_todas_callback',
+    'access arguments' => array('access content'),
+    );
+    $items['red/facilitadores/todas'] = array(
+    'title' => 'Search for Facilitators',
+    'page callback' => 'red_facilitadores_todas_callback',
+    'access arguments' => array('access content'),
+    );
+    $items['red/red_regiones_get_continente_regiones_options_ajax']=array(
+        'title' => 'Regions',
+        'page callback' => 'red_regiones_get_continente_regiones_options_ajax_callback',
+        //'access arguments' => array('access content'),
+        'access callback'=>TRUE,
+    );
+    $items['red/red_regiones_get_region_paises_options_ajax']=array(
+        'title' => 'Regions',
+        'page callback' => 'red_regiones_get_region_paises_options_ajax_callback',
+        //'access arguments' => array('access content'),
+        'access callback'=>TRUE,
+    );
+    $items['red/print_regiones_proyecto_alerta'] = array(
+    'title' => 'Regions',
+    'page callback' => 'red_script_print_regiones_proyecto_alerta_callback',
+    'access arguments' => array('root'),
+    );
+    $items['red/red_regiones_get_region_autonomias_options_ajax']=array(
+        'title' => 'Regions',
+        'page callback' => 'red_regiones_get_region_autonomias_options_ajax_callback',
+        'access callback'=>TRUE,
+    );
+    $items['red/migrar_regiones_canal_proyecto_alerta'] = array(
+    'title' => 'Regions',
+    'page callback' => 'red_script_migrar_regiones_canal_proyecto_alerta_callback',
+    'access arguments' => array('root'),
+    );
+    $items['red/migrar_regiones_fuente_proyecto_alerta'] = array(
+    'title' => 'Regions',
+    'page callback' => 'red_script_migrar_regiones_fuente_proyecto_alerta_callback',
+    'access arguments' => array('root'),
+    );
+    $items['red/print_items_sin_valor_canal'] = array(
+    'title' => 'Export',
+    'page callback' => 'red_script_print_items_sin_valor_canal_callback',
+    'access arguments' => array('root'),
+    );
+     $items['red/borrar_items_sin_valor_canal'] = array(
+    'title' => 'Export',
+    'page callback' => 'red_script_borrar_items_sin_valor_canal_callback',
+    'access arguments' => array('root'),
+    );
+     $items['red/fix_estrategia'] = array(
+    'title' => 'Fix Strategy',
+    'page callback' => 'red_fix_estrategia_callback',
+    'access arguments' => array('root'),
+    );
+     $items['red/fix_respuesta'] = array(
+    'title' => 'Fix Response',
+    'page callback' => 'red_fix_respuesta_callback',
+    'access arguments' => array('root'),
+    );
+     $items['red/guia_usuario'] = array(
+    'title' => "User's Guide",
+    'page callback' => 'red_funciones_guia_usuario_callback',
+    'access arguments' => array('access content'),
+    );
+     $items['red/guia_administrador'] = array(
+    'title' => "Administrator's Guide",
+    'page callback' => 'red_funciones_guia_administrador_callback',
+    'access arguments' => array('access content'),
+    );
+     $items['red/fix_validar_alerta'] = array(
+    'title' => 'Validate',
+    'page callback' => 'red_fix_validar_alerta_callback',
+    'access arguments' => array('root'),
+    );
+     $items['red/fix_botones_resumen'] = array(
+    'title' => 'Text',
+    'page callback' => 'red_fix_botones_resumen_callback',
+    'access arguments' => array('root'),
+    );
+     $items['cambiar_consulta_canales_my_categorias_block']=array(
+    'title' => 'Filter by category',
+    'page callback' => 'red_funciones_cambiar_consulta_canales_my_categorias_block_callback',
+    'access arguments' => array('access content'),
+     );
+     $items['limpiar_cache_subdominios']=array(
+    'title' => 'Clear',
+    'page callback' => 'red_funciones_limpiar_cache_subdominios_callback',
+    'access arguments' => array('root'),
+     );
+     $items['vigilancia/destacados']=array(
+    'title' => 'Highlighted',
+    'page callback' => 'red_destacados_callback',
+    'access arguments' => array('access content'),
+     );
+     $items['canales/%/destacados']=array(
+    'title' => 'Highlighted',
+    'page callback' => 'red_destacados_canales_destacados_callback',
+    'access arguments' => array('access content'),
+     );
+     //intelsat-2015
+     /*$items['red/copiar/%/enviar_mail']=array(
+    'title' => 'Send email',
+    'page callback' => 'red_copiar_enviar_mail_callback',
+    'access callback' => 'red_copiar_custom_access',    
+     );*/
+     $items['red/solr/fix_indices']=array(
+    'title' => 'Correct Index',
+    'page callback' => 'red_solr_fix_indices_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/insert_locale_source']=array(
+    'title' => 'Insert locale source',
+    'page callback' => 'red_insert_locale_source_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/solr/apachesolr_index_batch_index_remaining']=array(
+    'title' => 'Index',
+    'page callback' => 'red_solr_inc_apachesolr_index_batch_index_remaining_callback',
+    //'access arguments' => array('root'),
+    'access callback' => TRUE,     
+     );
+     $items['red/guia_internet/%']=array(
+     'title' => 'Guide',
+     'page callback' => 'red_solr_inc_guia_internet_callback',
+     'access callback' => TRUE,    
+     );
+     $items['red/borrar_items_sin_grupos']=array(
+    'title' => 'Delete',
+    'page callback' => 'red_script_borrar_items_sin_grupos_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/solr/fix_apachesolr_index_entities_node']=array(
+    'title' => 'Delete',
+    'page callback' => 'red_solr_fix_apachesolr_index_entities_node_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/script/fix_flag_content']=array(
+    'title' => 'Fix',
+    'page callback' => 'red_script_fix_flag_content_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/visualizador/frontpage']=array(
+    'title' => 'Frontpage',
+    'page callback' => 'red_visualizador_frontpage_callback',
+    'access callback' => TRUE,    
+     );
+     $items['red/solr/reset_noticia_usuario_apachesolr_index_entities_node']=array(
+    'title' => 'Delete',
+    'page callback' => 'red_solr_reset_noticia_usuario_apachesolr_index_entities_node_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/script/fix_noticia_usuario_source_type_default']=array(
+    'title' => 'Fix',
+    'page callback' => 'red_script_fix_noticia_usuario_source_type_default_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/movil/inicio']=array(
+    'title' => 'Fix',
+    'page callback' => 'red_movil_inicio_callback',
+    'access callback' => TRUE,    
+     );
+     $items['red/crear_usuario/exportar_csv']=array(
+    'title' => 'Export',
+    'page callback' => 'red_crear_usuario_exportar_csv_callback',
+    'access arguments' => array('root'),    
+     );
+     $items['red/copiar/crear_canal_yql/%']=array(
+     'title' => 'Channel',
+     'page callback' => 'red_copiar_crear_canal_yql_callback',
+     'access callback' =>'red_copiar_crear_canal_yql_access',    
+     );
+    return $items;
+}
+function red_idiomas($node,$field_in=''){
+    //intelsat-2016
+    $field=$field_in;
+    if(empty($field)){
+        $field=red_fields_inc_get_field_idiomas_name();       
+    }
+    if(hontza_is_sareko_id_red()){
+        $result=red_field($node,$field);
+        $result=str_replace(';#',',',$result);
+        return $result;
+    }
+    return '';
+}
+function red_field($node,$field){
+    if(isset($node->$field)){
+        $my_array=$node->$field;
+        if(isset($my_array[0]) && isset($my_array[0]['value'])){
+           return $my_array[0]['value'];
+        }    
+    }    
+    return '';
+}
+function red_set_update_canal_menu_node_url($primary){
+    $node=my_get_node();
+    if(in_array($node->type,array('canal_de_yql','canal_de_supercanal'))){
+        $job=hontza_define_job_param($node->nid);
+        if(hontza_is_empty_feeds_source($job)){
+            $result=str_replace('/node/'.$node->nid.'/import"','/no_existe_feed_source"',$primary);
+            return $result;
+        }        
+    }
+    return $primary;
+}
+function red_yql_node_form_alter(&$form,&$form_state,$form_id){
+    if(hontza_is_sareko_id_red()){
+        $node=hontza_get_node_by_form($form);
+        //intelsat-2016
+        $field_red_periodicidad=red_fields_inc_get_field_periodicidad_name();
+        if(isset($form[$field_red_periodicidad])){
+            $label=t('Update frequency');
+            if(isset($form[$field_red_periodicidad][0])){
+                $form[$field_red_periodicidad][0]['#title']=$label;
+            }else{
+                $form[$field_red_periodicidad]['#title']=$label;
+            }            
+        }
+        if(isset($form['field_canal_region']) || hontza_is_sareko_id('LOKALA')){
+           unset($form['field_canal_region']);
+           $form['canal_fs']=red_regiones_define_fieldset($node);
+        }
+    }    
+}
+function red_supercanal_node_form_alter(&$form,&$form_state,$form_id){
+    if(hontza_is_sareko_id_red()){
+        $node=hontza_get_node_by_form($form);
+        //intelsat-2016
+        $field_red_url=red_fields_inc_get_field_url_name();
+        if(isset($form[$field_red_url])){
+            $label=t('URL Address');
+            if(isset($form[$field_red_url][0])){
+                $form[$field_red_url][0]['#title']=$label;
+            }/*else{
+                $form[$field_red_url]['#title']=$label;
+            }*/    
+        }
+        //intelsat-2016
+        $field_country_fuente=red_fields_inc_get_field_country_fuente_name();
+        if(isset($form[$field_country_fuente])){
+            $form[$field_country_fuente][0]['#title']=t('Country or Region');
+        }
+        //intelsat-2016
+        $field_fuente_region=red_fields_inc_get_field_fuente_region_name();
+        if(isset($form[$field_fuente_region]) || hontza_is_sareko_id('LOKALA')){
+            $default_value='';
+            //$default_value=$form['field_fuente_region'][0]['#default_value']['value'];
+            unset($form[$field_fuente_region]);                        
+            $form['region_fs']=red_regiones_define_fieldset($node);
+        }
+    }    
+}
+function red_cnae_options(){
+    $result=array();
+    //$result[0]='';
+    $cnae_array=red_get_cnae_array();
+    if(!empty($cnae_array)){
+        foreach($cnae_array AS $i=>$row){
+            //gemini-2014
+            $len=strlen($row->value);
+            if($len>=2){
+                //$result[$row->value]=$row->value.' '.$row->label;
+                $result[$row->value]=red_set_cnae_label($row);
+            }
+        }
+    }
+    return $result;
+}
+function igape_cnae_options(){
+    return red_cnae_options();
+}
+function red_get_cnae_array($value=''){
+    $result=array();
+    if(!empty($value)){
+        $res=db_query('SELECT * FROM {red_cnae} WHERE value="%s"',$value);
+    }else{
+        $res=db_query('SELECT * FROM {red_cnae} WHERE 1');
+    }
+    //
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_item_node_form_alter(&$form,&$form_state,$form_id){
+    //intelsat-2016
+    $field_red_fecha_noticia=red_fields_inc_get_field_red_fecha_noticia_name();
+    if(isset($form[$field_red_fecha_noticia])){
+        unset($form[$field_red_fecha_noticia]);
+    }
+    //
+    $form['reto_al_que_responde_id']=array(
+            //'#title' => t('Associated Challenge'),
+            '#value'=>get_reto_al_que_responde_html(),
+    );
+    //
+    //intelsat-2016
+    $field_red_resumen=red_fields_inc_get_field_resumen_name();        
+    /*if(hontza_is_sareko_id_red()){
+        //intelsat-2016
+        $field_item_web=red_fields_inc_get_field_item_web_name();
+        $field_red_boletines=red_fields_inc_get_field_boletines_name();
+        $field_red_visitas=red_fields_inc_get_field_visitas_name();
+        $field_red_resumen=red_fields_inc_get_field_resumen_name();
+        if(isset($form[$field_item_web])){
+            $label=t('URL Address');
+            if(isset($form[$field_item_web][0])){
+                $form[$field_item_web][0]['#title']=$label;
+            }else{
+                $form[$field_item_web]['#title']=$label;
+            }    
+        }        
+        if(isset($form[$field_red_boletines])){
+            $form[$field_red_boletines][0]['#title']=t('Bulletins');
+        }
+        if(isset($form[$field_red_visitas])){
+            unset($form[$field_red_visitas]);
+        }
+    }else{*/
+        if(isset($form[$field_red_resumen])){
+            unset($form[$field_red_resumen]);
+        }
+    //}    
+}
+function red_get_item_tipo_noticia_html($node,$is_array=0){
+    $html=array();
+    if(isset($node->taxonomy) && !empty($node->taxonomy)){
+        foreach($node->taxonomy as $tid=>$term){
+            if(red_is_tipos_de_fuente_vocabulary($term)){
+                $html[]=taxonomy_get_term_name_by_language($term->tid);
+            }
+        }
+    }
+    if($is_array){
+        return $html;
+    }
+    return implode(' ',$html);
+}
+function red_is_tipos_de_fuente_vocabulary($term){
+    if(isset($term->vid) && !empty($term->vid)){
+        if($term->vid==1){
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_get_item_unidades_html($node,$is_array=0){
+    $html=array();
+    if(isset($node->taxonomy) && !empty($node->taxonomy)){
+        foreach($node->taxonomy as $tid=>$term){
+            if(red_is_unidades_vocabulary($term)){
+                $html[]=taxonomy_get_term_name_by_language($term->tid);
+            }
+        }
+    }
+    if($is_array){
+        return $html;
+    }
+    return implode(' ',$html);
+}
+function red_is_unidades_vocabulary($term){
+    if(isset($term->vid) && !empty($term->vid)){
+        if($term->vid==23){
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_boletines($node){
+    //intelsat-2016
+    $field=red_fields_inc_get_field_boletines_name();
+    return red_idiomas($node,$field);
+}
+function red_sectorizacion($node){
+    $field=red_fields_inc_get_field_red_sectorizacion_name();
+    $v=red_field($node,$field);
+    if(!empty($v)){
+        if($v==1){
+            return t('Yes');
+        }else if($v==2){
+            return t('No');
+        }
+    }
+    return '';    
+}
+function red_cnae($node){
+    $field=red_fields_inc_get_field_red_cnae_name();
+    $v=red_field($node,$field);
+    if(!empty($v)){
+        $row=red_get_cnae_row($v);
+        if(isset($row->label) && !empty($row->label)){
+            return $row->label;
+        }
+    }
+    return '';
+}
+function red_get_cnae_row($v){
+    $cnae_array=red_get_cnae_array($v);
+    if(!empty($cnae_array)){
+        return $cnae_array[0];
+    }
+    $result=new stdClass();
+    return $result;
+}
+function red_reads_visitas($node){
+    $statistics = statistics_get($node->nid);
+    if ($statistics) {
+      return $statistics['totalcount'];
+    }
+    return 0;
+}
+function red_define_periodicidad_options(){
+    $options=array();
+    $res=db_query('SELECT * FROM {red_periodicidad} WHERE 1 ORDER BY label ASC');
+    while($row=db_fetch_object($res)){
+        $options[$row->value]=$row->label;
+    }
+    return $options;
+}
+function igape_define_periodicidad_options(){
+    return red_define_periodicidad_options();
+}
+function red_get_periodo_view($node,$field){
+    $v=red_field($node,$field);
+    $row=red_get_periodo_row($v);
+    if(isset($row->label) && !empty($row->label)){
+        return $row->label;
+    }
+    return '';
+}
+function red_get_periodo_row($v){
+    $periodo_array=red_get_periodo_array($v);
+    if(count($periodo_array)>0){
+        return $periodo_array[0];
+    }
+    return '';
+}
+function red_get_periodo_array($value){
+    $result=array();
+    if(!empty($value)){
+        $res=db_query('SELECT * FROM {red_periodicidad} WHERE value="%s"',$value);
+    }else{
+        $res=db_query('SELECT * FROM {red_periodicidad} WHERE 1');
+    }
+    //
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_is_item_formulario(){
+    //if(hontza_is_sareko_id_red()){
+        $node=my_get_node();
+        if(isset($node->nid) && !empty($node->nid)){
+            if(in_array($node->type,array('item'))){
+                return 1;
+            }        
+        }
+        if(is_node_add('item')){
+            return 1;
+        }
+    //}
+    return 0;
+}
+function red_on_item_save($op,&$node){
+    //if(hontza_is_sareko_id_red()){
+        $is_form_save=0;
+        $node->estrategia_responde_array=hontza_canal_get_request_responde_array($is_form_save);
+        if($is_form_save){
+            red_item_save_reto_al_que_responde($node);
+        }    
+    //}
+}
+function red_item_save_reto_al_que_responde($node,$is_delete=1){
+    if($is_delete){
+        red_item_delete_reto_al_que_responde($node->nid,$node->vid);
+    }
+    if(db_table_exists('item_estrategia')){
+        if(isset($node->estrategia_responde_array) && !empty($node->estrategia_responde_array)){
+            foreach($node->estrategia_responde_array as $i=>$row){
+                db_query($sql=sprintf('INSERT INTO {item_estrategia}(nid,vid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES(%d,%d,%d,%d,%d,%d)',$node->nid,$node->vid,$row['responde_estrategia_nid'],$row['responde_despliegue_nid'],$row['responde_decision_nid'],$row['responde_informacion_nid']));
+            }         
+        }
+    }    
+}
+function red_item_delete_reto_al_que_responde($nid,$vid){
+    if(db_table_exists('item_estrategia')){
+        db_query('DELETE FROM {item_estrategia} WHERE nid=%d AND vid=%d',$nid,$vid);
+    }    
+}
+function red_query_responde_konp_array($sql){
+    $result=array();
+    if(db_table_exists('item_estrategia')){
+        $res=db_query($sql);
+        while($row=db_fetch_object($res)){
+            $result[]='estrategia_'.$row->responde_estrategia_nid.'_'.$row->responde_despliegue_nid.'_'.$row->responde_decision_nid.'_'.$row->responde_informacion_nid;
+        }
+    }
+    return $result;
+}
+function red_get_canal_by_node($node){
+    if(isset($node->field_item_canal_reference[0]['nid']) && !empty($node->field_item_canal_reference[0]['nid'])){
+        $canal_nid=$node->field_item_canal_reference[0]['nid'];
+        $canal=node_load($canal_nid);
+        return $canal;
+    }
+    $result=new stdClass();
+    return $result;
+}
+function red_get_user_grupos_red_alerta(){
+    global $user;
+    $result=array();
+    $sareko_id_array=hontza_define_red_sareko_id_array();
+    if(!empty($sareko_id_array)){
+        foreach($sareko_id_array as $i=>$sareko_id){
+            //if($sareko_id=='LOKALA' || $sareko_id==_SAREKO_ID){
+            if($sareko_id==_SAREKO_ID){
+                continue;
+            }
+            $my_db_name=strtolower($sareko_id);
+            db_set_active($my_db_name);
+            $uid=red_get_user_uid_by_mail($user->mail);
+            if(!empty($uid)){
+                $my_list=my_get_og_grupo_list($uid,1,0,0);
+                if(!empty($my_list)){
+                    foreach($my_list as $k=>$row){
+                        $my_list[$k]->sareko_id=$sareko_id;
+                    }
+                }
+                $result=array_merge($result,$my_list);
+            }
+        }
+    }
+    db_set_active('default');
+    return $result;
+}
+function red_get_user_uid_by_mail($mail){
+    $res=db_query('SELECT * FROM {users} u WHERE mail="%s"',$mail);
+    while($row=db_fetch_object($res)){
+        return $row->uid;
+    }
+    return '';
+}
+function red_get_summary_view_html($node,$is_full=0){
+    $v=red_get_summary($node);
+    if(!empty($v)){
+            if($is_full){
+                $html=array();        
+                $html[]='<div class="item-full-texto">';
+                $html[]=$v;
+                $html[]='</div>';
+                return implode('',$html);
+            }
+            return $v;       
+    }
+    return '';
+}
+function red_get_summary($node){
+    //intelsat-2016
+    $field=red_fields_inc_get_field_resumen_name();    
+    //if(isset($node->$field) && isset($node->$field[0]) && isset($node->$field[0]['value'])){
+    if(isset($node->$field)){
+        $row=$node->$field;
+        if(isset($row[0])){
+            $v=$row[0]['value'];
+            if(!empty($v)){            
+                return $v;
+            }
+        }    
+    }
+    return '';
+}
+function red_noticia_node_form_alter(&$form,&$form_state,$form_id){
+    //intelsat-2016
+    $field_red_fecha_noticia=red_fields_inc_get_field_red_fecha_noticia_name();
+    if(isset($form[$field_red_fecha_noticia])){
+        unset($form[$field_red_fecha_noticia]);
+    }    
+        //gemini-2014
+        $form['reto_al_que_responde_id']=array(
+            //'#title' => t('Associated Challenge'),
+            '#value'=>get_reto_al_que_responde_html(),
+        );
+    //if(!hontza_is_sareko_id_red()){
+        //intelsat-2016
+        $field_red_resumen=red_fields_inc_get_field_resumen_name();
+        $field_red_boletines=red_fields_inc_get_field_boletines_name();
+        $field_red_fuente_noticia=red_fields_inc_get_field_red_fuente_noticia_name();
+        $field_red_sectorizacion=red_fields_inc_get_field_red_sectorizacion_name();
+        $field_red_cnae=red_fields_inc_get_field_red_cnae_name();
+        if(isset($form[$field_red_resumen])){
+            unset($form[$field_red_resumen]);
+        }
+        if(isset($form[$field_red_boletines])){
+            unset($form[$field_red_boletines]);
+        }
+        if(isset($form[$field_red_fuente_noticia])){
+            unset($form[$field_red_fuente_noticia]);
+        }
+        if(isset($form[$field_red_sectorizacion])){
+            unset($form[$field_red_sectorizacion]);
+        }
+        if(isset($form[$field_red_cnae])){
+            unset($form[$field_red_cnae]);
+        }
+    //}
+    //intelsat-2015
+    red_unset_captcha($form);
+    //intelsat-2016
+    hontza_crm_inc_node_form_alter($form,$form_state, $form_id);
+    red_copiar_noticia_node_form_alter($form,$form_state, $form_id);
+}
+function red_get_fecha_noticia_row($node){
+    $content_field_red_fecha_noticia=red_fields_inc_get_content_field_red_fecha_noticia_value();
+    if(db_table_exists($content_field_red_fecha_noticia)){
+        $res=db_query('SELECT * FROM {'.$content_field_red_fecha_noticia.'} WHERE nid=%d AND vid=%d',$node->nid,$node->vid);
+        while($row=db_fetch_object($res)){
+            return $row;
+        }
+    }
+    //
+    $my_result=new stdClass();
+    return $my_result;
+}
+function red_insert_field_red_fecha_noticia_value($node,$field_red_fecha_noticia_value){
+    $content_field_red_fecha_noticia=red_fields_inc_get_content_field_red_fecha_noticia_table_name();
+    $field_red_fecha_noticia_value=red_fields_inc_get_content_field_red_fecha_noticia_value();
+    $res=db_query('INSERT INTO {'.$content_field_red_fecha_noticia.'}(vid,nid,'.$field_red_fecha_noticia_value.') VALUES(%d,%d,%d)',$node->vid,$node->nid,$field_red_fecha_noticia_value);
+}
+function red_update_field_red_fecha_noticia_value($node,$field_red_fecha_noticia_value){
+    $content_field_red_fecha_noticia=red_fields_inc_get_content_field_red_fecha_noticia_table_name();
+    $field_red_fecha_noticia_value=red_fields_inc_get_content_field_red_fecha_noticia_value();
+    $res=db_query($sql=sprintf('UPDATE {'.$content_field_red_fecha_noticia.'} SET '.$field_red_fecha_noticia_value.'=%d WHERE vid=%d AND nid=%d',$field_red_fecha_noticia_value,$node->vid,$node->nid));
+    //print $sql.'<BR>';
+}
+function red_get_fecha_noticia_view_html($node){
+    return red_get_fecha_noticia_value($node);
+}
+function red_get_fecha_noticia_value($node){
+    $result='';
+    $row=red_get_fecha_noticia_row($node);
+    //intelsat-2016
+    $field_red_fecha_noticia_value=red_fields_inc_get_content_field_red_fecha_noticia_value();
+    if(isset($row->$field_red_fecha_noticia_value) && !empty($row->$field_red_fecha_noticia_value)){
+        return date('d/m/Y',$row->$field_red_fecha_noticia_value);
+    }
+    return $result;
+}
+function red_get_item_fecha_created($node){
+    $result=red_get_fecha_noticia_value($node);
+    if(empty($result)){
+        return date('d/m/Y',$node->created);
+    }
+    return $result;
+}
+function red_get_all_fecha_noticia(){
+    $result=array();
+    $content_field_red_fecha_noticia=red_fields_inc_get_content_field_red_fecha_noticia_table_name();
+    $res=db_query('SELECT * FROM {'.$content_field_red_fecha_noticia.'} WHERE 1');
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_get_red_link_sin_grupo(){
+   /*global $language,$base_url;
+   if(hontza_is_user_anonimo()){
+       return '';
+   }
+   $my_lang='';
+   if($language->language!='en'){
+    $my_lang=$language->language.'/';
+   } 
+   if(hontza_is_red_hoja()){
+       if(hontza_is_sareko_user()){
+            $subdominio='';
+            $user_login_enviar=hontza_define_user_login_enviar();
+            $my_url=red_compartir_define_redalerta_servidor_url().'/';
+            $my_action='red_servidor/authenticate_red_alerta';
+            $login_red_alerta_url=$my_url.$my_lang.$my_action.'/myprofile';
+            $my_url=$login_red_alerta_url.'?user_login_enviar_get='.base64_encode($user_login_enviar).'&red_idioma='.trim($my_lang,'/');
+            $id_a=$subdominio.'login_red_alerta_myprofile';
+            //
+            $html=array();
+            $html[]='<div style="padding-top:20px;float:right;">';
+            //$html[]=l(t('Network'),$my_url,array('absolute'=>TRUE,'attributes'=>array('id'=>$id_a,'class'=>'a_login_red_alerta_class')));
+            $label_network=t('Network');
+            $src=$base_url.'/sites/all/themes/buho/images/icons/network_auth.png';
+            $img_network='<img src="'.$src.'" alt="'.$label_network.'" title="'.$label_network.'"/>';
+            $html[]=l($img_network,$my_url,array('html'=>true,'absolute'=>TRUE,'attributes'=>array('id'=>$id_a,'class'=>'a_login_red_alerta_class')));
+            $html[]='</div>';
+            hontza_login_red_alerta_formulario($login_red_alerta_url.'&red_idioma='.trim($my_lang,'/'),'myprofile',1,'',$user_login_enviar);
+            return implode('',$html);
+       }     
+   }*/        
+   return '';
+}
+function red_get_subdominio_by_sareko_id($sareko_id){
+    return strtolower($sareko_id).'.hontza.es';
+}
+function red_is_red_servidor_fuentes_get_contents(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='red_servidor'){    
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='red_servidor_fuentes_get_contents'){
+            return 1;
+        }
+    }    
+    return 0;
+}
+function red_get_source_download_block_title($with_icon=0){
+    $result=t('Exchange Resources');
+    //intelsat-2015
+    if($with_icon){
+        $icono=my_get_icono_action('exchange-resources-left', $result).'&nbsp;';
+        $result=$icono.$result;
+    }
+    return $result;
+}
+function red_get_source_download_block_content(){
+        global $user;
+        //intelsat-2015
+        //if(!red_funciones_is_show_shared_block_menu_left()){
+        if(!red_funciones_is_show_shared_block_menu_left() || hontza_canal_rss_is_usuario_basico()){
+            return '';
+        }
+        if(hontza_is_mostrar_recursos_compartidos_del_servidor_red()){
+            $red_copy_server_sources=hontza_copy_server_sources_link(0);
+            $red_copy_server_channels=hontza_copy_server_channels_link(0);
+            $red_copy_server_facilitators=hontza_copy_server_facilitators_link(0);
+            $red_upload_sources=red_define_upload_sources_link();
+            $red_upload_channels=red_define_upload_channels_link();
+            $red_upload_facilitators=red_define_upload_facilitators_link();
+            $html=array();
+            //intelsat-2015
+            $icono_copy=my_get_icono_action('descargar_fuente_left', $result).'&nbsp;';
+            $icono_upload=my_get_icono_action('compartir_fuente_left', $result).'&nbsp;';
+            //
+            $div_html='<div style="float:left;">';
+            //$html[]=$div_html.$icono_copy.$red_copy_server_sources.'</div>';
+            $html[]=$div_html.$icono_copy.$red_copy_server_channels.'</div>';
+            //$html[]=$div_html.$icono_copy.$red_copy_server_facilitators.'</div>';
+            //if(is_super_admin()){    
+            //if(is_super_admin() || $user->name=='aitor'){                
+                //$html[]=$div_html.$icono_upload.$red_upload_sources.'</div>';
+                $html[]=$div_html.$icono_upload.$red_upload_channels.'</div>';
+                //$html[]=$div_html.$icono_upload.$red_upload_facilitators.'</div>';
+            //}
+            //$style=' style="padding-bottom:140px;"';
+            $style=' style="padding-bottom:50px;"';
+            return '<div'.$style.'>'.implode('',$html).'</div>';
+        }else{
+            return '';
+        }        
+}
+function red_is_show_source_download_block_left(){
+    if(is_fuentes_left()){
+        return 1;
+    }
+    return 0;
+}
+function red_set_cnae_label($row){
+    $label=$row->label;
+    if($row->value==79){
+        $label='Actividades de agencias de viajes, operadores turísticos, servicios de reservas y actividades relacionadas';
+    }    
+    $result=$row->value.' '.$label;
+    return $result;
+}
+function red_define_upload_sources_link(){
+    $ok=0;
+    //simulando
+    if(hontza_is_sareko_id('LOKALA')){
+        $ok=1;
+    }
+    //
+    if(hontza_is_sareko_id_red()){
+        $url='';
+        if(hontza_is_red_hoja()){
+           $ok=1;
+        }        
+    }
+    if($ok){
+        $url='red/fuentes-pipes/todas';
+        $label=t('Share Sources');   
+        //intelsat-2015
+        //return l($label,$url,array('query'=>drupal_get_destination()));
+        return l($label,$url);
+        //
+    }
+    return '';
+}
+function red_define_upload_channels_link(){
+    $ok=0;
+    //simulando
+    if(hontza_is_sareko_id('LOKALA')){
+        $ok=1;
+    }
+    //
+    if(hontza_is_sareko_id_red()){
+        $url='';
+        if(hontza_is_red_hoja()){
+           $ok=1;
+        }        
+    }
+    if($ok){
+        $url='red/canales/todas';
+        $label=t('Share Channels');
+        //intelsat-2015
+        //return l($label,$url,array('query'=>drupal_get_destination()));
+        return l($label,$url);
+        //
+    }
+    return '';
+}
+function red_define_numero_de_descargas_options(){
+    $options=array();
+    $options['']='';
+    $options['4000-+']='4000+';
+    $options['1000-4000']='1000-4000';
+    $options['500-1000']='500-1000';
+    $options['100-500']='100-500';
+    $options['0-100']='0-100';
+    return $options;
+}
+function red_is_show_source_title(){
+    if(red_is_publica_fuentes_view()){
+       return 0; 
+    }
+    if(red_is_red_compartir_view_fuente_local){
+        return 0;
+    }
+    return 1;
+}
+function red_is_publica_fuentes_view($konp='fuente'){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='red_publica'){
+        $param1=arg(1);
+        //if(!empty($param1) && $param1=='fuente'){
+        if(!empty($param1) && $param1==$konp){
+            $param2=arg(2);
+            if(!empty($param2) && is_numeric($param2)){
+                $param3=arg(3);
+                if(!empty($param3) && $param3=='view'){
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+function red_is_publica_user_view(){
+    return red_is_publica_fuentes_view('user');
+}
+function red_is_show_canal_title(){
+    if(red_is_publica_canales_view()){
+       return 0; 
+    }
+    return 1;
+}
+function red_is_publica_canales_view($konp='fuente'){
+    return red_is_publica_fuentes_view('canal');
+}
+function red_define_upload_facilitators_link(){
+    $ok=0;
+    //simulando
+    if(hontza_is_sareko_id('LOKALA')){
+        $ok=1;
+    }
+    //
+    if(hontza_is_sareko_id_red()){
+        $url='';
+        if(hontza_is_red_hoja()){
+           $ok=1;
+        }        
+    }
+    if($ok){
+        $url='red/facilitadores/todas';
+        $label=t('Share Facilitators');
+        //intelsat-2015
+        //return l($label,$url,array('query'=>drupal_get_destination()));
+        return l($label,$url);
+        //
+    }
+    return '';
+}
+function red_set_session_is_iframe(){
+    /*if(!red_is_iframe()){
+        $_SESSION['is_iframe']=0;
+    }
+    if(isset($_REQUEST['is_iframe']) && !empty($_REQUEST['is_iframe'])){
+        $_SESSION['is_iframe']=$_REQUEST['is_iframe'];
+    }*/
+    hontza_set_session_is_iframe();
+}
+function red_is_iframe(){
+    /*global $user;
+    if(isset($_REQUEST['is_iframe']) && !empty($_REQUEST['is_iframe'])){
+        return 1;
+    }
+    if(isset($_SESSION['is_iframe']) && !empty($_SESSION['is_iframe'])){
+        return 1;
+    }
+    if(isset($user->is_iframe) && !empty($user->is_iframe)){
+        return 1;
+    }
+    return 0;*/
+    return hontza_is_iframe();
+}
+function red_canal_de_supercanal_node_form_alter(&$form,&$form_state,$form_id){
+    red_yql_node_form_alter($form,$form_state,$form_id);
+}
+function red_noticia_de_usuario_save_reto_al_que_responde($node,$is_delete=1){
+    if($is_delete){
+        red_noticia_de_usuario_delete_reto_al_que_responde($node->nid,$node->vid);
+    }
+    if(db_table_exists('noticia_de_usuario_estrategia')){
+        if(isset($node->estrategia_responde_array) && !empty($node->estrategia_responde_array)){
+            foreach($node->estrategia_responde_array as $i=>$row){
+                db_query($sql=sprintf('INSERT INTO {noticia_de_usuario_estrategia}(nid,vid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES(%d,%d,%d,%d,%d,%d)',$node->nid,$node->vid,$row['responde_estrategia_nid'],$row['responde_despliegue_nid'],$row['responde_decision_nid'],$row['responde_informacion_nid']));
+            }         
+        }
+    }    
+}
+function red_noticia_de_usuario_delete_reto_al_que_responde($nid,$vid){
+    if(db_table_exists('noticia_de_usuario_estrategia')){
+        db_query('DELETE FROM {noticia_de_usuario_estrategia} WHERE nid=%d AND vid=%d',$nid,$vid);
+    }    
+}
+function red_is_noticia_de_usuario_formulario(){
+    //if(hontza_is_sareko_id_red()){
+        $node=my_get_node();
+        if(isset($node->nid) && !empty($node->nid)){
+            if(in_array($node->type,array('noticia'))){
+                return 1;
+            }        
+        }
+        if(is_node_add('noticia')){
+            return 1;
+        }
+    //}
+    return 0;
+}
+function red_on_noticia_de_usuario_save($op,&$node){
+    //if(hontza_is_sareko_id_red()){
+        //intelsat-2015
+        estrategia_inc_on_estrategia_responde_save($op,$node);
+        //
+    //}
+    //intelsat-2015
+    if(hontza_canal_rss_is_visualizador_activado()){
+        publico_vigilancia_on_noticia_de_usuario_save($op,$node);
+    }    
+}
+function red_on_node_delete(&$node){
+    if(hontza_is_servidor_red_alerta()){
+       red_servidor_delete_red_servidor_fuente($node);
+       red_servidor_delete_red_servidor_canal($node);
+    }else if(hontza_is_red_hoja()){
+       red_compartir_delete_red_compartir_fuente($node);
+       red_compartir_delete_red_compartir_canal($node); 
+    }
+    //intelsat-2015
+    if(hontza_canal_rss_is_usuario_basico_activado()){
+       usuario_basico_on_grupo_inicio_delete($node); 
+    }
+}
+function red_on_servidor_save($op,&$node){
+    /*if(hontza_is_servidor_red_alerta()){
+       red_servidor_save_red_servidor_fuente($node);
+       //red_servidor_save_red_servidor_canal($node);
+    }*/
+}
+function red_unset_empty_key($result_in){
+    $result=array();
+    if(!empty($result_in)){
+        foreach($result_in as $key=>$value){
+            if(!empty($key)){
+                print 'key===='.$key.'<br>';
+                $result[$key]=$value;
+            }
+        }
+    }
+    return $result;
+}
+function red_is_fuentes_en_intercambiar_recursos(){
+    $param0=arg(0);
+    if(!empty($param0)){
+        if($param0=='red_compartir'){    
+            $param1=arg(1);
+            if(!empty($param1)){
+                if(in_array($param1,array('red_compartir_copiar_fuentes_servidor','compartir_fuente_hoja_multiple','compartir_fuente_hoja'))){
+                    return 1;
+                }
+            }
+        }else if($param0=='red'){
+            $param1=arg(1);
+            if(!empty($param1)){
+                if($param1=='fuentes-pipes'){
+                    $param2=arg(2);
+                    if(!empty($param2)){
+                        if($param2=='todas'){
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }    
+    }
+    return 0;
+}
+function red_is_vigilancia_en_intercambiar_recursos(){
+    $param0=arg(0);
+    if(!empty($param0)){
+        if($param0=='red_compartir'){    
+            $param1=arg(1);
+            if(!empty($param1)){
+                if(in_array($param1,array('red_compartir_copiar_canales_servidor','compartir_canal_hoja_multiple','compartir_canal_hoja'))){    
+                    return 1;
+                }
+            }
+        }else if($param0=='red'){
+            $param1=arg(1);
+            if(!empty($param1)){
+                if($param1=='canales'){
+                    $param2=arg(2);
+                    if(!empty($param2)){
+                        if($param2=='todas'){
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }        
+    }
+    return 0;
+}
+function red_is_facilitadores_en_intercambiar_recursos(){
+    $param0=arg(0);
+    if(!empty($param0)){
+        if($param0=='red_compartir'){    
+            $param1=arg(1);
+            if(!empty($param1)){
+                if(in_array($param1,array('red_compartir_copiar_facilitadores_servidor','compartir_facilitador_hoja_multiple','compartir_facilitador_hoja'))){    
+                    return 1;
+                }
+            }
+        }else if($param0=='red'){
+            $param1=arg(1);
+            if(!empty($param1)){
+                if($param1=='facilitadores'){
+                    $param2=arg(2);
+                    if(!empty($param2)){
+                        if($param2=='todas'){
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }   
+    }
+    return 0;
+}
+function red_is_red_red_fuentes(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='red_red'){
+        $param1=arg(1);
+        if(!empty($param1) && $param0=='fuentes'){
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_is_fuentes_local(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='red_local'){
+        $param1=arg(1);
+        if(!empty($param1) && $param0=='fuentes_local'){
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_is_network_sareko_id(){
+    //gemini-2014-network
+    if(defined('_IS_NETWORK_HONTZA')){
+        if(_IS_NETWORK_HONTZA){
+            return 1;
+        }
+    }
+    /*if(red_is_servidor_network()){
+        return 1;
+    }*/
+    //
+    return 0;
+}
+function red_is_servidor_network(){
+    if(hontza_is_servidor_red_alerta()){
+        if(in_array($_SERVER['HTTP_HOST'],array('network.hontza.es'))){
+            return 1;
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function red_is_red_compartir_view_fuente_local(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='red_compartir'){
+        if(!empty($param1) && $param1=='red_compartir_view_fuente_local'){
+            $param2=arg(2);
+            if(!empty($param2) && is_numeric($param2)){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+//intelsat-2015-redalerta-admin-user            
+function red_is_not_admin($my_user){
+    if(isset($my_user->uid) && !empty($my_user->uid)){
+        if($my_user->uid!=1 && $my_user->name!='admin'){
+            return 1;
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function red_send_email($node){
+    $result='';
+    if(hontza_canal_rss_is_visualizador_activado()){
+        $result=l('','publico/vigilancia/send/'.$node->nid,array('attributes'=>array('title'=>t('Send message')),'query'=>drupal_get_destination()));
+    }
+    return $result;
+}
+//intelsat-2015
+function red_send_form_html($node){
+    $result=array();
+    $result[]=drupal_get_form('red_send_form');
+    $result[]=node_view($node,FALSE,1);
+    return implode('',$result);
+}
+//intelsat-2015
+function red_send_form(){
+    $form=array();
+    $form['email']=array(
+    '#title'=>t('Email'),
+    '#type'=>'textfield',
+    '#required'=>true
+    );
+    $nid=arg(3);
+    $node=node_load($nid);
+    $form['nid']=array(
+    '#type'=>'hidden',
+    '#value'=>$nid
+    );
+    $node_view=node_view($node,FALSE,1);
+    $form['content']=array(
+    '#type'=>'hidden',
+    '#value'=>$node_view
+    );
+    $form['enviar_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Send'),
+        '#name'=>'enviar_btn',
+    );    
+    return $form;
+}
+//intelsat-2015
+function red_send_form_submit($form,&$form_state){
+    $nid=$form_state['values']['nid'];
+    $mail=$form_state['values']['email'];
+    $node=node_load($nid);
+    $html=alerta_add_css($form_state['values']['content']);
+    //intelsat-2016
+    red_copiar_send_mail($mail,$node->title,$html,'mimemail','',0);
+    drupal_set_message(t('The message has been sent.'));
+}
+function red_item_compartir_facebook($node){
+    $html=array();
+    $node_url=hontza_canal_rss_get_node_url($node,1,1);
+    $url='https://www.facebook.com/sharer/sharer.php';
+    $query='u='.urlencode($node_url);
+    $html[]=l('',$url,array('query'=>$query,'attributes'=>array('title'=>t('Share on Facebook'),'target'=>'_blank')));
+    return implode('',$html);
+}
+function red_item_compartir_twitter($node){
+    $html=array();
+    $node_url=hontza_canal_rss_get_node_url($node,1,1);
+    //$url='https://twitter.com/home';
+    //https://twitter.com/share?url=URLENCODED_URL&via=TWITTER_HANDLE&text=TEXT
+    $url='https://twitter.com/share';
+    //$url='https://twitter.com/intent/tweet';
+    $status='';
+    //$status=hontza_content_resumen($node,100).'<br>';
+    //$node_url=l($node_url,$node_url);
+    //$status.=$node_url;
+    //$texto=hontza_content_resumen($node,125);
+    $texto=$node->title;
+    //$texto='';
+    //$query='url='.urlencode($node_url).'&via=TWITTER_HANDLE&text='.$texto;
+    $query='url='.urlencode($node_url).'&text='.$texto;    
+    $html[]=l('',$url,array('query'=>$query,'attributes'=>array('title'=>t('Share on Twitter'),'target'=>'_blank')));
+    return implode('',$html);
+}
+function red_item_compartir_linkedin($node){
+    $html=array();
+    $node_url=hontza_canal_rss_get_node_url($node,1,1);
+    //$url='https://www.linkedin.com/shareArticle?mini=true&url=http://prueba.com&title=prueba5&summary=Es%20prueba%205&source=';
+    $url='https://www.linkedin.com/shareArticle';
+    $texto=hontza_content_resumen($node);
+    //$texto=$node->body;
+    $query='mini=true&url='.urlencode($node_url).'&title='.$node->title.'&summary='.$texto;    
+    $html[]=l('',$url,array('query'=>$query,'attributes'=>array('title'=>t('Share on LinkedIn'),'target'=>'_blank')));
+    return implode('',$html);
+}
+//intelsat-2015
+function red_is_subdominio_red_alerta(){
+    if(hontza_is_sareko_id_red(0,1)){
+        return 1;
+    }
+    if(in_array(_SAREKO_ID,array('VISUALIZADOR','OBSERVATORIO'))){
+        return 1;
+    }
+    if(defined('_IS_SUBDOMINIO_RED_ALERTA') && _IS_SUBDOMINIO_RED_ALERTA==1){
+        return 1;
+    }
+    if(red_is_subdominio_alerta()){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2015
+function red_alerta_financiado_por_background_color(){
+    $result='';
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        $result='#CCCCCC';
+        $result='#808080';
+        $result='#424242';
+        $result='background-color:'.$result.';';
+    }
+    return $result;
+}
+//intelsat-2015
+function red_is_administrador(){
+    global $user;
+    if(is_super_admin()){
+        return 1;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(isset($user->roles[ADMINISTRADOR])){
+            return 1;
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function red_is_node_destacado($node){
+    $result=0;
+    if($node->type=='item'){
+        if(isset($node->field_is_carpeta_noticia_destaca[0]['value']) && !empty($node->field_is_carpeta_noticia_destaca[0]['value']) && $node->field_is_carpeta_noticia_destaca[0]['value']==1){
+            $result=1;
+        }
+    }else if($node->type=='noticia'){
+        if(isset($node->field_is_noticia_usuario_destaca[0]['value']) && !empty($node->field_is_noticia_usuario_destaca[0]['value']) && $node->field_is_noticia_usuario_destaca[0]['value']==1){
+            $result=1;
+        }
+    }
+    return $result;
+}
+//intelsat-2015
+function red_is_publico_exportar_rss_activado(){
+    if(red_is_subdominio_red_alerta()){
+        return 1;
+    }
+    if(defined('_RED_IS_PUBLICO_EXPORTAR_RSS')){
+        if(_RED_IS_PUBLICO_EXPORTAR_RSS==1){
+            return 1;
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function red_get_tid_noticia_array($tid,$item_list){
+    $result=$item_list;
+    $sql='SELECT node.*
+    FROM {node} node
+    LEFT JOIN {term_node} term_node ON node.vid=term_node.vid
+    WHERE node.type="noticia" AND term_node.tid='.$tid;
+    $res=db_query($sql);
+    while($r=db_fetch_object($res)){
+        if(!in_array($r->nid,$result)){
+            $result[]=$r->nid;
+        }    
+    }
+    return $result;
+}
+//intelsat-2015
+function red_menu_primary_links_strtoupper($result_in){
+    $result=$result_in;
+    if(red_is_new_font() || hontza_canal_rss_is_visualizador_activado()){
+        if(!empty($result)){
+            foreach($result as $id=>$row){                
+                $result[$id]['title']=strtoupper($row['title']);
+            }
+        }
+    }
+    return $result;
+}
+//intelsat-2015
+function red_ordenar_canales_my_categorias_item_array($item_array){
+    $node_array=red_create_node_array($item_array);
+    $is_numeric=1;
+    $node_array=array_ordenatu($node_array,'created','desc',$is_numeric);
+    $result=array();
+    if(!empty($node_array)){
+        foreach($node_array as $i=>$node){
+            $result[]=$node->nid;
+        }
+    }
+    return $result;
+}
+//intelsat-2015
+function red_create_node_array($item_array){
+    $result=array();
+    if(!empty($item_array)){
+        foreach($item_array as $i=>$nid){
+            $node=node_load($nid);
+            $result[]=$node;
+        }
+    }
+    return $result;
+}
+//intelsat-2015
+function red_set_bulk_command_executed_message($num){
+    if($num>1){
+        red_solr_exec_indexar();
+        drupal_set_message(t('Bulk command executed successfully'));
+    }
+}
+//intelsat-2015
+function red_create_carpeta_dinamica_status_filter_field(&$form,&$form_state, $form_id){
+	$status_array=array();
+	$status_array=array(
+		  'operator' => 'status_op',
+		  'value' => 'status',
+		  'label'=>t('Status').':');
+	//
+	$select_array=array(
+			'#type' => 'select',
+			'#options'=>hontza_solr_funciones_get_status_options());	
+	//
+	$form['#info']['filter-status']=$status_array;
+	$form['status']=$select_array;			
+}
+//intelsat-2015
+function red_add_tipo_tipo_informacion_options(&$options){
+    $my_array=array();    
+    $my_array['bulletin_text']='Bulletin text';
+    $my_array['supercanal']='Source';
+    $my_array['boletin_grupo_despedida']='Group Bulletin Footer';
+    $my_array['boletin_grupo_introduccion']='Group Bulletin Header';
+    $my_array['bookmark_temporal']='Bookmark';
+    $my_array['chat']='Chat';
+    $my_array['faq']='Faq';
+    $my_array['fuentedapper']='Source';
+    $my_array['grupo']='Group';
+    $my_array['my_help']='Help';
+    $my_array['noticias_portada']='Frontpage News';
+    $frases=get_frases();
+    $my_array=array_merge($my_array,$frases);
+    $my_array['rss_feed']='RSS';
+    if(!empty($my_array)){
+        foreach($my_array as $type=>$label){
+            if(!isset($options[$type])){
+                $options[$type]=t($label);
+            }
+        }
+    }
+}
+//intelsat-2015
+function red_set_required_field_canal_source_type(&$form){
+    if(isset($form['field_canal_source_type']) && !empty($form['field_canal_source_type'])){
+        $form['field_canal_source_type']['#required']=TRUE;        
+    }
+}
+//intelsat-2015
+function red_alerta_is_sin_instalar_pdf(){
+    //intelsat-2016
+    if(red_crear_usuario_is_crear_usuario_net()){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2015
+function red_is_new_font(){
+    if(defined('_IS_NEW_FONT')){
+        /*if(_IS_NEW_FONT==1){
+            return 1;
+        }*/
+        if(_IS_NEW_FONT!=1){
+            return 0;
+        }
+    }
+    /*$my_theme=basename(path_to_theme());
+    if($my_theme=='buho'){
+        return 1;
+    }*/    
+    //return 0;
+    return 1;
+}
+//intelsat-2015
+function red_on_canal_usuario_save($op,&$node){
+    if($node->type=='canal_usuario'){
+        canal_usuario_on_canal_usuario_save($op,$node);
+    }
+}
+//intelsat-2015
+function red_get_canal_usuario_tid_array(){
+    $result=array();
+    if(red_is_canal_usuario_activado()){
+        $result=canal_usuario_get_canal_usuario_tid_array();
+    }
+    return $result;
+}
+//intelsat-2015
+function red_is_canal_usuario_activado(){
+    if(module_exists('canal_usuario')){
+        return canal_usuario_is_canal_usuario_activado();
+    }
+    return 0;
+}
+//intelsat-2015
+function red_is_categoria_tematica_selected($idea_nid,$my_type,$contenido_tid,$canal_usuario_tid_array,$node){
+    if(!empty($idea_nid) && es_categoria_tematica_del_node($node,$contenido_tid)){
+        return 1;
+    }
+    if($my_type=='noticia'){
+        if(!empty($canal_usuario_tid_array)){
+            return es_categoria_tematica_del_node($node,$contenido_tid,$canal_usuario_tid_array);
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function red_es_categoria_tematica_del_node($node,$tid,$tid_array_in=array()){
+    $tid_array=array();
+    if(!empty($tid_array_in)){
+        $tid_array=$tid_array_in;
+    }else{
+        if(isset($node->taxonomy) && !empty($node->taxonomy)){
+            $tid_array=array_keys($node->taxonomy);
+        }
+    }    
+    if(in_array($tid,$tid_array)){
+        return 1;
+    }    
+    return 0;
+}
+//intelsat-2015
+function red_get_node_canal_usuario($uid,$is_node_load=0){
+    if(red_is_canal_usuario_activado()){
+        return canal_usuario_get_node_canal_usuario($uid,$is_node_load);
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
+//intelsat-2015
+function red_insert_locale_source_callback(){
+    $html=array();
+    $html[]=t('You can edit the role and activate/delete this account here');
+    return implode('',$html);
+}
+//intelsat-2015
+function red_get_enlace_fuente_del_canal_view_html($node){
+    $result='';
+    if(in_array($node->type,array('canal_de_supercanal'))){
+        $feeds_source=get_feeds_source($node->nid);
+        //$result=$feeds_source->source;        
+        if(isset($feeds_source->config)){
+            $config=unserialize($feeds_source->config);
+            if(isset($config['FeedsHTTPFetcher']['source'])){
+                $result=$config['FeedsHTTPFetcher']['source'];                
+            }
+        }
+        if(hontza_canal_rss_is_kimonolabs_activado()){
+            $result=kimonolabs_get_enlace_fuente_del_canal_view_html($node,$result,$feeds_source);
+        }
+        $result=l($result,$result,array('absolute' => TRUE,'attributes' => array('target' => '_blank')));
+        return $result;
+    }
+    return $result;
+}
+//intelsat-2015
+function red_get_powered_version(){
+    $result='';
+    if(defined('_POWERED_VERSION')){
+        //$result='v5.0';
+        $result=_POWERED_VERSION;
+    }
+    return $result;
+}
+//intelsat-2015
+function red_parse_str($data,&$result)
+{
+    $data = preg_replace_callback('/(?:^|(?<=&))[^=[]+/', function($match) {
+        return bin2hex(urldecode($match[0]));
+    }, $data);
+    parse_str($data, $values);
+    $result=array_combine(array_map('hex2bin', array_keys($values)), $values);
+}
+//intelsat-2015
+function red_is_validar_usuario_network_activado(){
+    if(red_is_servidor_central()){
+        return 0;
+    }    
+    /*if(hontza_is_red_hoja()){
+        return 1;
+    }
+    //intelsat-2016
+    if(defined('_IS_VALIDAR_USUARIO_NETWORK') && _IS_VALIDAR_USUARIO_NETWORK==1){
+        return 1;
+    }*/
+    /*if(module_exists('red_compartir')){
+        return 1;
+    }
+    return 0;*/
+    return 1;
+}
+//intelsat-2015
+function red_is_theme_buho_settings_logo_path(){
+    if(red_is_network_sareko_id()){
+        return 1;
+    }
+    if(defined('_IS_THEME_BUHO_SETTINGS_LOGO_PATH')){
+       if(_IS_THEME_BUHO_SETTINGS_LOGO_PATH==1){
+           return 1;
+       } 
+    }
+    return 0;
+}
+//intelsat-2015
+function red_get_guia_internet_content($file_name){
+    //$url='http://online.hontza.es/red/guia_internet/'.$file_name;
+    $url=panel_admins_guias_get_file_url($file_name);
+    $result=file_get_contents($url);
+    return $result;
+}
+//intelsat-2015
+function red_is_guia_internet(){
+    if(hontza_is_sareko_id('ROOT')){
+        return 0;
+    }
+    return 1;
+}
+//intelsat-2015
+function red_get_node_row($nid){
+    $res=db_query('SELECT * FROM {node} node WHERE node.nid=%d',$nid);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
+//intelsat-2015
+function red_is_xml($xml) {
+    $doc = @simplexml_load_string($xml);
+    if ($doc) {
+        return true; //this is valid
+    } else {
+        return false; //this is not valid
+    }
+}
+//intelsat-2015
+function red_is_subdominio_alerta(){
+    if(defined('_IS_SUBDOMINIO_ALERTA') && _IS_SUBDOMINIO_ALERTA==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2015
+function red_is_subdominio_proyecto_alerta(){
+    if((hontza_is_sareko_id_red() && !red_is_network_sareko_id() && !red_is_servidor_network()) || red_is_subdominio_alerta()){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2015
+function red_is_hontza_home_dir(){
+    //intelsat-2016
+    if(red_crear_usuario_is_crear_usuario_net()){
+        return 0;
+    }
+    $sareko_id_array=array('OBSERVATORIO');
+    if(in_array(_SAREKO_ID,$sareko_id_array)){
+        return 0;
+    }
+    return 1;
+}
+//intelsat-2015
+function red_is_menu_sin_flechas(){
+    if(defined('_IS_MENU_SIN_FLECHAS')){
+        if(_IS_MENU_SIN_FLECHAS==1){
+            return 1;
+        }
+    }
+    return 0;    
+}
+//intelsat-2015
+function red_unset_captcha(&$form){
+    if(isset($form['buttons']['captcha'])){
+        if(!hontza_is_user_anonimo()){
+            unset($form['buttons']['captcha']);
+        }
+    }
+}
+//intelsat-2016
+function red_is_claves_activado(){
+    if(defined('_IS_CLAVES') && _IS_CLAVES==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function red_get_red_logo_prefijo(){
+    if(defined('_RED_LOGO_PREFIJO')){
+        return _RED_LOGO_PREFIJO;
+    }
+    return '';
+}
+//intelsat-2016
+function red_is_rojo(){
+    if(defined('_IS_ROJO') && _IS_ROJO==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function red_is_servidor_central(){
+    if(defined('_IS_SERVIDOR_CENTRAL') && _IS_SERVIDOR_CENTRAL==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function red_get_servidor_central_url(){
+    $url='http://network.hontza.es';
+    if(defined('_SERVIDOR_CENTRAL_URL')){
+        $result=_SERVIDOR_CENTRAL_URL;
+        if(!empty($result)){
+            return $result;
+        }
+    }    
+    return $url;
+}
+//intelsat-2016
+function red_cron(){
+    red_crear_usuario_red_servidor_validar_usuario_network_save_user_subdominios_tarea();
+}
+//intelsat-2016
+function red_repase_access_fuentes(){
+    if(is_fuentes_pipes_todas()){
+        hontza_grupos_active_access_tab('fuentes');
+    }    
+}            

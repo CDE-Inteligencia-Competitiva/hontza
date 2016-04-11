@@ -1,0 +1,10 @@
+name = "Facebook Share"
+description = "Adds a Facebook Share button so users can share a node in their Facebook stream"
+core = 6.x
+package = "Social Networking"
+; Information added by drupal.org packaging script on 2011-07-06
+version = "6.x-1.2"
+core = "6.x"
+project = "facebookshare"
+datestamp = "1309919216"
+

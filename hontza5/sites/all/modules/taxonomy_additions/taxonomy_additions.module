@@ -1,0 +1,247 @@
+<?php
+// $Id: taxonomy_additions.module,v 1.1 2011/02/01 00:20:14 amateescu Exp $
+
+/**
+ * Implementation of hook_menu().
+ */
+function taxonomy_additions_menu() {
+  $items['admin/content/taxonomy/delete/term'] = array(
+    'title' => 'Delete term',
+    'page callback' => 'taxonomy_additions_admin_term_delete',
+    //'access arguments' => array('administer taxonomy'),
+    'access callback'=>'taxonomy_admin_content_taxonomy_delete_term_access_callback',  
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function taxonomy_additions_form_alter(&$form, $form_state, $form_id) {
+  switch ($form_id) {
+    case 'taxonomy_form_term':
+      array_unshift($form['#validate'], 'taxonomy_additions_form_term_validate');
+      break;
+
+    case 'taxonomy_form_vocabulary':
+      $form['settings']['prevent_duplicate_terms'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Prevent duplicate terms'),
+        '#default_value' => variable_get('taxonomy_additions_prevent_duplicate_terms_' . $form['vid']['#value'], 0),
+        '#description' => t("Don't allow duplicate term names in this vocabulary."),
+      );
+      $form['#submit'][] = 'taxonomy_additions_vocabulary_form_submit';
+      break;
+
+    case 'taxonomy_overview_terms':
+      foreach (element_children($form) as $key) {
+        if (isset($form[$key]['#term'])) {
+          $term = $form[$key];
+          //intelsat-2015
+          if(hontza_canal_rss_is_oferta_demanda_clasificaciones()){
+             $form[$key]['edit']['#value'] .= '&nbsp;'.oferta_demanda_get_term_delete_link($term['#term']['tid']);
+          }else{
+          //    
+            //gemini-2014
+            $my_grupo=og_get_group_context();
+            if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+              //intelsat-2015
+              //$form[$key]['edit']['#value'] .= ' | ' . l(t('delete'), 'node/'.$my_grupo->nid.'/og/vocab/terms/delete/' . $term['#term']['tid'], array('query' => drupal_get_destination()));                        
+              $form[$key]['edit']['#value'] .= '&nbsp;' . l(my_get_icono_action('delete',t('Delete')), 'node/'.$my_grupo->nid.'/og/vocab/terms/delete/' . $term['#term']['tid'], array('query' => drupal_get_destination(),'html'=>true));                                                  
+            }else{
+              //intelsat-2015
+              //$form[$key]['edit']['#value'] .= ' | ' . l(t('delete'), 'admin/content/taxonomy/delete/term/' . $term['#term']['tid'], array('query' => drupal_get_destination()));
+              $form[$key]['edit']['#value'] .= '&nbsp;' . l(my_get_icono_action('delete',t('Delete')), 'admin/content/taxonomy/delete/term/' . $term['#term']['tid'], array('query' => drupal_get_destination(),'html'=>true));                                               
+            }
+          }  
+          $form[$key]['edit']['#value'] = '<div class="al_center">' . $form[$key]['edit']['#value'] . '</div>';
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Page to delete a vocabulary term.
+ */
+function taxonomy_additions_admin_term_delete($tid) {
+  if ($term = (array)taxonomy_get_term($tid)) {
+    return drupal_get_form('taxonomy_additions_form_term_delete', taxonomy_vocabulary_load($term['vid']), $term);
+  }
+  return drupal_not_found();
+}
+
+/**
+ * Form function for the term delete form.
+ */
+function taxonomy_additions_form_term_delete(&$form_state, $vocabulary, $edit = array()) {
+  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
+  $form_state['confirm_delete'] = TRUE;
+
+  return taxonomy_form_term($form_state, $vocabulary, $edit);
+}
+
+/**
+ * Submit handler to delete a term.
+ */
+function taxonomy_additions_form_term_delete_submit($form, &$form_state) {
+  if ($form_state['clicked_button']['#value'] == t('Delete')) {
+    // Execute the term deletion.
+    if ($form_state['values']['delete'] === TRUE) {
+      return taxonomy_term_confirm_delete_submit($form, $form_state);
+    }
+  }
+}
+
+/**
+ * Custom validate handler for the taxonomy term form.
+ */
+function taxonomy_additions_form_term_validate($form, &$form_state) {
+  $term_name = $form_state['values']['name'];
+  $term_vid = $form_state['values']['vid'];
+
+  // Check if we are editing an existing term
+  if (isset($form_state['values']['tid'])) {
+    $original_term_tid = $form_state['values']['tid'];
+    $original_term = taxonomy_get_term($original_term_tid);
+  }
+
+  if (!isset($original_term) || (isset($original_term) && $original_term->name != $term_name)) {
+    if (variable_get('taxonomy_additions_prevent_duplicate_terms_' . $term_vid, 0)) {
+      $duplicates = taxonomy_additions_get_term_by_name($term_name, $term_vid);
+
+      if (isset($duplicates[0])) {
+        form_set_error('name', t('The term %name already exists in this vocabulary.', array('%name' => $term_name)));
+      }
+    }
+  }
+}
+
+/**
+ * Custom submit handler for the vocabulary form.
+ */
+function taxonomy_additions_vocabulary_form_submit($form, &$form_state) {
+  variable_set('taxonomy_additions_prevent_duplicate_terms_' . $form_state['values']['vid'], $form_state['values']['prevent_duplicate_terms']);
+}
+
+/**
+ * Try to map a string to an existing term, as for glossary use.
+ *
+ * Provides a case-insensitive and trimmed mapping, to maximize the
+ * likelihood of a successful match.
+ *
+ * @param string name
+ *   Name of the term to search for.
+ * @param integer vid
+ *   (optional) A vocabulary ID to restrict the search.
+ *
+ * @return
+ *   An array of matching term objects.
+ */
+function taxonomy_additions_get_term_by_name($name, $vid = NULL) {
+  $sql = db_rewrite_sql("SELECT t.tid, t.* FROM {term_data} t WHERE LOWER(t.name) = LOWER('%s')", 't', 'tid');
+  if ($vid) {
+    $sql .= ' AND t.vid = %d';
+  }
+  $db_result = db_query($sql, trim($name), $vid);
+  $result = array();
+  while ($term = db_fetch_object($db_result)) {
+    $result[] = $term;
+  }
+
+  return $result;
+}
+
+/**
+ * Finds all terms associated with the given node, within one vocabulary.
+ *
+ * The difference from core's taxonomy_node_get_terms_by_vocabulary() is that
+ * this function saves a database query but it should only be called if you have
+ * a properly loaded $node object (e.g. after a $node = node_load($nid)).
+ *
+ * @param object $node
+ *   Node which contains the desired taxonomy terms.
+ * @param integer $vid
+ *   Vocabulary id.
+ * @param string $key
+ *   (optional) Term property from which to generate keys for the returned array.
+ *   Defaults to 'tid'.
+ *
+ * @return array $terms
+ *   An array with taxonomy term objects.
+ */
+function taxonomy_additions_node_get_terms_by_vocabulary($node, $vid, $key = 'tid') {
+  $terms = array();
+  foreach ($node->taxonomy as $term) {
+    if ($term->vid == $vid) $terms[$term->$key] = $term;
+  }
+
+  return $terms;
+}
+
+/**
+ * Gets a more useful taxonomy tree, with "nesteds" terms in an array
+ * that you can access with $term->children.
+ */
+function taxonomy_additions_get_nested_tree($terms = array(), $max_depth = NULL, $parent = 0, $parents_index = array(), $depth = 0) {
+  if (is_int($terms)) {
+    $terms = taxonomy_get_tree($terms);
+  }
+
+  foreach ($terms as $term) {
+    foreach ($term->parents as $term_parent) {
+      if ($term_parent == $parent) {
+        $return[$term->tid] = $term;
+      }
+      else {
+        $parents_index[$term_parent][$term->tid] = $term;
+      }
+    }
+  }
+
+  foreach ($return as &$term) {
+    if (isset($parents_index[$term->tid]) && (is_null($max_depth) || $depth < $max_depth)) {
+      $term->children = taxonomy_additions_get_nested_tree($parents_index[$term->tid], $max_depth, $term->tid, $parents_index, $depth + 1);
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Implementation of hook_view_api().
+ */
+function taxonomy_additions_views_api() {
+  return array(
+    'api' => 2
+  );
+}
+//gemini-2014
+function taxonomy_admin_content_taxonomy_delete_term_access_callback(){
+    if(user_access('administer taxonomy')){
+        return TRUE;
+    }
+    //
+    if(is_super_admin()){
+        return TRUE;
+    }
+    $modo_estrategia=1;
+    $tid=arg(5);
+    $term=taxonomy_get_term($tid);
+    if(isset($term->vid) && !empty($term->vid)){
+        $vocabulary=taxonomy_vocabulary_load($term->vid);
+        if(isset($vocabulary->vid) && !empty($vocabulary->vid)){
+            $og_vocab_array=hontza_get_og_vocab_array($vocabulary->vid);
+            if(!empty($og_vocab_array)){
+                foreach($og_vocab_array as $i=>$row){
+                    if(is_administrador_grupo($modo_estrategia,$row->nid)){        
+                        return TRUE;
+                    }
+                }
+            }
+        }    
+    }    
+    return FALSE;
+}

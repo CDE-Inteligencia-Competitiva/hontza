@@ -1,0 +1,202 @@
+<div id="node-<?php print $node->nid; ?>" class="node<?php if ($sticky) { print ' sticky'; } ?><?php if (!$status) { print ' node-unpublished'; } ?><?php print my_class_primera_despliegue($node,$page);?>">
+  <?php //echo print_r($node,1);?>
+  <?php $my_user_info=my_get_user_info($node);?>
+  <?php if ($page == 0):?>
+    <div id="flagtitulo">
+      <?php print get_despliegue_simbolo_img();?>
+      <div class="f-titulo"><h2><?php print l(htmlkarakter($title),'node/'.$node->nid);?></h2></div>
+	  <?php print my_help_primera_despliegue($node);?>
+    </div>
+    <div style="clear:both;width:100%;">
+	  <div style="float:left;">			
+			<?php print $my_user_info['img'];?> 
+	  </div>
+	  <div id="i-contenedor">	
+		
+		  <?php $my_node=node_load($node->nid);?>  
+		
+	   
+				 <!-- gemini-->
+				 <div id="ffc">
+					<div class="item-fecha">
+					  <?php print date('d/m/Y',$node->created); ?>
+					</div>
+					<!--
+					<div class="item-canal">
+					  <span class="etiqueta-gris"><?php //print t('Persona origen')?>: </span> <?php //print $node->persona_origen_name; ?>
+					</div>-->
+				 </div>
+				 
+				
+				  <?php //if($node->body): ?>
+                                    <?php if($my_node->body): ?>
+                                      <?php //$my_node=node_load($node->nid);?>
+                                      <div class="item-teaser-texto"><?php print drupal_substr(strip_tags($my_node->body), 0, 175).' ...'; ?></div>
+                                    <?php endif; ?>
+
+                                    <div class="div_idea_list_personas">
+                                        <label><b><?php print t('SubChallenge Value');?>:</b>&nbsp;</label>
+
+                                        <div class="item-teaser-texto">
+                                            <?php //print $node->importancia_despliegue_name; ?>
+                                            <?php print get_eval_label($node->importancia_despliegue, 'importancia_despliegue');?>
+                                        </div>
+                                    </div>
+
+                                    <div class="div_idea_list_personas">
+                                        <label><b><?php print t('Working Group');?>:</b>&nbsp;</label>
+
+                                        <div class="item-teaser-texto"><?php print $node->grupo_seguimiento_link;?></div>
+                                    </div>
+
+                                    <div class="div_idea_list_personas">
+                                        <label><b><?php print t('Control Date');?>:</b>&nbsp;</label>
+
+                                        <div class="item-teaser-texto"><?php print date('d-m-Y',my_mktime($node->fecha_cumplimiento)); ?></div>
+                                    </div>
+
+                                    <?php print despliegue_list_camino($node)?>
+
+				  <?php print my_get_node_files($node);?>	
+				  
+				  <div class="n-opciones-item">
+                                                <div class="n-item-editar">
+							<?php print l(t('Edit'),"node/".$node->nid.'/edit');?>
+						</div>
+
+						<div class="n-item-comentar">
+							<?php print l(t('Comment'),"comment/reply/".$node->nid,array('fragment'=>'comment-form','query'=>drupal_get_destination()));?>
+						</div>     
+						 
+					  
+						<div class="n-item-borrar">					
+						  <?php print l(t('Delete'),'node/'.$node->nid.'/delete',array('query'=>drupal_get_destination()));?>
+						</div>
+						
+						 <div class="n-item-decisiones">
+	  						<?php //print l(t('Add Decision'),'decisiones/'.$node->nid)?>
+                                                        <?php print l(t('Add Decision'),'node/add/decision/'.$node->nid)?>
+	  					</div>
+																										
+						  <div class="items-coments">						
+							<?php print my_get_node_c_d_w($node)?>
+						  </div>
+																  
+				  <?php //end n-opciones-item?>
+				  </div>
+		 <?php //end contenedor?>
+	  </div>		  
+	</div><!-- <div style="clear:both;width:100%;">-->  
+    <?php //page==1?>
+  <?php else:?>
+  	<div class="content">	  	  
+		  <?php $my_user_info=my_get_user_info($node);?>
+	 
+		  <div style="float:left;clear:both;">
+				<?php print $my_user_info['img'];?> 
+		  </div>
+		  
+		   <div class="field field-type-text field-field-despliegue-created" style="float:left;clear:both;">
+			<div class="field-items">
+				<div class="field-item odd">
+					<div class="field-label-inline-first">
+					  <?php print t('Creation Date');?>:&nbsp;
+					</div>
+					<?php print date('d-m-Y H:i',$node->created); ?>
+				</div>
+			</div>
+	  	  </div>
+		  
+		  <?php $my_node=node_load($node->nid)?>
+		  
+		  <div class="field field-type-text field-field-despliegue-argumentacion" style="float:left;clear:both;">
+			<div class="field-items">
+				<div class="field-item odd">
+					<div class="field-label-inline-first" style="float:left;">
+					  <?php print t('Full Text');?>:&nbsp;
+					</div>									
+					<div class="my_div_body">
+						<?php print $my_node->body;?>  
+					</div>
+				</div>
+			</div>
+		  </div>
+
+                   <div class="field field-type-text field-field-despliegue-importancia_despliegue" style="float:left;clear:both;">
+			<div class="field-items">
+				<div class="field-item odd">
+					<div class="field-label-inline-first">
+					  <?php print t('SubChallenge Value');?>:&nbsp;
+					</div>
+					<?php //print $node->importancia_despliegue_name ?>
+                                        <?php print get_eval_label($node->importancia_despliegue, 'importancia_despliegue');?>
+				</div>
+			</div>
+	  	  </div>
+
+                  <div class="field field-type-text field-field-despliegue-grupo_seguimiento_name" style="float:left;clear:both;">
+			<div class="field-items">
+				<div class="field-item odd">
+					<div class="field-label-inline-first" style="float:left;">
+					  <?php print t('Working Group');?>:&nbsp;
+					</div>
+                                        <?php if(!empty($node->grupo_seguimiento_nid)):?>
+                                            <?php print $node->grupo_seguimiento_link;?>
+                                        <?php endif;?>
+				</div>
+			</div>
+		  </div>
+
+                   <div class="field field-type-text field-field-despliegue-fecha_cumplimiento" style="float:left;clear:both;">
+			<div class="field-items">
+				<div class="field-item odd">
+					<div class="field-label-inline-first">
+					  <?php print t('Control Date');?>:&nbsp;
+					</div>
+					<?php print date('d-m-Y',my_mktime($node->fecha_cumplimiento)); ?>
+				</div>
+			</div>
+	  	  </div>
+
+                 
+
+                   
+		 
+		   <div class="field field-type-text field-field-despliegue-ficheros_adjuntos" style="float:left;clear:both;">
+			<div class="field-items">
+				<div class="field-item odd">
+					<div class="field-label-inline-first" style="float:left;">
+					  <?php print t('Attachments');?>:&nbsp;
+					</div>									
+					<?php print my_get_node_files($node);?>	
+				</div>
+			</div>
+		  </div>
+		 
+		  <div class="opciones-item">
+                                <div class="item-editar">
+                                    <?php print l(t('Edit'),"node/".$node->nid.'/edit');?>
+				</div>
+
+  				<div class="item-comentar">
+					<?php print l(t('Comment'),'comment/reply/'.$node->nid,array('fragment'=>'comment-form'));?>
+      			</div>
+      			
+    
+	  			<div class="item-borrar">
+	  				<?php print l(t('Delete'),'node/'.$node->nid.'/delete')?>
+	  			</div>
+	  
+	  			<div class="item-decisiones">
+	  				<?php //print l(t('Add Decision'),'decisiones/'.$node->nid)?>
+                                        <?php print l(t('Add Decision'),'node/add/decision/'.$node->nid)?>
+	  			</div>
+	  
+	  			<div class="items-coments-page0">
+        			<?php print my_get_node_c_d_w($node)?>
+	  			</div>
+    	   </div>
+	</div>	  <!-- content-->
+    <?php //page==0 endif?>
+  <?php endif;?>
+</div>

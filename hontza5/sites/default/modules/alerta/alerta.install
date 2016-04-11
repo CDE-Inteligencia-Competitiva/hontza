@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Node example module's install and uninstall code.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function alerta_install() {
+  drupal_install_schema('alerta');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function alerta_uninstall() {
+  drupal_uninstall_schema('alerta');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function alerta_schema() {
+  /*$schema['alerta'] = array(
+    'fields' => array(
+      'vid'      => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'nid'      => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'color'    => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'quantity' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary key' => array('vid', 'nid'),
+  );
+
+  return $schema;*/
+}

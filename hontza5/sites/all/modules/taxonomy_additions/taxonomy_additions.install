@@ -1,0 +1,14 @@
+<?php
+// $Id: taxonomy_additions.install,v 1.1 2011/02/01 00:20:14 amateescu Exp $
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Taxonomy Additions module.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function taxonomy_additions_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'taxonomy_additions_%'");
+}

@@ -1,0 +1,22 @@
+/* Hontza-3-columns*/
+
+
+#c-left  {
+width: 250px;
+float: left;
+margin: 15px;
+}
+
+#c-center {
+width: 300px;
+float: left;
+margin: 15px;
+}
+
+#c-right {
+width: 300px;
+float: left;
+margin: 15px;
+}
+
+

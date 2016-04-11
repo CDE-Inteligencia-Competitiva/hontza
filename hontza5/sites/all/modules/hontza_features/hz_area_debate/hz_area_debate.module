@@ -1,0 +1,3 @@
+<?php
+
+include_once('hz_area_debate.features.inc');

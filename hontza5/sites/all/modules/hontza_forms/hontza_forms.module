@@ -1,0 +1,34 @@
+<?php
+// $Id: hontza_forms.module, $
+/**
+* @file
+* Es el módulo básico encargado de realizar las modificaciones de form_alter.
+*
+**/
+
+//TODO problem in conversion hontza to distribute whith role. in this module the contro is create 
+//whith de role id, and in profile installation role ide generate is diferent.
+define('ANONIMO',  _role_id('anonymous user'));
+define('AUTHENTICATED', _role_id('authenticated user'));
+define('ADMINISTRADOR', _role_id('Administrador'));
+define('CREADOR', _role_id('Creador de grupos'));
+
+
+function hontza_forms_form_alter(&$form, &$form_state, $form_id) {
+  if (strpos($form_id, 'node_form')){
+    if(!$user->roles[AUTHENTICATED] and !$user->roles[ADMINISTRADOR] ){
+      $form['options']['#type']='hidden';
+      $form['comment_settings']['#type'] = 'hidden';
+      $form['revision_information']['#type'] = 'hidden';
+     }
+  }
+}
+
+
+/*
+ *Función auxiliar que dado un rol devuelve su identificador
+ *
+ */
+function _role_id($role) {
+  return db_result(db_query("SELECT rid FROM {role} WHERE name = '%s'", $role));
+}

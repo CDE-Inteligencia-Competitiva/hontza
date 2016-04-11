@@ -1,0 +1,221 @@
+<?php
+// $Id: profile_permission.module,v 1.6 2010/11/18 16:03:54 boombatower Exp $
+/**
+ * @file
+ * Restrict editing of profile fields.
+ *
+ * Copyright 2008 by Jimmy Berry ("boombatower", http://drupal.org/user/214218)
+ */
+
+/**
+ * Implementation of hook_perm().
+ */
+function profile_permission_perm() {
+  $fields = variable_get('profile_permission_fields', array());
+  $permissions = array();
+  foreach ($fields as $field) {
+    $permissions[] = profile_permission_generate_perm_view($field);
+    $permissions[] = profile_permission_generate_perm_view_own($field);
+    $permissions[] = profile_permission_generate_perm_edit($field);
+    $permissions[] = profile_permission_generate_perm_edit_own($field);
+  }
+  return $permissions;
+}
+
+/**
+ * Implementation of hook_form_alter(): profile_field_form.
+ */
+function profile_permission_form_profile_field_form_alter(&$form, $form_state) {
+  $restrict = in_array($form['fields']['name']['#default_value'], variable_get('profile_permission_fields', array()));
+  $form['fields']['profile_permission'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Restrict'),
+    '#description' => t('Create a permission for the field based on the name that can then be used to restrict edit access.'),
+    '#default_value' => $restrict
+  );
+  $form['#submit'][] = 'profile_permission_profile_field_form_submit';
+}
+
+/**
+ * Clean profile_permission variable and add/remove field based on the
+ * profile_permission checkbox state.
+ */
+function profile_permission_profile_field_form_submit($form, &$form_state) {
+  $permissions = profile_permission_clean(variable_get('profile_permission_fields', array()));
+
+  if ($form_state['values']['profile_permission']) {
+    // Add field to list of fields that have permissions associated with them.
+    if (!in_array($form_state['values']['name'], $permissions)) {
+      $permissions[] = $form_state['values']['name'];
+    }
+  }
+  else {
+    // Remove field form list.
+    foreach ($permissions as $key => $permission) {
+      if ($permission == $form_state['values']['name']) {
+        unset($permissions[$key]);
+        break;
+      }
+    }
+  }
+
+  variable_set('profile_permission_fields', $permissions);
+}
+
+/**
+ * Deal with field renaming or deletion to ensure that the array only contains
+ * valid fields.
+ *
+ * @param array $permissions Permissions to clean.
+ * @return array Cleaned permission array.
+ */
+function profile_permission_clean($permissions) {
+  $result = db_query('SELECT name
+                      FROM {profile_fields}');
+
+  $fields = array();
+  while ($field = db_result($result)) {
+    $fields[] = $field;
+  }
+
+  foreach ($permissions as $key => $permission) {
+    if (!in_array($permission, $fields)) {
+      unset($permissions[$key]);
+    }
+  }
+  return $permissions;
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function profile_permission_user($op, &$edit, &$account, $category = NULL) {
+  if ($op == 'view') {
+    profile_permission_user_view_field($account, $account->content);
+  }
+}
+
+/**
+ * Recursively loop through user content items looking for restricted fields.
+ * When a field is found check the view permission.
+ *
+ * @param object $account The acount whos page is being viewed.
+ * @param array $element Page element to check children of.
+ * @return boolean Remove scanned element.
+ */
+function profile_permission_user_view_field($account, &$element) {
+  $fields = variable_get('profile_permission_fields', array());
+  foreach (element_children($element) as $key) {
+    if (in_array($key, $fields)) {
+      // Found restricted field.
+      if (!user_access(profile_permission_generate_perm_view($key)) &&
+          ($GLOBALS['user']->uid != $account->uid || !user_access(profile_permission_generate_perm_view_own($key)))) {
+        unset($element[$key]);
+      }
+    }
+    elseif (isset($element[$key])) {
+      // Search the array recursively for restricted fields.
+      $children = element_children($element[$key]);
+      if ($children) {
+        if (profile_permission_user_view_field($account, $element[$key])) {
+          // No children, remove empty element.
+          unset($element[$key]);
+        }
+      }
+    }
+  }
+
+  // If the element has no fields left in it then remove it.
+  return !element_children($element);
+}
+
+/**
+ * Implementation of hook_form_alter(): user_profile_form.
+ */
+function profile_permission_form_user_profile_form_alter($form, &$form_state) {
+  $account = $form['_account']['#value'];
+  $result = db_query('SELECT DISTINCT(category)
+                      FROM {profile_fields}');
+
+  while ($category = db_result($result)) {
+    if (isset($form[$category])) {
+      // Profile category page, go through all fields and check for restrictions.
+      $permissions = variable_get('profile_permission_fields', array());
+      foreach (element_children($form[$category]) as $key) {
+        // If field is restricted and current user does not have privilege to
+        // edit the field then disable it. Disabling means: set the field to a
+        // 'value' type, make a fake copy of the field with different name and
+        // set as disabled.
+        if (in_array($key, $permissions) &&
+            !user_access(profile_permission_generate_perm_edit($key)) &&
+            ($GLOBALS['user']->uid != $account->uid || !user_access(profile_permission_generate_perm_edit_own($key)))) {
+
+          // Duplicate the field as a fake one to be shown. Being disabled
+          // means that even if user changes it altering the HTTP request, it
+          // will not be saved as the $key_show field does not exist in profile.
+          // This will not break themeing, templates or special formatting of
+          // the form view.
+          $form[$category][$key . '_show'] = $form[$category][$key];
+          $form[$category][$key . '_show']['#disabled'] = TRUE;
+
+          // Now set the real field to 'value' so it will pass the Form API
+          // submission. Using 'hidden', the field is still sent back to the
+          // browser.
+          $form[$category][$key]['#type'] = 'value';
+          $form[$category][$key]['#value'] = isset($form[$category][$key]['#default_value']) ? $form[$category][$key]['#default_value'] : NULL;
+        }
+
+        // If field is restricted and current user does not have privilege to
+        // view the field then hide the fake 'show' instance of this field.
+        if (in_array($key, $permissions) &&
+            !user_access(profile_permission_generate_perm_view($key)) &&
+            ($GLOBALS['user']->uid != $account->uid || !user_access(profile_permission_generate_perm_view_own($key)))) {
+
+          // Completely remove the fake field.
+          unset($form[$category][$key . '_show']);
+        }
+      }
+      break;
+    }
+  }
+}
+
+/**
+ * Generate a view permission string for the given field name.
+ *
+ * @param string $name Field name.
+ * @return string Permission string.
+ */
+function profile_permission_generate_perm_view($name) {
+  return 'view ' . $name . ' field';
+}
+
+/**
+ * Generate a view own permission string for the given field name.
+ *
+ * @param string $name Field name.
+ * @return string Permission string.
+ */
+function profile_permission_generate_perm_view_own($name) {
+  return 'view own ' . $name . ' field';
+}
+
+/**
+ * Generate an edit permission string for the given field name.
+ *
+ * @param string $name Field name.
+ * @return string Permission string.
+ */
+function profile_permission_generate_perm_edit($name) {
+  return 'edit ' . $name . ' field';
+}
+
+/**
+ * Generate an edit own permission string for the given field name.
+ *
+ * @param string $name Field name.
+ * @return string Permission string.
+ */
+function profile_permission_generate_perm_edit_own($name) {
+  return 'edit own ' . $name . ' field';
+}

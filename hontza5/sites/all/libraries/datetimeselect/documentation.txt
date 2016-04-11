@@ -1,0 +1,38 @@
+Intro:
+Date class provides date/time selectboxes for forms based on the same formatting string used in the PHP date() function.
+The class provides all of the format characters except for u, r, and U (these selects didn't make sense to use or would be entirely too large).  The format character 'c' provides a shortcut to calling the format string "Y-m-d\TH:i:sP".  This class prints the selectbox(es) directly and does not provide any public methods.
+
+The Call:
+new Date(string Format, [string Variable Name, [int array Values, [int or string Year Range]]]);
+
+Format String:
+Handling for the "\t", "\n" and "\r" escape sequences are handled by substituting the characters for "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", "<br/>" and <br/> respectively.  The escape characters will only work when encapsulated in double quotes(").  To print a "t", "n" or "r" when using double quotes, you must double escape ("\\t", "\\n" or "\\r") the same way you would when using the date() function.  Double escaping in single quotes(') will not produce the same result ("\\n" will print "\" followed by a month selector).
+
+Variable Name:
+The Variable Name is the name of the variable attached to the select box (i.e. <select name="varname[year]">). The selectboxes printed by this class are in the array form and the array key is assigned based on the selector type.  Since both 'Y' and 'y' both use the [year] key, it would not make since to call both of these selectboxes as the nature of forms will only pass the value from the second one on the page.  Other format characters such as 'F', 'm', 'M', and 'n' are similar in that they all use the [month] key and 'd', 'D', 'j' and 'l' as they all use the [day] key.  The default variable name if not passed is "datetime".
+
+Values:
+Values are used to preselect values (set the selected flag in the <option> tag) and can be passed either by an array with the same key names as the selectboxes or in Unix timestamp format (i.e. array('year'=>'2008') or time() or pass back the $_POST[varname] variable if redisplaying the form). The default Value is empty.
+
+Range:
+Year range can be used to determine the range of years displayed in a year selector.  The value here can either be an integer number or a range ("startyear-endyear") within quotes.  An integer value will provide a selectbox starting at the current year and containing the same number of years as the value (i.e. 5 will produce a selectbox with 2008,2009,2010,2011,2012).  The "startyear-endyear" string will create a selectbox with the first element containing the value of "startyear" and the last element containing the value of "endyear" and will contain all of the years in between. If startyear is higher than endyear, the year selector will be displayed highest to lowest.  If using the 'startyear-endyear' version, these should be in the 4-digit format, regardless of the format of the selectbox. The default value is 10.
+
+Examples:
+
+Print a set of ISO 8601 date/time selectboxes with default values (varable name: "datetime", preset values: empty, year range: 10).
+<?php
+	include('class.datetimeselect.php');
+	new Date("c");
+?>
+
+Print a Month and Year Selectbox in the format "Month: (Jan through Dec) / Year: (select)" for an expiration selector on a Credit Card form.  Defaults to the values posted back to the page and includes a year range from current to +7 years.
+<?php
+	include('class.datetimeselect.php');
+	new Date("\M\o\\n\\t\h: M / \Y\e\a\\r: Y", "expiration", $_POST['expiration'], 8);
+?>
+
+Print a set of date selectboxes for use in a calendar program. Defaults to current date and provides a range of years from 1950 to 2050.
+<?php
+	include('class.datetimeselect.php');
+	new Date("F j Y", "appointment", time(), "1950-2050");
+?>

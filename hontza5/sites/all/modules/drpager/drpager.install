@@ -1,0 +1,24 @@
+<?php
+// $Id: drpager.install,v 1.9 2010/10/05 06:00:07 mattyoung Exp $
+/**
+ * @file drpager.install
+ * drpager
+ */
+
+function drpager_install() {
+  db_query("UPDATE {system} SET weight = 255 WHERE name = 'drpager'");
+  $t = get_t();
+  drupal_set_message($t('The Minimax pager module is installed. Visit <a href="@url">module help</a> for instruction.',
+                     array('@url' => url('admin/help/drpager'))));
+}
+
+function drpager_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'drpager_%'");
+  cache_clear_all('variables', 'cache');
+}
+
+
+function drpager_update_6001() {
+  menu_rebuild();    // module "friendly name was changed to Minimax pager
+  return array();
+}

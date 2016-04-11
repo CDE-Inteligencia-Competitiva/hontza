@@ -1,0 +1,491 @@
+<?php
+function canal_usuario_perm() {
+  return array();
+}
+function canal_usuario_menu() {
+    $items=array();
+    $items['canal_usuario/%/view'] = array(
+    'title' => 'Channel',
+    'page callback' => 'canal_usuario_view_callback',
+    'access callback'=>'canal_usuario_custom_access',    
+  );
+    $items['canal_usuario/%/delete_noticias'] = array(
+    'title' => 'Channel',
+    'page callback' => 'canal_usuario_delete_noticias_callback',
+    'access callback'=>'canal_usuario_edit_noticia_access',    
+  );
+    return $items;
+}
+function canal_usuario_custom_access(){
+    if(!hontza_is_user_anonimo()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function canal_usuario_view_callback(){
+    //intelsat-2015
+    $nid='';
+    if(canal_usuario_is_canal_usuario_view()){
+        $uid=arg(1);
+        $node=canal_usuario_get_node_canal_usuario($uid,1);
+    }else{
+        $nid=arg(1);
+        $node=node_load($nid);
+        $uid=canal_usuario_get_canal_usuario_node_uid($nid);
+    }
+    $my_user=user_load($uid);
+    if(isset($my_user->uid) && !empty($my_user->uid)){
+        $icono='';
+        if(empty($nid)){
+            $icono='<div style="padding-left;float:left;">'.my_get_icono_action('canal32',$my_user->name).'</div>&nbsp;';
+        }    
+        drupal_set_title($icono.t('User').': '.$my_user->name);            
+    }
+    //$node=new stdClass();
+    $node->uid=$uid;
+    $my_user_info=my_get_user_info($node);
+    $html=array();
+    $div_style=' style="padding-left:10px;float:left;"';
+    $html[]='<div id="content" class="clearfix" style="clear:both;">';
+    $html[]='<div id="node-'.$uid.'" class="node clear-block">';
+    $html[]='<div class="content">';
+    $html[]='<div style="clear:both;width:100%;min-width:75px;">';
+    $html[]='<div style="float:left;">';
+    $html[]=$my_user_info['img'];	    
+    $html[]='</div>';    
+    $html[]='<table class="table_node_view" style="clear:both;">';
+    $html[]=canal_usuario_get_canal_usuario_tr_view(t('Creation Date'),date('d-m-Y H:i',$my_user->created));
+    $last_update=canal_usuario_get_last_update($uid);
+    if(!empty($last_update)){
+        $last_update=date('d-m-Y H:i',$last_update);
+    }
+    $html[]=canal_usuario_get_canal_usuario_tr_view(t('Last Update'),$last_update);
+    //intelsat-2015
+    $text=hontza_content_resumen($node);
+    $html[]=canal_usuario_get_canal_usuario_tr_view(t('Text'),$text);
+    $html[]=canal_usuario_get_canal_usuario_source_type_tr_view($node);    
+    $html[]=canal_usuario_get_canal_usuario_categorias_tematicas_tr_view($node);
+    $html[]='</table>';
+    //intelsat-2015
+    $html[]=get_reto_al_que_responde_fieldset($node);
+    //$html[]=canal_usuario_estadisticas_modal(TRUE,0,$my_user);    
+    $html[]=canal_usuario_get_estadisticas_html($my_user);
+    $html[]='<div class="n-opciones-item">';
+    $html[]='<div style="float:left;">'.l(my_get_icono_action('edit',t('Edit Channel Title')),'canal-usuarios-title/'.$uid.'/edit',array('html'=>true)).'</div>';
+    $html[]='<div '.$div_style.'>'.l(my_get_icono_action('ver_noticias',t('List of News')),'canal-usuarios/'.$uid,array('html'=>true)).'</div>';    
+    $html[]='<div '.$div_style.'>'.l(my_get_icono_action('rss',t('RSS')),'canales_rss/canal-usuarios/'.$uid,array('attributes'=>array('target'=>'_blank'),'html'=>true)).'</div>';        
+    //intelsat-2016
+    $html[]='<div '.$div_style.'>'.l(my_get_icono_action('copiar_nodo',t('Export channel')),'canales_rss_canal_usuarios/'.$uid.'/red_exportar_rss/enviar_mail',array('attributes'=>array('target'=>'_blank','class'=>'jqm-trigger-red_exportar_rss_canal_usuarios_view_enviar_mail_'.$uid),'html'=>true)).'</div>';            
+    $html[]='<div id="exred_exportar_rss_canal_usuarios_view_enviar_mail_'.$uid.'" class="jqmWindow jqmID2000"></div>';  
+    $html[]='<div '.$div_style.'>'.l(my_get_icono_action('borrar_noticias',t('Delete news of channel')),'canal_usuario/'.$uid.'/delete_noticias',array('html'=>true,'query'=>drupal_get_destination())).'</div>';
+    $html[]='</div>';
+    $html[]='</div>';    
+    $html[]='</div>';
+    $html[]='</div>';
+    $html[]='</div>';
+    //intelsat-2016
+    hontza_canal_rss_add_red_exportar_rss_enviar_mail_js('',$uid,1); 
+    return implode('',$html);        
+}
+function canal_usuario_is_canal_usuario(){
+    $param0=arg(0);
+    if(!empty($param0)){ 
+        if($param0=='canal_usuario'){
+            return 1;
+        }else if($param0=='canal-usuarios-title'){
+            return 1;
+        }
+    }        
+    return 0;
+}
+function canal_usuario_get_canal_usuario_tr_view($label,$value){
+    $html=array();
+    $html[]='<tr class="tr_node_view">';
+    $html[]='<td class="td_label_node_view">';
+    $html[]='<b>'.$label.'</b>:';
+    $html[]='</td>';
+    $html[]='<td class="td_value_node_view">';
+    $html[]=$value;
+    $html[]='</td>';    
+    $html[]='</tr>';
+    return implode('',$html);
+}
+function canal_usuario_get_last_update($uid){
+    $canal_usuario_noticia_array=canal_usuario_get_noticia_array($uid);
+    if(count($canal_usuario_noticia_array)>0){
+        return $canal_usuario_noticia_array[0]->changed;
+    }
+    return '';
+}
+function canal_usuario_get_noticia_array($uid){
+    $result=array();
+    $res=db_query('SELECT * FROM {node} WHERE uid=%d AND node.type="noticia" ORDER BY changed DESC',$uid);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    //
+    return $result;
+}
+function canal_usuario_edit_noticia_access(){
+    global $user;
+    if(is_super_admin()){
+        return TRUE;
+    }
+    $uid=arg(1);
+    if($uid==$user->uid){
+        return TRUE;
+    }
+    return FALSE;
+}
+function canal_usuario_delete_noticias_callback(){
+    return drupal_get_form('canal_usuario_delete_noticias_form');
+}
+function canal_usuario_delete_noticias_form(){
+    $uid=arg(1);
+    drupal_set_title(t('Delete all news from channel').'?');
+    $form=array();
+    $form['my_uid']=array(
+        '#type'=>'hidden',
+        '#value'=>$uid,
+    );
+    $form['delete_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Delete'),
+    );
+    $url_cancel='canal_usuario/'.$uid.'/view';
+    if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+        $url_cancel=$_REQUEST['destination'];
+    }
+    $form['cancel_btn']=array(
+        '#value'=>l(t('Cancel'),$url_cancel),
+    );
+    return $form;
+}
+function canal_usuario_delete_noticias_form_submit($form, &$form_state){
+    $uid=$form_state['values']['my_uid'];
+    $noticia_array=canal_usuario_get_noticia_array($uid);
+    if(!empty($noticia_array)){
+        foreach($noticia_array as $i=>$row){
+            node_delete($row->nid);
+        }
+    }
+}
+function canal_usuario_estadisticas_modal($js,$is_modal,$my_user) {
+  $salida='';
+    
+  if($is_modal){
+    $salida = '<p>'.t('Number of new user news in the channel').': '.$my_user->name.'</p>';
+  }
+  
+  $title = t('Statistics from last month.');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');    
+    $period = strtotime('-1 month');
+    //$period=social_learning_step_get_estadisticas_period($collection_node);
+    $quant = new stdClass;
+    //$quant->id = 'canales_chart';    
+    $quant->id = 'collection_chart';
+    $quant->label = t('Number of user news');  // The title of the chart
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    //
+    $where=array();
+    $where[]='node.created >= %d';
+    $where[]='node.type="noticia"';    
+    $where[]='node.uid = '.$my_user->uid;
+    //
+    $quant->query = 'SELECT node.created 
+                    FROM {node} node
+                    WHERE '.implode(' AND ',$where).'
+                    ORDER BY node.created DESC'; // We can provide a custom query instead
+    $quant->table = 'og';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+    $quants[] = $quant;
+  
+    $salida .= '<p>'. quant_process($quant, $period) .'</p>';
+    //gemini-2013
+    if($is_modal){
+      ctools_modal_render($title, $salida);
+    }else{
+        return $salida;
+    }
+  }
+  else {
+    drupal_set_title($titulo);
+    return $salida;
+  }    
+}
+function canal_usuario_get_estadisticas_html($my_user){
+    $my_analisis=canal_usuario_estadisticas_modal(TRUE,0,$my_user);
+    $html=array();
+    $html[]='<div class="field field-type-text field-canal_de_yql-analisis" style="float:left;clear:both;">';
+    $html[]='<div class="field-items">';			
+    $html[]='<div class="field-item odd">';			
+    $html[]='<div class="field-label-inline-first" style="float:left;">';
+    $html[]=t('Analysis');
+    $html[]='</div>';
+    $html[]=$my_analisis;
+    $html[]='</div>';
+    $html[]='</div>';
+    $html[]='</div>';
+    return implode('',$html);
+}
+function canal_usuario_get_days($timestamp){
+    $intervalSeconds = time() - $timestamp;
+    $result = floor($intervalSeconds / 86400);    
+    /*if ($result == 1) {
+        $result.=' '.t('day');
+    } else {
+        $result.=' '.t('days');
+    }*/
+    return $result;
+}
+//intelsat-2015
+function canal_usuario_get_canal_usuario_acciones($uid){
+    if(canal_usuario_is_canal_usuario_acciones_activado()){
+        if(!empty($uid)){
+            $html[]='<fieldset>';
+            $html[]='<legend>'.t("Channel Operations").'</legend>';
+            $html[]='<div>';        
+            //$html[]=link_notify($user->uid,'',"canal-usuarios/".$uid,1,$uid);
+            $html[]=canal_usuario_link_ver_canal_usuario($uid);
+            $html[]=canal_usuario_link_edit_canal_usuario($uid);
+            $html[]='</div>';
+            $html[]='</fieldset>';
+            return implode('',$html);
+        }    
+    }
+    return '';
+}
+function canal_usuario_is_canal_usuario_acciones_activado(){
+    //return 0;
+    $sareko_id_array=array('ROOT');
+    if(in_array(_SAREKO_ID,$sareko_id_array)){
+        return 1;
+    }
+    if(defined('_IS_CANAL_USUARIO')){
+        if(_IS_CANAL_USUARIO==1){
+            return 1;
+        }
+    }
+    return 0;
+}
+function canal_usuario_link_ver_canal_usuario($uid){
+    global $user,$base_url;
+    $label=t('Channel file');
+    $html=array();
+    $html[]= '<span class="link_ver_canal">';
+    $my_user=user_load($uid);
+    $link='';
+    $icon=$base_url.'/'.drupal_get_path('theme','buho').'/images/canal_view.png';    
+    $img='<img class="icono_validar_pagina" src="'.$icon.'" title="'.$label.'" alt="'.$label.'"/>';        
+    
+    if(isset($my_user->uid) && !empty($my_user->uid)){
+        $html[]=  l($img, 'canal_usuario/'.$uid.'/view',array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>array('class'=>'a_validar_pagina')));
+    }else{
+        return '';        
+    }
+    
+    $html[]= '</span>';
+    return implode('',$html);
+}
+function canal_usuario_link_edit_canal_usuario($uid){
+    global $user,$base_url;
+    $label=t('Edit channel');
+    $html=array();
+    $html[]= '<span class="link_edit_canal">';
+    $my_user=user_load($uid);
+    $link='';
+    $icon=$base_url.'/'.drupal_get_path('theme','buho').'/images/edit_canal.png';    
+    $img='<img class="icono_validar_pagina" src="'.$icon.'" title="'.$label.'" alt="'.$label.'"/>';            
+    if(isset($my_user->uid) && !empty($my_user->uid)){
+        $node_canal_usuario=canal_usuario_get_node_canal_usuario($uid);
+        $url='node/add/canal-usuario/'.$uid;
+        if(isset($node_canal_usuario->nid) && !empty($node_canal_usuario->nid)){
+            $url='node/'.$node_canal_usuario->nid.'/edit';
+        }
+        $html[]=  l($img,$url,array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>array('class'=>'a_validar_pagina')));
+    }else{
+        return '';        
+    }
+    
+    $html[]= '</span>';
+    return implode('',$html);
+}
+function canal_usuario_get_node_canal_usuario($uid,$is_node_load=0){
+    $my_grupo=og_get_group_context();
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $my_grupo_nid=$my_grupo->nid;
+        $sql='SELECT node.*
+        FROM {node} 
+        LEFT JOIN {content_type_canal_usuario} ON node.vid=content_type_canal_usuario.vid 
+        LEFT JOIN {og_ancestry} ON node.nid=og_ancestry.nid 
+        WHERE content_type_canal_usuario.field_canal_usuario_uid_uid=%d AND node.type="canal_usuario" AND og_ancestry.group_nid=%d';    
+        $res=db_query($sql,$uid,$my_grupo_nid);
+        while($row=db_fetch_object($res)){
+            if($is_node_load){
+                $result=node_load($row->nid);
+                return $result;
+            }else{
+                return $row;
+            }
+        }
+    }    
+    //
+    $my_result=new stdClass();
+    return $my_result;
+}
+function canal_usuario_canal_usuario_node_form_alter(&$form,&$form_state,$form_id){
+    $node_canal_usuario=hontza_get_node_by_form($form);
+    $nid=$node_canal_usuario->nid;    
+    $uid=arg(3);
+    $my_user=user_load($uid);
+    $my_grupo=og_get_group_context();
+    $gr_title='';
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $gr_title=' ('.$my_grupo->title.')';
+    }
+    if(isset($node_canal_usuario->nid) && !empty($node_canal_usuario->nid)){
+        
+    }else{
+       $form['title']['#default_value']=$my_user->name.$gr_title;
+       //echo print_r($form['field_canal_usuario_uid'],1);exit();
+       $default_value=array();
+       $default_value['uid']=$uid;
+       $form['field_canal_usuario_uid'][0]['#default_value']=$default_value;
+    }
+    $form['field_canal_usuario_uid']['#prefix']='<div style="display:none">';
+    $form['field_canal_usuario_uid']['#suffix']='</div>';
+    $form['reto_al_que_responde_id']=array(
+        '#value'=>get_reto_al_que_responde_html(),
+    );
+    $form['my_cat_']=create_categorias_tematicas_fieldset('',1,$nid,'canal_usuario');
+    red_solr_canal_source_type_form_alter($form,$form_state,$form_id);
+}
+//intelsat-2015
+function canal_usuario_on_presave_canal_usuario_node(&$node){
+    hontza_canal_rss_on_categorias_tematicas_presave($node);    
+}
+//intelsat-2015
+function canal_usuario_is_canal_usuario_view(){
+    if(canal_usuario_is_canal_usuario()){
+        $param1=arg(1);
+        if(!empty($param1) && is_numeric($param1)){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='view'){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function canal_usuario_get_canal_usuario_node_uid($nid){
+    $node=node_load($nid);
+    if(isset($node->field_canal_usuario_uid[0]['uid'])){
+        return $node->field_canal_usuario_uid[0]['uid'];
+    }
+    return '';
+}
+//intelsat-2015
+function canal_usuario_get_canal_usuario_categorias_tematicas_tr_view($node){
+    $html=array();
+    $categorias_tematicas=hontza_solr_funciones_get_item_categorias_tematicas($node,1);
+    $html[]='<tr class="tr_node_view">';
+    $html[]='<td class="td_label_node_view"><b>'.t('Thematic Categories').'</b>:&nbsp;</td>';
+    $html[]='<td class="td_value_node_view">';
+    $html[]='<div style="margin-top:0px;float:left;" class="terms terms-inline">';
+    $html[]=$categorias_tematicas;
+    $html[]='</div>';
+    $html[]='</td>';
+    $html[]='</tr>';
+    return implode('',$html);
+}
+//intelsat-2015
+function canal_usuario_is_canal_usuario_formulario(){
+        $node=my_get_node();
+        if(isset($node->nid) && !empty($node->nid)){
+            if(in_array($node->type,array('canal_usuario'))){
+                return 1;
+            }        
+        }
+        if(is_node_add('canal-usuario')){
+            return 1;
+        }
+    return 0;
+}
+//intelsat-2015
+function canal_usuario_save_reto_al_que_responde($node,$is_delete=1){
+    if($is_delete){
+        canal_usuario_delete_reto_al_que_responde($node->nid,$node->vid);
+    }
+    if(db_table_exists('canal_usuario_estrategia')){
+        if(isset($node->estrategia_responde_array) && !empty($node->estrategia_responde_array)){
+            foreach($node->estrategia_responde_array as $i=>$row){
+                db_query($sql=sprintf('INSERT INTO {canal_usuario_estrategia}(nid,vid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES(%d,%d,%d,%d,%d,%d)',$node->nid,$node->vid,$row['responde_estrategia_nid'],$row['responde_despliegue_nid'],$row['responde_decision_nid'],$row['responde_informacion_nid']));
+            }         
+        }
+    }    
+}
+function canal_usuario_delete_reto_al_que_responde($nid,$vid){
+    if(db_table_exists('canal_usuario_estrategia')){
+        db_query('DELETE FROM {canal_usuario_estrategia} WHERE nid=%d AND vid=%d',$nid,$vid);
+    }    
+}
+//intelsat-2015
+function canal_usuario_on_canal_usuario_save($op,&$node){
+    if($node->type=='canal_usuario'){
+        estrategia_inc_on_estrategia_responde_save($op,$node);        
+    }
+}
+//intelsat-2015
+function  canal_usuario_get_canal_usuario_source_type_tr_view($node){
+    $html=array();
+    $source_type=canal_usuario_get_canal_usuario_source_type($node);
+    $html[]='<tr class="tr_node_view">';
+    $html[]='<td class="td_label_node_view"><b>'.t('Source Type').'</b>:&nbsp;</td>';
+    $html[]='<td class="td_value_node_view">';
+    $html[]='<div style="margin-top:0px;float:left;" class="terms terms-inline">';
+    $html[]=$source_type;
+    $html[]='</div>';
+    $html[]='</td>';
+    $html[]='</tr>';
+    return implode('',$html);
+}
+//intelsat-2015
+function canal_usuario_get_canal_usuario_source_type($node){
+    $source_array=hontza_solr_canal_source_term_array($node->nid);
+    if (!empty($source_array)){
+        return hontza_solr_set_canal_source_type_terms_ul($source_array);
+    }
+    return '';
+}
+//intelsat-2015
+function canal_usuario_get_canal_usuario_tid_array(){
+    global $user;
+    $result=array();
+    if(is_node_add('noticia')){
+        $canal_usuario_node=canal_usuario_get_node_canal_usuario($user->uid,1);
+        if(isset($canal_usuario_node->taxonomy) && !empty($canal_usuario_node->taxonomy)){
+            //$result=array_keys($canal_usuario_node->taxonomy);
+            foreach($canal_usuario_node->taxonomy as $tid=>$term){
+                if(hontza_canal_rss_is_term_categoria_tematica($term)){
+                    $result[]=$tid;
+                }
+            }
+            return $result;
+        }
+    }
+    return $result;
+}
+function canal_usuario_is_canal_usuario_activado(){
+    return canal_usuario_is_canal_usuario_acciones_activado();
+}
+//intelsat-2015
+function canal_usuario_get_canal_usuario_source_tid_array(){
+    global $user;
+    $node=canal_usuario_get_node_canal_usuario($user->uid,1);
+    return hontza_solr_get_canal_source_type_default_value('',$node->nid);
+}

@@ -1,0 +1,69 @@
+# $Id: CHANGELOG.txt,v 1.1.2.20 2010/07/13 03:46:34 kiam Exp $
+# All the dates reported here are referred to UTC.
+
+2010-07-13
+----------
+#850454 by morningtime: Don't use startPage.
+
+2010-07-05
+----------
+#829644 by neclimdul, kiam: Open search triggers search on search landing page.
+
+2010-06-26
+----------
+#829316 by neclimdul: Parse error with short tags enabled.
+
+2010-06-19
+----------
+#829326 by neclimdul, kiam: Module configuration links are broken for modules that don't return names.
+
+2010-06-13
+----------
+#821670 by kiam: Search with core node.module does not work.
+
+2010-02-07
+----------
+#707154 by kiamlaluno: Move the hooks to generate tokens in opensearch_token.module.
+
+2010-02-02
+----------
+by Dave Reid: Fixed use of global $language instead of $locale.
+by Dave Reid: Fixed coder warnings and style fixes.
+#661508 by jpmckinney, Dave Reid: Removed workaround for Apache Solr results links.
+by Dave Reid: Fixed PHP notices and token replacement on results feed.
+by Dave Reid: Fixed PHP notices on settings page.
+#701878 by kiamlaluno: Change opensearch_description() to use a theme function.
+
+2010-02-01
+----------
+#669648 by kiamlaluno: Code doesn't respect the maximum size for the Opensearch description tags content.
+#668708 by kiamlaluno: Provide settings for each search page.
+#667606 by kiamlaluno: Revamp the settings page.
+
+2010-01-30
+----------
+#698718 by kiamlaluno: Save the settings in a database table.
+
+2010-01-28
+----------
+669664: by kiamlaluno: First argument of t() is not a literal string.
+#667632 by Dave Reid, kiamlaluno: Use token for variable replacement instead of @placeholders.
+
+2009-12-29
+----------
+#669564 by kiamlaluno: The code uses a not defined global variable.
+#668894 by kiamlaluno: Optimize opensearch_description().
+
+2009-12-25
+----------
+#605378 by Dave Reid: Fixed RSS validation on results feed.
+#667724 by Dave Reid: Fixed most of the PHP notices in opensearch_feed().
+#667718 by Dave Reid: Use drupal_add_link instead of ugly XML icon on search result pages
+#667672 by Dave Reid: Split the description and search feeds into separate menu items and callbacks.
+#667610 by Dave Reid: Use hook_form_FORM_ID_alter instead of hook_form_alter().
+#667608 by Dave Reid: Split code into opensearch.admin.inc and opensearch.pages.inc.
+#667612 by Dave Reid: Fixed initial code clean-up.
+
+2009-12-16
+----------
+#605378 by petercasier: Opensearch feed does not validate.

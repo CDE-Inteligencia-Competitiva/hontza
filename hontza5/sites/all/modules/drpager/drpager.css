@@ -1,0 +1,14 @@
+.drpager-page {
+  width: 2.5em;
+  text-align: center;
+}
+
+.drpager-page-has-focus {
+	background-color: Gainsboro;
+}
+
+li.pager-current {
+  background-color: #FFFFFF;
+  color: #000000;
+  border: none;
+}

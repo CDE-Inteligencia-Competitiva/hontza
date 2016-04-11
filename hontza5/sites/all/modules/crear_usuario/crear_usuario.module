@@ -1,0 +1,803 @@
+<?php
+function crear_usuario_perm() {
+  return array();
+}
+function crear_usuario_menu() {
+  $items=array();
+  $items['crear_usuario/frontpage'] = array(
+    'title' => 'Frontpage',
+    'page callback' => 'crear_usuario_frontpage_callback',
+    'access callback'=>true,    
+  );
+   $items['crear_usuario/grupos_apuntarse'] = array(
+    'title' => 'List of groups',
+    'page callback' => 'crear_usuario_grupos_apuntarse_callback',
+    'access arguments'=>array('access content'),    
+  );
+   $items['crear_usuario/grupos_apuntarse_result']=array(
+    'title' => 'List of groups',
+    'page callback' => 'crear_usuario_grupos_apuntarse_result_callback',
+    'access arguments'=>array('access content'),    
+  );   
+   $items['crear_usuario/%/denegar_grupo/%']=array(
+    'title' => 'Denied',
+    'page callback' => 'crear_usuario_denegar_grupo_callback',
+    'access callback'=>'crear_usuario_denegar_grupo_access',    
+  );
+  return $items;
+}
+function crear_usuario_user_profile_form_alter(&$form,&$form_state,$form_id){
+    global $user;
+    if(strcmp($form_id,'user_profile_form')==0){
+        if(crear_usuario_is_editando_usuario_propio($form)){            
+            if(crear_usuario_is_usuario_minimo()){
+                $fields=array('locale','messaging','Perfiles_web','mimemail','timezone','contact','vista_compacta_fs','#after_build');
+                if(!empty($fields)){
+                    foreach($fields as $i=>$field){
+                        if(isset($form[$field])){
+                            unset($form[$field]);
+                        }
+                    }
+                }
+                crear_usuario_add_user_profile_empresa_form_fieldset($form);                
+                crear_usuario_add_user_profile_groups_select_form_fieldset($form);
+                crear_usuario_add_user_profile_questions_form_fieldset($form);                
+            }            
+        }
+    }
+}
+function crear_usuario_is_editando_usuario_propio($form){
+    /*global $user;
+    $result=0;
+    $param=arg(3);
+    if(empty($param)){
+        if(!empty($form)){
+            if($form['_account']['#value']->uid==$user->uid){
+                $result=1;
+            }
+        }else{
+            if(is_user_editing('-1',$uid)){
+                if($uid==$user->uid){
+                    return 1;
+                }    
+            }
+        }
+    }        
+    return $result;*/
+    return red_crear_usuario_is_editando_usuario_propio($form);
+}
+function crear_usuario_is_usuario_minimo(){
+    global $user;
+    if(is_super_admin()){
+        return 0;
+    }
+    if(red_is_administrador()){
+        return 0;
+    }
+    if(isset($user->roles[CREADOR])){
+        return 0;
+    }
+    if(isset($user->roles[ADMINISTRADOR_DE_GRUPO])){
+        return 0;
+    }
+    //intelsat-2016
+    if(crear_usuario_is_in_group()){
+        return 0;
+    }
+    return 1;
+}
+function crear_usuario_set_primary_links($result_in){
+    global $user;
+    $result=$result_in;
+    //if(crear_usuario_is_editando_usuario_propio('')){
+    //if(crear_usuario_is_pantalla_usuario(){
+    if(crear_usuario_is_usuario_no_grupo()){
+        $result='<li>'.l(t('Edit'),'user/'.$user->uid.'/edit').'</li>';
+    }
+    return $result;
+}
+function crear_usuario_set_secondary_links($result_in){
+    $result=$result_in;
+    //if(crear_usuario_is_editando_usuario_propio('')){
+        //is_mi_perfil();
+    if(crear_usuario_is_usuario_no_grupo()){    
+        $result='';
+    }
+    return $result;
+}
+function crear_usuario_add_user_profile_groups_select_form_fieldset(&$form,$is_preguntas=0){
+    global $user;
+    $form['select_groups_fieldset']=array(
+        '#type'=>'fieldset',
+        '#title'=>t('Select groups')
+    );
+    $form['select_groups_fieldset']['texto']=array(
+        '#value'=>'<p><i>'.t('Please, select the groups that you would like to become member').'</i></p>'
+    );
+    $values=crear_usuario_get_groups_selected_values();
+    $default_value=$values;
+    if(hontza_is_mis_grupos()){
+        $default_value=array();
+    }
+    $form['select_groups_fieldset']['groups_selected']=array(
+        '#type' => 'checkboxes',
+        '#title'=>t('Groups'),
+        '#multiple'=>true,
+        '#options'=>crear_usuario_get_grupos_assoc($values),
+        '#default_value'=>$default_value,
+    );
+    //intelsat-2016
+    if($is_preguntas){
+        $profile_why_become_member='';
+        $profile_what_contribute='';
+        $form['select_groups_fieldset']['profile_why_become_member']=array(
+            '#type' => 'textarea',
+            '#title'=>t('Why do you like to become member of Hontza Network groups?'),
+            '#default_value'=>$user->profile_why_become_member,
+        );
+        $form['select_groups_fieldset']['profile_what_contribute']=array(
+            '#type' => 'textarea',
+            '#title'=>t('What can you contribute to the groups?'),
+            '#default_value'=>$user->profile_what_contribute,
+        );
+    }
+}
+function crear_usuario_get_grupos_assoc($values=array()){    
+    return red_crear_usuario_get_grupos_assoc($values);
+}
+function crear_usuario_user_register_form_alter(&$form,&$form_state, $form_id){
+    $fields=array('Datos personales','Empresa');
+                if(!empty($fields)){
+                    foreach($fields as $i=>$field){
+                        if(isset($form[$field])){
+                            unset($form[$field]);
+                        }
+                    }
+                }
+}
+function crear_usuario_add_grupos_usuario_propio_send_mail($user){
+    global $base_url;
+    global $language;
+    $my_lang='';
+    if($language->language!='en'){
+        $my_lang='/'.$language->language;
+    }
+    $grupo_nid_array=array();
+    if(isset($user->og_groups) && !empty($user->og_groups)){
+        $grupo_nid_array=array_keys($user->og_groups);
+    }
+        /*if(isset($user->groups_selected) && !empty($user->groups_selected)){
+            foreach($user->groups_selected as $grupo_nid=>$value){*/
+        if(isset($_SESSION['usuario_grupos_apuntarse_groups_selected'])){
+            unset($_SESSION['usuario_grupos_apuntarse_groups_selected']);
+        }    
+        if(isset($_POST['groups_selected']) && !empty($_POST['groups_selected'])){
+            $_SESSION['usuario_grupos_apuntarse_groups_selected']=$_POST['groups_selected'];
+            foreach($_POST['groups_selected'] as $grupo_nid=>$value){
+                if(!empty($value)){
+                    /*$admin_grupo_array=crear_usuario_get_usuario_array(CREADOR,$grupo_nid);
+                    if(empty($admin_grupo_array)){
+                        
+                    }else{
+                        echo print_r($admin_grupo_array,1);
+                        exit();
+                    }*/
+                    if(!in_array($grupo_nid,$grupo_nid_array)){
+                        $grupo=node_load($grupo_nid);
+                        crear_usuario_apuntarse_grupo_publico_automatico($grupo,$user);
+                        if(isset($grupo->field_admin_grupo_uid[0]['value']) && !empty($grupo->field_admin_grupo_uid[0]['value'])){
+                            //$editor_jefe=user_load($grupo->field_admin_grupo_uid[0]['value']);
+                            $propietario=crear_usuario_get_grupo_propietario($grupo);
+                            if(isset($propietario->mail) && !empty($propietario->mail)){
+                                $mail_to=$propietario->mail;
+                                $subject=t('New User Request');
+                                //$message=l($user->name.': add user link',$base_url.'/og/users/'.$grupo_nid.'/add_user/'.$user->uid);
+                                if(defined('_IS_CREAR_USUARIO_CASTELLANO') && _IS_CREAR_USUARIO_CASTELLANO==1){
+                                    $message='Hola '.$propietario->name.',<BR>';
+                                    $message.=$user->name.' ha solicitado el alta en el grupo '.$grupo->title.' y pide tu aprobación<BR>';                                
+                                    $url_profile=$base_url.$my_lang.'/user/'.$user->uid;
+                                    $message.='Perfil de '.l($user->name,$url_profile).'<BR>';
+                                    $profile_html=array();
+                                    red_crear_usuario_add_user_profile_values($profile_html,$user,'es');
+                                    $message.=implode('<BR>',$profile_html).'<BR>';
+                                    $message.=l('Enlace de aprobación',$base_url.$my_lang.'/'.$grupo->purl.'/og/users/'.$grupo_nid.'/add_user/'.$user->uid).'<BR><BR>';
+                                    //$url_denegacion=$base_url.$my_lang.'/og/users/'.$grupo_nid;
+                                    $url_denegacion=$base_url.$my_lang.'/'.$grupo->purl.'/crear_usuario/'.$user->uid.'/denegar_grupo/'.$grupo_nid;
+                                    $message.=l('Denegación',$url_denegacion);
+                                }else{
+                                    $message=t('Hi !nombre',array('!nombre'=>$propietario->name)).',<BR>';
+                                    $message.=t('!username has asked to be member of the group !groupname',array('!username'=>$user->name,'!groupname'=>$grupo->title)).'<BR>';                         
+                                    $url_profile=$base_url.$my_lang.'/user/'.$user->uid;
+                                    $message.=l(t('Profile'),$url_profile).'<BR>';
+                                    $profile_html=array();
+                                    red_crear_usuario_add_user_profile_values($profile_html,$user,'',0);
+                                    $message.=implode('<BR>',$profile_html).'<BR>';
+                                    $message.=l(t('Approve'),$base_url.$my_lang.'/'.$grupo->purl.'/og/users/'.$grupo_nid.'/add_user/'.$user->uid).'&nbsp;/&nbsp;';
+                                    //$url_denegacion=$base_url.$my_lang.'/og/users/'.$grupo_nid;
+                                    $url_denegacion=$base_url.$my_lang.'/'.$grupo->purl.'/crear_usuario/'.$user->uid.'/denegar_grupo/'.$grupo_nid;
+                                    $message.=l(t('Reject'),$url_denegacion);
+                                }
+                                //intelsat-2016
+                                red_copiar_send_mail($mail_to,$subject,$message,'mimemail','');
+                            }
+                        }
+                    }    
+                }
+            }
+        }
+}
+function crear_usuario_get_usuario_array($rid=0,$grupo_nid=''){
+    $result=array();
+    $where=array();
+    $where[]='1';
+    if(!empty($rid)){
+        $where[]='ur.rid='.$rid;
+    }
+    $where[]='u.status=1';
+    if(!empty($grupo_nid)){
+        $where[]='og_uid.nid='.$grupo_nid;
+    }
+    $sql='SELECT * 
+    FROM {users} u 
+    LEFT JOIN {users_roles} ur ON u.uid=ur.uid 
+    LEFT JOIN {og_uid} og_uid ON u.uid=og_uid.uid
+    WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    //
+    return $result;
+}
+function crear_usuario_add_user_profile_questions_form_fieldset(&$form){
+    $hontza_network=crear_usuario_get_hontza_network_label();
+    $user=$form['_account']['#value'];
+    $form['questions_fieldset']=array(
+        '#type'=>'fieldset',
+        '#title'=>t('Questions'),
+    );
+    $form['questions_fieldset']['profile_why_become_member']=array(
+        '#type'=>'textarea',
+        '#title'=>'1) '.t('Why do you like to become member of '.$hontza_network.' groups?'),
+        '#default_value'=>$user->profile_why_become_member,
+    );
+    $form['questions_fieldset']['profile_what_contribute']=array(
+        '#type'=>'textarea',
+        '#title'=>'2) '.t('What can you contribute to the groups?'),
+        '#default_value'=>$user->profile_what_contribute,
+    );     
+}
+function crear_usuario_add_grupos_usuario_propio($user){
+    crear_usuario_questions_save($user);
+    crear_usuario_add_grupos_usuario_propio_send_mail($user);    
+}
+function crear_usuario_questions_save($user){
+    //$name_array=array('profile_why_become_member','profile_what_contribute');        
+    $name_array=array('profile_why_become_member','profile_what_contribute','profile_empresa');
+    /*if(!empty($name_array)){
+        foreach($name_array as $i=>$name){
+            if(isset($user->$name)){
+                $profile_field_row=crear_usuario_get_profile_fields_row($name);
+                if(isset($profile_field_row->fid) && !empty($profile_field_row->fid)){
+                    //crear_usuario_profile_values_save_row($profile_field_row->fid,$user->uid,$user->$name);
+                    crear_usuario_profile_values_save_row($profile_field_row->fid,$user->uid,$_POST[$name]);
+                }
+            }
+        }
+    }*/
+    red_crear_usuario_save_profile_values($user,$name_array);
+}
+function crear_usuario_get_profile_fields_row($name){
+    /*$where=array();
+    $res=db_query('SELECT * FROM {profile_fields} WHERE profile_fields.name="%s"',$name);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    $my_result=new stdClass();
+    return $my_result;*/
+    return red_crear_usuario_get_profile_fields_row($name);
+}
+function crear_usuario_profile_values_save_row($fid,$uid,$value){
+    /*$row=crear_usuario_get_profile_values_row($fid,$uid);
+    if(isset($row->fid) && !empty($row->fid)){
+        db_query('UPDATE {profile_values} SET value="%s" WHERE fid=%d AND uid=%d',$value,$fid,$uid);        
+    }else{
+        db_query('INSERT INTO {profile_values}(fid,uid,value) VALUES(%d,%d,"%s")',$fid,$uid,$value);        
+    }*/
+    red_crear_usuario_profile_values_save_row($fid,$uid,$value);
+}
+function crear_usuario_get_profile_values_row($fid,$uid){
+    /*$where=array();
+    $res=db_query('SELECT * FROM {profile_values} WHERE fid=%d AND uid=%d',$fid,$uid);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    $my_result=new stdClass();
+    return $my_result;*/
+    return red_crear_usuario_get_profile_values_row($fid,$uid);
+}
+function crear_usuario_is_usuario_no_grupo(){
+    global $user;
+    $result=0;
+    if(!hontza_is_user_anonimo()){
+        if(crear_usuario_is_editando_usuario_propio('') || is_mi_perfil()){
+            if(isset($user->og_groups) && !empty($user->og_groups)){
+                $result=0;
+            }else{
+                $result=1;
+            }
+        }
+    }
+    return $result;
+}
+function crear_usuario_get_profile_url(){
+    global $user;
+    $result='user';
+    if(crear_usuario_is_usuario_no_grupo()){
+        $result='user/'.$user->uid.'/edit';
+    }
+    $result=url($result);
+    return $result;
+}
+function crear_usuario_get_groups_selected_values(){
+    global $user;
+    $result=array();
+    if(isset($user->og_groups) && !empty($user->og_groups)){
+        $result=array_keys($user->og_groups);
+    }
+    return $result;
+}
+function crear_usuario_add_user_profile_empresa_form_fieldset(&$form){
+    $user=$form['_account']['#value'];
+    $form['organisation_fieldset']=array(
+        '#type'=>'fieldset',
+        '#title'=>t('Organisation'),
+    );
+    $form['organisation_fieldset']['profile_empresa']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Organisation'),
+        '#default_value'=>$user->profile_empresa,
+        '#required'=>TRUE,
+    );
+    $form['organisation_fieldset']['profile_empresa_ciudad']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Town'),
+        '#default_value'=>$user->profile_empresa_ciudad,
+        '#required'=>TRUE,
+    );
+    if(hontza_registrar_is_registrar_activado()){
+        $pais_options=red_registrar_pais_inc_get_pais_options(1);
+        $form['organisation_fieldset']['profile_empresa_pais']=array(
+        '#type'=>'select',
+        '#title'=>t('Country'),
+        '#options'=>$pais_options,    
+        '#default_value'=>$user->profile_empresa_pais,
+        '#required'=>TRUE,
+        );
+    }else{
+        $form['organisation_fieldset']['profile_empresa_pais']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Country'),
+        '#default_value'=>$user->profile_empresa_pais,
+        '#required'=>TRUE,
+        );    
+    }
+    $form['organisation_fieldset']['profile_empresa_sitio_web']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Website'),
+        '#default_value'=>$user->profile_empresa_sitio_web,
+        '#required'=>TRUE,
+    );
+}
+function crear_usuario_send_mail_added_usuario_grupo($account,$grupo_nid){
+    global $base_url;
+    global $language;
+    $html=array();
+    $my_lang='';
+    if($language->language!='en'){
+        $my_lang='/'.$language->language;
+    }
+    $mail_to=$account->mail;
+    $grupo=node_load($grupo_nid);    
+    //$subject='New Group';
+    $hontza_network=crear_usuario_get_hontza_network_label();
+    $subject='Mensaje de aceptación al grupo colaborativo '.$grupo->title.' de '.$hontza_network;
+    //$message=l($account->name.': new group link',$base_url.'/'.$grupo->purl.'/dashboard');
+    /*$message='Hola '.$account->name.',<BR>';
+    $message.='Tu solicitud de alta en el grupo '.$grupo->title.' ha sido aprobada<BR>';
+    $message.='Puedes entrar pulsando en este enlace: '.l($grupo->title,$base_url.$my_lang.'/'.$grupo->purl.'/vigilancia/validados');*/
+    $html[]='Estimado/a '.$account->name.',<BR>';
+    $url_grupo=l($grupo->title,$base_url.$my_lang.'/'.$grupo->purl.'/vigilancia/validados');
+    $html[]='Le informamos que ha sido aceptado como miembro del grupo colaborativo '.$url_grupo.' de '.$hontza_network.'.<BR>';
+    $html[]='La aplicación de '.$hontza_network.' aporta a cada grupo colaborativo herramientas y funcionalidades para desarrollar su objetivo de vigilancia competitiva, permitiendo:';
+    $html[]='<ul>';
+    $html[]='<li>Conocer el despliegue de retos estratégicos del grupo.</li>';
+    $html[]='<li>Trabajar con fuentes de información relevantes.</li>';
+    $html[]='<li>Construir canales de información por categorías.</li>';
+    $html[]='<li>Colaborar en el filtrado y puesta en valor de los mejores resultados de información, aportando etiquetas, puntuaciones y comentarios a las noticias.</li>';
+    $html[]='<li>Participar en debates para clarificar las cuestiones clave del entorno competitivo.</li>';
+    $html[]='<li>Trabajar en equipo para generar documentos y análisis conjuntos.</li>';
+    $html[]='<li>Generar y perfeccionar ideas, oportunidades y proyectos ligados al reto competitivo para fomentar procesos de innovación abierta.</li>';
+    $html[]='<li>Consultar alertas personalizadas y boletines especializados.</li>';
+    $html[]='</ul>';
+    $message=implode('<BR>',$html);
+    //intelsat-2016
+    red_copiar_send_mail($mail_to,$subject,$message,'mimemail','');
+}
+function crear_usuario_is_custom_css(){
+    $result=0;
+    $is_custom_css=0;
+    if(defined('_IS_RED_ALERTA_NET') && _IS_RED_ALERTA_NET==1){
+        $is_custom_css=1;
+    }else if(defined('_IS_CUSTOM_CSS_HONTZA') && _IS_CUSTOM_CSS_HONTZA==1){
+        $is_custom_css=1;    
+    }
+    if($is_custom_css){
+        $result=crear_usuario_is_custom_css_pantalla();    
+    }
+    return $result;
+}
+function crear_usuario_is_custom_css_pantalla(){
+    $param0=arg(0);
+    if(!empty($param0)){
+        if($param0=='user'){
+            $param1=arg(1);
+            if(!empty($param1)){
+                if(in_array($param1,array('password','register'))){
+                    return 1;
+                }else if(crear_usuario_is_editando_usuario_propio('')){
+                    if(crear_usuario_is_usuario_minimo()){
+                        return 1;
+                    }
+                }else if(crear_usuarios_is_editando_usuario_anonimo($param1)){
+                    return 1;
+                }
+            }else{
+                return 1;
+            }
+        }else if($param0=='node'){
+            $param1=arg(1);
+            if(empty($param1)){
+                if(hontza_is_user_anonimo()){    
+                    return 1;
+                }    
+            }
+        }    
+    }
+    if(hontza_is_user_anonimo()){
+        return 1;
+    }
+    return 0;
+}
+function crear_usuario_get_path_custom_css(){
+    global $base_url;
+    $custom_css_dir='custom_css';
+    if(red_crear_usuario_is_custom_css_hontza()){
+        $custom_css_dir='custom_css_hontza';
+    }
+    $result=$base_url.'/sites/all/themes/buho/templates/overrides/'.$custom_css_dir.'/';
+    return $result;
+}
+function crear_usuario_add_submit_class(&$form,$field='submit'){
+    //$form['submit']['#type']='button';
+    $form[$field]['#attributes']['class']='btn btn-default';
+}
+function crear_usuarios_is_editando_usuario_anonimo($param1){
+    if(hontza_is_user_anonimo()){
+        if(is_numeric($param1)){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='edit'){
+                return 1;
+            }    
+        }    
+    }
+    return 0;
+}
+function crear_usuario_frontpage_callback(){
+    global $base_url;
+    $url='node';
+    if(hontza_is_user_anonimo()){
+        $url=$base_url.'/es/node';
+    }
+    drupal_goto($url);
+    exit();
+}
+function crear_usuario_grupos_apuntarse_callback($with_help=1){
+    $title=t('List of groups');
+    if(hontza_grupos_mi_grupo_is_este_servidor()){
+        $title=t('My groups on this server');
+    }
+    drupal_set_title($title);    
+    if(custom_menu_is_grupos_apuntarse()){
+        return drupal_get_form('crear_usuario_grupos_apuntarse_form');
+    }else{
+        if($with_help){
+            return crear_usuario_grupos_apuntarse_get_help(0);
+        }
+    }
+    return '';
+}
+function crear_usuario_grupos_apuntarse_form(){
+    $form=array();
+    crear_usuario_add_user_profile_groups_select_form_fieldset($form,1);
+    $form['save_btn']=array(
+        '#type'=>'submit',
+        '#default_value'=>t('Save'),
+    );
+    $form['cancel_btn']=array(
+        '#value'=>l(t('Cancel'),'user'),
+    );
+    return $form;
+}
+function crear_usuario_grupos_apuntarse_get_help($with_title=1){
+    $grupos_ayuda_node=crear_usuario_get_grupos_ayuda_node();
+    $node=hontza_node_load_by_lang($grupos_ayuda_node->nid);
+    if(isset($node->nid) && !empty($node->nid)){
+        if($with_title){
+            drupal_set_title($node->title);
+        }
+        $output=node_view($node,FALSE,1);
+        $output=hontza_canal_rss_unset_node_view_links($output);
+        return $output;
+    }
+    return '';
+}
+function crear_usario_get_grupos_ayuda_link(){    
+    $destination='panel_admin/grupos';
+    $grupos_ayuda_node=crear_usuario_get_grupos_ayuda_node();
+    if(isset($grupos_ayuda_node->nid) && !empty($grupos_ayuda_node->nid)){
+        $result=l(t('Edit Help'),'node/'.$grupos_ayuda_node->nid.'/edit',array('query'=>array('destination'=>$destination)));    
+    }else{
+        $result=l(t('Add Help'),'node/add/grupos-ayuda',array('query'=>array('destination'=>$destination)));    
+    }
+    return $result;
+}
+function crear_usuario_get_grupos_ayuda_node(){
+    $grupos_ayuda_array=hontza_get_all_nodes(array('grupos_ayuda'));
+    if(!empty($grupos_ayuda_array)){
+        foreach($grupos_ayuda_array as $i=>$row){
+            if($row->nid==$row->tnid || empty($row->tnid)){
+                return $row;
+            }
+        }
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
+function crear_usuario_grupos_apuntarse_form_submit($form, &$form_state){
+    global $user;
+    $my_user=user_load($user->uid);
+    $my_user->groups_selected=$form_state['values']['groups_selected'];
+    $_SESSION['usuario_grupos_apuntarse_groups_selected']=$my_user->groups_selected;
+    $name_array=array('profile_why_become_member','profile_what_contribute');
+    
+    $my_user->profile_why_become_member=$form_state['values']['profile_why_become_member'];
+    $my_user->profile_what_contribute=$form_state['values']['profile_what_contribute'];
+    //intelsat-2016
+    red_crear_usuario_save_profile_values($my_user,array(),$name_array);    
+    //user_save($my_user);
+    //$my_user=user_load($my_user->uid);    
+    //echo print_r($my_user,1);exit();
+    crear_usuario_profile_save_profile($my_user);
+    crear_usuario_add_grupos_usuario_propio_send_mail($my_user);
+    drupal_goto('crear_usuario/grupos_apuntarse_result');
+}
+function crear_usuario_grupos_apuntarse_result_callback(){
+    if(isset($_SESSION['usuario_grupos_apuntarse_groups_selected']) && !empty($_SESSION['usuario_grupos_apuntarse_groups_selected'])){
+        $html=array();
+        /*Muchas gracias por tu solicitud para formar parte de los grupos   (detallar nombres de grupos solicitados en los que el alta SI es automatica)
+            - grupo
+            - grupo
+            - ...
+        Ya puedes entrar pulsando en este enlace (listado de mis grupos)*/
+        //$html[]='<p>Muchas gracias por tu solicitud para formar parte de los grupos:</p>';
+        $html[]='<p>'.t('Thank you for asking to become a member of').':</p>';
+        $html[]='<ul style="padding-left:20px;">';
+        foreach($_SESSION['usuario_grupos_apuntarse_groups_selected'] as $grupo_nid=>$value){
+            if(!empty($value)){
+                $grupo=node_load($grupo_nid);
+                if(isset($grupo->nid) && !empty($grupo->nid)){
+                   $html[]='<li>'.$grupo->title.'</li>'; 
+                }
+            }    
+        }
+        $html[]='</ul>';
+        //$html[]='<p>Tu solicitud debe ser evaluada y procesada por las personas responsables de cada grupo. En breve recibirás un correo con su respuesta.</p>';
+        $html[]='<p>'.t('Your request must be evaluated and processed by each group').'.</p>'; 
+        $html[]='<p>'.t('You will receive soon an email with their answer').'.</p>'; 
+        //$html[]='<p>Puedes pulsar aquí si deseas salir: '.l(t('Logout'),'logout').'</p>';
+        $html[]='<p>'.t('You can click here if you like to logout').': '.l(t('Logout'),'logout').'.</p>';
+        //$html[]='<p>Puedes pulsar aquí si deseas seguir navegando: '.l(t('My Profile'),'user').'</p>';
+        $html[]='<p>'.t('You can click here if you like to continue inside').': '.l(t('My Groups'),'mis-grupos').'.</p>';
+        return implode('',$html);
+    }else{
+        drupal_goto('user');
+    }
+}
+function crear_usuario_on_user_profile_form_submit(){
+    if(crear_usuario_is_groups_selected()){
+        drupal_goto('crear_usuario/grupos_apuntarse_result');
+    }
+}
+function crear_usuario_is_groups_selected(){
+    global $user;
+    if(isset($_POST['groups_selected']) && !empty($_POST['groups_selected'])){
+        foreach($_POST['groups_selected'] as $grupo_nid=>$value){
+            if(!empty($value)){
+                if(isset($user->og_groups[$grupo_nid]) && !empty($user->og_groups[$grupo_nid])){
+                    //
+                }else{    
+                    return 1;
+                }    
+            }
+        }
+    }
+    return 0;
+}
+function crear_usuario_denegar_grupo_access(){
+    if(is_administrador_grupo()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function crear_usuario_denegar_grupo_callback(){
+    return drupal_get_form('crear_usuario_denegar_grupo_form');
+}
+function crear_usuario_denegar_grupo_form(){
+    drupal_set_title(t('Request denied'));
+    $uid=arg(1);
+    $user_name='';
+    $my_user=user_load($uid);
+    if(isset($my_user->uid) && !empty($my_user->uid)){
+        $user_name=$my_user->name;
+    }
+    $grupo_nid=arg(3);
+    $grupo=node_load($grupo_nid);
+    $grupo_title='';
+    if(isset($grupo->nid) && !empty($grupo->nid)){
+        $grupo_title=$grupo->title;
+    }
+    $attributes=array('style'=>'width:400px;','readonly'=>'readonly');
+    $form['user_name']=array(
+        '#type'=>'textfield',
+        '#title'=>t('User'),
+        '#default_value'=>$my_user->name,
+        '#attributes'=>$attributes,    
+    );
+    $form['grupo_title']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Group'),
+        '#default_value'=>$grupo_title,
+        '#attributes'=>$attributes,    
+    );
+    $form['uid']=array(
+        '#type'=>'hidden',
+        '#value'=>$uid,
+    );
+    $form['grupo_nid']=array(
+        '#type'=>'hidden',
+        '#value'=>$grupo_nid,
+    );
+    $form['reasons']=array(
+        '#type'=>'textarea',
+        '#title'=>t('Reasons'),    
+    );
+    $form['denied_btn']=array(
+        '#type'=>'submit',
+        '#name'=>'denied_btn',
+        '#value'=>t('Denied'),
+    );
+    $form['cancel_btn']=array(
+        '#value'=>l('Cancel','vigilancia/validados'),
+    );
+    return $form;
+}
+function crear_usuario_denegar_grupo_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']['#name']) && $form_state['clicked_button']['#name']=='denied_btn'){
+        $message='Hola '.$form_state['values']['user_name'].',<BR>';
+        $message.='Tu solicitud de alta en el grupo '.$form_state['values']['grupo_title'].' ha sido denegada. Las razones son las siguientes:<BR><BR>';
+        $message.=nl2br($form_state['values']['reasons']);
+        $my_user=user_load($form_state['values']['uid']);
+        $mail_to=$my_user->mail;
+        $subject=t('Request denied');
+        //intelsat-2016
+        red_copiar_send_mail($mail_to,$subject,$message,'mimemail','');
+        drupal_set_message(t('Email has been sent'));
+    }
+}
+function crear_usuario_set_user_mail_text_variables($variables){
+    global $base_url;
+    $my_lang='/es';
+    $result=$variables;
+    if(isset($result['!edit_uri']) && !empty($result['!edit_uri'])){
+        $pos=strpos($result['!edit_uri'],'/user/');
+        if($pos===FALSE){
+            return $result;
+        }else{
+            $s=substr($result['!edit_uri'],$pos);
+            $result['!edit_uri']=$base_url.$my_lang.$s;
+        }
+    }
+    if(red_is_subdominio_red_alerta()){
+        $result['!site']='Red Alerta';
+    }else{
+        $result['!site']='Hontza Network';
+    }
+    return $result;
+}
+function crear_usuario_get_grupo_propietario($grupo){
+    return red_crear_usuario_get_grupo_propietario($grupo);
+}
+function crear_usuario_get_detalles_cuenta_red_alerta_text($variables_in, $langcode){
+    $html=array();
+    $variables=$variables_in;
+    $hontza_network=crear_usuario_get_hontza_network_label();
+    $variables['!site']=$hontza_network;    
+    $html[]="Estimado/a ".$variables['!username'].",\n";
+    $html[]="Gracias por registrarse en ".$variables['!site']." Ahora puede iniciar una sesión en ".$variables['!login_url']." usando el siguiente nombre de usuario y contraseña:\n"; 
+    $html[]="\tNombre de usuario: ".$variables['!username'];
+    $html[]="\tContraseña: ".$variables['!password']."\n"; 
+    $html[]="También puede ingresar haciendo clic en este enlace o copiandolo y pegándolo en el navegador: ".$variables['!login_url']."\n";
+    $html[]="Esta URL sólo es válida para ingresar una vez, por lo que sólo podrá utilizarla en una ocasión. Después de iniciar sesión, será redirigido a ".$variables['!edit_url'].", donde podrá editar su perfil,  cambiar su contraseña y postular a los grupos colaborativos de su interés.\n"; 
+    $html[]="Gracias por sumarse a ".$hontza_network.".\n"; 
+    $html[]="Atentamente,"; 
+    $html[]="El Equipo de ".$hontza_network.".";
+    return implode("\n",$html);        
+}
+function crear_usuario_get_recuperacion_clave_cuenta_red_alerta_text($variables_in, $langcode){
+    $html=array();    
+    $hontza_network=crear_usuario_get_hontza_network_label();
+    $variables=$variables_in;
+    $variables['!site']=$hontza_network;
+    $html[]="Estimado/a ".$variables['!username'].",\n";
+    $html[]="Hemos recibido en ".$variables['!site']." una solicitud para restablecer la contraseña de su cuenta.\n"; 
+    $html[]="Para conectarse en ".$variables['!url_brief']." haga clic en este enlace o copielo y peguelo en su navegador: ".$variables['!login_url']."\n";
+    $html[]="Esta URL sólo es válida para ingresar una vez, por lo que sólo podrá utilizarla en una ocasión. Expira en 24 horas y no ocurrirá nada si no la utiliza.\n"; 
+    $html[]="Después de conectarse, será redirigido a ".$variables['!edit_url'].", donde podrá cambiar su contraseña.\n";
+    $html[]="Atentamente,"; 
+    $html[]="El Equipo de ".$hontza_network.".";
+    return implode("\n",$html);
+}
+function crear_usuario_get_hontza_network_label(){
+    return red_crear_usuario_get_hontza_network_label();
+}
+function crear_usuario_apuntarse_grupo_publico_automatico($grupo,$user){
+    if(estrategia_is_grupo_publico($grupo)){
+        if(!in_user_groups($grupo->nid,$user)){
+            my_insert_user_grupo($user->uid,$grupo->nid);
+        }
+    }
+}
+function crear_usuario_on_user_profile_form_submit_goto_empresa($category,$account){
+    if(!($account->uid==1 && is_super_admin())){
+        if($category=='account'){
+            drupal_goto('user/'.$account->uid.'/edit/Empresa');
+        }        
+    }
+}
+function crear_usuario_profile_save_profile($my_user){    
+    $category = 'Preguntas Red Alerta';
+    $account = new stdClass();
+    $account->uid = $my_user->uid;
+    $edit = array(
+      'profile_why_become_member' => $my_user->profile_why_become_member,
+      'profile_what_contribute' => $my_user->profile_what_contribute,
+    );
+    //profile_save_profile($edit, $account, $category);
+    user_save($my_user,$edit);
+}
+function crear_usuario_is_in_group($user_in=''){
+    global $user;
+    if(isset($user_in->uid) && !empty($user_in->uid)){
+        $my_user=$user_in;
+    }else{
+        $my_user=$user;
+    }
+    if(isset($my_user->og_groups) && !empty($my_user->og_groups)){
+        $grupo_nid_array=array_keys($my_user->og_groups);
+        if(!empty($grupo_nid_array)){
+            return 1;
+        }
+    }
+    return 0;
+}    

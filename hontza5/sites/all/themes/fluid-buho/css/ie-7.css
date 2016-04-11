@@ -1,0 +1,51 @@
+/* @group Layout */
+.right #sidebar-right {
+  width: 24.5%;
+}
+/* @end */
+
+/* @group Footer */
+.bottom .fr {
+  width: 2.45%;
+}
+/* @end */
+
+/* @group Navigatin */
+#navigation {
+  width: 100%;
+  text-align: center;
+}
+#navigation .wrap-center {
+ display: inline-block;
+}
+#navigation ul.menu a {
+  float: left;
+  display: block;
+}
+/* @end */
+
+.node-teaser {
+  padding-bottom: 2em;
+}
+/* @group Comment Layout */
+.comment .links li {
+  display: inline;
+}
+/* @end */
+
+/* @group Forum Layout */
+.forum-post .links li {
+  display: inline;
+}
+/* @end */
+/* @group Forum Nodes */
+.forum-wrapper-right {
+  width: 76.8%;
+}
+.with-picture {
+  padding-bottom: 150px;
+}
+.without-picture {
+  padding-bottom: 95px;
+}
+/* @end */

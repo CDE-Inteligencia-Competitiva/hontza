@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Install/uninstall file for Facebook Share module
+ */
+
+/**
+ * Implements hook_install()
+ */
+function facebookshare_install() {
+	variable_set('facebookshare_size', 'box_count');
+}
+
+/**
+ * Implements hook_uninstall()
+ */
+function facebookshare_uninstall() {
+	variable_del('facebookshare_types', '');
+	variable_del('facebookshare_location', '');
+	variable_del('facebookshare_size', '');
+	variable_del('facebookshare_text');
+}

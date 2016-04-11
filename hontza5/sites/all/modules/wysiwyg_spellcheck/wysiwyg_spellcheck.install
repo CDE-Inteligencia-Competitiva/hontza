@@ -1,0 +1,123 @@
+<?php
+
+/**
+ * @file
+ * WYSIWYG Spellcheck module install file.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function wysiwyg_spellcheck_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'wysiwyg_spellcheck_%'");
+}
+
+
+function _wysiwyg_spellcheck_requirements_tinymce($phase) {
+  $requirements = array();
+  $t = get_t();
+  $name = $t('Wysiwyg TinyMCE spellchecker');
+  $plugin = $t('TinyMCE spellchecker plugin');
+
+  module_load_include('module', 'wysiwyg_spellcheck');
+
+  $plugin_site = 'http://tinymce.moxiecode.com/download.php';
+  $path = _wysiwyg_spellcheck_path('tinymce');
+  if (!file_exists($path)) {
+    $requirements = array(
+      'title' => $name,
+      'description' => $t('In order for the %name to work, the %plugin should be downloaded and put in %path directory', array('%name' => $name, '%plugin' => $plugin, '!settings' => l('settings', 'admin/settings/wysiwyg/spellcheck'), '%path' => $path)),
+      'severity' => ($phase == 'install') ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+      'value' => $t('Third party !plugin_link software missing', array('!plugin_link' => l($plugin, $plugin_site))),
+    );
+  }
+  elseif (!file_exists("$path/editor_plugin.js") || !file_exists("$path/config.php")) {
+    $requirements = array(
+      'title' => $name,
+      'description' => $t('The <code>%path</code> path exists but it appears that the directory structure underneath is incorrect. Please check that <code>%plugin_file</code> and <code>%config</code> exist.',
+        array(
+          '%name' => $name,
+          '%plugin' => $plugin,
+          '%path' => $path,
+          '%plugin_file' => "$path/editor_plugin.js",
+          '%config' => "$path/config.php",
+        )),
+      'severity' => $phase == 'install' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+      'value' => $t('Third party !plugin_link not properly installed', array('!plugin_link' => l($plugin, $plugin_site))),
+    );
+  }
+  elseif ($phase == 'runtime') {
+    $requirements = array(
+      'title' => $name,
+      'severity' => REQUIREMENT_OK,
+      'value' => $t('Installed correctly'),
+    );
+  }
+
+  return $requirements;
+}
+
+function _wysiwyg_spellcheck_requirements_ckeditor($phase) {
+  $requirements = array();
+  $t = get_t();
+  $name = $t('Wysiwyg CKEditor spellchecker');
+  $plugin = $t('CKEditor spellchecker plugin');
+
+  module_load_include('module', 'wysiwyg_spellcheck');
+
+  $plugin_site = 'http://cksource.com/forums/viewtopic.php?p=40830#p40830';
+  $path = _wysiwyg_spellcheck_path('ckeditor');
+  if (!file_exists($path)) {
+    $requirements = array(
+      'title' => $name,
+      'description' => $t('In order for the %name to work, the %plugin should be downloaded and put in %path directory', array('%name' => $name, '%plugin' => $plugin, '!settings' => l('settings', 'admin/settings/wysiwyg/spellcheck'), '%path' => $path)),
+      'severity' => ($phase == 'install') ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+      'value' => $t('Third party !plugin_link software missing', array('!plugin_link' => l($plugin, $plugin_site))),
+    );
+  }
+  elseif (!file_exists("$path/plugin.js") || !file_exists("$path/spellerpages/server-scripts/spellchecker.php")) {
+    $requirements = array(
+      'title' => $name,
+      'description' => $t('The <code>%path</code> path exists but it appears that the directory structure underneath is incorrect. Please check that <code>%plugin_file</code> and <code>%php</code> exist.',
+        array(
+          '%name' => $name,
+          '%plugin' => $plugin,
+          '%path' => $path,
+          '%plugin_file' => "$path/plugin.js",
+          '%php' => "$path/spellerpages/server-scripts/spellchecker.php",
+        )),
+      'severity' => $phase == 'install' ? REQUIREMENT_WARNING : REQUIREMENT_ERROR,
+      'value' => $t('Third party !plugin_link not properly installed', array('!plugin_link' => l($plugin, $plugin_site))),
+    );
+  }
+  elseif ($phase == 'runtime') {
+    $requirements = array(
+      'title' => $name,
+      'severity' => REQUIREMENT_OK,
+      'value' => $t('Installed correctly'),
+    );
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function wysiwyg_spellcheck_requirements($phase) {
+  $requirements = array();
+
+  switch ($phase) {
+    case 'runtime':
+      if (function_exists('wysiwyg_get_editor')) {
+        if (wysiwyg_get_editor('tinymce')) {
+          $requirements['tinymce_spellchecker'] = _wysiwyg_spellcheck_requirements_tinymce($phase);
+        }
+        if (wysiwyg_get_editor('ckeditor')) {
+          $requirements['ckeditor_spellchecker'] = _wysiwyg_spellcheck_requirements_ckeditor($phase);
+        }
+      }
+      break;
+  }
+  return $requirements;
+}

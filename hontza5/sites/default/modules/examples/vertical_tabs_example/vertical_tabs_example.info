@@ -1,0 +1,12 @@
+name = Vertical Tabs example
+description = Demonstrates how to integrate Vertical Tabs.
+core = 6.x
+package = Example modules
+dependencies[] = vertical_tabs
+
+; Information added by drupal.org packaging script on 2011-10-01
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "examples"
+datestamp = "1317427974"
+
