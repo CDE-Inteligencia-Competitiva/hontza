@@ -25,7 +25,14 @@ function red_exportar_rss_usuario_get_sites_filename($uid,$grupo_nid_in=''){
      }else{
         $grupo_nid=$grupo_nid_in; 
      }
-     $sites_filename='sites/'.strtolower(_SAREKO_ID).'.hontza.es/files/'.'uid_'.$grupo_nid.'_'.$uid.'.xml';
+     //intelsat-2016
+     $my_path='sites/'.strtolower(_SAREKO_ID).'.hontza.es/files';
+     $file_directory_path=variable_get('file_directory_path','');
+     if($file_directory_path=='sites/default/files'){
+         $my_path='sites/default/files';
+     }
+     //print $my_path;exit();
+     $sites_filename=$my_path.'/'.'uid_'.$grupo_nid.'_'.$uid.'.xml';
      return $sites_filename;
 }
 function red_exportar_rss_usuario_create($uid,$grupo_nid=''){
@@ -117,7 +124,8 @@ function red_exportar_rss_usuario_create($uid,$grupo_nid=''){
     $file = fopen($sites_filename,"w");
     
     if(!$file){
-        print 'No se puede abrir el fichero';exit();
+        //print 'No se puede abrir el fichero';exit();
+        return 0;
     }
     
     fputs($file,$rssfeed);

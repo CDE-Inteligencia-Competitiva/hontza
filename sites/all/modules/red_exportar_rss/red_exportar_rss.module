@@ -218,7 +218,9 @@ function red_exportar_rss_canal_get_sites_filename($canal_nid){
      if(defined('_RED_EXPORTAR_RSS_PREFIJO_SITES')){
         $sareko_id=_RED_EXPORTAR_RSS_PREFIJO_SITES; 
      }
-     if($sareko_id=='default'){
+     //intelsat-2016
+     $file_directory_path=variable_get('file_directory_path','');
+     if($sareko_id=='default' || $file_directory_path=='sites/default/files'){
         $sites_filename='sites/default/files/'.$rss_name.'.xml'; 
      }else{
         $sites_filename='sites/'.$sareko_id.'.hontza.es/files/'.$rss_name.'.xml';
