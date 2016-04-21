@@ -1992,6 +1992,8 @@ function hontza_canal_rss_fivestar_static($content_type, $content_id, $tag = 'vo
 //intelsat-2016
 function hontza_canal_rss_get_base_path_help_popup(){
     global $base_path;
+    //instalador
+    return $base_path;
     if($base_path=='/hontza5/'){
         return $base_path;
     }
