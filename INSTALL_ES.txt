@@ -1,0 +1,288 @@
+INDATALCION MEDIANTE INSTALADOR DE HONTZA.
+
+
+
+INSTALACIÓN MANUAL DE HONTZA
+
+La instalación de la aplicación Hontza dispone de dos apartados:
+
+A- Instalación de la aplicación LAMP. Este es el componente principal de la aplicación. Básicamente es una aplicación desarrollada en PHP que trabaja sobre Apache y MySQL que emplea el  gestor de contenidos Drupal con  de una serie de módulos desarrollados para la gestión de la vigilancia competitiva. 
+
+B- Instalación de SOLR.  Solr es un motor de búsqueda de código abierto basado en Java y en el proyecto Lucene. El empleo de SOLR  permite indexar todos los contenidos recopilados en Hontza y facilitar diferentes búsquedas y representaciones de datos en la plataforma.
+
+
+
+
+
+A.- INSTALACIÓN DE LA APLICACIÓN LAMP.
+
+A continuación se detallan los pasos de instalación de la aplicación Hontza con paquetes deb en una distribución de la familia Debian. La aplicación Hontza es una aplicación LAMP por lo que su instalación en un sistema Linux es simple.
+
+1.- Descargar la última versión de la aplicación Hontza de esta dirección:
+
+wget -O hontza5.zip https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/master.zip
+
+Despues de desacargar la aplicación descomprimirla con:
+
+unzip hontza5.zip
+
+
+
+Debe crear una carpeta de nombre "hontza-master" donde encontrará el código de la aplicación y el contenido de al base de datos a importar.
+
+
+2. -Instalación de las dependencias. Hay que instalar los siguientes paquetes:
+apache2
+php-mysql
+apache2.2-common
+libapache2-mod-php5
+mysql-server
+mysql-client
+php5-mysql
+php5-curl
+php5-mcrypt
+php-pear
+php-xml-dtd
+php-xml-htmlsax3
+php-xml-parser
+php-xml-rpc
+php-xml-rpc2
+php-xml-rss
+php-xml-serializer
+phpmyadmin (no es necesario, pero suele ser útil)
+
+
+3.- Copiar el código php.
+
+Copie el contenido de la carpeta "hontza-master" a una carpeta que sea accesible por el servidor web. Por ejemplo, si la raiz del servidor web es "/var/www/html", copie el contenido de hontza-master a una carpeta de nombre hontza5 cuyo path es /var/www/html/hontza5.
+
+
+4.- Crear una base de batos en MySQL e importar el contenido del fichero "hontza-master/db/hontza_blanco.sql.sql".
+
+La forma más fácil de realizar la importación es mediante una consola:
+Suponiendo: 
+$DB_HONTZA=nombre de la base de datos pata Hontza
+$USUARIO_DB=usuario de mysql con acceso a la base de datos de Hontza.
+
+Se crea la base de datos de HONTZA.
+mysql -h localhost -u root -p CREATE DATABASE $DB_HONTZA
+
+Se realiza la importación es mediante una consola:
+mysql -h localhost -u $USUARIO_DB -p --default-character-set=utf8 $DB_HONTZA <hontza-master/db/hontza_blanco.sql
+
+
+
+5.- Para dar acceso a Drupal a la base de datos, tomando como base la ruta del código de Hontza, hay que localizar un fichero 
+/sites/default/settings.php. 
+
+Dentro de este fichero se debe encontrar una línea como la siguiente:
+$db_url = 'mysql://username:password@localhost/databasename';
+
+Hay que cambiar el usuario, la contraseña y la base de datos de Hontza.
+
+
+6- Permisos a ficheros. La ruta 
+./sites/default/files 
+necesita permisos de lectura y escritura para Apache.
+chmod -R 777 ./sites/default/files
+o bien, de otro modo:
+chown -R www-data:www-data ./sites/default/files
+
+
+
+7 Configuración de Apache para Hontza.
+El modulo "rewrite" sirve para que Hontza tenga las direcciones URL limpias y sean más 
+fáciles de recordar. Si entra en conflicto con algún otro desarrollo en marcha en el servidor, se puede desactivar.
+Hay que asegurar que el módulo rewrite esté activado. Ejecutar 
+sudo a2enmod rewrite
+
+
+En la configuración del servidor virtual de apache, si el servidor es Ubuntu y sólo está disponible el servidor virtual por defecto, hay que editar el fichero:
+
+/etc/apache2/sites-available/default
+
+Si está configurado este parámetro: 
+AllowOverride None
+
+Hay que cambiarlo a: 
+AllowOverride All
+
+Hay que guardarlo y reiniciar el servidor apache: 
+service apache2 restart
+
+
+
+8- Ajustes finales de PHP.
+
+Hontza realiza varias tareas como descargar fuentes RSS, por lo que necesita más memoria y tiempo de ejecución de lo normal. Editar el fichero /etc/php5/apache2/php.ini y ajustar los siguientes valores.   
+
+memory_limit =2048
+post_max_size=10M
+upload_max_filesize=10M
+max_execution_time=600
+
+
+9- Desde un navegador accediendo a la dirección
+http://xxx.xxx.xxx.xxx/hontza5/index.php
+o la ruta en la que se ha copiado el código de Hontza debe aparecer la página de registro de Hontza.
+Por defecto, el usuario de Hontza es: "admin" y la contraseña "hontza".
+
+
+
+10- Añadir una tarea de CRON
+Hontza debe actualizar los canales cada cierto tiempo. Para ello hay que añadir una tarea al cron del equipo:
+0 * * * * wget -O /dev/null http://localhost/hontza5/cron.php &> /dev/null
+
+
+
+
+
+B- INSTALACION DE SOLR
+
+
+
+
+
+1- Instalar Java.
+
+apt-get -f install openjdk-7-jdk
+
+
+
+2- Descargar en Instalar Tomcat.
+
+-Crear usuario de tomcat.
+useradd -Mb /usr/local/ tomcat
+
+-Descargar tomcat ( Cuidado! puede que la dirección haya cambiado)
+wget http://apache.rediris.es/tomcat/tomcat-7/v7.0.63/bin/apache-tomcat-7.0.69.tar.gz
+
+tar -C /usr/local -zxf apache-tomcat-7.0.69.tar.gz
+mv /usr/local/apache-tomcat-7.0.69 /usr/local/tomcat
+
+-Cambiar el puerto por defecto de Tomcat, para no estorbar a otros servicios. 
+
+sed -i s/8080/8983/g /usr/local/tomcat/conf/server.xml
+
+chown -R tomcat:tomcat /usr/local/tomcat
+
+
+
+-Comprobar que tomcat se inicia con el usuario "tomcat"
+su -u tomcat /usr/local/tomcat/bin/startup.sh
+
+
+
+3- Descargar e instalar SOLR
+
+-Descargar y descomprimir SOLR (Cuidado! La dirección de solr puede haber cambiado )
+wget http://archive.apache.org/dist/lucene/solr/4.3.0/solr-4.3.0.tgz
+tar -zxf solr-4.3.0.tgz
+
+
+-Copiar SOLR a Tomcat
+cp solr-4.3.0/dist/solrj-lib/* /usr/local/tomcat/lib/
+cp solr-4.3.0/example/resources/log4j.properties /usr/local/tomcat/conf/
+cp solr-4.3.0/dist/solr-4.3.0.war /usr/local/tomcat/webapps/solr.war
+
+
+
+- Copiar el fichero de contexto de SOLR. 
+
+Crear el fichero "/usr/local/tomcat/conf/Catalina/localhost/solr.xml" y copiar el siguiente contenido en él:
+
+<Context docBase="/usr/local/tomcat/webapps/solr.war" debug="0" crossContext="true">
+  <Environment name="solr/home" type="java.lang.String" value="/usr/local/tomcat/solr" override="true" />
+</Context>
+
+
+-Añada el repositorio de índices de HONTZA a SOLR
+
+mkdir -p /usr/local/tomcat/solr
+cp -r solr-4.3.0/example/solr/collection1/conf /usr/local/tomcat/solr/
+
+
+-Instalación del módulo SOLR de Drupal
+
+wget http://ftp.drupal.org/files/projects/apachesolr-6.x-1.8.tar.gz
+tar -zxf apachesolr-6.x-1.8.tar.gz
+
+
+-Copiar los ficheros de configuración del módulo a SOLR
+rsync -av apachesolr/solr-conf/solr-4.x/  /usr/local/tomcat/solr/conf/
+
+-Copiar los ficehros XML de configuración, desde la carpeta de Hontza, descargada desde Github.
+cp hontza-master/db/solrconfig.xml /usr/local/tomcat/solr/conf/
+cp hontza-master/db/schema.xml /usr/local/tomcat/solr/conf/
+
+
+-Debe crear el fichero "/usr/local/tomcat/solr/solr.xml" con el siguiente contenido
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<solr persistent="false">
+  <cores adminPath="/admin/cores">
+    <core name="ins" instanceDir="ins" />
+  </cores>
+</solr>
+
+
+mkdir /usr/local/tomcat/solr/hontza
+cp -r /usr/local/tomcat/solr/conf /usr/local/tomcat/hontza/ins/
+
+-Debe activar la validación de usuarios en Tomcat. Para ello añada el siguente contenido en el fichero: /usr/local/tomcat/webapps/solr/WEB-INF/web.xml
+
+
+'<security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Restrict access to Solr admin</web-resource-name>
+      <url-pattern>/</url-pattern>
+      <http-method>GET</http-method>
+      <http-method>POST</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>manager-gui</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>wwww?</realm-name>
+  </login-config>
+'
+-!ojo, añada este contenido entre las etiquetas de <web-app> y </web-app>
+
+-Añada información del usuario y contraseña en el fichero: /usr/local/tomcat/conf/tomcat-users.xml
+
+<role rolename="manager-gui"/>
+<user username="hontza" password="'contraseña del seleccionada'" roles="manager-gui"/>
+
+!ojo añada esta información entre las etiquetas de <tomcat-users> y </tomcat-users>
+
+
+-Reiniciar Tomcat
+
+/usr/local/tomcat/bin/shutdown.sh	
+chown -R tomcat:tomcat /usr/local/tomcat
+sudo -u tomcat /usr/local/tomcat/bin/startup.sh
+
+
+-Encontrará la Interfaz de administración de SOLR en la siguiente dirección:
+
+ http://localhost:8983/solr
+ 
+ Conpruebe que el usuario y contraseña selecionado en Tomcat es valido, y que el servidor SOLR funciona correctamente.
+ 
+
+ 
+ -Por último, puede acceder a la plataforma Hontza en la dirección. 
+ 
+http://localhost/hontza5
+
+Nombre de usuario por defecto:admin
+Contraseña por defecto: hontza
+
+
+- Despuesde relenar el perfil del usuario admin, en la barra de menu superior siguiendo las opciones de "Config. sitio web" -> "Búsqueda de Apache Solr" -> configuración ( url= http://localhost/hontza5/admin/settings/apachesolr/settings ). Debe editar la configuración para añadir el usuario y contraseña creados en Tomcat.
+
+
+- HONTZA YA ES TOTALMENTE FUNCCIONAL EN SU SERVIDOR!
