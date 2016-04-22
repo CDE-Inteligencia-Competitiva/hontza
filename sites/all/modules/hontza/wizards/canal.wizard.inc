@@ -4,6 +4,9 @@
  * Llamada para crear el formulario multistep
  */
 function canal_wizard() {
+  //intelsat-2016
+  drupal_access_denied();
+  exit();
   //intesal-2015
   hontza_solr_search_is_usuario_lector_access_denied();  
   //  
