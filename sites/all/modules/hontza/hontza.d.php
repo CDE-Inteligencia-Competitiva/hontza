@@ -1236,10 +1236,12 @@ function hontza_get_block_content_anadir_canal(){
         return '';
     }
 	$result=array();
+        //intelsat-2016
+        /*
         //intelsat-2015
         if(!hontza_canal_rss_is_visualizador_activado()){
             $result[]=l(t('From a Source'), 'crear/canal-supercanal');
-        }
+        }*/
 	//$result[]=l(t('RSS Filter'), 'crear/canal-yql');
 	$result[]=l(t('RSS Filter'), 'crear/canal-yql',array('query'=>array('simple'=>0)));
 	$result[]=l(t('Import RSS'), 'crear/canal-yql',array('query'=>array('simple'=>1)));
@@ -1262,7 +1264,7 @@ function hontza_get_block_content_anadir_canal(){
             //intelsat-2016
             if(hontza_canal_json_is_activado()){
                 $result[]=l(t('Import Json'), 'canal_json/crear');
-                //$result[]=l(t('Import Csv'), 'canal_json/crear_csv');
+                $result[]=l(t('Import Csv'), 'canal_json/crear_csv');
             }
             if(hound_settings_access()){
                 //$result[]=l(t('Hound settings'), 'hound/settings',array('query'=>drupal_get_destination()));
