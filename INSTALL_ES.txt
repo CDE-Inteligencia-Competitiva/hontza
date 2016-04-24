@@ -13,11 +13,14 @@ A continuación se detallan los pasos de instalación de la aplicación Hontza c
 
 1.- Descargar la última versión de la aplicación Hontza de esta dirección:
 wget -O hontza5.zip https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/master.zip
+o una versión en concreto:
+wget -O hontza5.zip https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/[version].zip
+
 
 Despues de descargar la aplicación descomprimirla con:
 unzip hontza5.zip
 
-Debe crear una carpeta de nombre "hontza-master" donde encontrará el código de la aplicación y el contenido de la base de datos a importar.
+Debe crear una carpeta de nombre "hontza-[version]" donde encontrará el código de la aplicación y el contenido de la base de datos a importar.
 
 
 2.- Instalación de las dependencias. Hay que instalar los siguientes paquetes:
@@ -42,10 +45,10 @@ phpmyadmin (no es necesario, pero suele ser útil)
 
 
 3.- Copiar el código php.
-Copie el contenido de la carpeta "hontza-master" a una carpeta que sea accesible por el servidor web. Por ejemplo, si la raiz del servidor web es "/var/www/html", copie el contenido de hontza-master a una carpeta de nombre hontza5 cuyo path sea /var/www/html/hontza5.
+Copie el contenido de la carpeta "hontza-[version]" a una carpeta que sea accesible por el servidor web. Por ejemplo, si la raiz del servidor web es "/var/www/html", copie el contenido de hontza-[version] a una carpeta de nombre hontza5 cuyo path sea /var/www/html/hontza5.
 
 
-4.- Crear una base de batos en MySQL e importar el contenido del fichero "hontza-master/db/hontza_blanco.sql.sql".
+4.- Crear una base de batos en MySQL e importar el contenido del fichero "hontza-[version]/db/hontza_blanco.sql.sql".
 La forma más fácil de realizar la importación es mediante una consola:
 Suponiendo: 
 $DB_HONTZA=nombre de la base de datos para Hontza
@@ -55,7 +58,7 @@ Se crea la base de datos de HONTZA.
 mysql -h localhost -u root -p CREATE DATABASE $DB_HONTZA
 
 Se realiza la importación es mediante una consola:
-mysql -h localhost -u $USUARIO_DB -p --default-character-set=utf8 $DB_HONTZA <hontza-master/db/hontza_blanco.sql
+mysql -h localhost -u $USUARIO_DB -p --default-character-set=utf8 $DB_HONTZA <hontza-[version]/db/hontza_blanco.sql
 
 
 5.- Para dar acceso a Drupal a la base de datos, tomando como base la ruta del código de Hontza, hay que localizar un fichero 
@@ -169,8 +172,8 @@ tar -zxf apachesolr-6.x-1.8.tar.gz
 rsync -av apachesolr/solr-conf/solr-4.x/  /usr/local/tomcat/solr/conf/
 
 -Copiar los ficehros XML de configuración, desde la carpeta de Hontza, descargada desde Github.
-cp hontza-master/db/solrconfig.xml /usr/local/tomcat/solr/conf/
-cp hontza-master/db/schema.xml /usr/local/tomcat/solr/conf/
+cp hontza-[version]/db/solrconfig.xml /usr/local/tomcat/solr/conf/
+cp hontza-[version]/db/schema.xml /usr/local/tomcat/solr/conf/
 
 -Crear el fichero "/usr/local/tomcat/solr/solr.xml" con el siguiente contenido
 <?xml version="1.0" encoding="UTF-8" ?>
