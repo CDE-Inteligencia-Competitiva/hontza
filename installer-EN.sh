@@ -1,19 +1,27 @@
 #!/bin/bash
-
-
 download(){
+    if [ -z "${GVERSION}" ]; then
+        GVERSION='master'
+        wget "${LAST}"  -O ./last &> /dev/null
+        if [ ${?} -ne 0 ]; then
+         echo "\n ERROR searching last stable version."
+        fi
+        GVERSION="$(cat ./last | xargs )"
+    fi
+    
     if [ -f ./hontza.zip ];then
         rm ./hontza.zip
     fi
-    if [ -d "hontza-master" ]; then
-        rm -r hontza-master
+    if [ -d "hontza-source" ]; then
+        rm -r hontza-source
     fi
     
     echo "..*Download source from Github"
     
-    wget "${REPO}"  -O "${WORKFOLDER}"/hontza.zip &> /dev/null
+    wget "${REPO}/${GVERSION}.zip"  -O "${WORKFOLDER}"/hontza.zip &> /dev/null
     if [ ${?} -ne 0 ]; then
      echo "\n ERROR downloading Hontza from server."
+     echo "No valid url: ${REPO}/${GVERSION}.zip"
      exit 1
     fi
     
@@ -24,18 +32,60 @@ download(){
      exit 1
     fi
     
-
+    if [ ! -d "./hontza-${GVERSION}" ]; then
+        echo "Error. Unexpected files"
+        exit 1
+    fi
+    mv "./hontza-${GVERSION}/src" './hontza-source'
+    
 }
 
 install_packages(){
 
-    apt-get -y -f install unzip zip apache2 php-gettext php5-mcrypt php-crypt-blowfish php5-mysql libapache2-mod-php5 mysql-server mysql-client php5-mysql php5-curl php5-mcrypt php-pear php-xml-dtd php-xml-htmlsax3 php-xml-parser php-xml-rpc php-xml-rpc2 php-xml-rss php-xml-serializer php5-cli php5-common php5-gd php5-imap php5-json php5-memcache  php5-memcached php5-readline php5-xmlrpc php5-xsl
+    if [ -n "$(which apt-get 2>/dev/null)" ]; then 
+        apt-get update
+        apt-get -y -f install unzip zip apache2 php-gettext php5-mcrypt php-crypt-blowfish php5-mysql libapache2-mod-php5 mysql-server mysql-client php5-mysql php5-curl php5-mcrypt php-pear php-xml-dtd php-xml-htmlsax3 php-xml-parser php-xml-rpc php-xml-rpc2 php-xml-rss php-xml-serializer php5-cli php5-common php5-gd php5-imap php5-json php5-memcache  php5-memcached php5-readline php5-xmlrpc php5-xsl
+        
+        php5enmod mcrypt
     
-    php5enmod mcrypt
+    elif [ -n "$(which yum 2>/dev/null)" ]; then
+        
+        if [ -z "$(yum search 'mysql-server'|grep -v "====" |grep mysql-server)" ]; then
+            wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+            rpm -ivh mysql-community-release-el7-5.noarch.rpm
+            #yum update
+        fi
+
+        yum -y install epel-release
+        yum -y install mysql-server httpd php php-php-gettext mysql-server php-mysql install php-mcrypt php-mbstring php-gd php-xml php-mysql php-pear php-xmlrpc php-snmp php-soap curl curl-devel
+    
+        systemctl start httpd.service
+        systemctl enable httpd.service
+        systemctl start mysqld
+        service mysqld start
+        
+        if [ -n "$(ps -fe | firewalld )" ]; then
+            firewall-cmd --permanent --zone=public --add-service=http 
+            firewall-cmd --permanent --zone=public --add-service=https
+            firewall-cmd --reload
+        fi
+                
+    else
+        echo
+        echo "No se ha encontrado instalador de paquetes"
+        echo 
+        exit 1
+    fi
     
 }
-install_red_hat_packages(){
-    yum install php mysql-server php-mysql php-mbstring php-gd
+
+reboot_apache(){
+    if [ -n "$(which apache2)" ];then
+        service apache2 restart
+    elif  [ -n "$(which httpd)" ];then
+        service httpd restart
+    fi
+     
 }
 
 rootUser(){
@@ -147,24 +197,40 @@ createDBUser(){
 
 importDB(){
     #set +e
-    echo "...import::  ./hontza-master/db/hontza_blanco.sql"    
-    if [ ! -f ./hontza-master/db/hontza_blanco.sql ]; then
+    echo "...import::  ./hontza-source/db/hontza_blanco.sql"    
+    if [ ! -f ./hontza-source/db/hontza_blanco.sql ]; then
         echo "\nERROR!!.   Sql file not found."
         exit 1
     fi
-    mysql --defaults-extra-file=./${DBUSER_F} -h localhost -u ${DBUSER} ${DB} < "${WORKFOLDER}"/hontza-master/db/hontza_blanco.sql
+    mysql --defaults-extra-file=./${DBUSER_F} -h localhost -u ${DBUSER} ${DB} < "${WORKFOLDER}"/hontza-source/db/hontza_blanco.sql
     #set -e
 }
 
 addCron(){
     if [ -z "${VHN}" ] || [ -n "$(echo ${VHN} |grep '127.0' )" ]; then
-        VHN="$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')"
+        VHN=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'|head -1)
     fi
+    
     
     wget -O /dev/null http://${VHN}/${WEBFOLDER}/cron.php &> /dev/null
     if [ ${?} -ne 0 ]; then
-        echo "It seens that \"http://${VHN}/${WEBFOLDER}/cron.php\" is not a valid url. Are you sure that \"${WEBROOT}\" and \"${WEBOLDER}\" are correct paths? (Ctrl+X to exit, return to continue)"
-        read BUF
+        if [ -n "$(which getenforce)" ]; then
+            if [ "$(getenforce )" = 'Enforcing' ];then
+                echo "WARNING!!!. You have SELinux activated, and SELinux must be configure to permit Hontza."
+                echo "Now, to continue installation, I change setenforce to Permissive."
+                echo "Are you agree? ( yes/[NO]"
+                if [ "$CONTINUE" != "yes" ]
+                then
+                  echo "Abortando instalación Hontza."
+                  echo
+                  exit
+                fi
+                /usr/sbin/setenforce Permissive
+            else
+                echo "It seens that \"http://${VHN}/${WEBFOLDER}/cron.php\" is not a valid url. Are you sure that \"${WEBROOT}\" and \"${WEBOLDER}\" are correct paths? (Ctrl+X to exit, return to continue)"
+                read BUF
+            fi
+        fi
     fi
     
     CMD='0 * * * * wget -O /dev/null http://'${VHN}'/'${WEBFOLDER}'/cron.php &> /dev/null
@@ -178,10 +244,10 @@ moveFiles(){
     if [ -f ./dmy.php ];then
         ./dmy.php
     fi
-    chmod -R 777 ./hontza-master/sites/default/files
-    cat ./hontza-master/sites/default/settings.php |sed "s/db_url\['default'\].*$/db_url = 'mysql\:\/\/${DBUSER}\:${DBPWD}@localhost\/${DB}'\;/" > ./dmy.php
-    mv ./dmy.php ./hontza-master/sites/default/settings.php
-    cp -a ./hontza-master  "${WEBROOT}"/"${WEBFOLDER}"
+    chmod -R 777 ./hontza-source/sites/default/files
+    cat ./hontza-source/sites/default/settings.php |sed "s/db_url\['default'\].*$/db_url = 'mysql\:\/\/${DBUSER}\:${DBPWD}@localhost\/${DB}'\;/" > ./dmy.php
+    mv ./dmy.php ./hontza-source/sites/default/settings.php
+    cp -a ./hontza-source  "${WEBROOT}"/"${WEBFOLDER}"
     if [ ${?} -ne 0 ]; then
         echo "Error copying files to web server folder"
         echo "Hontza installation proccess Stopped"
@@ -211,10 +277,43 @@ webserver(){
         return 
     fi
             
-    echo "Enable web server rewrite module"
-    a2enmod rewrite
+    echo "Permitir el modulo rewrite del servidor web"
+    if [ -n "$(which a2enmod)" ]; then
+        a2enmod rewrite
+    fi
+    
+    LL='    <Directory '${WEBROOT}'>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    <Location /'${WEBFOLDER}'>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Order allow,deny
+        Allow from all
+    </Location>
+'
+    
         
     VMLIST=$(apachectl -t -D DUMP_VHOSTS 2>/dev/null |egrep '\(.*\:[0-9]+\)')
+    
+    if [ -z "${VMLIST}" ] && [ -f /etc/httpd/conf/httpd.conf ]; then
+        BB1=$(cat /etc/httpd/conf/httpd.conf | sed -n '/<Director/,/<\/Directory/p'|grep AllowOverride |egrep -w "All" )
+        if [ -z "$BB1" ]; then
+            echo -e "${LL}" >> /etc/httpd/conf/httpd.conf
+            reboot_apache
+            return
+        fi
+    elif [ -z "${VMLIST}" ]; then
+        echo "No se ha podido encontrar información sobre los servidores virtales de Apache"
+        echo "Asegurese de poner parámetro \"AllowOverride All\ en su servideo de Apache"
+        return 
+    fi
+    
+    
     OLDIFS=$IFS
     MAX=$(echo -e "${VMLIST}" |wc -l )
     
@@ -257,21 +356,8 @@ webserver(){
         echo "Hontza is ready to run."
         return
     fi
-    LL='    <Directory '${WEBROOT}'>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Order allow,deny
-        Allow from all
-    </Directory>
+    LL=$(echo -e "${LL}\n</VirtualHost>")
 
-    <Location /'${WEBFOLDER}'>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Order allow,deny
-        Allow from all
-    </Location>
-</VirtualHost>
-'   
     SS=$(cat ${VHF} |replace '</VirtualHost>' "${LL}" )
     
     echo
@@ -309,7 +395,7 @@ webserver(){
         return
     fi
    
-    service apache2 reload
+    apache_reboot
     
 }
 
@@ -320,7 +406,7 @@ function reboot_tomcat(){
         /usr/local/tomcat/bin/shutdown.sh
         sleep 2
         if [ $I -gt 5 ]; then
-            kill -9  $(ps -fe |grep -v grep |grep tomcat |awk '{print $2}')
+            kill -9  $(ps -fe |grep -v grep |grep tomcat |awk '{print $2}') 2>&1 > /dev/null
             sleep 2 
         fi
         if [ $I -gt 15 ]; then
@@ -352,9 +438,18 @@ function install_tomcat(){
       echo
       exit
     fi
-
-    apt-get -y -f install openjdk-7-jdk
-    #yum install java-1.7.0-openjdk
+ 
+    if [ -n "$(which apt-get 2>/dev/null)" ]; then 
+        apt-get -y -f install openjdk-7-jdk
+    elif [ -n "$(which yum 2>/dev/null)" ]; then
+        yum -y install java-1.7.0-openjdk
+    else
+        echo
+        echo "No se ha encontrado instalador de paquetes"
+        echo 
+        exit 1
+    fi
+       
     
     echo "  Download and install Tomcat"
     echo
@@ -427,8 +522,8 @@ function install_drupal_solr(){
     tar -zxf apachesolr-6.x-1.8.tar.gz
 
     rsync -av apachesolr/*  /usr/local/tomcat/solr/conf/
-    cp hontza-master/db/solrconfig.xml /usr/local/tomcat/solr/conf/
-    cp hontza-master/db/schema.xml /usr/local/tomcat/solr/conf/
+    cp hontza-source/db/solrconfig.xml /usr/local/tomcat/solr/conf/
+    cp hontza-source/db/schema.xml /usr/local/tomcat/solr/conf/
 
     printf '<?xml version="1.0" encoding="UTF-8" ?>
 <solr persistent="false">
@@ -478,14 +573,13 @@ function install_drupal_solr(){
     SS2=$(cat /usr/local/tomcat/conf/tomcat-users.xml |grep -v "username=\"hontza\" password=" | grep -v "rolename=\"manager-gui\""  |replace '</tomcat-users>' "${LL3}"  )
     echo -e "${SS2}" > /usr/local/tomcat/conf/tomcat-users.xml
     
-    echo "echo \"UPDATE apachesolr_environment SET url='http://hontza:${SOLRPASS}@localhost:8983/solr/hontza'  WHERE env_id='solr' \"  | mysql --defaults-extra-file=./${DBUSER_F} -h localhost -u ${DBUSER} ${DB}"
     echo "UPDATE apachesolr_environment SET url='http://hontza:${SOLRPASS}@localhost:8983/solr/hontza'  WHERE env_id='solr' "  | mysql --defaults-extra-file=./${DBUSER_F} -h localhost -u ${DBUSER} ${DB}
 
     reboot_tomcat
     
     clean_cache
     
-    service apache2 restart
+    reboot_apache
 
 }
 
@@ -517,7 +611,9 @@ DELETE FROM '${DB}'.variable WHERE variable.name = "red_registrar_is_registrado_
 #######################################################
 
 WORKFOLDER=/tmp/hwork
-REPO="https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/master.zip"
+REPO="https://github.com/CDE-Inteligencia-Competitiva/hontza/archive"
+LAST="http://www.hontza.es/last"
+GVERSION="${1}"
 DB='hontza'
 DBUSER='hontza'
 DBPWD='hontza'
