@@ -53,8 +53,7 @@ function gestion_canales_callback(){
     $headers[5]=array('data'=>t('Last update'),'field'=>'node_title'); 
     $headers[6]=t('Actions');				    
     
-    $my_limit=40;
-    
+    $my_limit=40;    
     $sort='asc';
     $field='node_title';
     if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
@@ -75,11 +74,18 @@ function gestion_canales_callback(){
         }
     }
     
+    //intelsat-2016
+    if(empty($order)){
+        $order=t('Last download');
+    }
+    
     $filter_fields=gestion_canales_define_filter_fields();
     
    $where=array();
    $where[]='1';
-   $where[]='node.type in ("canal_de_supercanal","canal_de_yql","canal_busqueda")';
+   //intelsat-2016
+   //$where[]='node.type in ("canal_de_supercanal","canal_de_yql","canal_busqueda")';
+   $where[]='node.type in ("canal_de_supercanal","canal_de_yql")';
    
    //intelsat-2015
    if(!is_super_admin()){
@@ -92,13 +98,18 @@ function gestion_canales_callback(){
    if(!empty($filter_fields)){
        foreach($filter_fields as $k=>$f){
            $v=gestion_canales_get_filter_value($f);
+           //intelsat-2016
+           $v=gestion_canales_get_grupo_nid_any_value($v,$f);
            if(!empty($v)){
                 switch($f){
                     case 'node_title':
                         $where[]='node.title LIKE "%'.$v.'%"';
                         break;
                     case 'grupo_nid':
-                        $where[]='grupo.nid='.$v;
+                        //intelsat-2016
+                        //$where[]='grupo.nid='.$v;
+                        $grupo_nid_array=array_keys($v);
+                        $where[]='grupo.nid IN('.implode(',',$grupo_nid_array).')';
                         break;
                     case 'hound_id':
                         $where[]='canal_hound_parametros.hound_id LIKE "%'.$v.'%"';
@@ -106,6 +117,19 @@ function gestion_canales_callback(){
                     case 'text':
                         //$where[]='(node.title LIKE "%%'.$v.'%%" OR node_revisions.body LIKE "%%'.$v.'%%")';
                         $where[]=contenidos_canales_get_text_where($v);
+                        break;
+                    //intelsat-2016
+                    case 'is_activated':
+                        $my_value=$v;
+                        $or=array();
+                        if($my_value==2){
+                            $my_value=0;
+                        }
+                        $or[]='content_field_canal_active_refresh.field_canal_active_refresh_value='.$my_value;
+                        if(empty($my_value)){
+                            $or[]='content_field_canal_active_refresh.field_canal_active_refresh_value IS NULL';
+                        }
+                        $where[]='('.implode(' OR ',$or).')';
                         break;
                     default:
                         break;
@@ -139,9 +163,12 @@ function gestion_canales_callback(){
     LEFT JOIN {node} grupo ON grupo.nid=og_ancestry.group_nid
     LEFT JOIN {canal_hound_parametros} ON node.vid=canal_hound_parametros.vid 
     LEFT JOIN {content_field_last_import_time} content_field_last_import_time ON node.vid=content_field_last_import_time.vid 
-    LEFT JOIN {feeds_source} feeds_source ON node.nid=feeds_source.feed_nid 
+    LEFT JOIN {feeds_source} feeds_source ON node.nid=feeds_source.feed_nid
+    LEFT JOIN {content_field_canal_active_refresh} ON node.vid=content_field_canal_active_refresh.vid
     WHERE '.implode(' AND ',$where).'
-    ORDER BY '.$field.' '.strtoupper($sort);    
+    GROUP BY node.nid     
+    ORDER BY '.$field.' '.strtoupper($sort);
+    //print $sql;
     $rows=array();
     $res=db_query($sql);
     $kont=0;
@@ -283,6 +310,8 @@ function gestion_canales_define_filter_fields(){
     /*$filter_fields=array('node_title','grupo_nid','hound_id');
     return $filter_fields;*/
     $result=array('grupo_nid','text','fecha_inicio','fecha_fin');
+    //intelsat-2016
+    $result[]='is_activated';
     return $result;    
 }
 function gestion_canales_define_header(){
@@ -322,8 +351,10 @@ function gestion_canales_filtro_form(){
   '#options'=>gestion_canales_define_grupo_options(),
   '#multiple'=>FALSE
 );*/
-    //intelsat-2015
-    contenidos_add_filter_form_fields('gestion_canales',$form);
+    //intelsat-2016
+    $with_grupo=1;
+    $is_grupo_multiple=1;
+    contenidos_add_filter_form_fields('gestion_canales',$form,$with_grupo,$is_grupo_multiple);
     //
     $form['file_buscar_fs']['hound_id']=
         array('#type'=>'textfield',
@@ -489,4 +520,17 @@ function gestion_canales_get_actualizar_noticias_link($canal_nid,$destination_in
         $options['html']=true;
     }
     return l(my_get_icono_action('actualizar_noticias',$title),'node/'.$canal_nid.'/import',$options);
-}    
+}
+//intelsat-2016
+function gestion_canales_get_grupo_nid_any_value($v,$f){
+    $result=$v;
+    if($f=='grupo_nid'){
+        if(!empty($v)){
+            $grupo_nid_array=array_keys($v);
+            if(in_array(0,$grupo_nid_array)){
+                return '';
+            }
+        }
+    }
+    return $result;
+}
