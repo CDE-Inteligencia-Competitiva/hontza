@@ -267,6 +267,8 @@ function hontza_grupos_mi_grupo_contact_form($form_state,$uid_in='',$destination
     //
     $account=user_load($uid);
     $form=contact_mail_user($form_state,$account);
+    //intelsat-2016
+    hontza_grupos_mi_grupo_contact_form_multiple($form,$uid);
     //intelsat-2015
     $form['destination_send_message_popup']=array(
         '#type'=>'hidden',
@@ -301,38 +303,45 @@ function hontza_grupos_mi_grupo_contact_form($form_state,$uid_in='',$destination
 }
 function hontza_grupos_mi_grupo_contact_form_submit($form, &$form_state) {
   global $user, $language;
+  //intelsat-2016
+  //$account = $form_state['values']['recipient'];
+  $account_array=hontza_grupos_mi_grupo_contact_get_account_array($form_state);
+  if(!empty($account_array)){
+      foreach($account_array as $i=>$account){
+        //intelsat-2015
+        $destination_send_message_popup=$form_state['values']['destination_send_message_popup'];
+        $destination_send_message_popup=base64_decode($destination_send_message_popup);
+        //
 
-  $account = $form_state['values']['recipient'];
-  //intelsat-2015
-  $destination_send_message_popup=$form_state['values']['destination_send_message_popup'];
-  $destination_send_message_popup=base64_decode($destination_send_message_popup);
-  //
+        // Send from the current user to the requested user.
+        $to = $account->mail;
+        $from = $user->mail;
 
-  // Send from the current user to the requested user.
-  $to = $account->mail;
-  $from = $user->mail;
+        // Save both users and all form values for email composition.
+        $values = $form_state['values'];
+        $values['account'] = $account;
+        $values['user'] = $user;
+        //intelsat-2015
+        hontza_grupos_mi_grupo_insert_users_contact($user,$account);
+        //
+        // Send the e-mail in the requested user language.
+        drupal_mail('contact', 'user_mail', $to, user_preferred_language($account), $values, $from);
 
-  // Save both users and all form values for email composition.
-  $values = $form_state['values'];
-  $values['account'] = $account;
-  $values['user'] = $user;
-  //intelsat-2015
-  hontza_grupos_mi_grupo_insert_users_contact($user,$account);
-  //
-  // Send the e-mail in the requested user language.
-  drupal_mail('contact', 'user_mail', $to, user_preferred_language($account), $values, $from);
+        // Send a copy if requested, using current page language.
+        if ($form_state['values']['copy']) {
+          drupal_mail('contact', 'user_copy', $from, $language, $values, $from);
+        }
 
-  // Send a copy if requested, using current page language.
-  if ($form_state['values']['copy']) {
-    drupal_mail('contact', 'user_copy', $from, $language, $values, $from);
+        flood_register_event('contact');
+        watchdog('mail', '%name-from sent %name-to an e-mail.', array('%name-from' => $user->name, '%name-to' => $account->name));
+        //drupal_set_message(t('The message has been sent.'));
+        //gemini-2014
+        // Back to the requested users profile page.
+        //$form_state['redirect'] = "user/$account->uid";
+      }   
   }
-
-  flood_register_event('contact');
-  watchdog('mail', '%name-from sent %name-to an e-mail.', array('%name-from' => $user->name, '%name-to' => $account->name));
+  //intelsat-2016
   drupal_set_message(t('The message has been sent.'));
-  //gemini-2014
-  // Back to the requested users profile page.
-  //$form_state['redirect'] = "user/$account->uid";
   drupal_goto($destination_send_message_popup);
 }
 function hontza_grupos_mi_grupo_usuarios_mas_contacto_callback(){
@@ -1311,5 +1320,40 @@ function hontza_grupos_mi_grupo_get_tags_fields($row){
     if(isset($grupo_node->field_grupo_regis_tags_geo[0]['value']) && !empty($grupo_node->field_grupo_regis_tags_geo[0]['value'])){
          $result['tags_geograficos']=$grupo_node->field_grupo_regis_tags_geo[0]['value'];                
     }    
+    return $result;
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_contact_form_multiple(&$form,$uid_in){
+    if($uid_in=='usuarios'){
+        $gestion_usuarios_send_message_uid_array=arg(3);
+        $gestion_usuarios_send_message_uid_array=base64_decode($gestion_usuarios_send_message_uid_array);
+        $gestion_usuarios_send_message_uid_array=unserialize($gestion_usuarios_send_message_uid_array);
+        if(!empty($gestion_usuarios_send_message_uid_array)){
+            $result=array();
+            $my_user_array=array();
+            foreach($gestion_usuarios_send_message_uid_array as $i=>$uid){
+                $my_user=user_load($uid);
+                if(isset($my_user->uid) && !empty($my_user->uid)){
+                    $result[]=$my_user->name;
+                    $my_user_array[]=$my_user;
+                }
+            }
+            $form['to']['#value']=implode(',',$result);
+            $form['recipient']['#value']=$my_user_array;
+            $form['is_multiple']=array(
+                '#type'=>'hidden',
+                '#value'=>1,
+            );
+        }
+    }
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_contact_get_account_array($form_state){
+    $result=array();
+    if(isset($form_state['values']['is_multiple']) && !empty($form_state['values']['is_multiple'])){
+        $result=$form_state['values']['recipient'];            
+    }else{
+        $result[]=$form_state['values']['recipient'];
+    }
     return $result;
 }
