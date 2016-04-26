@@ -609,7 +609,7 @@ function contenidos_is_filter_activated(){
     }
     return 0;
 }
-function contenidos_add_filter_form_fields($key,&$form,$with_grupo=1){
+function contenidos_add_filter_form_fields($key,&$form,$with_grupo=1,$is_grupo_multiple=1){
     if($with_grupo){
         $form['file_buscar_fs']['grupo_nid']=array(
             '#type'=>'select',
@@ -617,6 +617,23 @@ function contenidos_add_filter_form_fields($key,&$form,$with_grupo=1){
             '#options'=>panel_admin_items_define_filtro_grupo_options(),
             '#default_value'=>contenidos_get_filter_value('grupo_nid',$key),
         );
+        //intelsat-2016
+        if($is_grupo_multiple){
+            $form['file_buscar_fs']['grupo_nid']['#multiple']=TRUE;
+            $form['file_buscar_fs']['grupo_nid']['#attributes']=contenidos_get_grupo_multiple_attributes();
+        }
+        if(in_array($key,array('gestion_canales'))){
+            $form['file_buscar_fs']['is_activated']=array(
+                '#title'=>t('Activated'),
+                '#type'=>'select',
+                '#options'=>hontza_registrar_yes_no_options(1,1),
+                '#default_value'=>contenidos_get_filter_value('is_activated',$key),
+            );
+            $form['file_buscar_fs']['grupo_nid']['#prefix']='<div><div style="float:left">';
+            $form['file_buscar_fs']['grupo_nid']['#suffix']='</div>';
+            $form['file_buscar_fs']['is_activated']['#prefix']='<div style="float:left;padding-left:20px;">';
+            $form['file_buscar_fs']['is_activated']['#suffix']='</div></div>';            
+        }        
     }
     $fecha_inicio=contenidos_get_filter_value('fecha_inicio',$key);    
     $fecha_fin=contenidos_get_filter_value('fecha_fin',$key);
@@ -643,4 +660,10 @@ function contenidos_add_filter_form_fields($key,&$form,$with_grupo=1){
         '#title'=>t('Text'),
         '#default_value'=>hontza_get_gestion_usuarios_filter_value('text',$key),
     );
-}    
+}
+//intelsat-2016
+function contenidos_get_grupo_multiple_attributes(){
+    $result=array();
+    $result['style']='height:200px;';
+    return $result;
+}
