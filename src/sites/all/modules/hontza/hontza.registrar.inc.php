@@ -70,12 +70,16 @@ function hontza_registrar_is_sareko_id_red_desactivado(){
     }
     return 0;
 }
-function hontza_registrar_yes_no_options($with_empty=0){
+function hontza_registrar_yes_no_options($with_empty=0,$with_no_value=0){
     $result=array();
     if($with_empty){
         $result['']='';
     }
-    $result[0]=t('No');        
+    $no_value=0;
+    if($with_no_value){
+        $no_value=2;
+    }
+    $result[$no_value]=t('No');        
     $result[1]=t('Yes');
     return $result;
 }
