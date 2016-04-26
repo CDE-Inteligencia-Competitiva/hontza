@@ -1499,3 +1499,13 @@ function panel_admin_is_expertos(){
     }
     return 0;
 }
+//intelsat-2016
+function panel_admin_get_usuarios_block_content(){
+    $result=array();
+    $result[]=l(t('Create User'), 'admin/user/user/create');
+    $result[]=l(t('List of Users'), 'gestion/usuarios');
+    //$url_exportar_csv='red/crear_usuario/exportar_csv';
+    $url_exportar_csv='gestion/usuarios/descargar_usuarios';
+    $result[]=l(t('Download Users'),$url_exportar_csv,array('attributes'=>array('target'=>'_blank')));
+    return implode('<br>',$result);
+}
