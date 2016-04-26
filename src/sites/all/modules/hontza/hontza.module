@@ -1667,8 +1667,10 @@ function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
                   
         case 25:
   $block['subject'] = t('USERS');
-          $block['content'] =l(t('Create User'), 'admin/user/user/create') .'<br>'.
-                              l(t('List of Users'), 'gestion/usuarios');
+          //intelsat-2016  
+          /*$block['content'] =l(t('Create User'), 'admin/user/user/create') .'<br>'.
+                              l(t('List of Users'), 'gestion/usuarios');*/
+          $block['content']=panel_admin_get_usuarios_block_content();
         break;
 
         case 26:
