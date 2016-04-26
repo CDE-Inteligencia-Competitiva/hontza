@@ -449,29 +449,8 @@ function red_crear_usuario_get_pagina_arranque_values(&$grupo_options,&$default_
     $page_options=user_get_pagina_de_arranque_pagina_options($default_group_nid);
 }    
 function red_crear_usuario_exportar_csv_callback(){
-        $data_csv_array=array();
-        $data_csv_array[0]=array('Username','Nombre','Apellidos','Email','Empresa','Email corporativo','Pais','Fecha');
-        $users_array=hontza_solr_get_users();
-        if(!empty($users_array)){
-            foreach($users_array as $i=>$row){
-                if(isset($row->uid) && !empty($row->uid)){
-                    $my_user=user_load($row->uid);
-                    //echo print_r($my_user,1);
-                    if(isset($my_user->uid) && !empty($my_user->uid)){
-                        $data_csv[0]=$my_user->name;
-                        $data_csv[1]=$my_user->profile_nombre;
-                        $data_csv[2]=$my_user->profile_apellidos;
-                        $data_csv[3]=$my_user->mail;
-                        $data_csv[4]=$my_user->profile_empresa;
-                        $data_csv[5]=$my_user->profile_empresa_email_corporativo;
-                        $data_csv[6]=$my_user->profile_empresa_pais;                        
-                        $data_csv[7]=date('d/m/Y',$my_user->created);
-                        $data_csv_array[]=$data_csv;
-                    }    
-                }    
-            }
-        }
-        estrategia_call_download_resumen_preguntas_clave_canales_csv($data_csv_array,'usuarios',"\t");        
+    //intelsat-2016
+    red_crear_usuario_exportar_csv();        
 }
 function red_crear_usuario_is_custom_css_hontza(){
     if(defined('_IS_CUSTOM_CSS_HONTZA') && _IS_CUSTOM_CSS_HONTZA==1){
@@ -668,3 +647,40 @@ function red_crear_usuario_get_pagina_arranque_uid_arg(){
     }    
     return $uid;
 }
+//intelsat-2016
+function red_crear_usuario_gestion_usuarios_descargar_usuarios($my_user_array){    
+    $param2=arg(2);
+    if(!empty($param2) && $param2=='descargar_usuarios'){
+        red_crear_usuario_exportar_csv(1,$my_user_array);
+        exit();
+    }
+}
+function red_crear_usuario_exportar_csv($is_param=0,$users_array_in=''){
+        $data_csv_array=array();
+        $data_csv_array[0]=array('Username','Nombre','Apellidos','Email','Empresa','Email corporativo','Pais','Fecha');
+        if($is_param){
+            $users_array=$users_array_in;
+        }else{
+            $users_array=hontza_solr_get_users();
+        }
+        if(!empty($users_array)){
+            foreach($users_array as $i=>$row){
+                if(isset($row->uid) && !empty($row->uid)){
+                    $my_user=user_load($row->uid);
+                    //echo print_r($my_user,1);
+                    if(isset($my_user->uid) && !empty($my_user->uid)){
+                        $data_csv[0]=$my_user->name;
+                        $data_csv[1]=$my_user->profile_nombre;
+                        $data_csv[2]=$my_user->profile_apellidos;
+                        $data_csv[3]=$my_user->mail;
+                        $data_csv[4]=$my_user->profile_empresa;
+                        $data_csv[5]=$my_user->profile_empresa_email_corporativo;
+                        $data_csv[6]=$my_user->profile_empresa_pais;                        
+                        $data_csv[7]=date('d/m/Y',$my_user->created);
+                        $data_csv_array[]=$data_csv;
+                    }    
+                }    
+            }
+        }
+        estrategia_call_download_resumen_preguntas_clave_canales_csv($data_csv_array,'usuarios',"\t");
+}        
