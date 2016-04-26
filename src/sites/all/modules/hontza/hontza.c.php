@@ -2196,6 +2196,10 @@ function gestion_usuarios_callback(){
    if(!empty($filter_fields)){
        foreach($filter_fields as $k=>$f){
            $v=hontza_get_gestion_usuarios_filter_value($f);
+           //intelsat-2016
+           if(module_exists('gestion_canales')){
+                $v=gestion_canales_get_grupo_nid_any_value($v,$f);
+           }
            if(!empty($v)){
                 switch($f){
                     case 'users_name':
@@ -2209,6 +2213,11 @@ function gestion_usuarios_callback(){
                         break;
                     case 'profile_values_profile_empresa_value':
                         $where[]="profile_values_profile_empresa.value LIKE '%%".$v."%%'";
+                        break;
+                    //intelsat-2016
+                    case 'grupo_nid':
+                        $grupo_nid_array=array_keys($v);
+                        $where[]='og_uid.nid IN('.implode(',',$grupo_nid_array).')';
                         break;
                     default:
                         break;
@@ -2249,11 +2258,13 @@ function gestion_usuarios_callback(){
    users.mail AS users_mail,
    users.status AS users_status,
    users.created AS users_created
- FROM users users 
- LEFT JOIN profile_values profile_values_profile_nombre ON users.uid = profile_values_profile_nombre.uid AND profile_values_profile_nombre.fid = '1'
- LEFT JOIN profile_values profile_values_profile_apellidos ON users.uid = profile_values_profile_apellidos.uid AND profile_values_profile_apellidos.fid = '2'
- LEFT JOIN profile_values profile_values_profile_empresa ON users.uid = profile_values_profile_empresa.uid AND profile_values_profile_empresa.fid = '3' 
+ FROM {users} users 
+ LEFT JOIN {profile_values} profile_values_profile_nombre ON users.uid = profile_values_profile_nombre.uid AND profile_values_profile_nombre.fid = '1'
+ LEFT JOIN {profile_values} profile_values_profile_apellidos ON users.uid = profile_values_profile_apellidos.uid AND profile_values_profile_apellidos.fid = '2'
+ LEFT JOIN {profile_values} profile_values_profile_empresa ON users.uid = profile_values_profile_empresa.uid AND profile_values_profile_empresa.fid = '3' 
+ LEFT JOIN {og_uid} og_uid ON users.uid=og_uid.uid 
  WHERE ".implode(" AND ",$where)."
+   GROUP BY users.uid   
    ORDER BY ".$field." ".strtoupper($sort);
     //
     /*if(user_access('root')){
@@ -2279,10 +2290,14 @@ function gestion_usuarios_callback(){
     $kont=0;
     //intelsat-2015
     $faktore=50;
+    //intelsat-2016
+    $my_user_array=array();
     //
     while ($r = db_fetch_object($res)) {
       //intelsat-2015
-      $my_user=user_load($r->uid);  
+      $my_user=user_load($r->uid);
+      //intelsat-2016
+      $my_user_array[]=$my_user;
       $rows[$kont]=array();
       $rows[$kont][0]='<input type="checkbox" id="txek_'.$r->uid.'" name="txek_uid['.$r->uid.']" class="bulk_txek" value="1">';            
       //gemini-2014
@@ -2316,6 +2331,8 @@ function gestion_usuarios_callback(){
       
       $kont++;
     }
+    //intelsat-2016
+    red_crear_usuario_gestion_usuarios_descargar_usuarios($my_user_array);
     //
     $rows=my_set_estrategia_pager($rows, $my_limit);
 
@@ -2492,7 +2509,15 @@ function hontza_gestion_usuarios_bulk_form(){
       '#name'=>'block_post_btn',
       '#src'=>'sites/all/themes/buho/images/icons/deactive_user.png',
       '#attributes'=>array('alt'=>$title,'title'=>$title),  
-    );    
+    );
+    //intelsat-2016
+    $title=t('Send message');
+    $form['my_bulk_operations_fs']['send_message_btn']=array(
+      '#type'=>'image_button',
+      '#name'=>'send_message_btn',
+      '#src'=>'sites/all/themes/buho/images/icons/email.png',
+      '#attributes'=>array('alt'=>$title,'title'=>$title),  
+    );
     //
     my_add_noticias_publicas_select_all_js();
     $form['my_table']=array('#value'=>$vars[1][0]);
@@ -2503,8 +2528,13 @@ function hontza_gestion_usuarios_bulk_form(){
 function hontza_gestion_usuarios_bulk_form_submit($form, &$form_state) {
     $button=$form_state['clicked_button'];
     $button_name=$button['#name'];
-    if(in_array($button_name,array('block_post_btn','unblock_post_btn','modify_user_roles_btn','delete_user_btn'))){
+    //intelsat-2016
+    $button_name_array=array('block_post_btn','unblock_post_btn','modify_user_roles_btn','delete_user_btn');
+    $button_name_array[]='send_message_btn';
+    if(in_array($button_name,$button_name_array)){        
         if(isset($button['#post']['txek_uid']) && !empty($button['#post']['txek_uid'])){
+            //intelsat-2016
+            $destination='destination=gestion/usuarios';
             $uid_array=array_keys($button['#post']['txek_uid']);
             if(strcmp($button_name,'block_post_btn')==0){
                 $_SESSION['block_uid_array']=$uid_array;                
@@ -2519,6 +2549,11 @@ function hontza_gestion_usuarios_bulk_form_submit($form, &$form_state) {
             }else if(strcmp($button_name,'delete_user_btn')==0){
                 $_SESSION['gestion_usuarios_delete_uid_array']=$uid_array;
                 drupal_goto('panel_admin/delete_user_confirm');
+            //intelsat-2016
+            }else if(strcmp($button_name,'send_message_btn')==0){
+                //$_SESSION['gestion_usuarios_send_message_uid_array']=$uid_array;
+                $uid_string=base64_encode(serialize($uid_array));
+                drupal_goto('hontza_grupos/usuarios/contact/'.$uid_string,$destination);
             }
             //
         }

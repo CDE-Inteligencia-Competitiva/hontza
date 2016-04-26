@@ -551,6 +551,15 @@ function hontza_gestion_usuarios_filtro_form(){
         array('#type'=>'textfield',
         '#title'=>t('Organisation'),
         "#default_value"=>hontza_get_gestion_usuarios_filter_value('profile_values_profile_empresa_value'));
+    //intelsat-2016
+    $form['file_buscar_fs']['grupo_nid']=array(
+            '#type'=>'select',
+            '#title'=>t('Filter by group'),
+            '#options'=>panel_admin_items_define_filtro_grupo_options(),
+            '#multiple'=>TRUE,
+            '#attributes'=>contenidos_get_grupo_multiple_attributes(),
+            '#default_value'=>hontza_get_gestion_usuarios_filter_value('grupo_nid'),
+    );
     //
     $form['file_buscar_fs']['submit']=array('#type'=>'submit','#value'=>t('Search'),'#name'=>'buscar');
     $form['file_buscar_fs']['reset']=array('#type'=>'submit','#value'=>t('Clean'),'#name'=>'limpiar');
@@ -587,6 +596,8 @@ function hontza_gestion_usuarios_filtro_form_submit($form_id,&$form){
 }
 function hontza_define_gestion_usuarios_filter_fields(){
     $filter_fields=array('users_name','profile_values_profile_nombre_value','profile_values_profile_apellidos_value','profile_values_profile_empresa_value');
+    //intelsat-2016
+    $filter_fields[]='grupo_nid';
     return $filter_fields;
 }
 function hontza_is_batch(){
