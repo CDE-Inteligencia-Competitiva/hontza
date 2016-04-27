@@ -34,12 +34,15 @@ function red_servidor_validar_usuario_network_callback(){
                 }else{
                     $result['ok']='ok';
                 }
+                //echo print_r($result,1);exit();
                 if(isset($result['ok']) && !empty($result['ok']) && $result['ok']=='ok'){
                     $result=red_servidor_validar_usuario_network_array($user_local,$result,$presave_mail);
                 }
+                //echo print_r($result,1);exit();
                 if(isset($result['ok']) && !empty($result['ok']) && $result['ok']=='ok'){
                     red_servidor_validar_usuario_network_save_user_subdominios_by_presave_mail($user_local,$presave_mail);
-                }    
+                }
+                //echo print_r($result,1);exit();
             }
         }
     }
@@ -100,16 +103,35 @@ function red_servidor_validar_usuario_network_save_user_subdominios_network_arra
 function red_servidor_validar_usuario_network_save_user_subdominios($row){
     $red_servidor_validar_usuario_network_array=red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_array($row);
     if(count($red_servidor_validar_usuario_network_array)>0){
-       return 0; 
+        return 0;
     }else{
-       $created=time(); 
-       db_query('INSERT {red_servidor_validar_usuario_network}(name,mail,base_url,sareko_id,created) VALUES("%s","%s","%s","%s",%d)',$row->name,$row->mail,$row->base_url,$row->sareko_id,$created); 
-    }
+        $red_servidor_validar_usuario_network_array=red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_array($row,'',$row->name);
+         if(count($red_servidor_validar_usuario_network_array)>0){   
+            //si algo no funciona puede ser por esto
+            db_query('UPDATE {red_servidor_validar_usuario_network} SET mail="%s" WHERE name="%s"',$row->mail,$row->name); 
+            return 0; 
+         }else{
+            //si algo no funciona puede ser por esto
+            $red_servidor_validar_usuario_network_array=red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_array($row,$row->mail,'',1); 
+            if(count($red_servidor_validar_usuario_network_array)>0){
+                db_query('UPDATE {red_servidor_validar_usuario_network} SET name="%s" WHERE mail="%s"',$row->name,$row->mail);
+            }else{
+                $created=time(); 
+                db_query('INSERT {red_servidor_validar_usuario_network}(name,mail,base_url,sareko_id,created) VALUES("%s","%s","%s","%s",%d)',$row->name,$row->mail,$row->base_url,$row->sareko_id,$created); 
+            }               
+         }
+    } 
 }
-function red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_array($user_row,$mail=''){
+//si algo no funciona puede ser por esto
+//function red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_array($user_row,$mail=''){
+function red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_array($user_row,$mail='',$name='',$is_mail=0){
     $result=array();
-    if(!empty($mail)){
+    if(!empty($mail) && !$is_mail){
         $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network} WHERE name="%s" AND mail="%s"',$user_row->name,$mail));
+    }else if(!empty($mail)){
+        $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network} WHERE mail="%s"',$mail));
+    }else if(!empty($name)){
+        $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network} WHERE name="%s"',$name));
     }else{
         $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network} WHERE name="%s"',$user_row->name));
     }
@@ -230,8 +252,8 @@ function red_servidor_validar_usuario_network_array_by_mail($user_local,$result_
         foreach($user_array as $i=>$my_user){
                 if((isset($my_user->uid) && !empty($my_user->uid) || !$is_network)){
                     if(isset($user_local->uid) && !empty($user_local->uid)){    
-                        //if($my_user->name==$user_local->name || $my_user->mail==$presave_mail){
-                        if($my_user->name==$user_local->name){
+                        if($my_user->name==$user_local->name || $my_user->mail==$presave_mail){
+                        //if($my_user->name==$user_local->name){
                             //$result['ok']='ok';
                             continue;
                         }else{
@@ -336,14 +358,36 @@ function red_servidor_validar_usuario_network_registrados_callback(){
 function red_servidor_validar_usuario_network_save_user_subdominios_todos($row){
     $red_servidor_validar_usuario_network_todos_array=red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_todos_array($row);
     if(count($red_servidor_validar_usuario_network_todos_array)>0){
-       return 0; 
-    }else{
-       $created=time(); 
-       db_query('INSERT {red_servidor_validar_usuario_network_todos}(name,mail,base_url,sareko_id,created) VALUES("%s","%s","%s","%s",%d)',$row->name,$row->mail,$row->base_url,$row->sareko_id,$created); 
-    }
+        return 0;
+    }else{    
+        //si algo no funciona puede ser por esto        
+        $red_servidor_validar_usuario_network_todos_array=red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_todos_array('','',$row->name);
+        if(count($red_servidor_validar_usuario_network_todos_array)>0){
+            //si algo no funciona puede ser por esto
+            db_query('UPDATE {red_servidor_validar_usuario_network_todos} SET mail="%s" WHERE name="%s"',$row->mail,$row->name); 
+            return 0; 
+        }else{
+            //si algo no funciona puede ser por esto
+            $red_servidor_validar_usuario_network_todos_array=red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_todos_array('',$row->mail);
+            if(count($red_servidor_validar_usuario_network_todos_array)>0){
+                db_query('UPDATE {red_servidor_validar_usuario_network_todos} SET name="%s" WHERE mail="%s"',$row->name,$row->mail); 
+            }else{
+                $created=time(); 
+                db_query('INSERT {red_servidor_validar_usuario_network_todos}(name,mail,base_url,sareko_id,created) VALUES("%s","%s","%s","%s",%d)',$row->name,$row->mail,$row->base_url,$row->sareko_id,$created); 
+            }    
+        }
+    }    
 }
-function red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_todos_array($user_row){
-    $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network_todos} WHERE name="%s" AND mail="%s"',$user_row->name,$user_row->mail));
+//si algo no funciona puede ser por esto 
+//function red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_todos_array($user_row){
+function red_servidor_validar_usuario_network_get_red_servidor_validar_usuario_network_todos_array($user_row,$mail='',$name=''){
+    if(!empty($mail)){
+        $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network_todos} WHERE mail="%s"',$mail));
+    }else if(!empty($name)){
+        $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network_todos} WHERE name="%s"',$name));
+    }else{
+        $res=db_query($sql=sprintf('SELECT * FROM {red_servidor_validar_usuario_network_todos} WHERE name="%s" AND mail="%s"',$user_row->name,$user_row->mail));
+    }    
     while($row=db_fetch_object($res)){
         $result[]=$row;
     }
