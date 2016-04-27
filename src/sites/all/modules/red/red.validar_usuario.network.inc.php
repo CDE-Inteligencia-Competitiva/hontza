@@ -8,6 +8,7 @@ function red_validar_usuario_network($form_state_values){
     $postdata=array();
     $postdata['validar_usuario_network']=$user_string;
     $validar_usuario=red_validar_usuario_network_postapi($url,$postdata,$result);
+    //print $validar_usuario;exit();
     //echo print_r($result,1);exit();
     //intelsat-2016
     if($validar_usuario){
@@ -32,6 +33,7 @@ function red_validar_usuario_network_postapi($url,$postdata,&$result){
     $result=unserialize(trim($data));
     curl_close($curl);
     //echo print_r($data,1);exit();
+    //echo print_r($result,1);exit();
     if(isset($result['ok']) && !empty($result['ok']) && $result['ok']=='ok'){
         return 1;
     }    
