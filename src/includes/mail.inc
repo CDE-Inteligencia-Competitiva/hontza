@@ -106,6 +106,7 @@ function drupal_mail($module, $key, $to, $language, $params = array(), $from = N
     // SMTP server. Errors-To is redundant, but shouldn't hurt.
     $headers['From'] = $headers['Sender'] = $headers['Return-Path'] = $headers['Errors-To'] = $default_from;
   }
+  
   if ($from) {
     $headers['From'] = $from;
   }
@@ -115,7 +116,7 @@ function drupal_mail($module, $key, $to, $language, $params = array(), $from = N
   // invoking hook_mail() on this module. We cannot use module_invoke() as
   // we need to have $message by reference in hook_mail().
   if (function_exists($function = $module .'_mail')) {
-    $function($key, $message, $params);
+    $function($key, $message, $params);  
   }
 
   // Invoke hook_mail_alter() to allow all modules to alter the resulting e-mail.
@@ -195,6 +196,11 @@ function drupal_mail_send($message_in,$is_html=0) {
         }
     }
   }
+  //intelsat-2016
+  $message['headers']['Return-Path']=$message['headers']['From'];
+  //if running postfix, need a fifth parameter to mail() since Return-Path doesn't always work
+  $optionalparams = '-r'.$message['headers']['From'];
+  //$message['headers']['Reply-To']=$message['headers']['From'];
   //
   // Allow for a custom mail backend.
   if (variable_get('smtp_library', '') && file_exists(variable_get('smtp_library', ''))) {
@@ -202,11 +208,21 @@ function drupal_mail_send($message_in,$is_html=0) {
     return drupal_mail_wrapper($message);
   }
   else {
-    
     $mimeheaders = array();
     foreach ($message['headers'] as $name => $value) {
       $mimeheaders[] = $name .': '. mime_header_encode($value);
     }
+    //intelsat-2016    
+    /*return mail(
+      $message['to'],
+      mime_header_encode($message['subject']),
+      // Note: e-mail uses CRLF for line-endings, but PHP's API requires LF.
+      // They will appear correctly in the actual e-mail that is sent.
+      str_replace("\r", '', $message['body']),
+      // For headers, PHP's API suggests that we use CRLF normally,
+      // but some MTAs incorrecly replace LF with CRLF. See #234403.
+      join("\r\n", $mimeheaders)
+    );*/
     return mail(
       $message['to'],
       mime_header_encode($message['subject']),
@@ -215,7 +231,7 @@ function drupal_mail_send($message_in,$is_html=0) {
       str_replace("\r", '', $message['body']),
       // For headers, PHP's API suggests that we use CRLF normally,
       // but some MTAs incorrecly replace LF with CRLF. See #234403.
-      join("\n", $mimeheaders)
+      join("\r\n", $mimeheaders),$optionalparams
     );
   }
 }
