@@ -69,7 +69,7 @@ function my_user_register_form_alter(&$form, &$form_state, $form_id){
         //        
     }
     //
-    $responsable_value='hontza@hontza.es';
+    $responsable_value='jcvergar@cde.es';
         $form['Empresa']['responsable'] = array(
           '#type' => 'hidden',
           //'#title' => t('Email of responsible person'),
@@ -502,7 +502,7 @@ function my_insert_user_grupo($uid,$nid){
     $created=time();
     $changed=$created;
     $sql=sprintf("INSERT INTO {og_uid}(nid,og_role,is_active,is_admin,uid,created,changed) VALUES(%d,%d,%d,%d,%d,%d,%d)",$nid,$og_role,$is_active,$is_admin,$uid,$created,$changed);
-    db_query($sql);
+    @db_query($sql);
 }
 function frases_post_formulario_callback(){
   /*$where=array();
