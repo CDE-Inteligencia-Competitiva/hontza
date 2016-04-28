@@ -252,12 +252,16 @@ function red_copiar_importar_enviar_mail_from($mail_from,$node_title='',$node=''
     if(!empty($mail_from)){
         $mail_to=base64_decode($mail_from);
         //simulando
+        //$mail_to='bulegoa@netkam.com';
         //$html='Tu documento compartido ha sido importado';
         $html=t('"!node_title" has been successfully imported by "!email destinatario"',array('!node_title'=>$node_title,'!email destinatario'=>$user->mail));
         $subject=$html;
+        /*echo print_r($node,1);
+        exit();*/
         $icono_documento=red_copiar_get_icono_documento($node,0);
         $html=$icono_documento.' '.$html;
-        red_copiar_send_mail($mail_to,$subject,$html,'mimemail','');        
+        red_copiar_send_mail($mail_to,$subject,$html,'mimemail','');
+        red_copiar_send_mail('imanol@netkam.com',$subject,$html,'mimemail','');
     }
 }
 function red_copiar_add_importar_noticia_link(&$html){
@@ -302,8 +306,9 @@ function red_copiar_is_grupo_conectado(){
 }
 function red_copiar_get_mail_firma(){
     $html=array();
-    $html[]='<p>Thank you for using Hontza Network!</p>';
-    $html[]='<p>Hontza Team</p>';
+    $texto='<p>Thank you for using Hontza Network!</p>';
+    $texto.='<p>Hontza Team</p>';
+    $html[]=t($texto);
     return implode('',$html);
 }
 function red_copiar_get_icono_documento($node,$is_link=1){
@@ -325,6 +330,8 @@ function red_copiar_get_icono_documento($node,$is_link=1){
         $icono='fuente24';
     }else if(in_array($node->type,array('proyecto'))){
         $icono='proyecto24';
+    }else if(in_array($node->type,array('user'))){
+        $icono='user24';
     }   
     $icono_documento=my_get_icono_action($icono,'');
     if($is_link){
