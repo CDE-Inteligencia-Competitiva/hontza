@@ -197,9 +197,18 @@ function drupal_mail_send($message_in,$is_html=0) {
     }
   }
   //intelsat-2016
-  $message['headers']['Return-Path']=$message['headers']['From'];
+  $message['headers']['Return-Path']=$message['headers']['From'];  
+  if(defined('_MAIL_RETURN_PATH')){
+      $mail_return_path=_MAIL_RETURN_PATH;
+      if(!empty($mail_return_path)){
+        $message['headers']['Return-Path']=$mail_return_path;
+      }  
+  }
+  //echo print_r($message['headers'],1);exit();
+  //echo print_r($message['headers'],1);exit();
   //if running postfix, need a fifth parameter to mail() since Return-Path doesn't always work
-  $optionalparams = '-r'.$message['headers']['From'];
+  //$optionalparams = '-r'.$message['headers']['From'];
+  $optionalparams = '-r'.$message['headers']['Return-Path'];
   //$message['headers']['Reply-To']=$message['headers']['From'];
   //
   // Allow for a custom mail backend.
