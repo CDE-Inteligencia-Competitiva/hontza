@@ -1691,7 +1691,9 @@ function validate_invitado_new_without_form($node,$required_fields){
     return 1;
 }
 //gemini
-function get_reto_al_que_responde_html(){
+//intelsat-2016
+//function get_reto_al_que_responde_html(){
+function get_reto_al_que_responde_html($is_required=0){
     $html=array();
     //intelsat-2015
     //if(hontza_grupos_is_activo_pestana('estrategia')){
@@ -1701,11 +1703,18 @@ function get_reto_al_que_responde_html(){
         //if(hontza_is_canal_formulario() || red_is_item_formulario()){
         //intelsat-2015
         //if(hontza_is_canal_formulario() || red_is_item_formulario() || red_is_noticia_de_usuario_formulario()){
+        $my_label='';
         if(estrategia_inc_is_reto_responde_formulario()){
-            $html[]='<label>'.t('Key Questions').': </label>';
+            //$html[]='<label>'.t('Key Questions').': </label>';
+            $my_label=t('Key Questions');
         }else{
-            $html[]='<label>'.t('Associated Challenges').': </label>';
+            //$html[]='<label>'.t('Associated Challenges').': </label>';
+            $my_label=t('Associated Challenges');
         }
+        if($is_required){
+            $my_label.=':<span class="form-required" title="This field is required.">*</span>';
+        }
+        $html[]='<label>'.$my_label.'</label>';
         $html[]=estrategia_arbol_callback();
         $html[]='</div>';
     }
