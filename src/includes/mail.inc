@@ -202,6 +202,11 @@ function drupal_mail_send($message_in,$is_html=0) {
       $mail_return_path=_MAIL_RETURN_PATH;
       if(!empty($mail_return_path)){
         $message['headers']['Return-Path']=$mail_return_path;
+        //$message['headers']['Reply-To']=$mail_return_path;
+        /*$data_from='from:'.$mail_return_path."\r\n";
+        $data_reply_to='reply-to:'.$mail_return_path."\r\n";
+        $message['body']=$data_from.$data_reply_to.$message['body'];*/
+        //print $message['body'];exit();
       }  
   }
   //echo print_r($message['headers'],1);exit();
@@ -217,6 +222,8 @@ function drupal_mail_send($message_in,$is_html=0) {
     return drupal_mail_wrapper($message);
   }
   else {
+    /*echo print_r($message,1);
+    exit();*/
     $mimeheaders = array();
     foreach ($message['headers'] as $name => $value) {
       $mimeheaders[] = $name .': '. mime_header_encode($value);
