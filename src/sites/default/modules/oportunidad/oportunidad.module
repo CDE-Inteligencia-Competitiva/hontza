@@ -392,9 +392,14 @@ $form['invitados'] = array(
     '#default_value' => set_heredar_idea_default_value($node,$idea_nid,'reto_al_que_responde'),
   );*/
 
+  //intelsat-2016
+  $is_required=1;
   $form['reto_al_que_responde_id']=array(
     //'#title' => t('Associated Challenge'),
-    '#value'=>get_reto_al_que_responde_html(),
+    //intelsat-2016  
+    '#prefix'=>'<div class="form-item-required">',
+    '#suffix'=>'</div>',  
+    '#value'=>get_reto_al_que_responde_html($is_required),
  );
 
   $form['plazo_del_reto'] = array(
@@ -427,10 +432,13 @@ $form['invitados'] = array(
  * Errors should be signaled with form_set_error().
  */
 function oportunidad_validate($node, &$form) {
-  if (!validate_sel_idea($node)) {
+  //intelsat-2016
+  //se ha comentado esto  
+  /*if (!validate_sel_idea($node)) {
     form_set_error('sel_idea', t('Select idea is required'));
   }
   validate_oportunidad_categorias_tematicas($node,$form);
+  */
   validate_oportunidad_reto_al_que_responde($form);
 }
 
