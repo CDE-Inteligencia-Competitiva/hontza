@@ -328,10 +328,14 @@ function proyecto_form(&$node, $form_state) {
   
   $form['categorias_tematicas_fieldset']=create_categorias_tematicas_fieldset('',1,$node->nid,'proyecto');
 
-  
+  //intelsat-2016
+  $is_required=1;
   $form['reto_al_que_responde_id']=array(
     //'#title' => t('Associated Challenge'),
-    '#value'=>get_reto_al_que_responde_html(),
+    //intelsat-2016  
+    '#prefix'=>'<div class="form-item-required">',
+    '#suffix'=>'</div>',  
+    '#value'=>get_reto_al_que_responde_html($is_required),
  );
 
   $form['oportunidad_guraso_fieldset']=create_proyecto_guraso_fieldset($node->nid,$oportunidad_nid,$node->oportunidad_nid,'proyecto_form');
@@ -579,10 +583,12 @@ $form['otros_parametros']['eval_presupuesto_complejidad']=array(
  * Errors should be signaled with form_set_error().
  */
 function proyecto_validate($node, &$form) {
-  if (!validate_sel_oportunidad($node)) {
+  //intelsat-2016
+  //se ha comentado esto    
+  /*if (!validate_sel_oportunidad($node)) {
     form_set_error('sel_oportunidad', t('Select opportunity is required'));
   }
-  validate_proyecto_categorias_tematicas($node,$form);
+  validate_proyecto_categorias_tematicas($node,$form);*/
   validate_proyecto_reto_al_que_responde($form);
 }
 
