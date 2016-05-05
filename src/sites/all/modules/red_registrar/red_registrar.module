@@ -422,7 +422,8 @@ function red_registrar_get_secondary_local_tasks($secondary,$is_secondary=1){
     return $secondary;
 }
 function red_registrar_on_user_profile_form_submit($category,$account){
-    if($account->uid==1 && is_super_admin()){
+    //if($account->uid==1 && is_super_admin()){
+    if(hontza_registrar_is_administrador()){    
         if($category=='Empresa'){
             $_REQUEST['destination']='';
             $post=red_registrar_get_user_profile_post($account);
@@ -588,10 +589,15 @@ function red_registrar_user_profile_empresa_form_alter(&$form,&$form_state,$form
     }    
 }
 function red_registrar_is_user_registrar(){
+    /*global $user;
     if(is_super_admin()){
         return 1;
     }
-    return 0;
+    if(isset($user->roles[ADMINISTRADOR]) && !empty($user->roles[ADMINISTRADOR])){
+        return 1;
+    }
+    return 0;*/
+    return hontza_registrar_is_administrador();
 }
 function red_registrar_variable_get_red_servidor_registrar_local(){
     $red_servidor_registrar_local=variable_get('red_servidor_registrar_local','');
