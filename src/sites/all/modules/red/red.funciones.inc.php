@@ -789,12 +789,14 @@ function red_funciones_define_user_menu_net_resources_input_select_select_compri
     $result[]='<select id="menu_user_net_resources_select" name="menu_user_net_resources_select" style="clear:both;">';
     $result[]='<option value="none">'.t('Net Resources').'</option>';
     if(!$is_solo_link_servidor){
-        $result[]='<option value="'.url('red_compartir/red_compartir_copiar_fuentes_servidor').'">'.t('-------- Download').'</option>';
-        $result[]='<option value="'.url('red_compartir/red_compartir_copiar_fuentes_servidor').'">'.t('Sources').'</option>';
+        //$result[]='<option value="'.url('red_compartir/red_compartir_copiar_fuentes_servidor').'">'.t('-------- Download').'</option>';
+        $result[]='<option value="'.url('red_compartir/red_compartir_copiar_canales_servidor').'">'.t('-------- Download').'</option>';
+        //$result[]='<option value="'.url('red_compartir/red_compartir_copiar_fuentes_servidor').'">'.t('Sources').'</option>';
         $result[]='<option value="'.url('red_compartir/red_compartir_copiar_canales_servidor').'">'.t('Channels').'</option>';
         $result[]='<option value="'.url('red_compartir/red_compartir_copiar_facilitadores_servidor').'">'.t('Experts').'</option>';
-        $result[]='<option value="'.url('red/fuentes-pipes/todas').'">'.t('----------- Share').'</option>';
-        $result[]='<option value="'.url('red/fuentes-pipes/todas').'">'.t('Sources').'</option>';
+        //$result[]='<option value="'.url('red/fuentes-pipes/todas').'">'.t('----------- Share').'</option>';
+        $result[]='<option value="'.url('red/canales/todas').'">'.t('----------- Share').'</option>';
+        //$result[]='<option value="'.url('red/fuentes-pipes/todas').'">'.t('Sources').'</option>';
         $result[]='<option value="'.url('red/canales/todas').'">'.t('Channels').'</option>';
         $result[]='<option value="'.url('red/facilitadores/todas').'">'.t('Experts').'</option>';
     }
@@ -888,10 +890,11 @@ function red_funciones_define_user_menu_management_input_select_comprimidos(){
         $result[]='<option value="'.$url_guia_usuario.'">'.t("For Users").'</option>';
         $result[]='<option value="'.$url_guia_administrador.'">'.t("For Admins").'</option>';
     if($user->uid==1 || red_is_administrador()){
+        //intelsat-2016
         /*$gestion_array[]='<option value="'.url('panel_admin/ayuda').'"'.$selected_gestion_faq.'>'.t('---------------- Help').'</option>';
         $label_faq=t('Faq');
         $gestion_array[]='<option value="'.url('panel_admin/ayuda').'"'.$selected_gestion_faq.'>'.$label_faq.'</option>';*/
-        $gestion_array[]='<option value="'.url('panel_admin/ayuda_popup').'"'.$selected_gestion_faq.'>'.t('---------------- Help').'</option>';
+        $gestion_array[]='<option value="'.url('panel_admin/ayuda_popup').'"'.$selected_gestion_faq.'>'.t('---------------- Help').'</option>';        
     }/*else{
         $result[]='<option value="'.url('faq').'"'.$selected_ayuda.'>'.t('Help').'</option>';    
     }*/
@@ -940,7 +943,7 @@ function red_funciones_define_user_menu_management_input_select_comprimidos(){
             $is_gestion_comprimido=1;
             $gestion_array[]='<option value="'.url('admin/content/taxonomy/1').'"'.$selected_gestion_fuentes.'>'.t('---- Management').'</option>'; 
         }    
-        $label_fuentes=t('Sources');
+        $label_fuentes=t('Types of Sources');
         $gestion_array[]='<option value="'.url('admin/content/taxonomy/1').'"'.$selected_gestion_fuentes.'>'.$label_fuentes.'</option>';        
         $label_channels=t('Channels');
         $gestion_array[]='<option value="'.url('gestion/gestion_canales').'"'.$selected_gestion_canales.'>'.$label_channels.'</option>';        
