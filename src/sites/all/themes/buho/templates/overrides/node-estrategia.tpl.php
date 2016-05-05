@@ -81,9 +81,9 @@
                                       <div class="div_idea_list_personas">
                                         <div class="item-fivestar" style="padding-left:0px;">
                                                        <div style="float:left;">
-
-                                                       <?php print traducir_average($node->content['fivestar_widget']['#value']); ?>			    
-
+                                                       <?php //intelsat-2016 ?>     
+                                                       <?php //print traducir_average($node->content['fivestar_widget']['#value']); ?>			    
+                                                       <?php print estrategia_inc_fivestar($node);?>    
                                                        </div>
                                          </div>   
                                     </div>
