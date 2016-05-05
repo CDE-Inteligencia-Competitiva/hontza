@@ -1,6 +1,9 @@
 <?php
 function contenidos_fuentes_callback(){
     global $user;
+    //intelsat-2016
+    drupal_access_denied();
+    exit();
     $headers=array();
     $headers[0]='<input type="checkbox" id="my_select_all" name="my_select_all" class="my_select_all"/>';
     $headers[1]=array('data'=>t('Source'),'field'=>'node_title');
