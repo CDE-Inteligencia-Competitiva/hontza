@@ -219,6 +219,7 @@ function crear_usuario_add_grupos_usuario_propio_send_mail($user){
                                 }
                                 //intelsat-2016
                                 red_copiar_send_mail($mail_to,$subject,$message,'mimemail','');
+                                //red_copiar_send_mail('bulegoa@netkam.com',$subject,$message,'mimemail','');
                             }
                         }
                     }    
@@ -769,7 +770,8 @@ function crear_usuario_apuntarse_grupo_publico_automatico($grupo,$user){
     }
 }
 function crear_usuario_on_user_profile_form_submit_goto_empresa($category,$account){
-    if(!($account->uid==1 && is_super_admin())){
+    //if(!($account->uid==1 && is_super_admin())){
+    if(!(hontza_registrar_is_administrador($account) && hontza_registrar_is_administrador())){    
         if($category=='account'){
             drupal_goto('user/'.$account->uid.'/edit/Empresa');
         }        
