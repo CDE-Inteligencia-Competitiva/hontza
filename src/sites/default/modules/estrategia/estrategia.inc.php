@@ -1608,4 +1608,95 @@ function estrategia_tabla_csv_download($compartir_documentos_estrategia_nid='',$
     }else{
         return t('There are no contents');
     }
-}        
+}
+//intelsat-2016
+function estrategia_inc_fivestar($node){
+    if(estrategia_inc_is_voto_activado()){
+        return traducir_average($node->content['fivestar_widget']['#value'],1);
+    }else{
+        return hontza_solr_search_fivestar_botonera($node,0,'',0,1);
+    }
+}
+//intelsat-2016
+function estrategia_inc_is_voto_activado(){
+    if(estrategia_inc_is_estrategia_congelar_voto_activado()){
+        $is_active_votes=estrategia_inc_get_grupo_is_active_votes();
+        if($is_active_votes==2){
+            return 0;
+        }    
+    }
+    return 1;
+}
+//intelsat-2016
+function estrategia_inc_is_estrategia_congelar_voto_activado(){
+    if(defined('_IS_ESTRATEGIA_CONGELAR_VOTO') && _IS_ESTRATEGIA_CONGELAR_VOTO==1){
+        if(estrategia_is_grupo_publico()){
+            return 1;
+        }    
+    }
+    return 0;
+}
+//intelsat-2016
+function estrategia_settings_form(){
+    $form=array();
+    $is_active_votes=estrategia_inc_get_grupo_is_active_votes();
+    $form['is_active_votes']=array(
+        '#title'=>t('Activate'),
+        '#type'=>'select',
+        '#options'=>hontza_registrar_yes_no_options(0,1),
+        '#default_value'=>$is_active_votes,
+    );
+    $form['save_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Save'),
+        '#name'=>'save_btn',
+    );
+    $form['reset_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Reset'),
+        '#name'=>'reset_btn',
+    );
+    return $form;
+}
+function estrategia_settings_access(){
+    if(estrategia_inc_is_estrategia_congelar_voto_activado()){
+        if(estrategia_is_grupo_publico()){
+            if(red_funciones_is_administrador_grupo()){
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+function estrategia_inc_get_grupo_is_active_votes(){
+    $my_grupo=og_get_group_context();    
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        if(isset($my_grupo->field_is_active_votes[0]['value'])){
+            if($my_grupo->field_is_active_votes[0]['value']==2){
+                return 2;
+            }
+        }
+        return 1;
+    }
+    return 2;
+}
+function estrategia_settings_form_submit($form, &$form_state) {
+    if(isset($form_state['clicked_button']['#name'])){
+        if($form_state['clicked_button']['#name']=='save_btn'){
+            estrategia_inc_settings_save($form_state);
+            drupal_set_message(t('Saved'));
+        }else if($form_state['clicked_button']['#name']=='reset_btn'){
+            drupal_set_message(t('Reset'));
+        }
+        $_REQUEST['destination']='';
+        drupal_goto('estrategia/settings');
+    } 
+}
+function estrategia_inc_settings_save($form_state){
+    $my_grupo=og_get_group_context();    
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $is_active_votes=$form_state['values']['is_active_votes'];
+        db_query('UPDATE {content_type_grupo} SET field_is_active_votes_value=%d WHERE nid=%d AND vid=%d',$is_active_votes,$my_grupo->nid,$my_grupo->vid);
+        hontza_solr_clear_cache_content($my_grupo->nid,1);
+    }    
+}

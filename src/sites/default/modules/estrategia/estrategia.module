@@ -127,6 +127,13 @@ function estrategia_menu() {
     'page callback' => 'estrategia_tabla_csv_download_callback',
     'access arguments' => array('Ver estrategia_tabla'),
   );
+  //intelsat-2016
+  $items['estrategia/settings'] = array(
+    'title' => 'Setting',
+    'page arguments'=>array('estrategia_settings_form'),  
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'estrategia_settings_access',
+  );
   return $items;
 }
 
@@ -2089,6 +2096,10 @@ function get_desplegar_estrategia_content(){
         //$result[]=l(t('Key Questions').' - '.t('Channels'),'resumen_preguntas_clave_canales',array('query'=>drupal_get_destination()));
 	$result[]=l(t('Table Questions - Channels'),'resumen_preguntas_clave_canales',array('query'=>drupal_get_destination()));
         $result[]=l(t('Download Strategy'),'estrategias/tabla_csv_download',array('query'=>drupal_get_destination()),array('attributes'=>array('title'=>t('Download Strategy'),'alt'=>t('Download Strategy'))));                                                     
+        //intelsat-2016
+        if(estrategia_settings_access()){
+            $result[]=l(t('Settings'),'estrategia/settings',array('query'=>drupal_get_destination()),array('attributes'=>array('title'=>t('Settings'),'alt'=>t('Settings'))));                                                             
+        }
         return implode('<BR>',$result);
 }
 function get_menu_gezia_img($is_class=0){
@@ -2366,10 +2377,10 @@ function get_where_estrategia_por_grupo($aurrizkia_in,$my_type){
     return '';
 }
 function estrategia_is_grupo_estrellas(){
-    $my_grupo=og_get_group_context();
+     $my_grupo=og_get_group_context();
     if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
         //if(empty($my_grupo->og_private)){
-            if(estrategia_is_grupo_publico($my_grupo)){
+            if(estrategia_is_grupo_publico($my_grupo)){              
                 return 1;
             }
         //}    
