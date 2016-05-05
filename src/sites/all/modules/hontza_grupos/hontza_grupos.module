@@ -206,6 +206,9 @@ function hontza_grupos_form_alter(&$form, &$form_state, $form_id) {
         if(isset($form['field_grupo_kimonolabs_api_key'])){
             unset($form['field_grupo_kimonolabs_api_key']);
         }
+        if(isset($form['field_is_active_votes'])){
+            unset($form['field_is_active_votes']);
+        }
         //       
     }    
 }

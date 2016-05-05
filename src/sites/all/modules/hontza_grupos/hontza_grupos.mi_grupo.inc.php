@@ -1357,3 +1357,34 @@ function hontza_grupos_mi_grupo_contact_get_account_array($form_state){
     }
     return $result;
 }
+//intelsat-2016
+function hontza_grupos_mi_grupo_quant_time_form_form_alter(&$form,&$form_state,$form_id){
+    if(hontza_grupos_mi_grupo_quant_time_is_filter_activated()){
+        $fs_title=t('Filter Activated');
+        $class='file_buscar_fs_vigilancia_class fs_search_activated';
+    }else{
+        $fs_title=t('Filter');
+        $class='file_buscar_fs_vigilancia_class';        
+    }
+    $form['filter']['#title']=$fs_title;
+    $form['filter']['#attributes']['id']='file_buscar_fs';
+    $form['filter']['#attributes']['class']=$class;
+    my_add_buscar_js();
+}
+function hontza_grupos_mi_grupo_quant_time_is_filter_activated(){
+  $options = array(
+    '1_week' => t('1 week'),
+    '2_weeks' => t('2 weeks'),
+    '1_month' => t('1 month'),
+    '3_months' => t('3 months'),
+    '6_months' => t('6 months'),
+    '1_year' => t('1 year'),
+    '2_years' => t('2 years'),
+  );
+  
+  $period = filter_xss($_GET['period']);
+  if (!$period || !array_key_exists($period, $options)) {
+      return 0;
+  }
+  return 1;
+}  
