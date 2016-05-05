@@ -1196,7 +1196,9 @@ function hontza_solr_search_is_empty_form_field_taxonomia($form_state){
 }
 //intelsat-2015
 //function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w=''){
-function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w='',$with_label=1){
+//intelsat-2016
+//function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w='',$with_label=1){
+function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w='',$with_label=1,$is_estrategia=0){    
     $html=array();
     if($is_enabled){
         if(!hontza_is_fivestar_enabled($node)){
@@ -1213,7 +1215,14 @@ function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w=''
     }*/
     //$style='float:right;';
     //if(!empty($node_c_d_w)){
-        $style='float:right;padding-top:2px;';
+    //intelsat-2016
+    $float='right';
+    $margin_left='';
+    if($is_estrategia){
+        $float='left';
+        $margin_left='margin-left:-5px;';    
+    }    
+        $style='float:'.$float.';padding-top:2px;'.$margin_left;
     //}
     $html[]='<div style="'.$style.'">';
     $content=$node->content['fivestar_widget']['#value'];
@@ -1226,9 +1235,15 @@ function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w=''
             $content=$node->my_stars;
         } 
     }else{
-        if(hontza_solr_search_is_usuario_lector()){
+        //intelsat-2016
+        //if(hontza_solr_search_is_usuario_lector()){
+        if(hontza_solr_search_is_usuario_lector() || $is_estrategia){
             //return '';
             $content=traducir_average(fivestar_static('node', $node->nid, NULL, $node->type));
+            //intelsat-2016
+            if($is_estrategia){
+                $content=str_replace(t('Rating').':','',$content);
+            }
         }    
     }
     $content=hontza_solr_search_traducir_average($content);
