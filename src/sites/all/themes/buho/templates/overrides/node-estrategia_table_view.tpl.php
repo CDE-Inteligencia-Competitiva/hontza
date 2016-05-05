@@ -49,7 +49,7 @@
     -->
     <?php if(estrategia_is_grupo_estrellas()):?>                
         <td class="td_label_node_view"><b><?php print t('Average');?></b>:&nbsp;</td>
-        <td class="td_value_node_view"><?php print traducir_average($node->content['fivestar_widget']['#value'],1); ?></td>
+        <td class="td_value_node_view"><?php //print traducir_average($node->content['fivestar_widget']['#value'],1); ?><?php print estrategia_inc_fivestar($node);?></td>
     <?php endif;?>
     <tr class="tr_node_view">    
         <td class="td_label_node_view"><b><?php print t('Attachments');?></b>:&nbsp;</td>
