@@ -43,6 +43,9 @@ function red_local_menu() {
     return $items;
 }
 function red_local_fuentes_local_callback(){
+   //intelsat-2016
+   drupal_access_denied();
+   exit();
    drupal_set_title(t('Local shared sources')); 
    $output=''; 
    $filter_fields=red_local_fuentes_local_filter_fields();
@@ -167,10 +170,10 @@ function red_local_pantallas_menu(){
     $html[]='<div class="tab-wrapper clearfix primary-only">';
     $html[]='<div id="tabs-primary" class="tabs primary">';
     $html[]='<ul>';
-    $html[]='<li'.red_local_menu_class('fuentes_local').'>'.l(t('Local shared sources'),'red_local/fuentes_local').'</li>';
+    //$html[]='<li'.red_local_menu_class('fuentes_local').'>'.l(t('Local shared sources'),'red_local/fuentes_local').'</li>';
     $html[]='<li'.red_local_menu_class('canales_local').'>'.l(t('Local shared channels'),'red_local/canales_local').'</li>';
     $html[]='<li'.red_local_menu_class('facilitadores_local').'>'.l(t('Local shared facilitators'),'red_local/facilitadores_local').'</li>';
-    $html[]='<li'.red_local_menu_class('fuentes_servidor').'>'.l(t('Sources downloaded from Server'),'red_local/fuentes_servidor').'</li>';
+    //$html[]='<li'.red_local_menu_class('fuentes_servidor').'>'.l(t('Sources downloaded from Server'),'red_local/fuentes_servidor').'</li>';
     $html[]='<li'.red_local_menu_class('canales_servidor').'>'.l(t('Channels downloaded from Server'),'red_local/canales_servidor').'</li>';
     $html[]='<li'.red_local_menu_class('facilitadores_servidor').'>'.l(t('Facilitators downloaded from Server'),'red_local/facilitadores_servidor').'</li>';
     $html[]='</ul>';

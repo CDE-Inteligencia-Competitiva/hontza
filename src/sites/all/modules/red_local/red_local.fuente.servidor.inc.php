@@ -1,5 +1,8 @@
 <?php
 function red_local_fuentes_servidor_callback(){
+   //intelsat-2016
+   drupal_access_denied();
+   exit(); 
    drupal_set_title(t('Sources downloaded from Server')); 
    $output=''; 
    $filter_fields=red_local_fuentes_servidor_filter_fields();
