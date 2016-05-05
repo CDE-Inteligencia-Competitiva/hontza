@@ -89,3 +89,21 @@ function hontza_registrar_get_primary_local_tasks($primary){
     }
     return $primary;
 }
+function hontza_registrar_is_administrador($account=''){
+    global $user;
+    if(isset($account->uid) && !empty($account->uid)){
+        $my_user=$account;
+    }else{
+        if(is_super_admin()){
+            return 1;
+        }    
+        $my_user=$user;
+    }
+    if($my_user->uid==1){
+        return 1;
+    }
+    if(isset($my_user->roles[ADMINISTRADOR]) && !empty($my_user->roles[ADMINISTRADOR])){
+        return 1;
+    }
+    return 0;
+}
