@@ -1658,6 +1658,7 @@ function estrategia_settings_form(){
     );
     return $form;
 }
+//intelsat-2016
 function estrategia_settings_access(){
     if(estrategia_inc_is_estrategia_congelar_voto_activado()){
         if(estrategia_is_grupo_publico()){
@@ -1668,6 +1669,7 @@ function estrategia_settings_access(){
     }
     return FALSE;
 }
+//intelsat-2016
 function estrategia_inc_get_grupo_is_active_votes(){
     $my_grupo=og_get_group_context();    
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
@@ -1680,18 +1682,21 @@ function estrategia_inc_get_grupo_is_active_votes(){
     }
     return 2;
 }
+//intelsat-2016
 function estrategia_settings_form_submit($form, &$form_state) {
     if(isset($form_state['clicked_button']['#name'])){
         if($form_state['clicked_button']['#name']=='save_btn'){
             estrategia_inc_settings_save($form_state);
             drupal_set_message(t('Saved'));
         }else if($form_state['clicked_button']['#name']=='reset_btn'){
+            estrategia_inc_reset_votes();
             drupal_set_message(t('Reset'));
         }
         $_REQUEST['destination']='';
         drupal_goto('estrategia/settings');
     } 
 }
+//intelsat-2016
 function estrategia_inc_settings_save($form_state){
     $my_grupo=og_get_group_context();    
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
@@ -1699,4 +1704,21 @@ function estrategia_inc_settings_save($form_state){
         db_query('UPDATE {content_type_grupo} SET field_is_active_votes_value=%d WHERE nid=%d AND vid=%d',$is_active_votes,$my_grupo->nid,$my_grupo->vid);
         hontza_solr_clear_cache_content($my_grupo->nid,1);
     }    
+}
+//intelsat-2016
+function estrategia_inc_reset_votes(){
+    $my_grupo=og_get_group_context();    
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $grupo_nid=$my_grupo->nid;
+        $estrategia_array=estrategia_get_grupo_all($grupo_nid);
+        $despliegue_array=despliegue_get_grupo_all($grupo_nid);
+        $decision_array=decision_get_grupo_all($grupo_nid);
+        $estrategia_array=array_merge($estrategia_array,$despliegue_array,$decision_array);
+        if(!empty($estrategia_array)){
+            foreach($estrategia_array as $i=>$estrategia_row){
+                db_query('DELETE FROM {votingapi_vote} WHERE content_id=%d',$estrategia_row->nid);
+                db_query('DELETE FROM {votingapi_cache} WHERE content_id=%d',$estrategia_row->nid);
+            }
+        }
+    }
 }
