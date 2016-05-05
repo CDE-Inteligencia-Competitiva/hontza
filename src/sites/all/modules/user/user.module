@@ -1590,15 +1590,17 @@ function user_edit_form(&$form_state, $uid, $edit, $register = FALSE) {
       '#options' => array(t('Blocked'), t('Active'))
     );
   }
-
   //gemini-2014
   //if (user_access('administer permissions')) {
   if(user_access('administer permissions') || hontza_user_access_gestion_usuarios()){
     $roles = user_roles(TRUE);
     //gemini-2014
-    if(!user_access('administer permissions')){
+    //intelsat-2016
+    //if(!user_access('administer permissions')){
+    if(!user_access('administer permissions') && !hontza_registrar_is_administrador()){    
         $roles=hontza_unset_roles_by_not_admin($roles);
-    }    
+    }
+        
     // The disabled checkbox subelement for the 'authenticated user' role
     // must be generated separately and added to the checkboxes element,
     // because of a limitation in D6 FormAPI not supporting a single disabled
@@ -1729,6 +1731,8 @@ function user_delete($edit, $uid) {
   user_on_administrador_de_grupo_deleted($uid);  
   //  
   $account = user_load(array('uid' => $uid));
+  //intelsat-2016
+  red_facilitator_delete_users_facilitators_network($account,'',1);  
   sess_destroy_uid($uid);
   _user_mail_notify('status_deleted', $account);
   db_query('DELETE FROM {users} WHERE uid = %d', $uid);
@@ -2355,6 +2359,7 @@ function _user_mail_notify($op, $account, $language = NULL) {
            foreach($creador_list as $i=>$creador){
                if(isset($creador->mail) && !empty($creador->mail)){
                    //simulando
+                   //$creador->mail='bulegoa@netkam.com';
                    //drupal_mail('user', 'register_pending_approval_admin', $creador->mail, language_default(), $params);
                    //break;
                    /*if(red_crear_usuario_is_red_alerta_net()){ 
