@@ -6,13 +6,21 @@ function custom_menu_red_grupos_subdominios_callback(){
 function  custom_menu_red_grupos_subdominios(){
    if(hontza_is_sareko_id('ROOT')){
        return;
-   } 
+   }
+   /*//intelsat-2016
+   if(defined('_IS_CUSTOM_MENU_RED_CACHE') && _IS_CUSTOM_MENU_RED_CACHE!=1){
+       return;
+   }*/
    if(custom_menu_red_is_activado()){
         custom_menu_red_delete_all_custom_menu_red();
         $users_array=hontza_solr_get_users();
         if(!empty($users_array)){
             foreach($users_array as $i=>$row){
                 if(isset($row->uid) && !empty($row->uid)){
+                    //intelsat-2016
+                    if(is_user_demo_caducado($row->uid)){
+                        continue;
+                    }
                     custom_menu_red_save_custom_menu_red($row);
                 }    
             }
@@ -29,6 +37,10 @@ function custom_menu_red_is_activado(){
 }
 function custom_menu_red_save_custom_menu_red($user_row){
    global $user;
+   //intelsat-2016
+   if(is_user_demo_caducado($user_row->uid)){
+       return;
+   }
    $original_user = $user;
    $old_state = session_save_session();
    session_save_session(FALSE);
