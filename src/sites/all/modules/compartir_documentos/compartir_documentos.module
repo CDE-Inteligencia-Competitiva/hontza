@@ -415,6 +415,9 @@ function compartir_documentos_importar_documento_form_submit($form,&$form_state)
    if($node->type=='user' || (isset($node->name) && isset($node->mail))){
     $url='user/'.$node->uid;
     $node_title=$node->name;
+    if(!isset($node->type)){
+        $node->type='user';
+    }
    }else{ 
     $url='node/'.$node->nid;
     $node_title=$node->title;
@@ -450,6 +453,11 @@ function compartir_documentos_importar_documento_file_get_contents($rss_url,$is_
    $is_shared=0;
    $rss_name='';
    if(isset($local_node->nid) && !empty($local_node->nid)){
+       /*
+       //intelsat-2016
+       if(empty($node)){
+           return;
+       }*/
        $node->nid=$local_node->nid;
        $node->vid=$local_node->vid;
        $rss_name=$local_node->field_wiki_rss_name[0]['value'];
@@ -477,7 +485,6 @@ function compartir_documentos_importar_documento_file_get_contents($rss_url,$is_
         $node->field_wiki_frecuencia_hora[0]['value']=$frecuencia_hora; 
         $node->field_wiki_import_frecuencia[0]['value']=$import_frecuencia;
         $node->field_wiki_import_frecuenci_hora[0]['value']=$import_frecuencia_hora;
-        echo 'hemen='.print_r($node,1);exit();      
     }else{
         $node->field_wiki_rss_name[0]['value']='';    
         $node->field_wiki_is_shared[0]['value']=0;    
