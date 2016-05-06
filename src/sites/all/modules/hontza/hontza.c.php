@@ -2219,6 +2219,9 @@ function gestion_usuarios_callback(){
                         $grupo_nid_array=array_keys($v);
                         $where[]='og_uid.nid IN('.implode(',',$grupo_nid_array).')';
                         break;
+                    case 'mail':
+                        $where[]="users.mail LIKE '%%".$v."%%'";
+                        break;
                     default:
                         break;
                 }

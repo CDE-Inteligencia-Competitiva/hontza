@@ -538,7 +538,11 @@ function hontza_gestion_usuarios_filtro_form(){
     $form['file_buscar_fs']['users_name']=
         array('#type'=>'textfield',
         '#title'=>t('Username'),
-        "#default_value"=>hontza_get_gestion_usuarios_filter_value('users_name'));    
+        "#default_value"=>hontza_get_gestion_usuarios_filter_value('users_name'));
+    $form['file_buscar_fs']['mail']=
+        array('#type'=>'textfield',
+        '#title'=>t('E-mail address'),
+        "#default_value"=>hontza_get_gestion_usuarios_filter_value('mail'));
     $form['file_buscar_fs']['profile_values_profile_nombre_value']=
         array('#type'=>'textfield',
         '#title'=>t('Name'),
@@ -598,6 +602,7 @@ function hontza_define_gestion_usuarios_filter_fields(){
     $filter_fields=array('users_name','profile_values_profile_nombre_value','profile_values_profile_apellidos_value','profile_values_profile_empresa_value');
     //intelsat-2016
     $filter_fields[]='grupo_nid';
+    $filter_fields[]='mail';
     return $filter_fields;
 }
 function hontza_is_batch(){
