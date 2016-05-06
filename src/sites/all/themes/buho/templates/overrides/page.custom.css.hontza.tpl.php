@@ -1,4 +1,5 @@
 <?php $path_custom=red_crear_usuario_get_path_custom_css();?>
+<?php global $base_path;?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,6 +13,7 @@
     
     <link href="<?php print $path_custom;?>css/bootstrap.min.css" rel="stylesheet" type='text/css'>
     <link href="<?php print $path_custom;?>css/main.css" rel="stylesheet" type='text/css'>
+    <script type="text/javascript" src="<?php print $base_path;?>misc/jquery.js?s"></script>
 
   </head>
   <body>
