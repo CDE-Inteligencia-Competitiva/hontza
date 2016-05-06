@@ -683,4 +683,91 @@ function red_crear_usuario_exportar_csv($is_param=0,$users_array_in=''){
             }
         }
         estrategia_call_download_resumen_preguntas_clave_canales_csv($data_csv_array,'usuarios',"\t");
-}        
+}
+function red_crear_usuario_add_select_user_icon_form_field(&$form){
+    if(red_crear_usuario_is_select_user_icon_activado()){
+        $select_user_icon_html=red_crear_usuario_get_select_user_icon_html();
+        $form['picture']['select_user_icon_fs']=array(
+            '#title'=>t('Select picture'),
+            '#type'=>'fieldset',
+        );
+        $form['picture']['select_user_icon_fs']['select_user_icon']=array(
+            '#value'=>$select_user_icon_html,
+        );        
+    }    
+}
+function red_crear_usuario_get_select_user_icon_html(){
+    global $base_url;
+    $html=array();
+    $dir='sites/default/files/select_user_icon';
+    if(is_dir($dir)){
+       $result=glob($dir.'/*');
+       if(!empty($result)){
+           $html[]='<div>';
+           foreach($result as $i=>$src_file){
+               $icon='<input type="checkbox" id="src_user_picture_'.$i.'" name="src_user_picture['.$i.']" class="src_user_picture_class" value="'.$src_file.'" style="float:left;">';
+               //$url_file=url($src_file);
+               $url_file=$base_url.'/'.$src_file;
+               $icon.='<img src="'.$url_file.'" width="48" style="float:left;">';
+               $html[]='<div style="float:left;padding-right:10px;padding-bottom:10px;">'.$icon.'</div>';
+           }
+           $html[]='</div>';
+           $html[]='<div style="clear:both;padding-top:10px;">';
+           $url_designed='http://www.freepik.com';
+           $html[]='<p>'.t('Designed by @designed',array('@designed'=>'Freepik')).':&nbsp;'.l($url_designed,$url_designed,array('absolute'=>TRUE,attributes=>array('target'=>'_blank'))).'</p>';
+           $html[]='</div>';
+       }
+    }    
+    $html[]=red_crear_usuario_add_select_user_icon_js();    
+    return implode('',$html);
+}
+function red_crear_usuario_is_select_user_icon_activado(){
+    /*if(defined('_IS_SELECT_USER_ICON') && _IS_SELECT_USER_ICON==1){
+        return 1;
+    }
+    return 0;*/
+    return 1;
+}
+function red_crear_usuario_save_select_user_icon($my_user){
+   global $base_path; 
+   if(isset($_POST['src_user_picture']) && !empty($_POST['src_user_picture'])){
+       $src_user_picture_array=array_values($_POST['src_user_picture']);
+       if(isset($src_user_picture_array[0]) && !empty($src_user_picture_array[0])){
+            $src_user_picture=$src_user_picture_array[0];
+            if(file_exists($src_user_picture)){
+                $url_picture=$my_user->picture;
+                //if(!file_exists($url_picture)){
+                    //if(empty($url_picture)){
+                        $pathinfo=pathinfo($src_user_picture);
+                        $url_picture=file_directory_path().'/pictures/picture-'.$my_user->uid.'.'.$pathinfo['extension'];
+                        db_query('UPDATE {users} SET picture="%s" WHERE uid=%d',$url_picture,$my_user->uid);
+                    //}
+                //}
+                copy($src_user_picture,$url_picture);
+            }    
+       } 
+   }     
+}
+function red_crear_usuario_add_select_user_icon_js(){
+   $js='';
+   $js.='<script>';
+   $js.='$(document).ready(function()
+   {
+    $(".src_user_picture_class").click(function(){
+        var is_selected=$(this).is(":checked")
+        if(is_selected){
+            src_user_picture_other_checked($(this).attr("id"),false);
+        }
+    });
+    function src_user_picture_other_checked(my_id,my_checked){
+        $(".src_user_picture_class").each(function(){
+            if($(this).attr("id")!=my_id){
+                $(this).attr("checked",my_checked);
+            }
+        });
+    }
+   });';
+    //drupal_add_js($js,'inline');
+   $js.='</script>';
+   return $js;
+}
