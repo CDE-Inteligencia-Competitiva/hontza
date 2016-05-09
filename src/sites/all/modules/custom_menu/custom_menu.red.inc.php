@@ -4,9 +4,9 @@ function custom_menu_red_grupos_subdominios_callback(){
    return date('Y-m-d H:i'); 
 }
 function  custom_menu_red_grupos_subdominios(){
-   if(hontza_is_sareko_id('ROOT')){
+   /*if(hontza_is_sareko_id('ROOT')){
        return;
-   }
+   }*/
    /*//intelsat-2016
    if(defined('_IS_CUSTOM_MENU_RED_CACHE') && _IS_CUSTOM_MENU_RED_CACHE!=1){
        return;
