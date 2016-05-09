@@ -858,6 +858,10 @@ function hontza_solr_funciones_get_bookmark_ini($is_solr){
     $html[]='</div>';
     $html[]='</fieldset>';
     hontza_solr_funciones_add_bookmark_multiple_js();
+    //intelsat-2016
+    if(hontza_solr_is_resultados_pantalla()){
+        red_solr_inc_add_remaining_html($html);
+    }        
     return implode('',$html);
 }
 function hontza_solr_funciones_bookmark_multiple_callback(){
