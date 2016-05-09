@@ -1797,9 +1797,11 @@ function create_categorias_tematicas_fieldset($description='',$is_idea=0,$idea_n
         foreach ($categorias as $id => $contenido) {
               //gemini
               //AVISO::::117 categoria indefinida, solo para importaciones simples, opml, y se asigna por defecto
-              if($contenido->tid==$indefinida_tid){
+              //intelsat-2016
+              //se ha comentado esto  
+              /*if($contenido->tid==$indefinida_tid){
                     continue;
-              }
+              }*/
               //
               //echo print_r($contenido,1);
               //gemini-2014

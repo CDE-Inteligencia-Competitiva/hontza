@@ -3385,6 +3385,8 @@ function my_get_user_img_src($file_name_in='',$picture='',$username='',$uid='',$
             if(!empty($picture)){
                     //intelsat-2015
                     if(!file_exists($picture)){
+                        //intelsat-2016
+                        $src_backup=$src;
                         $picture=$src=$base_root.'/'.$picture;
                     }
                     if(file_exists($picture)){
@@ -3393,12 +3395,17 @@ function my_get_user_img_src($file_name_in='',$picture='',$username='',$uid='',$
                         }else{
                             $src=$base_root.$base_path.$picture;
                         }                        
+                    }else{
+                        //intelsat-2016
+                        if(!empty($uid) && $uid==1){
+                            $src=$src_backup;
+                        }    
                     }
             }
         }else{
             return '';
-        }    
-	//OHARRA::::hau seguruna comment.tpl-n gertatuko da 
+        }
+        //OHARRA::::hau seguruna comment.tpl-n gertatuko da 
 	if(empty($username) && !empty($uid)){
 	//
 		$my_user=user_load($uid);
@@ -3784,13 +3791,15 @@ function hay_categorias_seleccionables($categorias){
 		if($num>1){
 			return 1;
 		}else{
-			$indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+			//intelsat-2016
+                        //se ha comentado esto
+                        /*$indefinida_tid=my_get_term_data_tid('Categoria indefinida');
 			if(!empty($indefinida_tid)){
 				$values=array_values($categorias);
 				if($values[0]->tid==$indefinida_tid){
 					return 0;
 				}
-			}
+			}*/
 			return 1;	
 		}
 	}
