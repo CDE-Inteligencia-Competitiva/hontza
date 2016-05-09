@@ -207,6 +207,16 @@ function red_menu(){
      'page callback' => 'red_copiar_crear_canal_yql_callback',
      'access callback' =>'red_copiar_crear_canal_yql_access',    
      );
+     $items['red/solr/simular_remaining']=array(
+      'title' => 'Remaining',
+      'page callback' => 'red_solr_simular_remaining_callback',
+      'access arguments' => array('root'),     
+     );
+     $items['red/solr/index/remaining']=array(
+      'title' => 'Remaining',
+      'page callback' => 'red_solr_index_remaining_callback',
+      'access callback' => 'red_solr_index_remaining_access',     
+     );             
     return $items;
 }
 function red_idiomas($node,$field_in=''){
