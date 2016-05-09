@@ -347,16 +347,18 @@ function red_registrar_crear_form_submit_postapi($post_in=''){
 }
 function red_registrar_get_postdata_files(){
     $result=array();
-    foreach ($_FILES['files']['error'] as $key => $error) {
-        if ($error == UPLOAD_ERR_OK) {
-           $tmp_name = $_FILES['files']['tmp_name'][$key];
-           $result['file']=base64_encode(file_get_contents($tmp_name));
-           $file_name = $_FILES['files']['name'][$key];
-           $path_info= pathinfo($file_name);
-           $result['extension']=$path_info['extension'];
-           return $result;
+    if(isset($_FILES['files']) && isset($_FILES['files']['error'])){
+        foreach ($_FILES['files']['error'] as $key => $error) {
+            if ($error == UPLOAD_ERR_OK) {
+               $tmp_name = $_FILES['files']['tmp_name'][$key];
+               $result['file']=base64_encode(file_get_contents($tmp_name));
+               $file_name = $_FILES['files']['name'][$key];
+               $path_info= pathinfo($file_name);
+               $result['extension']=$path_info['extension'];
+               return $result;
+            }
         }
-    }
+    }    
     return '';
 }
 function red_registrar_crear_form_validate($form, &$form_state) {
