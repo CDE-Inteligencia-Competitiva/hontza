@@ -325,6 +325,7 @@ function compartir_documentos_get_importar_wiki_link(){
 function compartir_documentos_importar_documento_form(){
     $form=array();
     boletin_report_no_group_selected_denied();
+    compartir_documentos_is_conectado_red_access_denied();    
     $type=arg(2);
     $title=t('Import Wiki');
     if($type=='my_report'){
@@ -1019,9 +1020,9 @@ function compartir_documentos_importar_enviar_mail_from($mail_from,$node_title,$
     red_copiar_importar_enviar_mail_from($mail_from,$node_title,$node);
 }
 function compartir_documentos_add_importar_noticia_link(&$html){
-    if(!red_copiar_is_grupo_conectado()){
+    /*if(!red_copiar_is_grupo_conectado()){
         $html[]='<br>'.l(t('Import News'),'compartir_documentos_news/importar_documento_news/noticia');
-    }
+    }*/
 }
 function compartir_documentos_item_node_form_alter(&$form,&$form_state, $form_id){
     compartir_documentos_unset_field_item_rss_name_form_field($form,$form_state, $form_id);
@@ -1320,4 +1321,21 @@ function compartir_documentos_get_estrategia_link($node){
 function compartir_documentos_my_report_node_form_alter(&$form,&$form_state,$form_id){
     $unset_array=array('field_report_rss_name');
     compartir_documentos_unset_form_field_form_alter($form,$form_state,$form_id,$unset_array);
+}
+function compartir_documentos_is_conectado_red(){
+    /*if(hontza_is_sareko_id_red()){
+        if(hontza_is_red_hoja()){
+            return 1;
+        }
+    }*/
+    if(red_copiar_is_grupo_conectado()){
+        return 1;
+    }
+    return 0;
+}
+function compartir_documentos_is_conectado_red_access_denied(){
+    if(!compartir_documentos_is_conectado_red()){
+        drupal_access_denied();
+        exit();
+    }
 }
