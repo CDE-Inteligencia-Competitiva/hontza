@@ -1389,12 +1389,12 @@ function red_funciones_add_create_wiki_by_block($vars){
         //intelsat-2015
         $html[]=red_funciones_get_create_link(t('Create Wiki Document'), 'node/add/wiki',array('attributes'=>array('class'=>'a_create_user_news')));
         //intelsat-2016
-        if(red_copiar_is_copiar_activado()){
+        /*if(red_copiar_is_copiar_activado()){
             if(!red_copiar_is_grupo_conectado()){
                 $html[]=compartir_documentos_get_importar_wiki_link();
                 $html[]=compartir_documentos_get_importar_my_report_link();
             }    
-        }        
+        }*/        
         $result=implode('<br>',$html);    
         $result='<div class="views-summary views-summary-unformatted create-separacion">'.$result.'</div>';    
     }else{

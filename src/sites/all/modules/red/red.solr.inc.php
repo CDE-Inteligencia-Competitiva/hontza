@@ -89,7 +89,12 @@ function red_solr_inc_actualizar_items(){
     }
     /*if(red_solr_inc_is_hontza_item_indexado_activado()){
         red_solr_inc_save_hontza_item_indexado($item_array,1);
-    }*/    
+    }*/
+    //intelsat-2016
+    /*if(red_solr_inc_is_actualizar_noticias_usuario()){
+         $noticia_array=hontza_get_all_nodes(array('noticia'));
+         red_solr_inc_actualizar_noticia_canal_category_tid($notica_array);
+    }*/   
 }
 function red_solr_inc_actualizar_seleccionado_boletin($item_array){
     if(!empty($item_array)){
@@ -1476,3 +1481,72 @@ function red_solr_inc_is_termino_in_html_strpos($value,$needle){
     }
     return 1;
 }
+//intelsat-2016
+function red_solr_inc_is_actualizar_noticias_usuario(){
+    if(defined('_IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO') && _IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function red_solr_simular_remaining_callback(){
+    $status=red_solr_inc_get_index_status();
+    echo print_r($status,1);
+    exit();
+}
+//intelsat-2016
+function red_solr_inc_add_remaining_html(&$html){
+    $status_html=red_solr_inc_get_index_status_html();
+    if(!empty($status_html)){
+        $html[]=$status_html;
+    }
+}
+//intelsat-2016
+function red_solr_inc_get_index_status(){
+    require_once 'sites/all/modules/apachesolr/apachesolr.index.inc';
+    $env_id = apachesolr_default_environment();
+    $environment = apachesolr_environment_load($env_id);
+    $status = apachesolr_index_status($environment["env_id"]);
+    return $status;
+}
+//intelsat-2016
+function red_solr_inc_get_index_status_html(){
+    $html=array();        
+    $status=red_solr_inc_get_index_status();
+    if(isset($status['remaining']) && !empty($status['remaining'])){
+        $html[]='<fieldset>';
+        $html[]='<legend>'.t('Index status ').'</legend>';
+        $html[]='<div style="padding:5px;float:left;">';
+        $html[]='<p>Faltan '.$status['remaining'].' noticias para indexar</p>';
+        $html[]='</div>';
+        $html[]='<div style="padding:5px;float:left;">';
+        $html[]='<input id="index_status_btn" type="button" value="'.t('Index').'">';
+        $html[]='</div>';
+        $html[]='</fieldset>';
+        red_solr_inc_add_index_status_js();
+    }    
+    return implode('',$html);
+}
+function red_solr_inc_add_index_status_js(){
+    $js='$(document).ready(function()
+			{
+			   $("#index_status_btn").click(function(){
+                            window.location.href="'.url('red/solr/index/remaining',array('query'=>drupal_get_destination())).'";
+                           });
+			});';
+			
+			drupal_add_js($js,'inline');
+}
+function red_solr_index_remaining_access(){
+    if(red_funciones_is_administrador_grupo()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function red_solr_index_remaining_callback(){
+    require_once 'sites/all/modules/apachesolr/apachesolr.admin.inc';
+    $form_state=array();
+    $environment = apachesolr_environment_load($env_id);
+    return drupal_get_form('apachesolr_index_action_form_remaining_confirm',$form_state,$environment);
+}
+     
