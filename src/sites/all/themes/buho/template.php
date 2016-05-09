@@ -1201,3 +1201,14 @@ function buho_select($element) {
   $multiple = $element['#multiple'];
   return theme('form_element', $element, '<select name="' . $element['#name'] . '' . ($multiple ? '[]' : '') . '"' . ($multiple ? ' multiple="multiple" ' : '') . drupal_attributes($element['#attributes']) . ' id="' . $element['#id'] . '" ' . $size . '>' . form_select_options($element) . '</select>');
 }
+//intelsat-2016
+function buho_apachesolr_search_noresults() {
+  $html=array();
+  $html[]=t('<ul style="clear:both;">
+<li>Check if your spelling is correct, or try removing filters.</li>
+<li>Remove quotes around phrases to match each word individually: <em>"blue drop"</em> will match less than <em>blue drop</em>.</li>
+<li>You can require or exclude terms using + and -: <em>big +blue drop</em> will require a match on <em>blue</em> while <em>big blue -drop</em> will exclude results that contain <em>drop</em>.</li>
+</ul>');
+  red_solr_inc_add_remaining_html($html);
+  return implode('',$html);
+}
