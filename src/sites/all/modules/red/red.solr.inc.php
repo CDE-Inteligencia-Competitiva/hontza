@@ -1515,12 +1515,12 @@ function red_solr_inc_get_index_status_html(){
     $status=red_solr_inc_get_index_status();
     if(isset($status['remaining']) && !empty($status['remaining'])){
         $html[]='<fieldset>';
-        $html[]='<legend>'.t('Index status ').'</legend>';
+        $html[]='<legend>'.t('Index status').'</legend>';
         $html[]='<div style="padding:5px;float:left;">';
-        $html[]='<p>Faltan '.$status['remaining'].' noticias para indexar</p>';
+        $html[]='<p style="color:red;">'.t('Results may be inaccurate. There are @status_remaining news waiting to be indexed',array('@status_remaining'=>$status['remaining'])).'</p>';        
         $html[]='</div>';
         $html[]='<div style="padding:5px;float:left;">';
-        $html[]='<input id="index_status_btn" type="button" value="'.t('Index').'">';
+        $html[]='<input id="index_status_btn" type="button" value="'.t('Index all queued content').'">';
         $html[]='</div>';
         $html[]='</fieldset>';
         red_solr_inc_add_index_status_js();
