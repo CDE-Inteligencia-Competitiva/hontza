@@ -11,6 +11,8 @@ require_once('red_servidor.facilitador.node.view.inc.php');
 require_once('red_servidor.facilitador.multiple.inc.php');
 //intelsat-2015
 require_once('red_servidor.validar_usuario.network.inc.php');
+//intelsat-2016
+require_once('red_servidor.usuarios.csv.inc.php');
 function red_servidor_perm() {
     return array('access red_servidor');
 }
@@ -212,6 +214,16 @@ function red_servidor_menu() {
         'title'=>'Experts',
         'page callback'=>'red_servidor_facilitador_save_servicios_experto_callback',   
         'access callback' =>TRUE,
+    );
+    $items['red_servidor/facilitador/delete_users_facilitators']=array(
+        'title'=>'Experts',
+        'page callback'=>'red_servidor_facilitador_delete_users_facilitators_callback',   
+        'access callback' =>TRUE,
+    );
+    $items['red_servidor/usuarios_csv/crear_csv']=array(
+        'title'=>'Users',
+        'page callback'=>'red_servidor_usuarios_csv_inc_crear_csv_callback',   
+        'access arguments' =>array('root'),
     );
     return $items;
 }
