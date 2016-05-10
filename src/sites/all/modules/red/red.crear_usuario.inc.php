@@ -4,6 +4,10 @@ function red_crear_usuario_user_profile_form_alter(&$form,&$form_state,$form_id)
         if(red_crear_usuario_is_activado()){
             crear_usuario_user_profile_form_alter($form,$form_state,$form_id);
         }
+        //intelsat-2016
+        if(isset($form['_account']['#value']->uid) && !empty($form['_account']['#value']->uid)){
+            $form['account']['name']['#attributes']['readonly']='readonly';
+        }
     }
 }
 function red_crear_usuario_is_activado(){
