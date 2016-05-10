@@ -1191,6 +1191,9 @@ function red_funciones_flag_save_validador_node($content_id, $fid,$uid_in=''){
         $validador_node_row=red_funciones_flag_get_validador_node_row($content_id);
         if(!(isset($validador_node_row->id) && !empty($validador_node_row->id))){            
             db_query("INSERT INTO {validador_node} (content_id, uid, timestamp) VALUES (%d, %d, %d)",$content_id, $uid, time());
+        //intelsat-2016                        
+        }else{
+            db_query("UPDATE {validador_node} SET uid=%d,timestamp=%d WHERE content_id=%d",$uid, time(),$content_id);        
         }
     }    
 }
