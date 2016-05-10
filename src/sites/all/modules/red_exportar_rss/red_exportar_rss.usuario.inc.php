@@ -26,9 +26,12 @@ function red_exportar_rss_usuario_get_sites_filename($uid,$grupo_nid_in=''){
         $grupo_nid=$grupo_nid_in; 
      }
      //intelsat-2016
+     if(defined('_RED_EXPORTAR_RSS_PREFIJO_SITES')){
+        $sareko_id=_RED_EXPORTAR_RSS_PREFIJO_SITES; 
+     }
      $my_path='sites/'.strtolower(_SAREKO_ID).'.hontza.es/files';
      $file_directory_path=variable_get('file_directory_path','');
-     if($file_directory_path=='sites/default/files'){
+     if($sareko_id=='default' || $file_directory_path=='sites/default/files'){
          $my_path='sites/default/files';
      }
      //print $my_path;exit();
