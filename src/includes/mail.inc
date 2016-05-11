@@ -201,8 +201,8 @@ function drupal_mail_send($message_in,$is_html=0) {
   if(defined('_MAIL_RETURN_PATH')){
       $mail_return_path=_MAIL_RETURN_PATH;
       if(!empty($mail_return_path)){
-        $message['headers']['Return-Path']=$mail_return_path;
-        //$message['headers']['Reply-To']=$mail_return_path;
+        //$message['headers']['Return-Path']=$mail_return_path;
+        $message['headers']['Reply-To']=$mail_return_path;
         /*$data_from='from:'.$mail_return_path."\r\n";
         $data_reply_to='reply-to:'.$mail_return_path."\r\n";
         $message['body']=$data_from.$data_reply_to.$message['body'];*/
