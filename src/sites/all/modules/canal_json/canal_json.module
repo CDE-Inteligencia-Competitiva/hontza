@@ -281,7 +281,11 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
                                 $item['url']=$item['link'];
                                 $item['description']='';
                                 if(isset($result->{$json_fields->description}) && !empty($result->{$json_fields->description})){        
-                                    $item['description']=$result->{$json_fields->description};
+                                    $description=$result->{$json_fields->description};
+                                    if(is_array($description)){
+                                        $description=$description[0];
+                                    }
+                                    $item['description']=$description;
                                 }
                                 $batch->items[] =$item;
                             }
