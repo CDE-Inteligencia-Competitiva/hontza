@@ -5,9 +5,11 @@ function red_crear_usuario_user_profile_form_alter(&$form,&$form_state,$form_id)
             crear_usuario_user_profile_form_alter($form,$form_state,$form_id);
         }
         //intelsat-2016
-        if(isset($form['_account']['#value']->uid) && !empty($form['_account']['#value']->uid)){
-            $form['account']['name']['#attributes']['readonly']='readonly';
-        }
+        if(!red_crear_usuario_is_editar_username_access()){
+            if(isset($form['_account']['#value']->uid) && !empty($form['_account']['#value']->uid)){
+                $form['account']['name']['#attributes']['readonly']='readonly';
+            }
+        }    
     }
 }
 function red_crear_usuario_is_activado(){
@@ -774,4 +776,10 @@ function red_crear_usuario_add_select_user_icon_js(){
     //drupal_add_js($js,'inline');
    $js.='</script>';
    return $js;
+}
+function red_crear_usuario_is_editar_username_access(){
+    if(is_super_admin()){
+        return 1;
+    }
+    return 0;
 }
