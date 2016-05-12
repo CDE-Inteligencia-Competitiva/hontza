@@ -3291,14 +3291,14 @@ function my_get_user_info($node,$is_mail=0,$bg=''){
                             }
                     }
                 }    
-	}else if(strcmp($node->type,'noticia')==0){
+	}else if(strcmp($node->type,'noticia')==0){            	
                 //intelsat-2015
                 if(!hontza_canal_rss_is_visualizador_activado() || !empty($node->uid)){
                     //gemini-2014
-                    $uid=red_funciones_flag_get_validador_node_uid($node->nid);
+                    $uid=red_funciones_flag_get_validador_node_uid($node->nid);                           
                     if(empty($uid)){
                         //  
-                        $uid=my_get_flag_content_uid($node->nid);
+                        $uid=my_get_flag_content_uid($node->nid);        
                         if(empty($uid)){
                                 $uid=$node->uid;
                         }
@@ -3313,9 +3313,6 @@ function my_get_user_info($node,$is_mail=0,$bg=''){
 	}else{            
 		$uid=$node->uid;
 	}
-	
-	//print 'uid='.$uid.'<BR>';
-	
 	/*if(empty($uid)){
 		$canal=node_load($node->field_item_canal_reference[0]['nid']);
 		if(!empty($canal)){
@@ -3595,7 +3592,7 @@ function my_get_flag_content($content_id,$fid=''){
 		$where[]='fc.fid='.$fid;
 	}
 	$sql='SELECT fc.* FROM flag_content fc WHERE '.implode(' AND ',$where);
-	
+	//print $sql;
 	$result = db_query($sql);
 	 
 	  while ($row = db_fetch_object($result)) {		
