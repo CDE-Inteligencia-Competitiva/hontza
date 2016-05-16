@@ -487,3 +487,20 @@ function red_copiar_my_report_node_form_alter(&$form,&$form_state,$form_id){
         compartir_documentos_my_report_node_form_alter($form,$form_state,$form_id);
     }
 }
+function red_copiar_is_canal_usuario_exportado_save($source,$xml){
+    if(red_copiar_is_copiar_activado()){
+        compartir_documentos_is_canal_usuario_exportado_save($source,$xml);
+    }
+}
+function red_copiar_is_canal_usuario_exportado_add(&$canal,$data){
+    if(red_copiar_is_copiar_activado()){
+        compartir_documentos_is_canal_usuario_exportado_add($canal,$data);
+    }
+}
+function red_copiar_is_canal_usuario_exportado_add_img($canal_nid,$result_in){
+    $result=$result_in;
+    if(red_copiar_is_copiar_activado()){
+        $result=compartir_documentos_is_canal_usuario_exportado_add_img($canal_nid,$result);
+    }
+    return $result;
+}
