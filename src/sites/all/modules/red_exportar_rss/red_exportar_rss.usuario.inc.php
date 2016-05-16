@@ -50,7 +50,11 @@ function red_exportar_rss_usuario_create($uid,$grupo_nid=''){
         $creation_date=date('Y-m-d H:i:s',$my_user->created);
     }
     //header('Content-Type: application/rss+xml; charset=utf-8');
-    $canal_usuarios_title=hontza_get_canal_usuarios_title($uid);
+    //itnelsat-2016
+    //$is_user_label=1;
+    $is_user_label=0;
+    $is_red_exportar_rss_usuario=1;
+    $canal_usuarios_title=hontza_get_canal_usuarios_title($uid,$is_user_label,$is_red_exportar_rss_usuario);
     
     $rssfeed = '<?xml version="1.0" encoding="utf-8"?>';
     $rssfeed .= '<rss version="2.0">';
@@ -61,6 +65,8 @@ function red_exportar_rss_usuario_create($uid,$grupo_nid=''){
     //$rssfeed .= '<language>en-us</language>';
     $rssfeed .= '<copyright>Powered by Hontza</copyright>';
     $rssfeed .= '<creation_date>'.$creation_date.'</creation_date>';
+    //intelsat-2016
+    $rssfeed .= '<is_canal_usuario_exportado>1</is_canal_usuario_exportado>';
     $rssfeed .= '<date_of_last_content></date_of_last_content>';
     $rssfeed .= '<date_of_last_update></date_of_last_update>';
     $rssfeed .= '<thematic_categories></thematic_categories>';
