@@ -1009,7 +1009,7 @@ function previsualizar_form(&$form, &$form_state){
         $form_state['yql_obj']->field_fuente_canal[0]['value']=yql_wizard_get_field_fuente_canal_value($form_state['yql_obj']);  
       }else{
         $form_state['yql_obj']->field_fuente_canal[0]['value']='JSON';
-      }  
+      }    
   //    
   }else if(!strpos($dxml,'yahoo:count="0"')){
           $data='';
@@ -1037,6 +1037,8 @@ function previsualizar_form(&$form, &$form_state){
                   $oldtitle = $r->channel->title.'';
                 }        
             }else{
+                //intelsat-2016
+                yql_wizard_is_canal_usuario_exportado_add($form_state['yql_obj'],$data);
                 $sets = $data->channel->item;
                 $all=0;
                 if(isset($data->channel) && isset($data->channel->item)){
@@ -1866,4 +1868,8 @@ function yql_wizard_get_field_fuente_canal_value($canal){
         }
     }
     return 'JSON';
+}
+//intelsat-2016
+function yql_wizard_is_canal_usuario_exportado_add(&$canal,$data){
+    red_copiar_is_canal_usuario_exportado_add($canal,$data);
 }
