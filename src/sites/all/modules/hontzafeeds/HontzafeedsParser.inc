@@ -114,6 +114,8 @@ class HontzafeedsParser extends FeedsParser {
     if(isset($xml->channel) && isset($xml->channel->item)){
         $all=$sets->count();
     }
+    //intelsat-2016
+    red_copiar_is_canal_usuario_exportado_save($source,$xml);
     
     $all=hontza_hound_limit_all($all);
     for ($i=0; $i<$all; $i++) {
