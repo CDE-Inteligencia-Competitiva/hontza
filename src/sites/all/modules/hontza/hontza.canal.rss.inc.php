@@ -1530,6 +1530,8 @@ function hontza_canal_rss_get_canal_rss_link($url,$canal_nid_in=''){
         //    $result=l(my_get_icono_action($icono,$title,'left_rss'),$url_info['path'],array('html'=>TRUE,'query'=>$url_info['query'],'attributes'=>array('target'=>'_blank')));
         //}    
     }
+    //intelsat-2016
+    $result=red_copiar_is_canal_usuario_exportado_add_img($canal_nid,$result);
     return $result;
 }
 //intelsat-2015
@@ -1993,7 +1995,7 @@ function hontza_canal_rss_fivestar_static($content_type, $content_id, $tag = 'vo
 function hontza_canal_rss_get_base_path_help_popup(){
     global $base_path;
     //instalador
-    return $base_path;
+    //return $base_path;
     if($base_path=='/hontza5/'){
         return $base_path;
     }
