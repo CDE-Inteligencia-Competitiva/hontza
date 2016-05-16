@@ -1305,8 +1305,8 @@ function compartir_documentos_get_field_is_imported_type($node){
     return $field;
 }
 function compartir_documentos_canal_node_form_alter(&$form,&$form_state,$form_id){
-    $unset_array=array();
-    compartir_documentos_unset_form_field_form_alter($form,$form_state, $form_id, $unset_array);
+    $unset_array=array('field_is_usuario_exportado');
+    compartir_documentos_unset_form_field_form_alter($form,$form_state, $form_id, $unset_array);    
 }
 function compartir_documentos_get_estrategia_link($node){
     $result='';
@@ -1338,4 +1338,55 @@ function compartir_documentos_is_conectado_red_access_denied(){
         drupal_access_denied();
         exit();
     }
+}
+function compartir_documentos_is_canal_usuario_exportado_save($source,$xml){
+    /*if(isset($xml->channel->is_canal_usuario_exportado) && !empty($xml->channel->is_canal_usuario_exportado)){
+        $is_canal_usuario_exportado=trim($xml->channel->is_canal_usuario_exportado);
+        if($is_canal_usuario_exportado==1){
+            if(db_table_exists('content_field_is_usuario_exportado')){*/
+            if(compartir_documentos_is_canal_usuario_exportado($xml)){
+                $node=node_load($source->feed_nid);
+                if(isset($node->nid) && !empty($node->nid)){
+                    compartir_documentos_is_canal_usuario_exportado_update($node->nid,$node->vid,$is_canal_usuario_exportado);
+                }
+            }    
+            /*}
+        }
+    }*/    
+}
+function compartir_documentos_is_canal_usuario_exportado_update($nid,$vid,$is_canal_usuario_exportado){
+    db_query('UPDATE {content_field_is_usuario_exportado} SET field_is_usuario_exportado_value=%d WHERE nid=%d AND vid=%d',$is_canal_usuario_exportado,$nid,$vid);
+    hontza_solr_clear_cache_content($nid,1);
+}
+function compartir_documentos_is_canal_usuario_exportado_add(&$canal,$xml){
+     if(compartir_documentos_is_canal_usuario_exportado($xml)){
+        $canal->field_is_usuario_exportado[0]['value']=1;            
+     }    
+}
+function compartir_documentos_is_canal_usuario_exportado_add_img($canal_nid,$result_in){
+    $result=$result_in;
+    if(compartir_documentos_is_canal_usuario_exportado_node($canal_nid)){
+        $result.=my_get_icono_action('is_canal_usuario_exportado',t('User'));
+    }
+    return $result;
+}
+function compartir_documentos_is_canal_usuario_exportado_node($canal_nid){
+    $canal=node_load($canal_nid);
+    if(isset($canal->nid) && !empty($canal->nid)){
+        if(isset($canal->field_is_usuario_exportado[0]['value']) && !empty($canal->field_is_usuario_exportado[0]['value'])){
+            return 1;
+        }
+    }
+    return 0;
+}
+function compartir_documentos_is_canal_usuario_exportado($xml){
+    if(isset($xml->channel->is_canal_usuario_exportado) && !empty($xml->channel->is_canal_usuario_exportado)){
+        $is_canal_usuario_exportado=trim($xml->channel->is_canal_usuario_exportado);
+        if($is_canal_usuario_exportado==1){
+            if(db_table_exists('content_field_is_usuario_exportado')){
+                return 1;
+            }
+        }
+    }    
+    return 0;
 }
