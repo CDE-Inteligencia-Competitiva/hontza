@@ -129,7 +129,7 @@ function estrategia_menu() {
   );
   //intelsat-2016
   $items['estrategia/settings'] = array(
-    'title' => 'Setting',
+    'title' => 'Settings',
     'page arguments'=>array('estrategia_settings_form'),  
     'page callback' => 'drupal_get_form',
     'access callback' => 'estrategia_settings_access',

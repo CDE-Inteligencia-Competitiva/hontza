@@ -1639,22 +1639,29 @@ function estrategia_inc_is_estrategia_congelar_voto_activado(){
 //intelsat-2016
 function estrategia_settings_form(){
     $form=array();
+    drupal_set_title(t('Settings'));    
     $is_active_votes=estrategia_inc_get_grupo_is_active_votes();
     $form['is_active_votes']=array(
-        '#title'=>t('Activate'),
+        '#title'=>t('Activate Voting'),
         '#type'=>'select',
         '#options'=>hontza_registrar_yes_no_options(0,1),
         '#default_value'=>$is_active_votes,
+        '#prefix'=>'<div style="clear:both;"><div style="float:left;">',
+        '#suffix'=>'</div>',
     );
     $form['save_btn']=array(
         '#type'=>'submit',
         '#value'=>t('Save'),
         '#name'=>'save_btn',
+        '#prefix'=>'<div style="float:left;padding-top:35px;padding-left:32px;">',
+        '#suffix'=>'</div></div>',
     );
     $form['reset_btn']=array(
         '#type'=>'submit',
-        '#value'=>t('Reset'),
+        '#value'=>t('Reset Voting'),
         '#name'=>'reset_btn',
+        '#prefix'=>'<div style="clear:both">',
+        '#suffix'=>'</div>',
     );
     return $form;
 }
@@ -1720,5 +1727,11 @@ function estrategia_inc_reset_votes(){
                 db_query('DELETE FROM {votingapi_cache} WHERE content_id=%d',$estrategia_row->nid);
             }
         }
+    }
+}
+//intelsat-2016
+function estrategia_inc_add_evaluacion_disabled_option($my_type,&$result){
+    if(in_array($my_type,array('importancia_despliegue','valor_decision'))){
+        $result[0]='0='.t('Disabled');
     }
 }
