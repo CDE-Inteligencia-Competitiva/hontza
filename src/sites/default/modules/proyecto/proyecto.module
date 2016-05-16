@@ -970,6 +970,8 @@ function my_get_evaluacion_options($with_zero=0,$my_type=''){
                     $result[$i]=$i;
             }
         }else{
+            //intelsat-2016
+            estrategia_inc_add_evaluacion_disabled_option($my_type,$result);
             switch($my_type){
                 case 'eval_accesibilidad':
                     $result[1]='1='.t('Key Technology is owned by a competitor');
