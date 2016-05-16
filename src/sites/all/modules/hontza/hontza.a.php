@@ -1050,6 +1050,7 @@ function my_canal_de_supercanal_node_form_alter(&$form,&$form_state, $form_id){
         red_set_required_field_canal_source_type($form);
         //intelsat-2016
         hontza_crm_inc_canal_node_form_alter($form,$form_state, $form_id);
+        red_copiar_canal_node_form_alter($form,$form_state, $form_id);
     }
     //gemini-2013
     unset_field_validate_api($form);

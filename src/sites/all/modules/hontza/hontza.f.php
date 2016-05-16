@@ -1143,7 +1143,7 @@ function hontza_is_canal_usuarios($arg_type=''){
 }
 //intelsat-2015
 //function hontza_get_canal_usuarios_title($uid_in=''){
-function hontza_get_canal_usuarios_title($uid_in='',$is_user_label=1){
+function hontza_get_canal_usuarios_title($uid_in='',$is_user_label=1,$is_red_exportar_rss_usuario=0){
     //intelsat-2015
     $result=t('View all');    
     if(!empty($uid_in)){
@@ -1153,8 +1153,10 @@ function hontza_get_canal_usuarios_title($uid_in='',$is_user_label=1){
             //$result=t('User').': '.t('All');
             $result='';
             //if($is_user_label){
+            //intelsat-2016
+            if(!$is_red_exportar_rss_usuario){    
                 $result=t('User').': ';
-            //}
+            }
             $result.=t('All');
             return $result;
         }
@@ -1179,8 +1181,10 @@ function hontza_get_canal_usuarios_title($uid_in='',$is_user_label=1){
             //$result=t('User').': '.$my_user->name;            
             $result='';
             //if($is_user_label){
+            //intelsat-2016
+            if(!$is_red_exportar_rss_usuario){    
                 $result=t('User').': ';
-            //}
+            }
             $result.=$my_user->name;
         }
     //}
