@@ -683,6 +683,12 @@ function hontza_grupos_active_access_tab($key){
         drupal_access_denied();
         exit();
     }
+    /*
+    //intelsat-2016
+    if(!hontza_grupos_mi_grupo_in_grupo()){
+        drupal_access_denied();
+        exit();
+    }*/
 }
 function hontza_grupos_define_active_tabs_structure(){
     $result=array();

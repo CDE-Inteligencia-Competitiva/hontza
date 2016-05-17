@@ -1387,4 +1387,54 @@ function hontza_grupos_mi_grupo_quant_time_is_filter_activated(){
       return 0;
   }
   return 1;
-}  
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_in_grupo(){
+    global $user;
+    if(is_super_admin()){
+        return 1;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(red_is_visualizador_pantalla()){
+                return 1;
+        }
+        /*if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $visualizador_grupo_nid=visualizador_get_grupo_nid();
+            print $visualizador_grupo_nid;
+            if($my_grupo->nid==$visualizador_grupo_nid){
+                return 1;
+            }
+        }*/
+        return 1;
+    }
+    if(!hontza_is_user_anonimo()){    
+        $my_grupo=og_get_group_context();                        
+        if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            if(isset($user->og_groups[$my_grupo->nid]) && !empty($user->og_groups[$my_grupo->nid])){
+                return 1;
+            }
+            $grupo_nid_array=hontza_grupos_mi_grupo_get_og_uid_grupo_nid_array($user->uid);
+            if(in_array($my_grupo->nid,$grupo_nid_array)){
+                return 1;
+            }
+            return 0;
+        }        
+    }    
+    return 1;
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_in_grupo_access_denied(){
+    if(!hontza_grupos_mi_grupo_in_grupo()){
+        drupal_access_denied();
+        exit();
+    }
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_get_og_uid_grupo_nid_array($uid){
+    $result=array();
+    $res=db_query('SELECT * FROM {og_uid} WHERE uid=%d'.$uid);
+    while($row=db_fetch_object($res)){
+        $result[]=$row->nid;
+    }
+    return $result;
+}
