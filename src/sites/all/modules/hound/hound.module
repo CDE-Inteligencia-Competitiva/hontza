@@ -1,5 +1,7 @@
 <?php
 require_once('hound.update.canal.uid.inc.php');
+//intelsat-2016
+require_once('hound.enlazar.inc.php');
 //
 function hound_menu() {
     $items['hound/hound_load_ajax'] = array(
@@ -104,6 +106,8 @@ function hound_add_select_text_input(&$form){
          '#type'=>'button',
          '#default_value'=>t('Load Hound'),
      );
+     //intelsat-2016
+     hound_enlazar_inc_add_create_edit_form_field($form);
      $form['fuentes']['hound1_result_html']=array(
          '#value'=>'<div id="hound1_result_html" style="padding:10px;"></div>',
      );
@@ -153,6 +157,9 @@ function hound_load_ajax_callback(){
     //print $url;exit();
     $content=file_get_contents($url);
     $result=json_decode($content);
+    //echo print_r($result,1);exit();
+    //intelsat-2016
+    //$result=hound_urldecode_array($result);
     //if(!empty($result)){        
         $info['ok']=1;
         $info['content_html']=hound_load_result_html($result,$hound_id);
@@ -224,7 +231,7 @@ function hound_add_canal_hound_parametros($form_state,&$fuente){
         $fuente->canal_hound_parametros=$row;       
     }
 }
-function hound_save_canal_hound_parametros($canal){
+function hound_save_canal_hound_parametros($canal){    
     $canal_hound_parametros=hound_get_canal_hound_parametros_row($canal->nid);
     if(isset($canal_hound_parametros->id) && !empty($canal_hound_parametros->id)){
         db_query('UPDATE {canal_hound_parametros} SET hound_id="%s",hound_title="%s",parametros="%s",is_empty=%d WHERE nid=%d AND vid=%d',$canal->canal_hound_parametros->hound_id,$canal->canal_hound_parametros->hound_title,$canal->canal_hound_parametros->parametros,$canal->canal_hound_parametros->is_empty,$canal->nid,$canal->vid);
@@ -235,8 +242,15 @@ function hound_save_canal_hound_parametros($canal){
 function hound_delete_canal_hound_parametros($canal){
     db_query('DELETE FROM {canal_hound_parametros} WHERE vid=%d AND nid=%d',$canal->vid,$canal->nid);
 }
-function hound_get_canal_hound_parametros_row($nid){
-    $node=node_load($nid);
+//intelsat-2016
+//function hound_get_canal_hound_parametros_row($nid){
+function hound_get_canal_hound_parametros_row($nid,$node_in=''){
+    //intelsat-2016
+    if(empty($nid)){
+        $node=$node_in;
+    }else{
+        $node=node_load($nid);
+    }
     $where=array();
     $where[]='1';
     $where[]='nid='.$node->nid;
@@ -356,7 +370,9 @@ function hound_editing_form_alter(&$form,&$form_state,$form_id,$nid){
             $form['hound_editing_reset_btn']=array(
                 '#type'=>'button',
                 '#default_value'=>t('Reset Hound'),
-            );
+            );            
+            hound_enlazar_inc_add_create_edit_form_field($form);
+            
             if(!hound_admin_grupo_access()){
                 $form['hound_editing_reset_btn']['#prefix']='<div style="display:none">';
                  $form['hound_editing_reset_btn']['#suffix']='</div>';
@@ -581,8 +597,12 @@ function hound_is_parametro_text_area($param_key){
     }
     return 0;
 }
-function hound_get_hound_id_by_nid($nid){
-    $row=hound_get_canal_hound_parametros_row($nid);
+//intelsat-2016
+//function hound_get_hound_id_by_nid($nid){
+function hound_get_hound_id_by_nid($nid,$canal=''){
+    //intelsat-2016
+    //$row=hound_get_canal_hound_parametros_row($nid);
+    $row=hound_get_canal_hound_parametros_row($nid,$canal);
     if(isset($row->hound_id) && !empty($row->hound_id)){
         return $row->hound_id;
     }
@@ -970,7 +990,8 @@ function hound_get_old_canal_estrategia($nid){
 function hound_settings_access(){
     //simulando
     //return FALSE;
-    if(is_super_admin()){
+    //if(is_super_admin()){
+    if(red_funciones_is_administrador_grupo()){    
         return TRUE;
     }
     return FALSE;
@@ -979,12 +1000,23 @@ function hound_settings_form(){
     drupal_set_title(t('Hound settings'));
     $form=array();
     $hound_is_active=hontza_is_hound_actions();
-    $form['hound_is_active']=array(
-        '#title'=>t('Hound active'),
-        '#type'=>'checkbox',
-    );
-    if($hound_is_active){
-        $form['hound_is_active']['#attributes']=array('checked'=>'checked');
+    if(hound_is_active_access()){
+        $form['hound_is_active']=array(
+            '#title'=>t('Hound active'),
+            '#type'=>'checkbox',
+        );
+        if($hound_is_active){
+            $form['hound_is_active']['#attributes']=array('checked'=>'checked');
+        }
+    }
+    //intelsat-2016
+    if(hound_enlazar_inc_is_activado()){
+        $hound_key=hound_enlazar_inc_get_key();
+        $form['hound_key']=array(
+            '#title'=>t('Hound key'),
+            '#type'=>'textfield',
+            '#default_value'=>$hound_key,
+        );
     }
     $form['save_btn']=array(
         '#type'=>'submit',
@@ -1004,15 +1036,21 @@ function hound_settings_form_submit($form, &$form_state){
     if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
         $name=$form_state['clicked_button']['#name'];
         if(strcmp($name,'save_btn')==0){
-            $hound_is_active=$form_state['values']['hound_is_active'];
-            if(!empty($hound_is_active)){
-                $hound_is_active=1;
-            }else{
-                $hound_is_active=0;
+            if(hound_is_active_access()){
+                $hound_is_active=$form_state['values']['hound_is_active'];
+                if(!empty($hound_is_active)){
+                    $hound_is_active=1;
+                }else{
+                    $hound_is_active=0;
+                }
+                variable_set('hound_is_active',$hound_is_active);
             }
-            variable_set('hound_is_active',$hound_is_active);
+            //intelsat-2016
+            hound_enlazar_inc_hound_key_save($form_state);
         }
     }
+    //intelsat-2016
+    drupal_set_message(t('Hound settings saved'));
     drupal_goto('vigilancia/validados');
 }
 function hound_is_item_espacenet($link,&$link_ini,&$link_end){
@@ -1153,4 +1191,23 @@ function hound_feed_actualizar_canal($nid){
             }
         }
     }
+}
+//intelsat-2016
+function hound_urldecode_array($result_in){
+    $result=$result_in;
+    if(!empty($result)){
+        foreach($result as $field=>$row){
+            foreach($row as $f=>$value){
+                $result->$field->$f=urldecode($value);
+            }    
+        }    
+    }
+    return $result;
+}
+//intelsat-2016
+function hound_is_active_access(){
+    if(is_super_admin()){
+        return TRUE;
+    }
+    return FALSE;
 }
