@@ -640,3 +640,9 @@ function red_canal_add_apply_alchemy_description(&$form,$field='apply_alchemy',$
         $form[$field]['#suffix']='</div>';
     }
 }
+//intelsat-2016
+function red_canal_delete_canal_hound($canal){
+    if(module_exists('hound')){
+        hound_enlazar_inc_delete_canal_hound($canal);
+    }
+}
