@@ -764,7 +764,9 @@ function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 		//gemini
 		my_delete_item_list($node->nid);
 	    my_delete_opml_file($node);
-		//		
+		//
+            //intelsat-2016
+            red_canal_delete_canal_hound($node);    
       }
 	  
 	  //gemini
