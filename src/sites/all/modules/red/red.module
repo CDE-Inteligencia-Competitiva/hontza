@@ -1703,7 +1703,7 @@ function red_get_servidor_central_url(){
 }
 //intelsat-2016
 function red_cron(){
-    red_crear_usuario_red_servidor_validar_usuario_network_save_user_subdominios_tarea();
+    //red_crear_usuario_red_servidor_validar_usuario_network_save_user_subdominios_tarea();
 }
 //intelsat-2016
 function red_repase_access_fuentes(){
