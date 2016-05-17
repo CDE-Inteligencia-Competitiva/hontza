@@ -1240,9 +1240,11 @@ function estrategia_set_preguntas_clave_arbol($arbol){
 }
 //gemini-2014
 function estrategia_importar_estrategia_access_callback(){
-    if(is_administrador_grupo(1)){
-        return TRUE;
-    }
+    //if(hontza_grupos_mi_grupo_in_grupo()){
+        if(is_administrador_grupo(1)){
+            return TRUE;
+        }
+    //}
     return FALSE;
 }
 //gemini-2014
@@ -1735,3 +1737,43 @@ function estrategia_inc_add_evaluacion_disabled_option($my_type,&$result){
         $result[0]='0='.t('Disabled');
     }
 }
+//intelsat-2016
+function estrategia_inc_get_score($result_in){
+    $result=$result_in;
+    if(!empty($result)){
+        foreach($result as $i=>$row){
+            if(isset($row['node'])){    
+                $node=$row['node'];
+                unset($result[$i]['node']);
+                $score=0;
+                    if(estrategia_is_grupo_estrellas()){
+                        $score=$node->suma_votos;
+                    }else{
+                        /*if($node->type=='estrategia'){                
+                            $score=$node->valor_reto;
+                        }else if($node->type=='despliegue'){
+                            $score=$node->importancia_despliegue;
+                        }else if($node->type=='decision'){
+                            $score=$node->valor_decision;
+                        }else if($node->type=='informacion'){
+                            $score='';
+                        }*/
+                        continue;
+                    }                    
+                    $status_color=$result[$i][1];
+                    $result[$i][1]=$score;
+                    $result[$i][3]=$result[$i][2];
+                    $result[$i][2]=$status_color;
+            }    
+        }
+    }
+    return $result;
+}
+function estrategia_inc_get_headers(){
+    $headers=array(get_estrategia_simbolo_img(1).t('Challenge').'&nbsp;'.get_menu_gezia_img(2).get_despliegue_simbolo_img(1).t('SubChallenge').'&nbsp;'.get_menu_gezia_img(2).get_decision_simbolo_img(1).t('Decision').'&nbsp;'.get_menu_gezia_img(2).get_informacion_simbolo_img(1).t('Key Question').'&nbsp;'.get_menu_gezia_img(2),t('Score'),t('Status'),t('Action'));
+    if(!estrategia_is_grupo_estrellas()){
+        unset($headers[1]);
+        $headers=array_values($headers);
+    }
+    return $headers;
+}                

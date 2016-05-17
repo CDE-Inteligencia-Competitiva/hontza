@@ -1370,7 +1370,8 @@ function estrategia_arbol_callback() {
             //$headers=array(t('Title'),t('Peso'));
             //$headers=array(t('Title'),t('Group'),t('Actions'));
             if(is_estrategia('arbol_estrategico')){
-                $headers=array(get_estrategia_simbolo_img(1).t('Challenge').'&nbsp;'.get_menu_gezia_img(2).get_despliegue_simbolo_img(1).t('SubChallenge').'&nbsp;'.get_menu_gezia_img(2).get_decision_simbolo_img(1).t('Decision').'&nbsp;'.get_menu_gezia_img(2).get_informacion_simbolo_img(1).t('Key Question').'&nbsp;'.get_menu_gezia_img(2),t('Status'),t('Action'));
+                //intelsat-2016
+                $headers=estrategia_inc_get_headers();
             }else{
                 $headers=array(t('Strategy'),t('Group'));
             }
@@ -1458,6 +1459,8 @@ function create_arbol($my_list,$is_solo_preguntas_clave=0){
                                 $borrar_img=my_get_icono_action("delete",t("Delete Challenge"));
                                 //print $borrar_img;
                                 $arbol[$kont][1]=estrategia_get_status_color($node);
+                                //intelsat-2016
+                                $arbol[$kont]['node']=$node;
                                 //
                                 $arbol[$kont][2]='';
                                 if(estrategia_is_admin_content()){
@@ -1513,6 +1516,8 @@ function create_arbol($my_list,$is_solo_preguntas_clave=0){
                                         $arbol[$kont][1].='<BR>'.l(t("Add Decision"),'node/add/decision/'.$despliegue->nid);
                                         */
                                         $arbol[$kont][1]=despliegue_get_status_color($my_despliegue);
+                                        //intelsat-2016
+                                        $arbol[$kont]['node']=$my_despliegue;
                                         //
                                         $arbol[$kont][2]='';
                                         if(estrategia_is_admin_content()){
@@ -1565,6 +1570,8 @@ function create_arbol($my_list,$is_solo_preguntas_clave=0){
                                                 $arbol[$kont][1]=get_decision_grupo_seguimiento_link($decision->grupo_seguimiento_nid,$decision->despliegue_nid);
                                             }else{
                                                 $arbol[$kont][1]=decision_get_status_color($my_decision);
+                                                //intelsat-2016
+                                                $arbol[$kont]['node']=$my_decision;
                                                 //
                                                 $arbol[$kont][2]='';
                                                 if(estrategia_is_admin_content()){
@@ -1617,6 +1624,8 @@ function create_arbol($my_list,$is_solo_preguntas_clave=0){
                                                         $arbol[$kont][1]=get_informacion_grupo_seguimiento_link($informacion->grupo_seguimiento_nid,$informacion->decision_nid);
                                                     }else{
                                                         $arbol[$kont][1]=informacion_get_status_color($my_informacion);
+                                                        //intelsat-2016
+                                                        $arbol[$kont]['node']=$my_informacion;
                                                         //
                                                         $arbol[$kont][2]='';
                                                         if(estrategia_is_admin_content()){
@@ -1647,6 +1656,8 @@ function create_arbol($my_list,$is_solo_preguntas_clave=0){
     if($is_solo_preguntas_clave){
         $arbol=estrategia_set_preguntas_clave_arbol($arbol);    
     }
+    //intelsat-2016
+    $arbol=estrategia_inc_get_score($arbol);
     return $arbol;
 }
 function add_link_informacion_title($title_in,$informacion_nid,$description=''){
@@ -2051,6 +2062,8 @@ function arbol_estrategico_callback(){
     if(hontza_social_is_grupo_semantico_social()){
         drupal_goto('social_learning/collections');        
     }else{
+        //intelsat-2016
+        //hontza_grupos_mi_grupo_in_grupo_access_denied();
         return estrategia_arbol_callback();
     }    
 }
