@@ -36,3 +36,11 @@ function red_visualizador_is_anonimo_visualizador_activado(){
     }
     return 0;
 }
+function red_is_visualizador_pantalla(){
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(visualizador_is_pantalla() || publico_is_pantalla_publico()){
+            return 1;
+        }
+    }
+    return 0;
+}
