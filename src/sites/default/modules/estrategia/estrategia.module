@@ -852,7 +852,9 @@ function get_estrategia_despliegue_list($estrategia_nid,$with_grupo=1){
 	WHERE ".implode(" AND ",$where);
 	//intelsat-2016
         //$sql.=" ORDER BY d.peso ASC,n.created ASC";
-        $sql.=" ORDER BY d.peso ASC,n.created,n.nid ASC";
+        $order_by=" ORDER BY d.peso ASC,n.created,n.nid ASC";
+        $order_by=despliegue_inc_get_order_by($order_by);
+        $sql.=$order_by;
 	
         //print $sql;exit();
 	$res=db_query($sql);
@@ -1345,6 +1347,8 @@ function estrategia_arbol_callback() {
   }
 
   $rows=create_arbol($my_list);*/
+  //intelsat-2016
+  estrategia_inc_update_suma_votos_array();
   $rows=get_estrategia_arbol_rows();
   if(!hontza_social_is_import_table_html()){
     $rows=my_set_estrategia_pager($rows,$my_limit);
@@ -1963,6 +1967,8 @@ function get_estrategia_arbol_rows($is_link=1){
   //$order_by=' ORDER BY n.sticky DESC, n.created DESC';
   //$order_by=' ORDER BY n.sticky DESC, n.created ASC';
   $order_by=' ORDER BY e.peso ASC,n.sticky DESC, n.created ASC,n.nid ASC';
+  //intelsat-2106
+  $order_by=estrategia_inc_get_order_by($order_by);
   //
   $sql='SELECT n.nid, n.sticky, n.created
   FROM {node} n
