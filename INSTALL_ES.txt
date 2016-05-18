@@ -232,3 +232,4 @@ Contraseña por defecto: hontza
 - Despues de relenar el perfil del usuario admin, en la barra de menu superior siguiendo las opciones de "Config. sitio web" -> "Búsqueda de Apache Solr" -> configuración ( url= http://localhost/hontza5/admin/settings/apachesolr/settings ). Debe editar la configuración para añadir el usuario y contraseña creados en Tomcat.
 
 - HONTZA YA ES TOTALMENTE FUNCCIONAL EN SU SERVIDOR!
+- OJO!! Hontza utiliza la función mail de PHP para enviar correos. Por ello, si quiere enviar correos con Hontza, asegurese que su servidor es capaz de enviar correos. Prpbablemente necesitará diponer de una aplicación MTA como sendmail,Postfix, Qmail, etc 
