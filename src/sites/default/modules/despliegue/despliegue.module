@@ -50,12 +50,16 @@ function despliegue_menu() {
 /**
  * Explain how the module demonstrates a new node type.despliegue.test
  */
-function despliegue_list_callback() {
+//intelsat-2016
+//function despliegue_list_callback() {
+function despliegue_list_callback($is_array=0) {
   global $user;
   estrategia_active_tabs_access();
   //gemini-2014
   hontza_grupo_shared_active_tabs_access();
   //
+  //intelsat-2016
+  $despliegue_array=array();
   $where=array();
   //
   $where[]='n.promote = 1';
@@ -129,6 +133,10 @@ function despliegue_list_callback() {
         $my_list[$kont]->view= node_view($my_node, 1);
         $votos_list=get_idea_votos_list($node->nid);
         $my_list[$kont]->suma_votos= get_suma_votos($votos_list);
+        //intelsat-2016
+        if($is_array){
+            $despliegue_array[]=$my_node;
+        }
         $kont++;
         
           
@@ -141,8 +149,12 @@ function despliegue_list_callback() {
       $my_list=my_set_estrategia_pager($my_list,$my_limit);
       $output.=set_array_view_html($my_list);
   }
-
-
+  
+  //intelsat-2016
+  if($is_array){
+    return $despliegue_array;
+  }
+    
   if ($num_rows) {
     /*$feed_url = url('despliegue_rss.xml', array('absolute' => TRUE));
     drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
@@ -669,10 +681,13 @@ function get_despliegue_decision_list($despliegue_nid){
 	$where[]="1";
 	$where[]='d.despliegue_nid='.$despliegue_nid;
 	//$sql="SELECT n.*,d.peso,d.despliegue_nid,d.grupo_seguimiento_nid
-	$sql="SELECT n.*,d.peso,d.despliegue_nid 
+	//intelsat-2016
+        $order_by=" ORDER BY d.peso ASC,n.created ASC";
+        //intelsat-2016
+        $order_by=decision_inc_get_order_by($order_by);
+        $sql="SELECT n.*,d.peso,d.despliegue_nid 
         FROM {node} n LEFT JOIN {decision} d ON n.nid=d.nid
-	WHERE ".implode(" AND ",$where)."
-	ORDER BY d.peso ASC,n.created ASC";
+	WHERE ".implode(" AND ",$where).$order_by;
 	//print $sql;exit();
 	$res=db_query($sql);
 	while($row=db_fetch_object($res)){
@@ -1015,4 +1030,26 @@ function despliegue_get_no_control_date_default($nid,$no_control_date,$estrategi
         }   
     }
     return $no_control_date;
+}
+//intelsat-2016
+function despliegue_update_despliegue_suma_votos_array(){
+    $is_array=1;
+    $despliegue_array=despliegue_list_callback($is_array);
+    if(!empty($despliegue_array)){
+                    foreach($despliegue_array as $i=>$despliegue_row){
+                        despliegue_inc_update_suma_votos($despliegue_row->nid,$despliegue_row->vid,$despliegue_row->suma_votos);
+                    }
+                }
+}
+//intelsat-2016
+function despliegue_inc_update_suma_votos($nid,$vid,$suma_votos){
+    db_query('UPDATE {despliegue} SET suma_votos=%f WHERE nid=%d AND vid=%d',$suma_votos,$nid,$vid);
+}
+//intelsat-2106
+function despliegue_inc_get_order_by($order_by){
+    $result=$order_by;
+    if(estrategia_inc_is_ordenar_suma_votos()){
+        $result=" ORDER BY d.suma_votos DESC,d.peso ASC,n.created,n.nid ASC";
+    }
+    return $result;
 }
