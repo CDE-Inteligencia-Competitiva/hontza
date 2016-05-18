@@ -1251,7 +1251,10 @@ function estrategia_importar_estrategia_access_callback(){
 function estrategia_get_simbolo_style($is_taula_header=0){
     $style='';
     if($is_taula_header){
-        $style=' style="vertical-align:middle;padding-right:8px;"';
+        //intelsat-2016
+        //$padding_right=8;
+        $padding_right=5;
+        $style=' style="vertical-align:middle;padding-right:'.$padding_right.'px;"';
     }
     return $style;
 }
@@ -1776,4 +1779,45 @@ function estrategia_inc_get_headers(){
         $headers=array_values($headers);
     }
     return $headers;
+}
+//intelsat-2016
+function estrategia_inc_update_suma_votos_array(){
+            if(estrategia_inc_is_ordenar_suma_votos()){    
+                estrategia_inc_update_estrategia_suma_votos_array();
+                despliegue_update_despliegue_suma_votos_array();
+                decision_update_despliegue_suma_votos_array();
+            }    
+}
+//intelsat-2016
+function estrategia_inc_update_suma_votos($nid,$vid,$suma_votos){
+    db_query('UPDATE {estrategia} SET suma_votos=%f WHERE nid=%d AND vid=%d',$suma_votos,$nid,$vid);
+}
+//intelsat-2016
+function estrategia_inc_is_ordenar_suma_votos(){
+    if(db_column_exists('estrategia','suma_votos')){
+        if(is_estrategia('arbol_estrategico')){
+            if(estrategia_is_grupo_estrellas()){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}    
+//intelsat-2016
+function estrategia_inc_get_order_by($order_by){
+    $result=$order_by;
+    if(estrategia_inc_is_ordenar_suma_votos()){
+        $result=' ORDER BY e.suma_votos DESC,e.peso ASC,n.sticky DESC, n.created ASC,n.nid ASC';
+    }
+    return $result;
+}
+//intelsat-2016
+function estrategia_inc_update_estrategia_suma_votos_array(){
+    $is_link=0;
+                $estrategia_array=get_estrategia_arbol_rows($is_link);
+                if(!empty($estrategia_array)){
+                    foreach($estrategia_array as $i=>$estrategia_row){
+                        estrategia_inc_update_suma_votos($estrategia_row->nid,$estrategia_row->vid,$estrategia_row->suma_votos);
+                    }
+                }
 }                
