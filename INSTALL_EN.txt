@@ -208,7 +208,7 @@ cp -r /usr/local/tomcat/solr/conf /usr/local/tomcat/hontza/ins/
 
 -Add user information and password to this file: /usr/local/tomcat/conf/tomcat-users.xml
 <role rolename="manager-gui"/>
-<user username="hontza" password="'contraseña seleccionada'" roles="manager-gui"/>
+<user username="hontza" password="'contraseÃ±a seleccionada'" roles="manager-gui"/>
 
 Be careful! add this information between <tomcat-users> and </tomcat-users> tags
 
@@ -231,3 +231,5 @@ Password by default: hontza
 - After filling the admin user profile, click in the top menu bar following options "Site Configuration" -> "Apache Solr Search" -> settings ( url= http://localhost/hontza5/admin/settings/apachesolr/settings ). You have to edit the settings file to add the userid and password created in Tomcat.
 
 - HONTZA IS RUNNING ON YOUR SERVER!
+
+- BEWARE!! Hontza uses mail function from PHP to send emails (alerts, bulletins, etc). So Hontza requires that your server be able to send emails. Very probably you will need an MTA application like Sendmail, Postfix, Qmail, etc 
