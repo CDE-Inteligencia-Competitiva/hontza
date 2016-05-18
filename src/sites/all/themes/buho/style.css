@@ -5213,3 +5213,6 @@ h1.documento_importado,h2.documento_importado a,h5.documento_importado,h5.docume
 div.hontza_checkbox_disabled label{
     color:#808080 !important;
 }
+body#page-estrategias-arbol-estrategico div.main-inner{
+    padding:0 5px 0 0;
+}
