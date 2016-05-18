@@ -897,7 +897,6 @@ function repase_access($is_return=0){
     }else{
         $result=0;
     }
-    
     //intelsat-2016
     if($result){    
         if(!hontza_grupos_mi_grupo_in_grupo()){
@@ -908,7 +907,6 @@ function repase_access($is_return=0){
         }
     }    
     //
-    
     return $result;
 }
 function get_og_ancestry_list($nid){
