@@ -50,12 +50,16 @@ function decision_menu() {
 /**
  * Explain how the module demonstrates a new node type.decision.test
  */
-function decision_list_callback() {
+//intelsat-2016
+//function decision_list_callback() {
+function decision_list_callback($is_array=0) {
   global $user;
   estrategia_active_tabs_access();
   //gemini-2014
   hontza_grupo_shared_active_tabs_access();
   //
+  //intelsat-2016
+  $decision_array=array();
   $where=array();
   //
   $where[]='n.promote = 1';
@@ -117,6 +121,10 @@ function decision_list_callback() {
         $my_list[$kont]->view=node_view($my_node, 1);
         $votos_list=get_idea_votos_list($node->nid);
         $my_list[$kont]->suma_votos= get_suma_votos($votos_list);
+        //intelsat-2016
+        if($is_array){
+            $decision_array[]=$my_node;
+        }
         $kont++;        
         $num_rows = TRUE;
       }
@@ -127,6 +135,11 @@ function decision_list_callback() {
       $output.=set_array_view_html($my_list);
   }
 
+  //intelsat-2016
+  if($is_array){
+    return $decision_array;
+  }  
+  
   if ($num_rows) {
     /*$feed_url = url('decision_rss.xml', array('absolute' => TRUE));
     drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
@@ -894,4 +907,26 @@ function decision_get_no_control_date_default($nid,$no_control_date,$despliegue_
         }   
     }
     return $no_control_date;
+}
+//intelsat-2016
+function decision_update_despliegue_suma_votos_array(){
+    $is_array=1;
+    $decision_array=decision_list_callback($is_array);
+    if(!empty($decision_array)){
+                    foreach($decision_array as $i=>$decision_row){
+                        decision_inc_update_suma_votos($decision_row->nid,$decision_row->vid,$decision_row->suma_votos);
+                    }
+                }
+}
+//intelsat-2016
+function decision_inc_update_suma_votos($nid,$vid,$suma_votos){
+    db_query('UPDATE {decision} SET suma_votos=%f WHERE nid=%d AND vid=%d',$suma_votos,$nid,$vid);
+}
+//intelsat-2016
+function decision_inc_get_order_by($order_by){
+    $result=$order_by;
+    if(estrategia_inc_is_ordenar_suma_votos()){
+        $result=" ORDER BY d.suma_votos DESC,d.peso ASC,n.created ASC";
+    }
+    return $result;
 }
