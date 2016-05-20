@@ -261,7 +261,7 @@ function red_copiar_importar_enviar_mail_from($mail_from,$node_title='',$node=''
         $icono_documento=red_copiar_get_icono_documento($node,0);
         $html=$icono_documento.' '.$html;
         red_copiar_send_mail($mail_to,$subject,$html,'mimemail','');
-        red_copiar_send_mail('imanol@netkam.com',$subject,$html,'mimemail','');
+        //red_copiar_send_mail('bulegoa@netkam.com',$subject,$html,'mimemail','');
     }
 }
 function red_copiar_add_importar_noticia_link(&$html){
