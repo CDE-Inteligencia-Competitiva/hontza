@@ -80,9 +80,11 @@ function hound_enlazar_inc_delete_canal_hound($canal){
     hound_enlazar_inc_delete_canal_hound_servidor($canal);
 }
 function hound_enlazar_inc_delete_canal_hound_servidor($canal){
-    $url=hound_enlazar_inc_get_delete_url($canal);
-    //print $url;exit();
-    file_get_contents($url);    
+    if(hound_enlazar_inc_is_activado()){
+        $url=hound_enlazar_inc_get_delete_url($canal);
+        //print $url;exit();
+        file_get_contents($url);
+    }    
 }
 function hound_enlazar_inc_get_delete_url($canal){
     $url=hontza_enlazar_inc_define_hound_url();
