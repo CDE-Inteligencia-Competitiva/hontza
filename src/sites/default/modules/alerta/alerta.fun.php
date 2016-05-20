@@ -1765,6 +1765,8 @@ function send_mensaje_despedida_usuario_demo_caducado(){
         foreach($user_list as $i=>$u){
             if(!is_mensaje_despedida_enviado($u->uid)){
                 $mail_to=$u->mail;
+                //simulando
+                //$mail_to='bulegoa@netkam.com';
                 $info_body=get_subject_body_mensaje_despedida($u);
                 $subject=$info_body['subject'];
                 $body=$info_body['body'];
@@ -1775,6 +1777,8 @@ function send_mensaje_despedida_usuario_demo_caducado(){
                 //al admin tambien se envia
                 if(isset($user_admin->uid) && !empty($user_admin->uid)){
                     $mail_to_admin=$user_admin->mail;
+                    //simulando
+                    //$mail_to_admin='bulegoa@netkam.com';
                     my_call_send_mail($mail_to_admin,$subject,$body,$send_method,$alert_type,$is_mensaje_despedida);
                     //print 'mail_to_admin='.$mail_to_admin.'<BR>';
                 }
@@ -2256,7 +2260,7 @@ function alerta_get_introduccion_logo_by_subdominio($is_alerta_o_boletin=0,$logo
             $src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/buho_logo.png';
         }else{
         //    
-            $src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/'.strtolower(_SAREKO_ID).'.hontza.es/files/'.red_get_red_logo_prefijo().'-buho_logo.png';
+            $src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/'.strtolower(_SAREKO_ID).'.hontza.es/files/'.red_get_red_logo_prefijo().'-buho_logo.png';    
         }        
     }else{             
         //$src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/buho_logo.png';
