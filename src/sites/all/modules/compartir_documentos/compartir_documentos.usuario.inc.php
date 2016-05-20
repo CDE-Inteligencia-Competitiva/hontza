@@ -186,7 +186,6 @@ function compartir_documentos_usuario_save_on_imported($uid){
     }
 }
 function compartir_documentos_usuario_is_imported($uid){
-    print 'uid='.$uid.'<br>';
     $compartir_documentos_usuario=compartir_documentos_get_compartir_documentos_usuario_array($uid);
     if(!empty($compartir_documentos_usuario)){
         foreach($compartir_documentos_usuario as $i=>$row){
