@@ -807,3 +807,19 @@ function visualizador_is_menu_sin_flechas(){
     }
     return 0;    
 }
+function visualizador_is_show_banner_slider(){
+    if(visualizador_is_pantalla('inicio')){
+        if(visualizador_is_banners_active()){
+            return TRUE;
+        }    
+    }
+    return FALSE;
+}
+function visualizador_is_banners_active(){
+    global $language;
+    $res = db_query('SELECT n.nid FROM node n LEFT JOIN content_type_banner cfp ON cfp.vid = n.vid WHERE n.type = "banner" AND cfp.field_banner_activado_value=1 AND language="'.$language->language.'" AND sticky = 1 ORDER BY cfp.field_pisu_value, n.created DESC');
+    while($row=db_fetch_object($res)){
+        return 1;
+    }
+    return 0;
+}    
