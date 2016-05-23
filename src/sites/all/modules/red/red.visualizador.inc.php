@@ -44,3 +44,9 @@ function red_is_visualizador_pantalla(){
     }
     return 0;
 }
+function red_visualizador_is_show_banner_slider(){
+    if(hontza_canal_rss_is_visualizador_activado()){
+        return visualizador_is_show_banner_slider();
+    }
+    return 0;
+}
