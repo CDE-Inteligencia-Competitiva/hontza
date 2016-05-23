@@ -768,39 +768,42 @@ function red_get_source_download_block_title($with_icon=0){
 }
 function red_get_source_download_block_content(){
         global $user;
-        //intelsat-2015
-        //if(!red_funciones_is_show_shared_block_menu_left()){
-        if(!red_funciones_is_show_shared_block_menu_left() || hontza_canal_rss_is_usuario_basico()){
-            return '';
-        }
-        if(hontza_is_mostrar_recursos_compartidos_del_servidor_red()){
-            $red_copy_server_sources=hontza_copy_server_sources_link(0);
-            $red_copy_server_channels=hontza_copy_server_channels_link(0);
-            $red_copy_server_facilitators=hontza_copy_server_facilitators_link(0);
-            $red_upload_sources=red_define_upload_sources_link();
-            $red_upload_channels=red_define_upload_channels_link();
-            $red_upload_facilitators=red_define_upload_facilitators_link();
-            $html=array();
+        if(!hontza_is_user_anonimo()){
             //intelsat-2015
-            $icono_copy=my_get_icono_action('descargar_fuente_left', $result).'&nbsp;';
-            $icono_upload=my_get_icono_action('compartir_fuente_left', $result).'&nbsp;';
-            //
-            $div_html='<div style="float:left;">';
-            //$html[]=$div_html.$icono_copy.$red_copy_server_sources.'</div>';
-            $html[]=$div_html.$icono_copy.$red_copy_server_channels.'</div>';
-            //$html[]=$div_html.$icono_copy.$red_copy_server_facilitators.'</div>';
-            //if(is_super_admin()){    
-            //if(is_super_admin() || $user->name=='aitor'){                
-                //$html[]=$div_html.$icono_upload.$red_upload_sources.'</div>';
-                $html[]=$div_html.$icono_upload.$red_upload_channels.'</div>';
-                //$html[]=$div_html.$icono_upload.$red_upload_facilitators.'</div>';
-            //}
-            //$style=' style="padding-bottom:140px;"';
-            $style=' style="padding-bottom:50px;"';
-            return '<div'.$style.'>'.implode('',$html).'</div>';
-        }else{
-            return '';
-        }        
+            //if(!red_funciones_is_show_shared_block_menu_left()){
+            if(!red_funciones_is_show_shared_block_menu_left() || hontza_canal_rss_is_usuario_basico()){
+                return '';
+            }
+            if(hontza_is_mostrar_recursos_compartidos_del_servidor_red()){
+                $red_copy_server_sources=hontza_copy_server_sources_link(0);
+                $red_copy_server_channels=hontza_copy_server_channels_link(0);
+                $red_copy_server_facilitators=hontza_copy_server_facilitators_link(0);
+                $red_upload_sources=red_define_upload_sources_link();
+                $red_upload_channels=red_define_upload_channels_link();
+                $red_upload_facilitators=red_define_upload_facilitators_link();
+                $html=array();
+                //intelsat-2015
+                $icono_copy=my_get_icono_action('descargar_fuente_left', $result).'&nbsp;';
+                $icono_upload=my_get_icono_action('compartir_fuente_left', $result).'&nbsp;';
+                //
+                $div_html='<div style="float:left;">';
+                //$html[]=$div_html.$icono_copy.$red_copy_server_sources.'</div>';
+                $html[]=$div_html.$icono_copy.$red_copy_server_channels.'</div>';
+                //$html[]=$div_html.$icono_copy.$red_copy_server_facilitators.'</div>';
+                //if(is_super_admin()){    
+                //if(is_super_admin() || $user->name=='aitor'){                
+                    //$html[]=$div_html.$icono_upload.$red_upload_sources.'</div>';
+                    $html[]=$div_html.$icono_upload.$red_upload_channels.'</div>';
+                    //$html[]=$div_html.$icono_upload.$red_upload_facilitators.'</div>';
+                //}
+                //$style=' style="padding-bottom:140px;"';
+                $style=' style="padding-bottom:50px;"';
+                return '<div'.$style.'>'.implode('',$html).'</div>';
+            }else{
+                return '';
+            }
+        }
+        return '';
 }
 function red_is_show_source_download_block_left(){
     if(is_fuentes_left()){
