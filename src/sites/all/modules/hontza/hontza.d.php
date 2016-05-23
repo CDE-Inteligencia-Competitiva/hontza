@@ -1271,7 +1271,7 @@ function hontza_get_block_content_anadir_canal(){
             }
         }*/
         //intelsat-2015
-        if(!hontza_canal_rss_is_visualizador_activado()){
+        //if(!hontza_canal_rss_is_visualizador_activado()){
             //if(hontza_is_sareko_id('ROOT')){
             if(hontza_is_hound_actions()){
                 //$result[]=l(t('Hound Filter'), 'crear/canal-yql',array('query'=>array('simple'=>0,'is_hound'=>1)));
@@ -1286,7 +1286,7 @@ function hontza_get_block_content_anadir_canal(){
                 //$result[]=l(t('Hound settings'), 'hound/settings',array('query'=>drupal_get_destination()));
                 $result[]=l(t('Hound settings'), 'hound/settings');
             }
-        }    
+        //}    
         return implode("<BR>",$result);
 }
 function hontza_define_hound_options(){
