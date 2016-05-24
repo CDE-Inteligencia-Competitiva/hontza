@@ -73,8 +73,11 @@ function hontza_is_comentada_by_row($row){
 function hontza_set_menutop_monitoring_default($menutop){
     if(hontza_is_show_vigilancia_pendientes_tab()){
         return $menutop;
-    }else{
+    }else if(red_canal_is_noticias_validadas()){
         $result=str_replace('vigilancia/pendientes','vigilancia/validados',$menutop);
+        return $result;
+    }else{
+        $result=str_replace('vigilancia/pendientes','vigilancia/ultimas',$menutop);
         return $result;
     }
 }
