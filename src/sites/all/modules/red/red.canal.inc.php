@@ -646,3 +646,34 @@ function red_canal_delete_canal_hound($canal){
         hound_enlazar_inc_delete_canal_hound($canal);
     }
 }
+//intelsat-2016
+function red_canal_is_noticias_validadas(){
+    $noticias_validadas_array=red_canal_get_noticias_validadas_array();
+    if(count($noticias_validadas_array)>0){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function red_canal_get_noticias_validadas_array(){
+ $result=array();
+ $where=array();
+ $where[]="1";
+ $where[]="node.type IN ('item','noticia')";
+ $my_grupo=og_get_group_context(); 
+ if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]="(og.group_nid = ".$my_grupo->nid.")"; 
+ } 
+ $where[]="fc.fid = 2";
+ $where[]="NOT node.nid IS NULL";
+ $sql="SELECT node.* 
+ FROM {node} node 
+ LEFT JOIN {flag_content} fc ON node.nid=fc.content_id
+ LEFT JOIN {og_ancestry} og ON node.nid = og.nid
+ WHERE ".implode(" AND ",$where).' GROUP BY fc.content_id';
+ $res = db_query($sql);
+ while ($item=db_fetch_object($res)) {
+    $result[]=$item;
+ }
+ return $result;
+} 
