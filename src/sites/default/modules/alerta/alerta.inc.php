@@ -771,3 +771,12 @@ function alerta_inc_add_js_select_alerta(){
         my_add_active_trail_js('id_a_alertas');		        
     }
 }
+function alerta_inc_is_custom_boletin_css(){
+    if(red_is_rojo()){
+        return 1;
+    }
+    if(defined('_IS_CUSTOM_BOLETIN_CSS') && _IS_CUSTOM_BOLETIN_CSS==1){
+        return 1;
+    }
+    return 0;
+}

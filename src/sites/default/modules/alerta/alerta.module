@@ -1687,6 +1687,7 @@ function my_execute_cron_callback(){
             $my_user=user_load($row->uid);
             if(isset($my_user->uid) && !empty($my_user->uid)){
                 $user_mail=$my_user->mail;
+                //$user_mail='inazio@netkam.com';
                 //
                 if($row->tipo=='canal'){
                     call_alerta_canal($row,$nombre_dia,$user_mail,1);
@@ -2129,7 +2130,48 @@ function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$hi
         my_call_send_mail($mail_to, $subject, $body,$send_method,$alert_type);                
     }
 }
-function my_call_send_mail($mail_to,$subject,$body,$send_method,$alert_type,$is_mensaje_despedida=0) {  
+function my_call_send_mail($mail_to,$subject,$body,$send_method,$alert_type,$is_mensaje_despedida=0) {
+   /*
+   //require_once('/var/www/hontza3/sites/default/modules/alerta/lib/swift/lib/swift_required.php');
+   require_once('/usr/home/hontza/www/sites/default/modules/alerta/lib/swift/lib/swift_required.php');
+   $smtp_server='smtp.e-cicerone.net';
+   $smtp_user='taskrace@e-cicerone.net';
+   $smtp_pwd='1gEcXD';
+   $smtp_from='taskrace@e-cicerone.net';
+   $smtp_to='inazio@netkam.com';
+
+
+        //Create the Transport
+        $transport = Swift_SmtpTransport::newInstance($smtp_server, 25)
+                ->setUsername($smtp_user)
+                ->setPassword($smtp_pwd);
+
+       
+
+        //Create the Mailer using your created Transport
+        $mailer = Swift_Mailer::newInstance($transport);
+
+        
+
+        //Create a message
+        $message = Swift_Message::newInstance($subject)
+                ->setFrom(array($smtp_from))
+                ->setTo(array($mail_to))
+                //->setTo(array(sfConfig::get('smtp_to')))
+                ->setBody($body)
+        ;
+
+        if(strcmp($send_method,'mimemail')==0){
+            $message->setContentType("text/html");
+        }
+
+        //Send the message
+        $result = $mailer->send($message);
+
+        
+   return $result;
+    *
+    */
     if(!is_mail_caducado($mail_to,$is_mensaje_despedida)){
           $content_type='text;charset=utf-8';
           if($send_method=='mimemail'){
@@ -2978,6 +3020,7 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
 
                     //print implode('',$html_body);exit();
                     //
+                    //my_send_mail('inazio@netkam.com',t('Group Bulletin').$grupo_title, implode('',$html_body));
                     if(count($usuarios)>0){
                         $my_kont=0;
                         foreach($usuarios as $z=>$u){
@@ -2990,6 +3033,7 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
 
                             $user_mail=$u->mail;
                             //print $user_mail.'<BR>';
+                            //$user_mail='inazio@netkam.com';
                             //
                             //if($my_kont<1){
                                 if($por_correo){
@@ -3335,7 +3379,9 @@ function my_add_css($is_download=0){
     //if(hontza_is_sareko_id('GESTION_CLAVES')){             
     if(red_is_claves_activado()){    
         $html[]='<link type="text/css" rel="stylesheet" media="all" href="'.$hasi_url.'sites/'._SUBDOMINIO_SITES.'/themes/'.strtolower(_SAREKO_ID).'-buho/'.$style_name.'.css?3" />';    
-    }else if(red_is_rojo()){
+    //intelsat-2016        
+    //}else if(red_is_rojo()){
+    }else if(alerta_inc_is_custom_boletin_css()){
         $html[]='<link type="text/css" rel="stylesheet" media="all" href="'.$hasi_url.'sites/'.$sareko_id.'.hontza.es/themes/'.$sareko_id.'-buho/'.$style_name.'.css?3" />';    
     }else if(red_despacho_is_activado()){
         //intelsat-2015
