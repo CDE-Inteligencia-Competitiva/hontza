@@ -119,6 +119,8 @@ define('_IS_FACILITADOR_WITH_USER',1);
 define('_IS_CANAL_OPENCALAIS',1);
 define('_IS_ESTRATEGIA_CONGELAR_VOTO',1);
 define('_IS_RED_HOJA',1);
+define('_SERVIDOR_CENTRAL_URL','http://redalerta.hontza.es');
+define('_IS_SUBDOMINIO_ALERTA',1);
 //Red fields
 define('_FIELD_RED_ITEM_WEB_NAME','field_igape_item_web');
 define('_FIELD_RED_IDIOMAS_NAME','field_igape_idiomas');
@@ -286,3 +288,4 @@ set_time_limit(3600);
 #   'forum'      => 'Discussion board',
 #   '@count min' => '@count minutes',
 # ); 
+ 
