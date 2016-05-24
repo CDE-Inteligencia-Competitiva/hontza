@@ -92,7 +92,7 @@
 $db_url['default'] = 'mysql://user:password@localhost/hontza';
 $db_prefix = '';
 
-define('_SAREKO_ID', 'BLANCO');
+define('_SAREKO_ID', 'BLANCO_ALERTA');
 define('_IS_NETWORK_HONTZA',1);
 define('_IS_SOLR',1);
 define('_IS_HOUND',1);
@@ -118,7 +118,7 @@ define('_IS_CANAL_JSON',1);
 define('_IS_FACILITADOR_WITH_USER',1);
 define('_IS_CANAL_OPENCALAIS',1);
 define('_IS_ESTRATEGIA_CONGELAR_VOTO',1);
-
+define('_IS_RED_HOJA',1);
 //Red fields
 define('_FIELD_RED_ITEM_WEB_NAME','field_igape_item_web');
 define('_FIELD_RED_IDIOMAS_NAME','field_igape_idiomas');
