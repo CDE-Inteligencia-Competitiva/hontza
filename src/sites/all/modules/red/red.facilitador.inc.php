@@ -467,3 +467,25 @@ function red_facilitador_unset_traduccion($result_in){
     $result=rtrim($result,']');
     return $result;
 }
+//intelsat-2016
+function red_facilitador_user_profile_form_facilitador_validate($form,&$form_state){
+    if(hontza_canal_rss_is_facilitador_activado()){
+        facilitador_user_profile_form_facilitador_validate($form,$form_state);
+    }
+}
+//intelsat-2016
+function red_facilitator_delete_users_facilitators_network($account,$result,$is_user_delete=0){
+    if(hontza_canal_rss_is_facilitador_activado()){  
+        $is_delete=0;
+        if($is_user_delete){
+          $is_delete=1;
+        }else if(isset($result['is_delete_users_facilitators_network']) && !empty($result['is_delete_users_facilitators_network'])){
+          $is_delete=1;
+        }    
+        if($is_delete){
+          /*echo print_r($account,1);
+          exit();*/
+          facilitator_delete_users_facilitators_network($account);
+        }  
+    }
+}
