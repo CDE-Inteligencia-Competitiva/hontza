@@ -2100,7 +2100,9 @@ function get_array_by_field($my_list,$f){
     }
     return $result;
 }
-function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$historico_nid='',$is_mail_externo=0,$br_in='') {
+//intelsat-2016
+//function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$historico_nid='',$is_mail_externo=0,$br_in='') {
+function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$historico_nid='',$is_mail_externo=0,$br_in='',$is_mcapi=0) {    
     if($is_recibir){
         $body=$body_in;
         if(strcmp($send_method,'mimemail')==0){
@@ -2127,8 +2129,15 @@ function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$hi
             }                
         }
         $mail_to=trim($mail_to_in);
-        my_call_send_mail($mail_to, $subject, $body,$send_method,$alert_type);                
+        //intelsat-2016
+        if(!$is_mcapi){
+            my_call_send_mail($mail_to, $subject, $body,$send_method,$alert_type);
+        }
+        //intelsat-2016
+        return $body;
     }
+    //intelsat-2016
+    return '';
 }
 function my_call_send_mail($mail_to,$subject,$body,$send_method,$alert_type,$is_mensaje_despedida=0) {
    /*
