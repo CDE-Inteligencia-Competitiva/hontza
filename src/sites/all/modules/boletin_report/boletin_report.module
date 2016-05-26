@@ -2,6 +2,8 @@
 require_once('boletin_report.inc.php');
 require_once('boletin_report.pdf.inc.php');
 require_once('boletin_report.todos.inc.php');
+//intelsat-2016
+require_once('boletin_report.mcapi.inc.php');
 function boletin_report_perm() {
   return array('access boletin report','edit customised bulletin','view customised bulletin resume','report content','Launch Customised Bulletin','view customised bulletin pdf');
 }
@@ -336,6 +338,9 @@ $form['activado48']=array(
           '#prefix'=>'<div style="float:left;width:70%">',    
           '#suffix'=>'</div></div>',  
           );
+
+        //intelsat-2016
+        boletin_report_mcapi_add_boletin_report_form_fields($row,$form);
         
         $form['categorias_fs']=boletin_report_create_categorias_fieldset_txek($row,$grupo_nid);
         //intelsat-2015
@@ -771,6 +776,8 @@ function boletin_report_form_submit(&$form, &$form_state){
             db_query($sql);
             $id=db_last_insert_id('boletin_report_array','id');
         }
+        //intelsat-2016
+        boletin_report_mcapi_save_mailchimp_list_id($id,$values);
         $row=boletin_report_get_row($id);
         boletin_report_save_usuarios($row->id,$values['usuarios']);
         $categorias=boletin_report_get_categorias_by_values($values);
@@ -1260,6 +1267,8 @@ function boletin_report_exec($br_in,$nombre_dia,$por_correo=1,$bulletin_text_nid
     $br->is_boletin_report=$is_boletin_report;
     $br->categorias=boletin_report_set_categorias($br);
     $bulletin_text_content='';
+    //intelsat-2016
+    $mail_array=array();
                 $grupo=node_load($br->grupo_nid);
                 /*$grupo_title='';
                 if(isset($grupo->nid) && !empty($grupo->nid)){
@@ -1369,7 +1378,10 @@ function boletin_report_exec($br_in,$nombre_dia,$por_correo=1,$bulletin_text_nid
                                     $current_content=boletin_report_inc_get_boletin_report_automatico_content($br,$current_content);
                                     
                                     if(boletin_report_hay_novedades($hay_todos_items,$hay_todos_noticias_usuario,$hay_todos_reports,$hay_todos_debates,$hay_todos_wikis,$bulletin_text_content,$bulletin_text_nid,$br)){
-                                        my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid);
+                                        //intelsat-2016
+                                        //my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid);
+                                        boletin_report_mcapi_my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid);
+                                        $mail_array[]=$user_mail;
                                     }                                       
                                 }
                             //}
@@ -1393,15 +1405,19 @@ function boletin_report_exec($br_in,$nombre_dia,$por_correo=1,$bulletin_text_nid
                                  if(boletin_report_hay_novedades($hay_todos_items,$hay_todos_noticias_usuario,$hay_todos_reports,$hay_todos_debates,$hay_todos_wikis,$bulletin_text_content,$bulletin_text_nid,$br)){                                    
                                     //intelsat-2015 
                                     //my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid);
-                                    my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid,1,$br); 
+                                    //intelsat-2016
+                                    //my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid,1,$br);
+                                    boletin_report_mcapi_my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$historico_nid,1,$br);
+                                    $mail_array[]=$user_mail;
                                  }
                                  $my_kont++;
                             }
                         }                        
                     }
                 }
-            
-            
+     //intelsat-2016
+     boletin_report_mcapi_my_send_mail_array($mail_array,$subject, $current_content,$br->send_method,$is_activo,$historico_nid,0,$br,$por_correo);       
+                
      if(is_user_invitado()){
         $respuesta_content=get_invitado_respuesta_content($br,$my_message,$is_no_hay,$user);
         $content=$respuesta_content;

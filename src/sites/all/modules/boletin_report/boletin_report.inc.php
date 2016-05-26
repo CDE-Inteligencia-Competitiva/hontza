@@ -416,6 +416,9 @@ function boletin_report_forward_form(){
           '#description'=>t('Please include the email of recipients separated by commas')." (".t("Please verify your email list, It won't be checked the validity of emails").")",  
           '#required' => FALSE
           );
+    //intelsat-2016
+    boletin_report_mcapi_add_boletin_report_forward_form_fields($form);
+    
     $form['forward_btn']=array(
         '#type'=>'submit',
         '#name'=>'forward_btn',
@@ -440,7 +443,13 @@ function boletin_report_forward_form_submit($form, &$form_state){
         $boletin_report_array_id=$values['boletin_report_array_id'];
         $boletin_report_array_edit_id=$values['boletin_report_array_edit_id'];
         $email_externos=$values['email_externos'];
-        boletin_report_forward_loop($boletin_report_array_id,$boletin_report_array_edit_id,$email_externos);
+        //intelsat-2016
+        $mailchimp_list_id='';
+        if(isset($values['mailchimp_list_id']) && !empty($values['mailchimp_list_id'])){
+            $mailchimp_list_id=$values['mailchimp_list_id'];
+        }
+        //boletin_report_forward_loop($boletin_report_array_id,$boletin_report_array_edit_id,$email_externos);
+        boletin_report_forward_loop($boletin_report_array_id,$boletin_report_array_edit_id,$email_externos,$mailchimp_list_id);
         $uid=$user->uid;
         $fecha_forward=date('Y-m-d H:i:s');
         db_query('INSERT INTO {boletin_report_array_forward}(boletin_report_array_id,boletin_report_array_edit_id,email_externos,uid,fecha_forward) VALUES(%d,%d,"%s",%d,"%s")',$boletin_report_array_id,$boletin_report_array_edit_id,$email_externos,$uid,$fecha_forward);
@@ -453,7 +462,9 @@ function boletin_report_forward_form_submit($form, &$form_state){
         drupal_goto($url);        
     }
 }
-function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_externos){
+//intelsat-2016
+//function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_externos){
+function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_externos,$mailchimp_list_id=''){    
     $br=boletin_report_get_row($id);
     if(isset($br->id) && !empty($br->id)){
         $br_title=': '.$br->titulo;
@@ -463,14 +474,29 @@ function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_ex
         $content=boletin_report_get_content_html($is_download,$is_print_exit,$id,$boletin_report_array_edit_id);
         $mail_html=alerta_add_css($content,0);
         $user_mail_array=explode(',',$email_externos);
+        //intelsat-2016
+        $current_content='';
+        //si los emails ahora van por lista de MailChimp seguramente esto viene vacio, por lo tanto poner un mail temporal para que entre en el foreach
+        $user_mail_array=boletin_report_mcapi_get_forward_user_mail_array($user_mail_array);        
         if(count($user_mail_array)>0){
             $text_row=boletin_report_get_edit_text_row_by_id($boletin_report_array_edit_id);
             $bulletin_text_nid=$text_row->nid;
             foreach($user_mail_array as $i=>$user_mail){
                 $is_activo=1;
                 $current_content=$mail_html;
-                my_send_mail($user_mail,$subject,$current_content,$br->send_method,$is_activo,$bulletin_text_nid);                  
+                //intelsat-2016
+                if(boletin_report_mcapi_is_activado()){
+                    boletin_report_mcapi_my_send_mail($user_mail,$subject, $current_content,$br->send_method,$is_activo,$bulletin_text_nid,1,$br);                
+                }else{
+                    my_send_mail($user_mail,$subject,$current_content,$br->send_method,$is_activo,$bulletin_text_nid);
+                }
             }
+        }
+        //intelsat-2016
+        $por_correo=1;
+        if(!empty($mailchimp_list_id)){
+            $br->mailchimp_list_id=$mailchimp_list_id;
+            boletin_report_mcapi_my_send_mail_array($user_mail_array,$subject, $current_content,$br->send_method,$is_activo,$historico_nid,0,$br,$por_correo);            
         }
         //intelsat-2015
         drupal_set_message(t('The Bulletin %br_titulo has been forwarded to your email list',array('%br_titulo'=>$br->titulo)));                
