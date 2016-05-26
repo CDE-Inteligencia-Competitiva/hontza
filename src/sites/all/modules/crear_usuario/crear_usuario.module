@@ -475,7 +475,9 @@ function crear_usuario_is_custom_css_pantalla(){
 function crear_usuario_get_path_custom_css(){
     global $base_url;
     $custom_css_dir='custom_css';
-    if(red_crear_usuario_is_custom_css_hontza()){
+    //intelsat-2016
+    //if(red_crear_usuario_is_custom_css_hontza()){
+    if(red_crear_usuario_is_custom_css_hontza() && !red_is_subdominio_alerta()){    
         $custom_css_dir='custom_css_hontza';
     }
     $result=$base_url.'/sites/all/themes/buho/templates/overrides/'.$custom_css_dir.'/';
