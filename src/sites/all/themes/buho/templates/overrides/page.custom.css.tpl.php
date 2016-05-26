@@ -58,7 +58,7 @@
           <?php print $content;?>
         </article>
       </div>
-      <?php print red_funciones_alerta_financiado_por_html(0,1);?>        
+      <?php print red_funciones_alerta_financiado_por_html(0,1);?>     
     </section>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="<?php print $path_custom;?>js/bootstrap.min.js"></script>

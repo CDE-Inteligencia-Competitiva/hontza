@@ -370,7 +370,7 @@
   <?php print $closure; ?>
   </body>
 </html>
-<?php elseif(red_crear_usuario_is_custom_css_hontza()):?>
+<?php elseif(red_crear_usuario_is_custom_css_hontza() && !red_is_subdominio_alerta()):?>
     <?php require_once('page.custom.css.hontza.tpl.php');?>
 <?php else:?>
     <?php require_once('page.custom.css.tpl.php');?>
