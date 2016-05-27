@@ -245,10 +245,12 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
     //$batch->title = $content->name;
     //$batch->description = '';
     //$batch->link = $content->url;
-    $numero_linea=0;
+    //$numero_linea=0;
+    $numero_linea=-1;
     if(isset($json_fields->numero_linea) && !empty($json_fields->numero_linea) && is_numeric($json_fields->numero_linea)){
         $numero_linea=$json_fields->numero_linea-1;
     }
+    $item_array=array();
     if(isset($content->results) && !empty($content->results)){
         foreach($content->results as $i=>$result){
                 if($i<=$numero_linea){
@@ -287,11 +289,13 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
                                     }
                                     $item['description']=$description;
                                 }
-                                $batch->items[] =$item;
+                                //$batch->items[] =$item;
+                                $item_array[]=$item;
                             }
                         }    
                 }    
-        }    
+        }
+        red_canal_array_reverse_item_array($item_array,$batch);
     }
 }
 function canal_json_decode_json_fields($json_fields){
