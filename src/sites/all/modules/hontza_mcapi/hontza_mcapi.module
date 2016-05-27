@@ -38,14 +38,19 @@ $opts['authenticate'] = true;
 $opts['title'] = $subject;
 //$opts['template_id']=74425;
 //$opts['template_id']=75465;
-
-$content = array('html'=>$body_in, 
+//$opts['template_id']=75681;
+$mailchimp_template_id=$br_in->mailchimp_template_id;
+if(!empty($mailchimp_template_id)){
+    $opts['template_id']=$mailchimp_template_id;
+    $content = array('html_main'=>$body_in,
+    //'text' => 'Texto'
+    );
+}else{
+    $content = array('html'=>$body_in, 
 		  //'text' => 'Texto'
-		);
+    );
+}
 
-/*$content = array('html_proba'=>$body_in,
-                  //'text' => 'Texto'
-		);*/
 
 /** OR we could use this:
 $content = array('html_main'=>'some pretty html content',
@@ -136,6 +141,11 @@ function hontza_mcapi_add_boletin_report_form_fields($row,&$form){
         '#title'=>t('MailChimp List id'),
         '#default_value'=>$row->mailchimp_list_id,
     );
+    $form['boletin_report_receptores_mcapi_fs']['mailchimp_template_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp Template id'),
+        '#default_value'=>$row->mailchimp_template_id,
+    );
 }
 function hontza_mcapi_save_mailchimp_list_id($id,$values){
     $mailchimp_list_id='';
@@ -151,7 +161,8 @@ function hontza_mcapi_get_forward_user_mail_array($user_mail_array_in){
     }
     return $result;
 }
-function hontza_mcapi_add_boletin_report_forward_form_fields(&$form){
+function hontza_mcapi_add_boletin_report_forward_form_fields($id,&$form){
+    $row=boletin_report_get_row($id);
     $form['forward_receptores_fs']['#prefix']='<div style="display:none;">';
     $form['forward_receptores_fs']['#suffix']='</div>';
     $form['boletin_report_receptores_mcapi_fs']['mailchimp_list_id']=array(
@@ -159,4 +170,20 @@ function hontza_mcapi_add_boletin_report_forward_form_fields(&$form){
         '#title'=>t('MailChimp List id'),
         '#default_value'=>$row->mailchimp_list_id,
     );
+    $form['boletin_report_receptores_mcapi_fs']['mailchimp_template_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp Template id'),
+        '#default_value'=>$row->mailchimp_template_id,
+    );
+}
+function hontza_mcapi_save_mailchimp_fields($id,$values){
+    hontza_mcapi_save_mailchimp_list_id($id,$values);
+    hontza_mcapi_save_mailchimp_template_id($id,$values);
+}
+function hontza_mcapi_save_mailchimp_template_id($id,$values){
+    $mailchimp_template_id='';
+    if(isset($values['mailchimp_template_id']) && !empty($values['mailchimp_template_id'])){
+        $mailchimp_template_id=$values['mailchimp_template_id'];
+    }
+    db_query('UPDATE {boletin_report_array} SET mailchimp_template_id="%s" WHERE id=%d',$mailchimp_template_id,$id);
 }
