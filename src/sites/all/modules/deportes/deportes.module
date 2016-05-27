@@ -1,0 +1,30 @@
+<?php
+function deportes_perm() {
+  return array();
+}
+function deportes_menu() {
+  $items=array();
+  return $items;
+}
+function deportes_get_menu_primary_links($result_in){
+  $result=array();
+  if(!empty($result_in)){
+      foreach($result_in as $id=>$row){
+          if(deportes_is_tab_deportes($row['title'])){
+              $result[$id]=$row;
+          }
+      }
+  }
+  return $result;        
+}
+function deportes_is_tab_deportes($tab_title_in){
+    $in_array=array('monitoring','bulletins');
+    foreach($in_array as $i=>$value){
+        $konp=strtoupper(t($value));
+        $tab_title=strtoupper($tab_title_in);
+        if($tab_title==$konp){
+            return 1;
+        }
+    }
+    return 0;
+}  
