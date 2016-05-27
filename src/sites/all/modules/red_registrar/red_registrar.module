@@ -881,6 +881,7 @@ function red_registrar_grupo_node_form_alter(&$form,&$form_state,$form_id,$grupo
 }
 function red_registrar_on_grupo_node_save(&$node,$op,$nid='',$is_exec=0){
     if(isset($_POST['field_is_private_collabo_network']) || $is_exec){        
+        $url_node='node/'.$node->nid;
         if(hontza_is_red_hoja()){
                 if(!empty($nid)){
                     $node=node_load($nid);
@@ -901,10 +902,14 @@ function red_registrar_on_grupo_node_save(&$node,$op,$nid='',$is_exec=0){
                     if($is_connect_network){
                         $url='red_compartir/compartir_grupo_hoja/'.$node->nid;
                     }else{
-                        $url='node/'.$node->nid;
+                        //$url='node/'.$node->nid;
+                        $url=$url_node;
                     }
                     drupal_goto($url);      
                 //}
+        }else{
+            $url=$url_node;
+            drupal_goto($url);      
         }
     }    
 }
@@ -995,7 +1000,7 @@ function red_registrar_user_access(){
 }
 function red_registrar_on_grupo_node_saved_callback(){
     $grupo_nid=arg(1);
-    $grupo_node=node_load($grupo_nid);
+    $grupo_node=node_load($grupo_nid);    
     hontza_grupos_mi_grupo_registrar_on_grupo_node_save($grupo_node,'','',1);
 }
 function red_registrar_is_compartir_grupo_hoja($grupo_node,$is_exec){
