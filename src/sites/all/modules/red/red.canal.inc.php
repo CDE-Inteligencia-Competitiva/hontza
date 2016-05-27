@@ -676,4 +676,14 @@ function red_canal_get_noticias_validadas_array(){
     $result[]=$item;
  }
  return $result;
-} 
+}
+//intelsat-2016
+function red_canal_array_reverse_item_array($item_array_in,&$batch){
+  $item_array=$item_array_in;
+  if(!empty($item_array)){
+      $item_array=array_reverse($item_array);
+      foreach($item_array as $i=>$rss_item){
+          $batch->addItem($rss_item);
+      }
+  }
+}
