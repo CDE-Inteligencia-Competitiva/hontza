@@ -777,7 +777,9 @@ function boletin_report_form_submit(&$form, &$form_state){
             $id=db_last_insert_id('boletin_report_array','id');
         }
         //intelsat-2016
-        boletin_report_mcapi_save_mailchimp_list_id($id,$values);
+        //boletin_report_mcapi_save_mailchimp_list_id($id,$values);
+        boletin_report_mcapi_save_mailchimp_fields($id,$values);
+        
         $row=boletin_report_get_row($id);
         boletin_report_save_usuarios($row->id,$values['usuarios']);
         $categorias=boletin_report_get_categorias_by_values($values);

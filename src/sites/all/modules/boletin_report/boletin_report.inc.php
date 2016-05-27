@@ -417,7 +417,7 @@ function boletin_report_forward_form(){
           '#required' => FALSE
           );
     //intelsat-2016
-    boletin_report_mcapi_add_boletin_report_forward_form_fields($form);
+    boletin_report_mcapi_add_boletin_report_forward_form_fields($id,$form);
     
     $form['forward_btn']=array(
         '#type'=>'submit',
@@ -448,8 +448,12 @@ function boletin_report_forward_form_submit($form, &$form_state){
         if(isset($values['mailchimp_list_id']) && !empty($values['mailchimp_list_id'])){
             $mailchimp_list_id=$values['mailchimp_list_id'];
         }
+        $mailchimp_template_id='';
+        if(isset($values['mailchimp_template_id']) && !empty($values['mailchimp_template_id'])){
+            $mailchimp_template_id=$values['mailchimp_template_id'];
+        }
         //boletin_report_forward_loop($boletin_report_array_id,$boletin_report_array_edit_id,$email_externos);
-        boletin_report_forward_loop($boletin_report_array_id,$boletin_report_array_edit_id,$email_externos,$mailchimp_list_id);
+        boletin_report_forward_loop($boletin_report_array_id,$boletin_report_array_edit_id,$email_externos,$mailchimp_list_id,$mailchimp_template_id);
         $uid=$user->uid;
         $fecha_forward=date('Y-m-d H:i:s');
         db_query('INSERT INTO {boletin_report_array_forward}(boletin_report_array_id,boletin_report_array_edit_id,email_externos,uid,fecha_forward) VALUES(%d,%d,"%s",%d,"%s")',$boletin_report_array_id,$boletin_report_array_edit_id,$email_externos,$uid,$fecha_forward);
@@ -464,7 +468,7 @@ function boletin_report_forward_form_submit($form, &$form_state){
 }
 //intelsat-2016
 //function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_externos){
-function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_externos,$mailchimp_list_id=''){    
+function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_externos,$mailchimp_list_id='',$mailchimp_template_id=''){    
     $br=boletin_report_get_row($id);
     if(isset($br->id) && !empty($br->id)){
         $br_title=': '.$br->titulo;
@@ -496,7 +500,8 @@ function boletin_report_forward_loop($id,$boletin_report_array_edit_id,$email_ex
         $por_correo=1;
         if(!empty($mailchimp_list_id)){
             $br->mailchimp_list_id=$mailchimp_list_id;
-            boletin_report_mcapi_my_send_mail_array($user_mail_array,$subject, $current_content,$br->send_method,$is_activo,$historico_nid,0,$br,$por_correo);            
+            $br->mailchimp_template_id=$mailchimp_template_id;
+            boletin_report_mcapi_my_send_mail_array($user_mail_array,$subject, $current_content,$br->send_method,$is_activo,$bulletin_text_nid,0,$br,$por_correo,1);            
         }
         //intelsat-2015
         drupal_set_message(t('The Bulletin %br_titulo has been forwarded to your email list',array('%br_titulo'=>$br->titulo)));                
