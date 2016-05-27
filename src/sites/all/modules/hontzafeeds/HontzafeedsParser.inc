@@ -168,13 +168,9 @@ class HontzafeedsParser extends FeedsParser {
           }
         //}
     }
-  }
-  if(!empty($item_array)){
-      $item_array=array_reverse($item_array);
-      foreach($item_array as $i=>$rss_item){
-          $batch->addItem($rss_item);
-      }
-  }
+  }  
+  //intelsat-2016
+  red_canal_array_reverse_item_array($item_array,$batch);
  }
            
 
