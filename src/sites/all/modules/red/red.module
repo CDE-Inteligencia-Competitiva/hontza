@@ -23,6 +23,7 @@ require_once('red.despacho.inc.php');
 //intelsat-2016
 require_once('red.fields.inc.php');
 require_once('red.validar_usuario.network.inc.php');
+require_once('red.deportes.inc.php');
 function red_perm(){
     $perm_array=array();    
     return $perm_array;
