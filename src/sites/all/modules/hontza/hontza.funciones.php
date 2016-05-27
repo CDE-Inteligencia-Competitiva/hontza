@@ -904,6 +904,8 @@ function my_get_menutop($menutop,$is_fix_in=0,$is_despegable=0){
                     $result=visualizador_prepare_menu_menu_primary_links($result);
                 }
                 $result=menu_by_lang($result);
+                //intelsat-2016
+                $result=red_deportes_get_menu_primary_links($result);
                 //
                 //intelsat-2015
                 $is_sf_js_enabled=1;
