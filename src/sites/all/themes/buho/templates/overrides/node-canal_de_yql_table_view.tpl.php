@@ -174,9 +174,11 @@
 <!--    
 </table>
 -->
+<?php if(hound_enlazar_inc_is_activado()):?>  
 <?php if(hontza_is_hound_canal($node->nid)):?>
             <?php if(hontza_is_hound_text_input()):?>
                 <?php include('canal-hound-parametros-table.tpl.php');?>                
             <?php endif;?>              
+<?php endif;?>
 <?php endif;?>
 </table>
