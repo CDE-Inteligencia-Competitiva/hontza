@@ -40,6 +40,8 @@ if(in_array($vars['view']->name,array('og_fuentes_pipes','og_fuentes_calidad','o
 	//intelsat-2015        
         //$vars['rows']=my_get_rows_home_publica($vars);
         $vars['rows']='';
+        //intelsat-2016
+        red_crear_usuario_node_page_default_drupal_goto();
         //
 }else if(strcmp($vars['view']->name,'gestion_servicios')==0){
 	$vars['rows']=my_get_rows_gestion_servicios($vars);
