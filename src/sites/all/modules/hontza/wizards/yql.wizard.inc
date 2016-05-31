@@ -1493,7 +1493,8 @@ function yql_is_crear_hound(){
 function yql_get_hound_url_by_data($data,$yql_obj=''){
     if(hontza_is_hound_text_input()){
         $hound_id=$yql_obj->canal_hound_parametros->hound_id;
-        $url=hound_base_url().'/index.php/channels/getRss/id/'.urlencode($hound_id).'/from/0';
+        //intelsat-2016
+        $url=hound_enlazar_inc_get_canal_rss_url($hound_id);
         //$hound_search=hontza_limpiar_returns($yql_obj->hound1_search);
         //$url.='&hound_search='.$hound_search;
         return $url;
