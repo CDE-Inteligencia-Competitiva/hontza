@@ -1122,22 +1122,8 @@ function hontza_noticia_usuario_web_link($node,$is_url=0,$is_crm_exportar=0){
     return l($label,$url,array('attributes'=>array('target'=>'_blank','title'=>t('Web'),'alt'=>t('Web'))));	
 }
 function hontza_is_hound_rss_by_data($data,$yql_obj){
-    if(!empty($data)){
-        $url_values=array_values($data);
-        $num=count($url_values);
-        if($num==1){
-            $url=$url_values[0];
-            $find='/hound/houndRss.php';
-            $pos=strpos($url,$find);
-            if($pos===FALSE){
-                return 0;
-            }else{
-                //return 1;
-                return hontza_is_hound_by_yql_obj($yql_obj);
-            }    
-        }
-    }
-    return 0;
+    //intelsat-2016
+    return hound_enlazar_inc_is_hound_rss_by_data($data,$yql_obj);
 }
 function hontza_node_has_body($node){
     if(isset($node->content) && isset($node->content['body']) && isset($node->content['body']['#value'])){
@@ -1322,26 +1308,34 @@ function hontza_get_hound_rss1(){
 //function hontza_define_hound_url(){
 function hontza_define_hound_url($is_ip=0){
     global $base_url;
-    //intelsat-2015
-    if(hound_is_new_server_hound()){
-        $ip_hound='217.70.191.147:8080';
-        //$ip_hound='hound2.hontza.es';
-    }else{
-        $ip_hound='80.32.72.239:8000';
-        /*if(red_is_rojo()){
-            $ip_hound='46.4.177.210';
-        }*/
-        if(in_array($base_url,array('http://localhost/hontza3','http://192.168.110.210/hontza3'))){
-            $ip_hound='192.168.110.211';            
+        //intelsat-2015
+        if(hound_is_new_server_hound()){
+            $ip_hound='217.70.191.147:8080';
+            //$ip_hound='hound2.hontza.es';
+        }else{
+            $ip_hound='80.32.72.239:8000';
+            /*if(red_is_rojo()){
+                $ip_hound='46.4.177.210';
+            }*/
+            if(in_array($base_url,array('http://localhost/hontza3','http://192.168.110.210/hontza3'))){
+                $ip_hound='192.168.110.211';            
+            }
         }
-    }
+    
     //intelsat-2015
-    $ip_hound='217.70.191.147:8080';
-    //$ip_hound='hound2.hontza.es';
+    $ip_hound='217.70.191.147:8080';    
+    //intelsat-2016
+    if(hound_enlazar_inc_is_activado()){
+        $ip_hound=hound_enlazar_inc_get_base_url(0);
+    }//$ip_hound='hound2.hontza.es';
     if($is_ip){
         return $ip_hound;
     }
     $url='http://'.$ip_hound.'/hound/houndRss.php';
+    //intelsat-2016
+    if(hound_enlazar_inc_is_activado()){
+        $url=$ip_hound;
+    }
     return $url;
 }
 function hontza_is_hound_by_yql_obj($yql_obj){
@@ -1385,23 +1379,8 @@ function hontza_is_hound_canal($nid,$canal_in=''){
     return 0;
 }
 function hontza_set_hound_url_from_time($url_in,$last_import_time){
-    $url=$url_in;
-    $pos=strpos($url_in,'/from/');
-    if($pos===FALSE){
-        return $url;
-        /*$parse=parse_url($url);
-        parse_str($parse['query'],$param_array);
-        if(!empty($param_array)){
-           $url=hontza_define_hound_url();
-           $param_array['from']=$last_import_time; 
-           $url.='?'.http_build_query($param_array,'','&');       
-        }
-        return $url;*/
-    }else{
-        $s=substr($url,0,$pos);
-        $url=$s.'/from/'.$last_import_time;
-    }   
-    return $url;
+   //intelsat-2016 
+   return hound_enlazar_inc_set_hound_url_from_time($url_in,$last_import_time);
 }
 function hontza_get_hound_feeds_source_url($nid,$last_import_time,$url_in){
     //if(user_access('root')){
