@@ -93,6 +93,7 @@
             </td>
         </tr>
     <?php endif;?>
+    <?php if(!hound_enlazar_inc_is_activado()):?>    
     <?php if(hontza_is_hound_canal($node->nid)):?>
     <tr class="tr_node_view">            
             <td class="td_label_node_view"><b><?php print t('Hound');?></b>:&nbsp;</td>
@@ -115,6 +116,7 @@
                 </td>
             <?php endif;?>
     <?php endif;?>
+    <?php endif;?>            
      <!--           
      <tr class="tr_node_view">
             <td class="td_label_node_view"><b><?php //print t('Url of Html page');?></b>:&nbsp;</td>
@@ -156,4 +158,25 @@
     <?php if(red_canal_is_canal_opencalais_activado()):?>
     <?php include('source_api_view_icon_table.tpl.php');?>
     <?php endif;?>
+    <?php if(hound_enlazar_inc_is_activado()):?>    
+    <?php if(hontza_is_hound_canal($node->nid)):?>
+    <tr class="tr_node_view">            
+            <td class="td_label_node_view"><b><?php print t('Hound');?></b>:&nbsp;</td>
+            <td class="td_value_node_view"><?php print hontza_get_hound_title_by_nid($node->nid,1);?></td>            
+    </tr>
+    <?php else:?>
+    <tr class="tr_node_view">     
+            <td class="td_label_node_view"><b><?php print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
+            <td class="td_value_node_view"><?php print hontza_get_enlace_fuente_del_canal_view_html($node,1);?></td>
+    </tr>
+    <?php endif;?>
+    <?php endif;?>
+<!--    
+</table>
+-->
+<?php if(hontza_is_hound_canal($node->nid)):?>
+            <?php if(hontza_is_hound_text_input()):?>
+                <?php include('canal-hound-parametros-table.tpl.php');?>                
+            <?php endif;?>              
+<?php endif;?>
 </table>
