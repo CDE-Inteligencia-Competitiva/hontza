@@ -130,16 +130,19 @@ function crear_usuario_add_user_profile_groups_select_form_fieldset(&$form,$is_p
     if($is_preguntas){
         $profile_why_become_member='';
         $profile_what_contribute='';
+        
         $form['select_groups_fieldset']['profile_why_become_member']=array(
             '#type' => 'textarea',
-            '#title'=>t('Why do you like to become member of Hontza Network groups?'),
+            //'#title'=>t('Why do you like to become member of Hontza Network groups?'),
+            '#title'=>t('Message to the Group owner'),
             '#default_value'=>$user->profile_why_become_member,
+            '#description'=>t('Please explain why would you like to be member of the group or how could you contribute to the group'),
         );
-        $form['select_groups_fieldset']['profile_what_contribute']=array(
+        /*$form['select_groups_fieldset']['profile_what_contribute']=array(
             '#type' => 'textarea',
             '#title'=>t('What can you contribute to the groups?'),
             '#default_value'=>$user->profile_what_contribute,
-        );
+        );*/
     }
 }
 function crear_usuario_get_grupos_assoc($values=array()){    
@@ -262,11 +265,11 @@ function crear_usuario_add_user_profile_questions_form_fieldset(&$form){
         '#title'=>'1) '.t('Why do you like to become member of '.$hontza_network.' groups?'),
         '#default_value'=>$user->profile_why_become_member,
     );
-    $form['questions_fieldset']['profile_what_contribute']=array(
+    /*$form['questions_fieldset']['profile_what_contribute']=array(
         '#type'=>'textarea',
         '#title'=>'2) '.t('What can you contribute to the groups?'),
         '#default_value'=>$user->profile_what_contribute,
-    );     
+    );*/     
 }
 function crear_usuario_add_grupos_usuario_propio($user){
     crear_usuario_questions_save($user);
@@ -535,7 +538,8 @@ function crear_usuario_grupos_apuntarse_form(){
     return $form;
 }
 function crear_usuario_grupos_apuntarse_get_help($with_title=1){
-    $grupos_ayuda_node=crear_usuario_get_grupos_ayuda_node();
+    $result='';
+    /*$grupos_ayuda_node=crear_usuario_get_grupos_ayuda_node();
     $node=hontza_node_load_by_lang($grupos_ayuda_node->nid);
     if(isset($node->nid) && !empty($node->nid)){
         if($with_title){
@@ -544,8 +548,9 @@ function crear_usuario_grupos_apuntarse_get_help($with_title=1){
         $output=node_view($node,FALSE,1);
         $output=hontza_canal_rss_unset_node_view_links($output);
         return $output;
-    }
-    return '';
+    }*/
+    $result=t('There are not more open or collaborative groups on this server');
+    return $result;
 }
 function crear_usario_get_grupos_ayuda_link(){    
     $destination='panel_admin/grupos';
