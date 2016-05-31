@@ -170,8 +170,8 @@ function red_crear_usuario_add_user_profile_values(&$html,$my_user,$lang_in='',$
         $hontza_network=red_crear_usuario_get_hontza_network_label();
         $html[]='<BR>'.t('Why do you like to become member of !network_name groups?',array('!network_name'=>$hontza_network));
         $html[]=$my_user->profile_why_become_member;
-        $html[]='<BR>'.t('What can you contribute to the groups?');
-        $html[]=$my_user->profile_what_contribute.'<BR>';     
+        /*$html[]='<BR>'.t('What can you contribute to the groups?');
+        $html[]=$my_user->profile_what_contribute.'<BR>';*/     
     }
 }
 function red_crear_usuario_save_profile_values($user,$name_array_in='',$field_array_in=''){
@@ -783,3 +783,9 @@ function red_crear_usuario_is_editar_username_access(){
     }
     return 0;
 }
+function red_crear_usuario_node_page_default_drupal_goto(){
+    if(!hontza_is_user_anonimo()){
+        drupal_goto('mis-grupos/este_servidor');
+        exit();
+    }    
+}        
