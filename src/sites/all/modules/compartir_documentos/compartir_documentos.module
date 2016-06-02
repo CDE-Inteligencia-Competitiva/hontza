@@ -178,6 +178,9 @@ function compartir_documentos_is_enviar_mail($type=''){
 }
 function compartir_documentos_custom_access(){
     global $user;
+    if(!hontza_is_red_hoja()){
+        return FALSE;
+    }
     if(is_super_admin()){
         return TRUE;
     }
