@@ -1232,11 +1232,13 @@ function hontza_grupos_mi_grupo_registrar_grupo_node_form_alter(&$form,&$form_st
     if(hontza_registrar_is_registrar_activado()){
         red_registrar_grupo_node_form_alter($form,$form_state,$form_id,$node);
     }
+    if(!hontza_is_red_hoja()){
+        unset($form['field_is_private_collabo_network']);
+    }
 }
 //intelsat-2016
 function hontza_grupos_mi_grupo_registrar_on_grupo_node_save(&$node,$op,$nid='',$is_exec=0){
     if(hontza_registrar_is_registrar_activado()){
-        //echo print_r($node,1);exit();
         red_registrar_on_grupo_node_save($node,$op,$nid,$is_exec);
     }
 }
