@@ -113,9 +113,10 @@ min-height: 90px;
   margin: 0;
   padding: 1em;
   height: 50px;
-  /*height: 68px;*/
-  /*height: 25.5px;
-  width: 33px;*/
+  /*padding-left:1em;
+  padding-top:5px;
+  padding-bottom:0px;
+  padding-right:5px;*/
 }
 #header #site-slogan {
   color: #fff;
