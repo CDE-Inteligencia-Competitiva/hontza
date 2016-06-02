@@ -1212,3 +1212,8 @@ function buho_apachesolr_search_noresults() {
   red_solr_inc_add_remaining_html($html);
   return implode('',$html);
 }
+function buho_admin_menu_icon() {
+  $favicon=(theme_get_setting('toggle_favicon') ? theme_get_setting('favicon') : base_path() .'misc/favicon.ico');
+  $favicon=hontza_canal_rss_get_favicon_url('',$favicon);
+  return '<img class="admin-menu-icon" src="'. $favicon .'" width="16" height="16" alt="'. t('Home') .'" />';
+}
