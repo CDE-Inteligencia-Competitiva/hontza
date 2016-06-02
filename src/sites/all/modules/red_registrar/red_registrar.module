@@ -835,7 +835,9 @@ function red_registrar_get_logo_faktore(){
     return $result;
 }
 function red_registrar_add_grupo_node_form_js($grupo_node){
-    $is_grupo_publico=estrategia_is_grupo_publico($grupo_node);
+    //$is_grupo_publico=estrategia_is_grupo_publico($grupo_node);
+    $is_publico_colaboratico=1;
+    $is_grupo_publico=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaboratico);
     //if(hontza_is_sareko_id_red()){
     if(hontza_is_red_hoja()){
         $js='
@@ -854,7 +856,7 @@ function red_registrar_add_grupo_node_form_js($grupo_node){
                    }
                 });
                 function is_show_is_private_collabo_network_select(tid){
-                    if(tid==29){
+                    if(tid==29 || tid==27){
                         return 0;
                     }
                     return 1;
@@ -867,6 +869,9 @@ function red_registrar_add_grupo_node_form_js($grupo_node){
 function red_registrar_grupo_node_form_alter(&$form,&$form_state,$form_id,$grupo_node){
     unset($form['menu']);
     $form['field_is_private_collabo_network']['#weight']=0;
+    
+    $form['field_is_private_collabo_network']['#default_value'][0]['value']=1;
+            
     //$form['field_grupo_regis_tags'][0]['#description']=t('A comma-separated list of geographic and thematic terms');
     $form['field_grupo_regis_tags'][0]['#description']=t('A comma-separated list of thematic terms');
     $form['field_grupo_regis_tags'][0]['#title']=t('Thematic tags');
@@ -888,7 +893,9 @@ function red_registrar_on_grupo_node_save(&$node,$op,$nid='',$is_exec=0){
                 }
                 //if(!red_registrar_is_grupo_connected($node->nid)){
                     $is_connect_network=0;    
-                    $is_grupo_publico=estrategia_is_grupo_publico($grupo_node);    
+                    //$is_grupo_publico=estrategia_is_grupo_publico($grupo_node);
+                    $is_publico_colaboratico=1;
+                    $is_grupo_publico=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaboratico);
                     $_REQUEST['destination']='';                                                    
                     if($is_grupo_publico){
                         $is_connect_network=1; 
