@@ -1067,8 +1067,11 @@ function theme_get_setting($setting_name, $refresh = FALSE) {
   if(module_exists('hontza')){
     if(hontza_canal_rss_is_visualizador_activado()){
         //$settings['favicon']='/system/files/buho_favicon.ico';
-        $settings['favicon']=publico_get_favicon($settings);
-    }
+        $settings['favicon']=publico_get_favicon($settings);        
+    }else{
+        //intelsat-2016
+        $settings['favicon']=hontza_canal_rss_get_favicon_url($settings);
+    }    
   }
   return isset($settings[$setting_name]) ? $settings[$setting_name] : NULL;
 }
