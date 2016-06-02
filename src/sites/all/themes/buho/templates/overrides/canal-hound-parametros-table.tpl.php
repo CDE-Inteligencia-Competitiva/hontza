@@ -39,12 +39,12 @@
                  </tr>
                  -->
             <?php else:?>
-                 <tr class="tr_node_view" style="background-color:#CCCCCC">
-                 <td class="td_label_node_view"><b><?php print t('Hound')?>:</b></td>
-                 <td><?php print $param_key;?></td>
-                 </tr>
                  <?php foreach($hound_array as $i=>$param_row):?>
-                    <?php foreach($param_row as $param_name=>$param_value):?>
+                    <tr class="tr_node_view" style="background-color:#CCCCCC">
+                        <td class="td_label_node_view"><b><?php print t('Hound')?>:</b></td>
+                        <td><?php print $param_key;?></td>
+                    </tr>
+                     <?php foreach($param_row as $param_name=>$param_value):?>
                             <tr class="tr_node_view">
                             <!--    
                             <td class="td_label_node_view"><b><?php //print $param_key;?></b></td>
