@@ -600,6 +600,10 @@ function red_exportar_rss_get_item_comments_format_xml($node){
 }
 //intelsat-2015
 function red_exportar_rss_enviar_mail_canales_rss_access(){
+    //intelsat-2016
+    if(!hontza_is_red_hoja()){
+        return false;
+    }
     $modo_estrategia=1;
     if(is_administrador_grupo($modo_estrategia)){
         return true;
