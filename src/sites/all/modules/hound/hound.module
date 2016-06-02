@@ -967,7 +967,19 @@ function hound_update_channel_new_hound_ids_callback(){
 }
 function hound_api_get_channel($hound_id,&$url){
     $hound_base_url=hound_base_url();
-    $url=$hound_base_url.'/index.php/channels/getChannel/id/'.urlencode($hound_id);    
+    //intelsat-2016
+    $url=$hound_base_url;    
+    //$url=$hound_base_url.'/index.php/channels/getChannel/id/'.urlencode($hound_id);            
+    $id_param='';
+    if(!hound_enlazar_inc_is_activado()){
+        $url.='/index.php';
+        $id_param='id/';
+    }
+    $url.='/channels/getChannel/'.$id_param.urlencode($hound_id);
+    //intelsat-2016
+    if(hound_enlazar_inc_is_activado()){
+        $url.='/'.hound_enlazar_inc_get_key();
+    }    
     $content=file_get_contents($url);
     $result=json_decode($content);
     if(!empty($result)){  
