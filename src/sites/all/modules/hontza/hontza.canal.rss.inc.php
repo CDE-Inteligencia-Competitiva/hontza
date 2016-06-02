@@ -2001,3 +2001,27 @@ function hontza_canal_rss_get_base_path_help_popup(){
     }
     return '/';
 }
+//intelsat-2016
+function hontza_canal_rss_get_favicon_url($settings,$favicon_in=''){
+    if(!empty($favicon_in)){
+        if(hontza_canal_rss_is_custom_favicon()){        
+            $result='/system/files/'.basename($favicon_in);
+        }else{
+            $result=$favicon_in;
+        }
+    }else{
+        if(hontza_canal_rss_is_custom_favicon()){        
+            $result='/system/files/'.basename($settings['favicon']);
+        }else{
+            $result=$setting['favicon'];
+        }
+    }
+    return $result;
+}
+//intelsat-2016
+function hontza_canal_rss_is_custom_favicon(){
+    if(defined('_IS_CUSTOM_FAVICON') && _IS_CUSTOM_FAVICON==1){
+        return 1;
+    }
+    return 0;
+}
