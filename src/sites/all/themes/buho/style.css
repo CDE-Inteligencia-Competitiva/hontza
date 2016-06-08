@@ -111,8 +111,12 @@ min-height: 90px;
 }
 #header #logo img {
   margin: 0;
-  padding: 1em;
-  height: 50px;
+  /*padding: 1em;*/
+  padding:0;
+  /*height: 50px;*/
+  height: 60px;
+  padding-top:0.5em;
+  padding-left:0.5em;
   /*padding-left:1em;
   padding-top:5px;
   padding-bottom:0px;
