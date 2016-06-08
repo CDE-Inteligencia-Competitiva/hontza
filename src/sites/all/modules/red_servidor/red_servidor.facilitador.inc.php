@@ -254,3 +254,16 @@ function red_servidor_facilitador_save_servicios_experto_callback(){
     print $result;
     exit();
 }
+//intelsat-2016
+function red_servidor_facilitador_delete_users_facilitators_callback(){
+    if(hontza_canal_rss_is_facilitador_activado()){
+        $my_user=$_POST['my_user'];
+        $my_user=red_compartir_grupo_decrypt_text($my_user);
+        $my_user=base64_decode($my_user);
+        $my_user=unserialize($my_user);
+        if(isset($my_user->name) && !empty($my_user->name)){
+            $network_user=user_load(array('name'=>$my_user->name,'mail'=>$my_user->mail));
+            facilitator_delete_users_facilitators($network_user);
+        }
+    }
+}

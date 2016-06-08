@@ -387,7 +387,9 @@ function red_servidor_grupo_mensaje_bienvenida_red_alerta_callback(){
     - Experts<BR>
     - Shared Channels<BR><BR>
     <p>Also selected users can create groups in the Central Server and invite any Hontza/Alerta Network user</p>
-    <p>Enjoy! It's time to watch together!</p>");    
+    <p>Enjoy! It's time to watch together!</p>");
+    //intelsat-2016
+    red_servidor_grupo_mensaje_bienvenida_red_alerta_add_js();
     return implode('',$html);   
 }
 function red_servidor_grupo_guardar_no_compartir_grupo_hoja_callback(){
@@ -403,6 +405,8 @@ function red_servidor_grupo_guardar_no_compartir_grupo_hoja_callback(){
             db_query($sql=sprintf('UPDATE {red_servidor_grupo} SET status=%d WHERE id=%d',$status,$row->id));
         }    
     }
+    //intelsat-2016
+    red_servidor_grupo_guardar_no_compartir_grupo_hoja_add_js();
     return t('Disconnected from Network').' '.date('Y-m-d H:i:s');
 }
 function red_servidor_grupo_unset_grupo_shared($result_in){
@@ -475,7 +479,7 @@ function red_servidor_grupo_repasar_subdominios_erroneos(){
         }
         $message=implode("\n",$result);
         $subject='Subdominios erroneos en network.hontza.es';
-        $mail_to_array=array('hontza@hontza.es');
+        $mail_to_array=array('jcvergar@cde.es','bulegoa@netkam.com');
         if(!empty($mail_to_array)){
             foreach($mail_to_array as $b=>$mail_to){
                 //intelsat-2016
@@ -492,4 +496,14 @@ function red_servidor_grupo_url_exists($url) {
 }
 function red_servidor_grupo_update_status($id,$status){
     db_query('UPDATE {red_servidor_grupo} SET status=%d WHERE id=%d',$status,$id);
+}
+function red_servidor_grupo_mensaje_bienvenida_red_alerta_add_js(){
+    $js='$(document).ready(function()
+    {
+        self.close();
+    });';
+    drupal_add_js($js,'inline');
+}
+function red_servidor_grupo_guardar_no_compartir_grupo_hoja_add_js(){
+    red_servidor_grupo_mensaje_bienvenida_red_alerta_add_js();
 }
