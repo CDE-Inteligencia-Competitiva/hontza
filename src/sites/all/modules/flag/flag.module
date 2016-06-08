@@ -547,14 +547,16 @@ function flag_confirm_submit(&$form, &$form_state) {
  *   FALSE if some error occured (e.g., user has no permission, flag isn't
  *   applicable to the item, etc.), TRUE otherwise.
  */
-function flag($action, $flag_name, $content_id, $account = NULL) {
-
+//intelsat-2016
+//function flag($action, $flag_name, $content_id, $account = NULL) {
+function flag($action, $flag_name, $content_id, $account = NULL,$is_hound_noticia_feed_noticia_email=0) {
   if (!($flag = flag_get_flag($flag_name))) {
     // Flag does not exist.
     return FALSE;
   }
- 
-  return $flag->flag($action, $content_id, $account);
+  //intelsat-2016
+  //return $flag->flag($action, $content_id, $account);
+  return $flag->flag($action, $content_id, $account,FALSE,$is_hound_noticia_feed_noticia_email);
 }
 
 /**

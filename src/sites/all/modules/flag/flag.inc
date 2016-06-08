@@ -363,30 +363,41 @@ class flag_flag {
    *   FALSE if some error occured (e.g., user has no permission, flag isn't
    *   applicable to the item, etc.), TRUE otherwise.
    */
-  function flag($action, $content_id, $account = NULL, $skip_permission_check = FALSE) {
+  //intelsat-2016
+  //function flag($action, $content_id, $account = NULL, $skip_permission_check = FALSE) {
+  function flag($action, $content_id, $account = NULL, $skip_permission_check = FALSE,$is_hound_noticia_feed_noticia_email=0){  
     //intelsat-2015
     global $user;  
-    //  
-    if (!isset($account)) {
-      $account = $GLOBALS['user'];
+    //
+    //intelsat-2016
+    if(!$is_hound_noticia_feed_noticia_email){    
+        if (!isset($account)) {
+          $account = $GLOBALS['user'];
+        }
+        if (!$account) {
+          return FALSE;
+        }
     }
-    if (!$account) {
-      return FALSE;
-    }
-
-    if (!$account->uid) {
-      // Anonymous users can't flag with this system. For now.
-      //
-      // @todo This is legacy code. $flag->user_access() should handle this.
-      // This will also make it posible to have flags that do support anonymous
-      // users.
-      return FALSE;
-    }
-
-    if (!$skip_permission_check && !$this->user_access($account)) {
-      // User has no permission to use this flag.
-      return FALSE;
-    }
+    
+    //intelsat-2016
+    if(!$is_hound_noticia_feed_noticia_email){
+        if (!$account->uid) {
+          // Anonymous users can't flag with this system. For now.
+          //
+          // @todo This is legacy code. $flag->user_access() should handle this.
+          // This will also make it posible to have flags that do support anonymous
+          // users.
+          return FALSE;
+        }
+    
+    
+        if (!$skip_permission_check && !$this->user_access($account)) {
+          // User has no permission to use this flag.
+          return FALSE;
+        }
+    }    
+    
+        
     if (!$this->applies_to_content_id($content_id)) {
       // Flag does not apply to this content.
       return FALSE;
@@ -399,6 +410,14 @@ class flag_flag {
 
     // Perform the flagging or unflagging of this flag.
     $uid = $this->global ? 0 : $account->uid;
+    
+    //intelsat-2016
+    if($is_hound_noticia_feed_noticia_email){
+       if(empty($uid)){
+           $uid=1;
+       } 
+    }
+    
     $flagged = $this->_is_flagged($content_id, $uid);
     if ($action == 'unflag' && $flagged) {
       $this->_unflag($content_id, $uid);
@@ -941,9 +960,13 @@ class flag_node extends flag_flag {
     return FALSE;
   }
 
-  function flag($action, $content_id, $account = NULL, $skip_permission_check = FALSE) {
+  //intelsat-2016
+  //function flag($action, $content_id, $account = NULL, $skip_permission_check = FALSE) {
+  function flag($action, $content_id, $account = NULL, $skip_permission_check = FALSE,$is_hound_noticia_feed_noticia_email=0){
     $content_id = $this->get_translation_id($content_id);
-    return parent::flag($action, $content_id, $account, $skip_permission_check);
+    //intelsat-2016
+    //return parent::flag($action, $content_id, $account, $skip_permission_check);
+    return parent::flag($action, $content_id, $account, $skip_permission_check,$is_hound_noticia_feed_noticia_email);
   }
 
 
