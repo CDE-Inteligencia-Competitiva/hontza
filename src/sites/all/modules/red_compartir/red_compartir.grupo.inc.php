@@ -3,7 +3,11 @@ function red_compartir_grupo_hoja_callback(){
     return drupal_get_form('red_compartir_grupo_hoja_form'); 
 }
 function red_compartir_grupo_hoja_form(){
+    //intelsat-2016
+    global $base_root;
     $form=array();
+    //intelsat-2016
+    red_compartir_grupo_hoja_access_denied();
     $form['#action']=red_compartir_grupo_define_url_grupo_servidor();
     //print red_compartir_grupo_define_url_grupo_servidor();
     $form['#attributes']=array('target'=>'_blank');
@@ -14,9 +18,13 @@ function red_compartir_grupo_hoja_form(){
     $form['grupo_enviar']=array(
         '#type'=>'hidden',
         '#default_value'=>$grupo_enviar,
-    );    
+    );
+    //intelsat-2016
+    $share=t('Saving group settings in "@nombre_servidor_local"',array('@nombre_servidor_local'=>$base_root));    
     $form['grupo_name']=array(
-        '#value'=>'<p><b>'.$node->title.'</b></p>',
+         //intelsat-2016
+         //'#value'=>'<p><b>'.$node->title.'</b></p>
+         '#value'=>'<p>'.$share.'</p>',
     );
     /*
     //intelsat-2016
@@ -66,15 +74,22 @@ function red_compartir_grupo_hoja_form(){
     );*/
     $form['share_btn']=array(
         '#type'=>'submit',
-        '#default_value'=>t('Connect to Network'),
+        //intelsat-2016
+        //'#default_value'=>t('Connect to Network'),
+        '#default_value'=>t('Please click here to continue'),
     );
     $destination='node/'.$nid;
     if(isset($_REQUEST['destination'])){
         $destination=$_REQUEST['destination'];
     }
-    $form['cancelar_btn']=array(
+    //intelsat-2016
+    //se ha comentado
+    /*$form['cancelar_btn']=array(
         '#value'=>l(t('Return'),$destination),
-    );    
+    );*/
+    //intelsat-2016
+    //drupal_set_title($share);
+    drupal_set_title('Saving Group Settings');
     red_compartir_grupo_add_hoja_js();
     return $form;
 }
@@ -86,10 +101,12 @@ function red_compartir_grupo_add_hoja_js(){
         $js.='red_registrar_is_registrar_activado=1;';
     }*/
     $js.='$(document).ready(function(){
+        //$("#edit-share-btn").click();
         $("#edit-share-btn").click(function(){
             call_red_compartir_grupo_hoja_ajax();
             //return false;
         });
+        //$("#red-compartir-grupo-hoja-form").submit();
         function call_red_compartir_grupo_hoja_ajax(){ 
             var d=new Date();
             var n=d.getTime();
@@ -181,7 +198,9 @@ function red_compartir_grupo_guardar_en_local_compartir_grupo_hoja_enviado_callb
         /*if(hontza_registrar_is_registrar_activado()){
             red_compartir_registrar_local_save();
         }*/
-        drupal_set_message(t('Group %grupo_title shared',array('%grupo_title'=>$grupo_enviar->grupo_title)));
+        //intelsat-2016
+        //drupal_set_message(t('Group %grupo_title shared',array('%grupo_title'=>$grupo_enviar->grupo_title)));
+        drupal_set_message(t('<p>Group %grupo_title has been saved</p><p>Welcome to Hontza Network!</p>',array('%grupo_title'=>$grupo_enviar->grupo_title))); 
     }
     print json_encode($result);
     exit();
@@ -637,6 +656,8 @@ function red_compartir_grupo_no_compartir_grupo_hoja_callback(){
 }
 function red_compartir_grupo_no_compartir_grupo_hoja_form(){
     $form=array();
+    //intelsat-2016
+    red_compartir_grupo_no_compartir_grupo_hoja_access_denied();
     $form['#action']=red_compartir_grupo_no_compartir_grupo_define_url_servidor();
     //simulando
     //unset($form['#action']);
@@ -816,6 +837,7 @@ function red_compartir_grupo_guardar_en_local_no_compartir_grupo_hoja_enviado_ca
         $grupo_enviar=unserialize(base64_decode($grupo_enviar));       
         red_compartir_grupo_save_red_no_compartir_grupo($grupo_enviar);       
     }
+    drupal_set_message(t('<p>Group %grupo_title has been disconnected from Network</p>',array('%grupo_title'=>$grupo_enviar->grupo_title))); 
     print json_encode($result);
     exit();
 }
@@ -926,4 +948,23 @@ function red_compartir_grupo_users_facilitators_row_save($u,$u_in){
             facilitador_servidor_central_users_facilitators_row_save($u,$u_in);
         }    
     }    
-}    
+}
+//intelsat-2016
+function red_compartir_grupo_hoja_access_denied(){
+    $is_grupo_publico=1;
+    $grupo_nid=arg(2);
+    $grupo_node=node_load($grupo_nid);
+    if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+        $is_grupo_publico=0;
+        $is_publico_colaborativo=1;
+        $is_grupo_publico=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaborativo);
+    }    
+    if($is_grupo_publico){
+        drupal_access_denied();
+        exit();
+    }
+}
+//intelsat-2016
+function red_compartir_grupo_no_compartir_grupo_hoja_access_denied(){
+    red_compartir_grupo_hoja_access_denied();
+}
