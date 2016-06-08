@@ -892,19 +892,21 @@ function red_registrar_on_grupo_node_save(&$node,$op,$nid='',$is_exec=0){
                     $node=node_load($nid);
                 }
                 //if(!red_registrar_is_grupo_connected($node->nid)){
-                    $is_connect_network=0;    
-                    //$is_grupo_publico=estrategia_is_grupo_publico($grupo_node);
-                    $is_publico_colaboratico=1;
-                    $is_grupo_publico=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaboratico);
-                    $_REQUEST['destination']='';                                                    
-                    if($is_grupo_publico){
-                        $is_connect_network=1; 
-                    }else{
-                        /*$is_compartir_grupo_hoja=0;
-                        if(isset($_POST['field_is_private_collabo_network']['value']) && !empty($_POST['field_is_private_collabo_network']['value'])){
-                            
-                        }*/
-                        $is_connect_network=red_registrar_is_compartir_grupo_hoja($node,$is_exec);                                              
+                    $is_connect_network=0;
+                    if(!red_compartir_grupo_is_grupo_red_alerta($node->nid)){                    
+                        //$is_grupo_publico=estrategia_is_grupo_publico($grupo_node);
+                        $is_publico_colaboratico=1;
+                        $is_grupo_publico=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaboratico);
+                        $_REQUEST['destination']='';                                                    
+                        if($is_grupo_publico){
+                            $is_connect_network=1; 
+                        }else{
+                            /*$is_compartir_grupo_hoja=0;
+                            if(isset($_POST['field_is_private_collabo_network']['value']) && !empty($_POST['field_is_private_collabo_network']['value'])){
+
+                            }*/
+                            $is_connect_network=red_registrar_is_compartir_grupo_hoja($node,$is_exec);                                              
+                        }                        
                     }
                     if($is_connect_network){
                         $url='red_compartir/compartir_grupo_hoja/'.$node->nid;
