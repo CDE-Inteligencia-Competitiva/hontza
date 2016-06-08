@@ -1477,4 +1477,12 @@ function hontza_grupo_mi_grupo_is_grupo_publico_colaborativo($grupo_nid,$grupo_n
         $result=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaborativo);
     }
     return $result;
-}    
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_node_delete_group_form_alter(&$form,&$form_state,$form_id){
+    global $user;
+    if($user->uid!=1){
+        $form['target']['#options']=get_usuario_grupos_options();
+    }
+    $form['verb']['#default_value']=1;
+}
