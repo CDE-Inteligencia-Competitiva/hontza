@@ -609,8 +609,14 @@ function hontza_og_get_node_groups($node) {
     }
     return $result;
 }
-function hontza_get_node($nid){
-    $res=db_query('SELECT n.* FROM {node} n WHERE nid=%d',$nid);
+//intelsat-2016
+//function hontza_get_node($nid){
+function hontza_get_node($nid,$vid=''){
+    if(!empty($vid)){
+        $res=db_query('SELECT n.* FROM {node} n WHERE nid=%d AND vid=%d',$nid,$vid);
+    }else{
+        $res=db_query('SELECT n.* FROM {node} n WHERE nid=%d',$nid);
+    }
     while($row=db_fetch_object($res)){
         return $row;
     }
@@ -874,21 +880,30 @@ function hontza_is_news_google($url,$type,&$url_google){
     return 0;
 }
 //gemini-2014
-function hontza_validar_con_accion($nid){
+//intelsat-2016
+//function hontza_validar_con_accion($nid){
+function hontza_validar_con_accion($nid,$is_hound_noticia_feed_noticia_email=0){                            
     $leido=get_leido_interesante($nid);
     $row_temp=new stdClass();
     $row_temp->nid=$nid;
     if(isset($leido->fcid) && !empty($leido->fcid)){        
         hontza_delete_flag_content($row_temp);
-        $flag_result = flag('flag','leido_interesante',$row_temp->nid);
+        //intelsat-2016
+        //$flag_result = flag('flag','leido_interesante',$row_temp->nid);
+        $flag_result = flag('flag','leido_interesante',$row_temp->nid,NULL,$is_hound_noticia_feed_noticia_email);
     }else{
-        $flag_result = flag('flag','leido_interesante',$row_temp->nid);
+        //intelsat-2016
+        //$flag_result = flag('flag','leido_interesante',$row_temp->nid);
+        $flag_result = flag('flag','leido_interesante',$row_temp->nid,NULL,$is_hound_noticia_feed_noticia_email);
     }
 }
 //gemini-2014
 function hontza_on_insert_noticia_de_usuario(&$node){
     if($node->type=='noticia'){
-        hontza_validar_con_accion($node->nid);
+        //intelsat-2016
+        //hontza_validar_con_accion($node->nid);
+        $is_hound_noticia_feed_noticia_email=hound_noticia_email_is_hound_noticia_feed_noticia_email();
+        hontza_validar_con_accion($node->nid,$is_hound_noticia_feed_noticia_email);        
         if(hontza_canal_rss_is_publico_activado()){
             publico_vigilancia_on_insert_noticia_de_usuario_send_message_admin($node);
         }

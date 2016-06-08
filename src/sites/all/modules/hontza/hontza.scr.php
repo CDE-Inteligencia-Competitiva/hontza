@@ -826,7 +826,7 @@ function my_user_profile_form_alter(&$form,&$form_state,$form_id){
         //intelsat-2015
         red_crear_usuario_user_profile_form_alter($form,$form_state,$form_id);
         //intelsat-2016
-        hontza_registrar_user_profile_account_form_alter($form,$form_state,$form_id);                
+        hontza_registrar_user_profile_account_form_alter($form,$form_state,$form_id);
 }
 function my_user_empresa_form_alter(&$form,&$form_state,$form_id,$my_uid){	
     global $user;                   

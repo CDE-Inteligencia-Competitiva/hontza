@@ -665,8 +665,9 @@ function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 		 */ 	  
 	  //Cambiar el atributo og_public a FALSE para las noticias
       global $user;
-	  //print $node->og_public;exit();	  
+	  //print $node->og_public;exit();               
       if ($node->type == 'noticia' and $user->roles[ADMINISTRADOR] and $user->roles[CREADOR] ) {
+          
 		$node->og_public = FALSE;
       }
       //gemini-2014
