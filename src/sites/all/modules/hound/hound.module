@@ -2,6 +2,7 @@
 require_once('hound.update.canal.uid.inc.php');
 //intelsat-2016
 require_once('hound.enlazar.inc.php');
+require_once('hound.noticia.email.inc.php');
 //
 function hound_menu() {
     $items['hound/hound_load_ajax'] = array(
@@ -84,7 +85,12 @@ function hound_menu() {
     'title' => 'Feed',
     'page callback' => 'hound_feed_actualizar_callback',
     'access callback' => TRUE,    
-     );
+     );     
+     $items['hound/noticia/feed_noticia_email_actualizar']=array(
+    'title' => 'Feed',
+    'page callback' => 'hound_noticia_feed_noticia_email_actualizar_callback',
+    'access callback' => TRUE,    
+     );          
     return $items;
 }
 function hound_add_select_text_input(&$form){     
@@ -1412,4 +1418,8 @@ function hound_is_active_access(){
         return TRUE;
     }
     return FALSE;
+}
+//intelsat-2016
+function hound_cron(){
+    hound_noticia_feed_noticia_email_actualizar();
 }
