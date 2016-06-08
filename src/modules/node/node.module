@@ -996,7 +996,24 @@ function node_delete($nid) {
     //intelsat-2015
     if($node->type!='bookmark_temporal'){
     //    
-        drupal_set_message(t('@type %title has been deleted.', array('@type' => node_get_types('name', $node), '%title' => $node->title)));
+        //intelsat-2016
+        $is_drupal_set_message=1;
+        if($node->type=='item'){
+            $canal_nid=arg(1);
+            if(is_numeric($canal_nid)){
+                $canal_node=node_load($canal_nid);
+                if(isset($canal_node->nid) && !empty($canal_node->nid)){
+                    if(in_array($canal_node->type,array('canal_de_yql','canal_de_supercanal'))){
+                        $is_drupal_set_message=0;                    
+                    }
+                }else{
+                    $is_drupal_set_message=0;
+                }
+            }
+        }
+        if($is_drupal_set_message){
+            drupal_set_message(t('@type %title has been deleted.', array('@type' => node_get_types('name', $node), '%title' => $node->title)));
+        }    
     }    
   }
 }
@@ -1773,7 +1790,8 @@ function node_feed($nids = FALSE, $channel = array()) {
  * Menu callback; Generate a listing of promoted nodes.
  */
 function node_page_default() {
-  $result = pager_query(db_rewrite_sql('SELECT n.nid, n.sticky, n.created FROM {node} n WHERE n.promote = 1 AND n.status = 1 ORDER BY n.sticky DESC, n.created DESC'), variable_get('default_nodes_main', 10));
+  
+    $result = pager_query(db_rewrite_sql('SELECT n.nid, n.sticky, n.created FROM {node} n WHERE n.promote = 1 AND n.status = 1 ORDER BY n.sticky DESC, n.created DESC'), variable_get('default_nodes_main', 10));
 
   $output = '';
   $num_rows = FALSE;
