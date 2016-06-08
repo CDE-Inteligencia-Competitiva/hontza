@@ -217,7 +217,7 @@ function red_menu(){
       'title' => 'Remaining',
       'page callback' => 'red_solr_index_remaining_callback',
       'access callback' => 'red_solr_index_remaining_access',     
-     );             
+     );
     return $items;
 }
 function red_idiomas($node,$field_in=''){
@@ -1714,4 +1714,4 @@ function red_repase_access_fuentes(){
     if(is_fuentes_pipes_todas()){
         hontza_grupos_active_access_tab('fuentes');
     }    
-}            
+}

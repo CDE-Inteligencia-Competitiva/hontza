@@ -44,4 +44,9 @@ function red_node_og_home_noticiasvalidadas_dash_block_pre_execute(&$view){
     WHERE '.implode(' AND ',$where).' ORDER BY flag_content_node_timestamp DESC,node_comment_statistics_comment_count DESC';    
     $view->build_info['query']=$sql; 	
     $view->build_info['count_query']=$sql;
-}    
+}
+function red_node_items_deleted_drupal_set_message($kont_items){
+    if($kont_items>0){
+        drupal_set_message(t('@kont_items news has been deleted',array('@kont_items'=>$kont_items)));
+    }
+}
