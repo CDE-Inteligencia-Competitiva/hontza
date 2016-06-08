@@ -739,7 +739,7 @@ function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     break;
     
     case 'delete':
-	   	  
+	$kont_items=0;   	  
 	  if ($node->type == 'canal_de_supercanal') {
               hontza_canal_delete_reto_al_que_responde($node->nid, $node->vid);
 	  	//print $node->type.'<BR>';
@@ -747,6 +747,7 @@ function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 		
 		while ($item_nid = db_result($items)) {		  
 		  node_delete($item_nid);
+                  $kont_items++;
 		}
 		
 		//gemini
@@ -760,6 +761,7 @@ function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         $items = db_query("SELECT nid FROM {feeds_node_item} WHERE feed_nid = %d", $node->nid);
         while ($item_nid = db_result($items)) {
           node_delete($item_nid);
+          $kont_items++;
         }
 		
 		//gemini
@@ -767,7 +769,8 @@ function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 	    my_delete_opml_file($node);
 		//
             //intelsat-2016
-            red_canal_delete_canal_hound($node);    
+            red_canal_delete_canal_hound($node);
+            red_node_items_deleted_drupal_set_message($kont_items);
       }
 	  
 	  //gemini

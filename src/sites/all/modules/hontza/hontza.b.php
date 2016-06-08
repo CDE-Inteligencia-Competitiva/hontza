@@ -1307,10 +1307,8 @@ function get_usuario_grupo_nid_array(){
     return $result;
 }
 function node_delete_group_form_alter(&$form,&$form_state,$form_id){
-    global $user;
-    if($user->uid!=1){
-        $form['target']['#options']=get_usuario_grupos_options();
-    }
+    //intelsat-2016
+    hontza_grupos_mi_grupo_node_delete_group_form_alter($form,$form_state,$form_id);
 }
 function get_usuario_grupos_options($uid_in=''){
     global $user;
