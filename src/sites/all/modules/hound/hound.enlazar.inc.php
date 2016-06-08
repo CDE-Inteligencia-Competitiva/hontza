@@ -86,12 +86,17 @@ function hound_enlazar_inc_delete_canal_hound_servidor($canal){
     if(hound_enlazar_inc_is_activado()){
         $url=hound_enlazar_inc_get_delete_url($canal);
         //print $url;exit();
-        file_get_contents($url);
+        if(!empty($url)){
+            file_get_contents($url);
+        }    
     }    
 }
 function hound_enlazar_inc_get_delete_url($canal){
-    $url=hontza_enlazar_inc_define_hound_url();
+    $url=hound_enlazar_inc_define_hound_url();
     $hound_id=hound_enlazar_inc_get_hound_id($canal);
+    if(empty($hound_id)){
+        return '';
+    }
     $url.='/channels/borrarCanal/'.$hound_id.'/'.hound_enlazar_inc_get_key();
     drupal_set_message($url);
     return $url;
