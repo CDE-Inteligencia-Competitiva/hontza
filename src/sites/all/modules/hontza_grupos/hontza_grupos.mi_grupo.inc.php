@@ -117,30 +117,33 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
             //
             if(hontza_is_sareko_id_red()){
                 if(hontza_is_red_hoja()){
-                    //gemini-2014
-                    if(red_compartir_grupo_is_grupo_red_alerta($nid)){
-                        $options=array('html'=>TRUE,'query'=>drupal_get_destination(),array('attributes'=>array('title'=>t('Disconnect from Network'),'alt'=>t('Disconnect from Network'))));
-                        $url_no_network='red_compartir/no_compartir_grupo_hoja/'.$nid;
-                        if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-                            $url_no_network=$base_url.'/'.$my_grupo->purl.'/'.$url_no_network;
-                            $options['absolute']=TRUE;
-                        }                        
-                        //$label=my_get_icono_action('no_network', t('Disconnect from Network')).t('Disconnect from Network');
-                        $label=t('Disconnect from Network');
-                        $html[]=l($label,$url_no_network,$options);
-                    }else{
-                        $options=array('html'=>TRUE,'query'=>drupal_get_destination(),array('attributes'=>array('title'=>t('Connect to Network'),'alt'=>t('Connect to Network'))));                    
-                        //intelsat-2016
-                        //$url_sign_network='red_compartir/compartir_grupo_hoja/'.$nid;
-                        $url_sign_network=hontza_registrar_get_url_sign_network($nid);
-                        if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-                            $url_sign_network=$base_url.'/'.$my_grupo->purl.'/'.$url_sign_network;
-                            $options['absolute']=TRUE;
-                        }                        
-                        //$label=my_get_icono_action('network', t('Connect to Network')).t('Connect to Network');
-                        $label=t('Connect to Network');
-                        $html[]=l($label,$url_sign_network,$options);
-                    }    
+                    //intelsat-2016
+                    if(!hontza_grupo_mi_grupo_is_grupo_publico_colaborativo('',$my_grupo)){
+                        //gemini-2014
+                        if(red_compartir_grupo_is_grupo_red_alerta($nid)){
+                            $options=array('html'=>TRUE,'query'=>drupal_get_destination(),array('attributes'=>array('title'=>t('Disconnect from Network'),'alt'=>t('Disconnect from Network'))));
+                            $url_no_network='red_compartir/no_compartir_grupo_hoja/'.$nid;
+                            if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                                $url_no_network=$base_url.'/'.$my_grupo->purl.'/'.$url_no_network;
+                                $options['absolute']=TRUE;
+                            }                        
+                            //$label=my_get_icono_action('no_network', t('Disconnect from Network')).t('Disconnect from Network');
+                            $label=t('Disconnect from Network');
+                            $html[]=l($label,$url_no_network,$options);
+                        }else{
+                            $options=array('html'=>TRUE,'query'=>drupal_get_destination(),array('attributes'=>array('title'=>t('Connect to Network'),'alt'=>t('Connect to Network'))));                    
+                            //intelsat-2016
+                            //$url_sign_network='red_compartir/compartir_grupo_hoja/'.$nid;
+                            $url_sign_network=hontza_registrar_get_url_sign_network($nid);
+                            if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                                $url_sign_network=$base_url.'/'.$my_grupo->purl.'/'.$url_sign_network;
+                                $options['absolute']=TRUE;
+                            }                        
+                            //$label=my_get_icono_action('network', t('Connect to Network')).t('Connect to Network');
+                            $label=t('Connect to Network');
+                            $html[]=l($label,$url_sign_network,$options);
+                        }
+                    }
                 }      
             }
             //intelsat-2015
@@ -1440,3 +1443,38 @@ function hontza_grupos_mi_grupo_get_og_uid_grupo_nid_array($uid){
     }
     return $result;
 }
+//intelsat-2016
+function hontza_grupos_mi_grupo_bulk_actions_drupal_goto($type){
+    global $base_url;
+    $is_grupo=1;
+    $url='user-gestion/grupos/propios';
+    if($type=='delete_grupo'){
+         $my_grupo=og_get_group_context();
+         if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+              $my_node=hontza_get_node($my_grupo->nid,$my_grupo->vid);
+              if(!(isset($my_node->nid) && !empty($my_node->nid))){
+                  $is_grupo=0;   
+              }
+         }else{
+             $is_grupo=0;            
+         }    
+    }
+    //print $is_grupo;exit();
+    if(!$is_grupo){    
+        $url=$base_url.'/'.$url;
+    }
+    drupal_goto($url);
+}
+function hontza_grupo_mi_grupo_is_grupo_publico_colaborativo($grupo_nid,$grupo_node_in=''){
+    $result=0;
+    if(empty($grupo_nid)){
+        $grupo_node=$grupo_node_in;
+    }else{
+        $grupo_node=node_load($grupo_nid);
+    }
+    if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+        $is_publico_colaborativo=1;
+        $result=estrategia_is_grupo_publico($grupo_node,'',$is_publico_colaborativo);
+    }
+    return $result;
+}    

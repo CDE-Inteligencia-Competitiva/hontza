@@ -48,7 +48,7 @@ function hontza_grupos_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           break;
 	//gemini
 	case 'update':
-            if ($node-> type=='grupo') {
+            if ($node->type=='grupo') {
                 create_grupo_chat($node);
                 //gemini-2013
                 //hontza_grupos_on_save($node,$op);
