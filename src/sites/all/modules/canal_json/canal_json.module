@@ -1,4 +1,5 @@
 <?php
+require_once('canal_json.extractor.inc.php');
 function canal_json_perm() {
   return array();
 }
@@ -135,7 +136,8 @@ function canal_json_crear_previsualizar_form(&$form_state,$content_info){
      $form['fields_fieldset']['numero_linea']=array(        
         '#type'=>'textfield',
         '#title'=>'A partir de esta línea',
-        '#default_value'=>0,
+        //'#default_value'=>0,
+        '#default_value'=>1,
         //'#required'=>TRUE,
     );
     $form['send_btn']=array(
@@ -153,9 +155,13 @@ function canal_json_get_content_info($url,$separator_csv){
         if($type=='previsualizar_csv'){
             $result=canal_json_create_json_by_csv($url,'',$separator_csv);
         }else{
+            //$url=urlencode($url);
             $content=file_get_contents($url);
             $result=json_decode($content);                
-        }        
+        }
+        if(canal_json_extractor_is_activado()){
+            $result=canal_json_extractor_get_result($result);
+        }
         if(isset($result->results)){
             $html=array();
             $html[]='<table>';
@@ -246,6 +252,9 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
     //$batch->description = '';
     //$batch->link = $content->url;
     //$numero_linea=0;
+    if(canal_json_extractor_is_activado()){
+        $content=canal_json_extractor_get_result($content);
+    }
     $numero_linea=-1;
     if(isset($json_fields->numero_linea) && !empty($json_fields->numero_linea) && is_numeric($json_fields->numero_linea)){
         $numero_linea=$json_fields->numero_linea-1;
@@ -253,7 +262,8 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
     $item_array=array();
     if(isset($content->results) && !empty($content->results)){
         foreach($content->results as $i=>$result){
-                if($i<=$numero_linea){
+                //if($i<=$numero_linea){
+                if($i<$numero_linea){    
                     continue;
                 }
                 if(!empty($result)){
