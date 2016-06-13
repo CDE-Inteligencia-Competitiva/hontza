@@ -5221,3 +5221,7 @@ div.hontza_checkbox_disabled label{
 body#page-estrategias-arbol-estrategico div.main-inner{
     padding:0 5px 0 0;
 }
+div.div_canal_json_overflow{
+    width:625px;
+    overflow:auto;
+}
