@@ -47,6 +47,6 @@ function red_node_og_home_noticiasvalidadas_dash_block_pre_execute(&$view){
 }
 function red_node_items_deleted_drupal_set_message($kont_items){
     if($kont_items>0){
-        drupal_set_message(t('@kont_items news has been deleted',array('@kont_items'=>$kont_items)));
+        drupal_set_message(t('@kont_items news have been deleted',array('@kont_items'=>$kont_items)));
     }
 }
