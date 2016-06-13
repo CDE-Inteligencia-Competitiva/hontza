@@ -340,8 +340,7 @@ foreach($sareko_id_array as $i=>$sareko_id){
         $rows=hontza_grupos_get_mis_grupos_rows($uid,$order_by,0,0,1);        
     }      
 //}
-//db_set_active();  
-  
+//db_set_active();    
   //gemini  
     
   //$my_limit=20;
@@ -414,6 +413,7 @@ foreach($sareko_id_array as $i=>$sareko_id){
       $rows=hontza_grupos_mi_grupo_unset_fields($rows,$bakup_rows);
       //intelsat-2016
       $rows=hontza_grupos_mi_grupo_get_rows_tags($rows);
+      $rows=hontza_grupos_mi_grupo_set_rows_language($rows);
       //
     $out = theme('table', $header, $rows);
     $out .= theme( 'pager', NULL, $limit, 0 );

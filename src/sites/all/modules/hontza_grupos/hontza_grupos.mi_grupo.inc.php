@@ -1486,3 +1486,27 @@ function hontza_grupos_mi_grupo_node_delete_group_form_alter(&$form,&$form_state
     }
     $form['verb']['#default_value']=1;
 }
+//intelsat-2016
+function hontza_grupos_mi_grupo_set_rows_language($rows_in){
+    $result=$rows_in;
+    if(hontza_grupos_mi_grupo_is_este_servidor()){
+        foreach($result as $i=>$row){
+            $result[$i][1]=hontza_grupos_mi_grupo_set_row_field_language($result[$i][1]);
+            $result[$i][2]=hontza_grupos_mi_grupo_set_row_field_language($result[$i][2]);
+        }
+    }
+    return $result;
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_set_row_field_language($value_in){
+    global $language,$base_url;
+    $result=$value_in;
+    if($language->language!='en'){
+        $konp=$base_url.'/'.$language->language;    
+        $pos=strpos($result,$konp);
+        if($pos===FALSE){
+            $result=str_replace($base_url,$konp,$result);
+        }
+    }    
+    return $result;
+}
