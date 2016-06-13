@@ -1237,9 +1237,9 @@ function prepare_simple_or_opml(&$form,&$form_state){
         $form_state['yql_obj']->field_is_hound[0]['value']=1;    
     }
     //
-    if($is_hound){
+    //if($is_hound){
         $form['responsable_uid']['#required']=TRUE;
-    }        
+    //}        
 	$indefinida_tid=my_get_term_data_tid('Categoria indefinida');	
 	if(my_is_simple($form_state) || my_is_opml($form_state)){
 		$js='var is_import_html='.$is_import_html.';
@@ -1249,10 +1249,10 @@ function prepare_simple_or_opml(&$form,&$form_state){
                 $(document).ready(function()
 		{
 		   $("#edit-numero-rss-wrapper").hide();
-                   if(is_hound==0){
+                   /*if(is_hound==0){
                     $("#edit-responsable-uid-wrapper").hide();
                     $("#edit-responsable-uid2-wrapper").hide();
-                   }
+                   }*/
                    if(is_simple_by_solr){
                         $("#edit-'.$indefinida_tid.'").attr("checked",true);
                         $("#my_categorias_yql").hide();    
