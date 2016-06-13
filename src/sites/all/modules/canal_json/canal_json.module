@@ -76,7 +76,7 @@ function canal_json_crear_access(){
 }
 function canal_json_crear_form_submit($form, &$form_state){
     if($form_state['values']['url_json']){
-       $url_json=$form_state['values']['url_json'];
+       $url_json=trim($form_state['values']['url_json']);
        $type='previsualizar';
        $separator_csv='';       
        if($form_state['values']['url_type']=='csv'){
@@ -135,7 +135,7 @@ function canal_json_crear_previsualizar_form(&$form_state,$content_info){
     );
      $form['fields_fieldset']['numero_linea']=array(        
         '#type'=>'textfield',
-        '#title'=>'A partir de esta línea',
+        '#title'=>t('From this line (included)'),
         //'#default_value'=>0,
         '#default_value'=>1,
         //'#required'=>TRUE,
@@ -164,24 +164,28 @@ function canal_json_get_content_info($url,$separator_csv){
         }
         if(isset($result->results)){
             $html=array();
+            //$html[]='<fieldset>';
+            //$html[]='<div>';
             $html[]='<table>';
             foreach($result->results as $i=>$row){
                     if(empty($i)){
                         $content_info['fields']=array_keys((array) $row);
                     }
                     $html[]='<tr><td style="padding-top:10px;padding-bottom:10px;border: 1px solid #000000;">';
-                    $html[]='<div><b>'.t('Number').'</b>:&nbsp;'.($i+1).'</div>'; 
+                    $html[]='<div style="width:400px;overflow:auto;"><b>'.t('Number').'</b>:&nbsp;'.($i+1).'</div>'; 
                     foreach($row as $field=>$value){
                         if(is_array($value)){
                             $my_value=$value[0];
                         }else{
                             $my_value=$value;
                         }
-                        $html[]='<div><b>'.$field.'</b>:&nbsp;'.$my_value.'</div>';                
+                        $html[]='<div class="div_canal_json_overflow"><b>'.$field.'</b>:&nbsp;'.$my_value.'</div>';                
                     }
                     $html[]='</td></tr>';
             }
+            //$html[]='</div>';
             $html[]='</table>';
+            //$html[]='</fieldset>';
             $content_info['html']=implode('',$html);
         }
        
