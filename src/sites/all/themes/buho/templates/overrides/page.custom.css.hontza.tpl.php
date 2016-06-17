@@ -49,23 +49,31 @@
       
     <section class="main-content">
       <div class="container">
-        <article class="col-md-6 left-section">
-          <?php print red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom);?>
+        <?php if(red_crear_usuario_is_imagen_red_todo()):?>
+          <div class="div_imagen_red_todo">
+          <?php print red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom,1);?>
+          </div>    
+        <?php else:?>
+         <article class="col-md-6 left-section col_imagen_red">
+            <?php print red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom);?>                            
           <!--
           <h1><span>BIENVENIDO</span> A RED HONTZA, ES HORA DE VIGILAR EN RED.</h1>
           -->
         </article>
         <article class="col-md-6 right-section">
+          <div class="div_article_right_section">  
             <h2><?php print $title;?></h2>  
           <?php print $content;?>
+          </div> 
         </article>
+        <?php endif;?>  
       </div>      
     </section>
      
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     
     <script src="<?php print $path_custom;?>js/bootstrap.min.js"></script>
-    
+
     <?php if(hontza_is_footer()):?>
   <div id="footer" class="layout-region" style="width:100%;margin: 0 auto -1em;">
     <?php print hontza_canal_rss_get_logos_apis();?>      
@@ -84,7 +92,7 @@
     </div>
   </div>
   <?php else:?>
-  
+
   <div id="footer" class="layout-region" style="width:100%;margin: 0 auto -1em;background-color:#424242;text-align:center;">
     <?php //print hontza_canal_rss_get_logos_apis();?>  
     <div id="footer-inner-light">
