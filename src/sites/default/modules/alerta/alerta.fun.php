@@ -325,7 +325,10 @@ function get_boletin_introduccion(&$texto,$grupo,$subject='',$is_despedida=0,$ui
             $html[]='<tr>';
             $html[]='<td>';            
             if(!empty($src)){
-                $html[]='<img src="'.$src.'"/>';
+                //intelsat-2016
+                //$html[]='<img src="'.$src.'"/>';
+                $imagesize=alerta_inc_getimagesize($src);
+                $html[]='<img src="'.$src.'"'.$imagesize.'/>';
             }
             $html[]='</td>';
             /*$html[]='</tr>';
@@ -2364,4 +2367,4 @@ function alerta_resumen_comentario($comment_in,$node,$is_comentario_alerta,$cont
             return $content;
         }
     return $comment;    
-}        
+}

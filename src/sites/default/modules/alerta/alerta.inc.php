@@ -782,3 +782,15 @@ function alerta_inc_is_custom_boletin_css(){
     }
     return 0;
 }
+//intelsat-2016
+function alerta_inc_getimagesize($src){
+    $result='';
+    $imagesize=getimagesize($src);
+    if(isset($imagesize[1]) && !empty($imagesize[1])){
+        $height=$imagesize[1];
+        if($height>=60){
+            $result=' height="60"';
+        }
+    }    
+    return $result;
+}
