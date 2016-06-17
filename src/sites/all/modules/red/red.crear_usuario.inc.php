@@ -495,7 +495,7 @@ function red_crear_usuario_is_editando_usuario_propio($form,$category=''){
     }        
     return $result;
 }
-function red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom){
+function red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom,$is_imagen_red_todo=0){
     $result='';
     //$result='<div style="width:400px;">&nbsp;</div>';
     $result='<div class="div_sin_red">&nbsp;</div>';            
@@ -504,7 +504,11 @@ function red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom){
             //$width=400;
             $width=700;
             //$result='<img class="imagen_red" src="'.$path_custom.'img/imagen_red.png" width="'.$width.'"/>';
-            $result='<img src="'.$path_custom.'img/imagen_red.png"/>';
+            $img_class='class="img_imagen_red_mitad"';
+            if($is_imagen_red_todo){
+                $img_class='class="img_imagen_red_todo" ';
+            }
+            $result='<img '.$img_class.'src="'.$path_custom.'img/imagen_red.png"/>';
         }
     }
     return $result;
@@ -788,4 +792,16 @@ function red_crear_usuario_node_page_default_drupal_goto(){
         drupal_goto('mis-grupos/este_servidor');
         exit();
     }    
-}        
+}
+function red_crear_usuario_is_imagen_red_todo(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='node'){
+        $param1=arg(1);
+        if(empty($param1)){
+            return 1;
+        }else if(!is_numeric($param1)){
+            return 1;
+        }
+    }
+    return 0;
+}
