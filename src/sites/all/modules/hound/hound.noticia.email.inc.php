@@ -13,9 +13,11 @@ function hound_noticia_email_is_activado(){
 }
 function hound_noticia_feed_noticia_email_actualizar(){
     if(hound_noticia_email_is_activado()){
+        file_get_contents('http://hound.hontza.es:8080/hound/index.php/mailAccounts/checkMail');
         $vid=1;
         $fid=2;
         $is_hound_noticia_feed_noticia_email=1;
+        $kont=0;
         $_REQUEST['destination']='';
         $dxml=file_get_contents('http://hound.hontza.es:8080/hound/index.php/mailPages/GetRss/999998');
         if(red_is_xml($dxml)){
@@ -28,38 +30,46 @@ function hound_noticia_feed_noticia_email_actualizar(){
                     }
                     for($i=0;$i<$all;$i++){
                       $r = $sets[$i];
-                      $info=hound_noticia_email_get_info($r);
-                      $subdominio=$info['subdominio'];                  
-                      $grupo_title=$info['grupo_title'];
-                      $noticia_title=$info['noticia_title'];
-                      if(hound_noticia_email_is_subdominio($subdominio)){
-                        $grupo_node=hound_noticia_email_get_grupo_node($grupo_title);  
-                        if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
-                            if(!hound_noticia_email_is_duplicado($r,$grupo_node)){
-                              $content=hound_noticia_email_get_content($r);
-                              //
-                              $node=new stdClass();
-                              $node->title=$noticia_title;
-                                //
-                                $node->body=$content;        
-                                $node->uid=hound_noticia_email_get_uid($r,$grupo_node);
-                                $node->type='noticia';
-                                $node->status=1;
-                                $node->og_groups[$grupo_node->nid]=$grupo_node->nid;
-                                $node->field_noticia_id_email[0]['value']=(string) $r->id_mail;
-                                $node->field_cuando[0]['value']=time();
-                                $user_news_term=red_solr_inc_taxonomy_get_term_by_name_vid_row('Noticias de usuario',$vid);
-                                if(isset($user_news_term->tid) && !empty($user_news_term->tid)){
-                                    $node->field_item_source_tid[0]['value']=$user_news_term->tid;
+                        $info=hound_noticia_email_get_info($r);
+                        $subdominio=$info['subdominio'];                  
+                        $grupo_title=$info['grupo_title'];
+                        $noticia_title=$info['noticia_title'];
+                        if(hound_noticia_email_validate($info)){                        
+                          if(hound_noticia_email_is_subdominio($subdominio)){
+                            $grupo_node=hound_noticia_email_get_grupo_node($grupo_title);  
+                            if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+                                //print $grupo_node->title.'===='.((string) $r->title).'<br>';
+                                if(!hound_noticia_email_is_duplicado($r,$grupo_node)){
+                                  $content=hound_noticia_email_get_content($r);
+                                  //
+                                  $node=new stdClass();
+                                  $node->title=$noticia_title;
+                                    //
+                                    $node->body=$content;        
+                                    $node->uid=hound_noticia_email_get_uid($r,$grupo_node);
+                                    $node->type='noticia';
+                                    $node->status=1;
+                                    $node->og_groups[$grupo_node->nid]=$grupo_node->nid;
+                                    $node->field_noticia_id_email[0]['value']=(string) $r->id_mail;
+                                    $node->field_cuando[0]['value']=time();
+                                    $user_news_term=red_solr_inc_taxonomy_get_term_by_name_vid_row('Noticias de usuario',$vid);
+                                    if(isset($user_news_term->tid) && !empty($user_news_term->tid)){
+                                        $node->field_item_source_tid[0]['value']=$user_news_term->tid;
+                                    }
+                                    node_save($node);
+                                    hound_noticia_email_update_og_ancestry($node,$grupo_node->nid);
+                                    //hontza_validar_con_accion($node->nid,$is_hound_noticia_feed_noticia_email);
+                                    red_funciones_flag_save_validador_node($node->nid,$fid,$node->uid);
+                                    $kont=$kont+1;
                                 }
-                                node_save($node);
-                                //hontza_validar_con_accion($node->nid,$is_hound_noticia_feed_noticia_email);
-                                red_funciones_flag_save_validador_node($node->nid,$fid,$node->uid);
                             }
+                          }
                         }
-                      }  
                     }
             } 
+        }
+        if($kont>0){
+            drupal_set_message(t('Created !kont User news',array('!kont'=>$kont)));
         }
     }
 }
@@ -166,4 +176,14 @@ function hound_noticia_email_get_content($row){
     }
     $result=substr($result,$pos);
     return $result;        
-}        
+}
+function hound_noticia_email_update_og_ancestry($node,$grupo_nid){
+    db_query($sql=sprintf('UPDATE {og_ancestry} SET group_nid=%d WHERE nid=%d',$grupo_nid,$node->nid));
+    //print $sql.'<br>';
+}
+function hound_noticia_email_validate($info){
+    if(!(isset($info['noticia_title']) && !empty($info['noticia_title']))){
+        return 0;
+    }
+    return 1;
+}     
