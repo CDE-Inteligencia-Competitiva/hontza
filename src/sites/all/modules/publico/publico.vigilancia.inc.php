@@ -946,9 +946,13 @@ function publico_vigilancia_filtrar_etiquetas_noticias_destacadas($tags){
     if(!empty($result)){
         $result=array();
         foreach($tags as $i=>$r){
-            if(publico_vigilancia_is_etiqueta_noticias_destacadas($r->tid)){
+            if(hontza_is_user_anonimo()){
+                if(publico_vigilancia_is_etiqueta_noticias_destacadas($r->tid)){
+                    $result[]=$r;
+                }
+            }else{
                 $result[]=$r;
-            }
+            }    
         }        
     }
     return $result;
