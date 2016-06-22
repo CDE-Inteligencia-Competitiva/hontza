@@ -3,6 +3,7 @@ require_once('hound.update.canal.uid.inc.php');
 //intelsat-2016
 require_once('hound.enlazar.inc.php');
 require_once('hound.noticia.email.inc.php');
+require_once('hound.javascript.inc.php');
 //
 function hound_menu() {
     $items['hound/hound_load_ajax'] = array(
@@ -90,7 +91,22 @@ function hound_menu() {
     'title' => 'Feed',
     'page callback' => 'hound_noticia_feed_noticia_email_actualizar_callback',
     'access callback' => TRUE,    
-     );          
+     );
+     $items['hound/javascript/simular']=array(
+    'title' => 'Hound',
+    'page callback' => 'hound_javascript_simular_callback',
+    'access arguments' => array('root'),   
+     );
+     $items['hound/javascript/%/crear/canal']=array(
+    'title' => 'Hound',
+    'page callback' => 'hound_javascript_crear_canal_callback',
+    'access callback' => 'hound_javascript_custom_access',   
+     );
+      $items['hound/javascript/%/editar/canal']=array(
+    'title' => 'Hound',
+    'page callback' => 'hound_javascript_crear_canal_callback',
+    'access callback' => 'hound_javascript_custom_access',   
+     );
     return $items;
 }
 function hound_add_select_text_input(&$form){     

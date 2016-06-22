@@ -15,19 +15,23 @@ function hound_enlazar_inc_hound_key_save($form_state){
 function hound_enlazar_inc_add_create_edit_form_field(&$form){
     if(hound_enlazar_inc_is_activado()){
         $node=my_get_node();
+        $javascript_type='';
         if(isset($node->nid) && !empty($node->nid)){
             $form['hound_editing_edit_btn']=array(
                 '#type'=>'button',
                 '#default_value'=>t('Edit Hound'),
             );
             hound_enlazar_inc_add_edit_js($node);
+            $javascript_type='edit';
         }else{
             $form['fuentes']['hound1_create_btn']=array(
                 '#type'=>'button',
                 '#default_value'=>t('Create Hound'),
             );
             hound_enlazar_inc_add_create_js();
+            $javascript_type='create';
         }
+        //hound_javascript_add_javascript_form_field($form,$javascript_type);       
     }
 }
 function hound_enlazar_inc_add_create_js(){
@@ -53,8 +57,9 @@ function hound_enlazar_inc_define_hound_url($is_http=1){
     return $url;
 }
 function hound_enlazar_inc_get_create_url(){
+    global $base_url;
     $url=hound_enlazar_inc_define_hound_url();
-    $url.='/channels/crearCanal/'.hound_enlazar_inc_get_key();
+    $url.='/channels/crearCanal/'.hound_enlazar_inc_get_key().'?subdominio='.$base_url;
     return $url;
 }
 function hound_enlazar_inc_get_key(){
@@ -73,9 +78,10 @@ function hound_enlazar_inc_add_edit_js($canal){
     drupal_add_js($js,'inline');
 }
 function hound_enlazar_inc_get_edit_url($canal){
+    global $base_url;
     $url=hound_enlazar_inc_define_hound_url();
     $hound_id=hound_enlazar_inc_get_hound_id($canal);
-    $url.='/channels/editarCanal/'.$hound_id.'/'.hound_enlazar_inc_get_key();
+    $url.='/channels/editarCanal/'.$hound_id.'/'.hound_enlazar_inc_get_key().'?subdominio='.$base_url;
     return $url;
 }
 function hound_enlazar_inc_delete_canal_hound($canal){
