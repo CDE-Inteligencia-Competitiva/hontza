@@ -65,7 +65,10 @@ function panel_admin_noticias_publicas_add_where_filtro($where_in){
            if(!empty($v)){
                 switch($f){
                     case 'grupo_nid':
-                        $where[]='og_ancestry.group_nid='.$v;
+                        //intelsat-2016
+                        //$where[]='og_ancestry.group_nid='.$v;
+                        $grupo_nid_array=array_keys($v);
+                        $where[]='og_ancestry.group_nid IN('.implode(',',$grupo_nid_array).')'; 
                         break;
                     case 'text':
                         $where[]='(node.title LIKE "%%'.$v.'%%" OR node_revisions.body LIKE "%%'.$v.'%%")';

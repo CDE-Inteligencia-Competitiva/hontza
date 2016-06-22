@@ -172,6 +172,11 @@ function panel_admin_ayuda_unpublish_post_ayuda_confirm_form_submit(&$form, &$fo
     call_bulk_confirm_form_submit($form,$form_state,'unpublish_post',$url,true);    
 }
 function panel_admin_ayuda_block_content(){
+    //intelsat-2016
+    //se ha comentado esto
+    /*if(panel_admin_admin_access()){
+        return l(t('Create new FAQ'), 'node/add/faq') .'<br>'. l(t('List of FAQs'), 'panel_admin/ayuda');
+    }*/
     return '';
 }        
 function panel_admin_ayuda_define_accion_publish($r,$destination){
