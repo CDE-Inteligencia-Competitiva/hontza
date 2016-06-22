@@ -20,10 +20,11 @@ function canal_json_extractor_is_extractor($extractor){
     return 0;
 }
 function canal_json_extractor_is_activado(){
-    if(defined('_IS_CANAL_JSON_EXTRACTOR') && _IS_CANAL_JSON_EXTRACTOR==1){
+    /*if(defined('_IS_CANAL_JSON_EXTRACTOR') && _IS_CANAL_JSON_EXTRACTOR==1){
         return 1;
     }
-    return 0;
+    return 0;*/
+    return 1;
 }
 function canal_json_extractor_is_extractor_data_array($extractor){
     if(isset($extractor->extractorData->data) && isset($extractor->extractorData->data[0])){
