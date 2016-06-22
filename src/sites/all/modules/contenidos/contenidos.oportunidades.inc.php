@@ -52,7 +52,10 @@ function contenidos_oportunidades_callback(){
            if(!empty($v)){
                 switch($f){
                     case 'grupo_nid':
-                        $where[]='oportunidad.grupo_nid='.$v;
+                        //intelsat-2016
+                        //$where[]='oportunidad.grupo_nid='.$v;
+                        $grupo_nid_array=array_keys($v);
+                        $where[]='oportunidad.grupo_nid IN('.implode(',',$grupo_nid_array).')'; 
                         break;
                     case 'text':
                         $where[]='(node.title LIKE "%%'.$v.'%%" OR node_revisions.body LIKE "%%'.$v.'%%")';

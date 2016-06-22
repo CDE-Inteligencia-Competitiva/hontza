@@ -52,7 +52,10 @@ function contenidos_ideas_callback(){
            if(!empty($v)){
                 switch($f){
                     case 'grupo_nid':
-                        $where[]='idea.grupo_nid='.$v;
+                        //intelsat-2016
+                        //$where[]='idea.grupo_nid='.$v;
+                        $grupo_nid_array=array_keys($v);
+                        $where[]='idea.grupo_nid IN('.implode(',',$grupo_nid_array).')'; 
                         break;
                     case 'text':
                         $where[]='(node.title LIKE "%%'.$v.'%%" OR node_revisions.body LIKE "%%'.$v.'%%")';
@@ -89,7 +92,7 @@ function contenidos_ideas_callback(){
     while ($r = db_fetch_object($res)) {
       $node=node_load($r->nid);
       $rows[$kont]=array();
-      $rows[$kont][0]='<input type="checkbox" id="txek_'.$r->uid.'" name="txek_nid['.$r->nid.']" class="bulk_txek" value="1">';
+      $rows[$kont][0]='<input type="checkbox" id="txek_'.$r->nid.'" name="txek_nid['.$r->nid.']" class="bulk_txek" value="1">';
       $rows[$kont][1]=l(red_funciones_resumir_titulo($r->node_title),'node/'.$r->nid);
       $grupo_nid=$r->grupo_nid;
       $rows[$kont][2]=contenidos_get_grupo_link($grupo_nid,$grupo_title);
