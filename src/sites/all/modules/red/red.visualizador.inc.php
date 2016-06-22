@@ -50,3 +50,17 @@ function red_visualizador_is_show_banner_slider(){
     }
     return 0;
 }
+function red_visualizador_is_visulizador_grupo_defined(){
+    if(module_exists('visualizador')){
+        if(defined('_IS_VISUALIZADOR_GRUPO') && _IS_VISUALIZADOR_GRUPO==1){
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_visualizador_get_grupo_activate_observatory_link(){
+    $html=array();
+    $activate_url='grupo/activate_observatory/edit';
+    $html[]=l(t('Activate Observatory'),$activate_url);
+    return implode('',$html);
+}
