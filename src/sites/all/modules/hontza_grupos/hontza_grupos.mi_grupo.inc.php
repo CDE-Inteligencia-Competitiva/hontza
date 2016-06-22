@@ -155,6 +155,10 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
     if(quant_hontza_analytics_access()){
         $html[]=l(t('Analysis of Group'),'analytics');
     }
+    //intelsat-2016
+    /*if(red_visualizador_is_visulizador_grupo_defined()){
+        $html[]=red_visualizador_get_grupo_activate_observatory_link();
+    }*/
     //
     return implode('<br>',$html);
 }
