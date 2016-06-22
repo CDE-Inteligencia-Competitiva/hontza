@@ -10,8 +10,9 @@ function gestion_canales_menu() {
     //'access arguments' => array('access gestion_canales'),
     'access callback' => 'gestion_canales_custom_access',  
   );
-  $items['gestion/gestion_canales/delete_items_confirm'] = array(
-    'title' => 'Management of Channels',
+  //$items['gestion/gestion_canales/delete_items_confirm'] = array(
+  $items['gestion/gestion_canales/delete_canales_confirm'] = array(  
+  'title' => 'Management of Channels',
     'page callback' => 'drupal_get_form',
     'page arguments'=>array('gestion_canales_delete_canales_confirm_form'),
     //intelsat-2015  
