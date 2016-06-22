@@ -14,12 +14,14 @@ function hound_noticia_email_is_activado(){
 function hound_noticia_feed_noticia_email_actualizar(){
     if(hound_noticia_email_is_activado()){
         file_get_contents('http://hound.hontza.es:8080/hound/index.php/mailAccounts/checkMail');
+        //file_get_contents('http://hound.hontza.es/hound/index.php/mailAccounts/checkMail');
         $vid=1;
         $fid=2;
         $is_hound_noticia_feed_noticia_email=1;
         $kont=0;
         $_REQUEST['destination']='';
         $dxml=file_get_contents('http://hound.hontza.es:8080/hound/index.php/mailPages/GetRss/999998');
+        //$dxml=file_get_contents('http://hound.hontza.es/hound/index.php/mailPages/GetRss/999998');
         if(red_is_xml($dxml)){
             $data = simplexml_load_string($dxml);    
             if(!isset($data->results->rss)){
@@ -33,12 +35,12 @@ function hound_noticia_feed_noticia_email_actualizar(){
                         $info=hound_noticia_email_get_info($r);
                         $subdominio=$info['subdominio'];                  
                         $grupo_title=$info['grupo_title'];
-                        $noticia_title=$info['noticia_title'];
+                        $noticia_title=$info['noticia_title'];                        
                         if(hound_noticia_email_validate($info)){                        
-                          if(hound_noticia_email_is_subdominio($subdominio)){
+                           if(hound_noticia_email_is_subdominio($subdominio)){
                             $grupo_node=hound_noticia_email_get_grupo_node($grupo_title);  
                             if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
-                                //print $grupo_node->title.'===='.((string) $r->title).'<br>';
+                                //print $grupo_node->title.'===='.((string) $r->title).'<br>';                                
                                 if(!hound_noticia_email_is_duplicado($r,$grupo_node)){
                                   $content=hound_noticia_email_get_content($r);
                                   //
@@ -60,7 +62,9 @@ function hound_noticia_feed_noticia_email_actualizar(){
                                     hound_noticia_email_update_og_ancestry($node,$grupo_node->nid);
                                     //hontza_validar_con_accion($node->nid,$is_hound_noticia_feed_noticia_email);
                                     red_funciones_flag_save_validador_node($node->nid,$fid,$node->uid);
-                                    $kont=$kont+1;
+                                    if(hound_noticia_email_is_current_grupo($grupo_node)){
+                                        $kont=$kont+1;
+                                    }    
                                 }
                             }
                           }
@@ -96,7 +100,11 @@ function hound_noticia_email_get_info($row){
     }
     if(isset($my_array[1]) && isset($my_array[2]) && isset($my_array[3])){
         $title_array=explode(' ',$my_array[3]);
-        if(count($title_array)>1){
+        if(!(count($title_array)>1)){
+            $my_array[3].=' '.hound_noticia_email_get_noticia_title_not_empty('');
+            $title_array=explode(' ',$my_array[3]);
+        }    
+        if(count($title_array)>1){    
             $result['subdominio']=$my_array[1].'.'.$my_array[2].'.'.$title_array[0];
             $noticia_title_array=array_slice($title_array,1);
             $result['noticia_title']=implode(' ',$noticia_title_array);
@@ -106,6 +114,7 @@ function hound_noticia_email_get_info($row){
             }
         }
     }
+    $result['noticia_title']=hound_noticia_email_get_noticia_title_not_empty($result['noticia_title']);
     return $result;
 }
 function hound_noticia_email_is_subdominio($subdominio){
@@ -186,4 +195,22 @@ function hound_noticia_email_validate($info){
         return 0;
     }
     return 1;
-}     
+}
+function hound_noticia_email_get_noticia_title_not_empty($noticia_title){
+    $result=trim($noticia_title);
+    if(empty($result)){
+        //$result=t('User news').' '.time();
+        //$result=t('User news').' '.microtime();
+        $result='Noticia de usuario';
+    }
+    return $result;
+}
+function hound_noticia_email_is_current_grupo($grupo_node){
+    $my_grupo=og_get_group_context();
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        if($my_grupo->nid==$grupo_node->nid){
+            return 1;
+        }
+    }
+    return 0;
+}
