@@ -1452,11 +1452,16 @@ if(hontza_is_sareko_id_red() && !hontza_is_sareko_id('ROOT')){
 }
 //intelsat-2015
 if(user_access('Ver my_noticias_publicas')){
-$content =l(t('Add Public News'), 'node/add/noticias-portada') .'<br>'.
+//intelsat-2016
+/*$content =l(t('Add Public News'), 'node/add/noticias-portada') .'<br>'.
                              l(t('List of Public News'), 'gestion/my_noticias_publicas').'<br>'.
                              l(t('Add Highlighted News'), 'node/add/rss-feed') .'<br>'.
                              l(t('List of Highlighted News'), 'gestion/my_noticias_destacadas').'<br>'.
-                             l(t('Settings'), 'admin/content/hontza/settings');
+                             l(t('Settings'), 'admin/content/hontza/settings');*/
+$content =l(t('Add Public News'), 'node/add/noticias-portada') .'<br>'.
+                             l(t('List of Public News'), 'gestion/my_noticias_publicas').'<br>'.
+                             l(t('Add Highlighted News'), 'node/add/rss-feed') .'<br>'.
+                             l(t('Settings'), 'admin/content/hontza/settings');   
 return $content;
 }
 return '';
@@ -1696,6 +1701,8 @@ function get_is_por_su_canal($row,$is_destacada=0){
 }
 function my_noticias_destacadas_callback(){
     $output='';
+    //intelsat-2016
+    return 'Desactivado';
     //
     $my_limit=variable_get('default_nodes_main', 20);
     //
