@@ -250,18 +250,24 @@ function canal_usuario_get_days($timestamp){
 //intelsat-2015
 function canal_usuario_get_canal_usuario_acciones($uid){
     if(canal_usuario_is_canal_usuario_acciones_activado()){
-        if(!empty($uid)){
+        //if(!empty($uid)){
             $html[]='<fieldset>';
             $html[]='<legend>'.t("Channel Operations").'</legend>';
             $html[]='<div>';        
             //$html[]=link_notify($user->uid,'',"canal-usuarios/".$uid,1,$uid);
-            $html[]=canal_usuario_link_import_canal_usuario($uid);            
-            $html[]=canal_usuario_link_ver_canal_usuario($uid);
-            $html[]=canal_usuario_link_edit_canal_usuario($uid);
+            $uid_param=$uid;
+            if(empty($uid_param)){
+                $uid_param='all';
+            }
+            $html[]=canal_usuario_link_import_canal_usuario($uid_param);            
+            if(!empty($uid)){
+                $html[]=canal_usuario_link_ver_canal_usuario($uid);
+                $html[]=canal_usuario_link_edit_canal_usuario($uid);
+            }
             $html[]='</div>';
             $html[]='</fieldset>';
             return implode('',$html);
-        }    
+        //}    
     }
     return '';
 }
@@ -501,13 +507,17 @@ function canal_usuario_link_import_canal_usuario($uid){
     $label=t('Update cahnnel');
     $html=array();
     $html[]= '<span class="link_import_canal">';
-    $my_user=user_load($uid);
+    $my_user='';
+    if($uid!='all'){
+        $my_user=user_load($uid);
+    }
     $link='';
     $icon=$base_url.'/'.drupal_get_path('theme','buho').'/images/import_canal.png';    
     $img='<img class="icono_validar_pagina" src="'.$icon.'" title="'.$label.'" alt="'.$label.'"/>';        
     
-    if(isset($my_user->uid) && !empty($my_user->uid)){ 
-       $html[]=  l($img, 'canal_usuario/'.$uid.'/import_canal',array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>array('class'=>'a_validar_pagina')));
+    //if(isset($my_user->uid) && !empty($my_user->uid)){ 
+    if((isset($my_user->uid) && !empty($my_user->uid)) || $uid=='all'){   
+        $html[]=  l($img, 'canal_usuario/'.$uid.'/import_canal',array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>array('class'=>'a_validar_pagina')));
     }else{
         return '';        
     }
