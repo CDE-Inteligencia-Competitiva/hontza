@@ -6,10 +6,11 @@ function hound_noticia_feed_noticia_email_actualizar_callback(){
     return date('Y-m-d H:i');
 }
 function hound_noticia_email_is_activado(){
-    if(defined('_IS_NOTICIA_EMAIL') && _IS_NOTICIA_EMAIL==1){
+    /*if(defined('_IS_NOTICIA_EMAIL') && _IS_NOTICIA_EMAIL==1){
         return 1;
     }
-    return 0;
+    return 0;*/    
+    return 1;
 }
 function hound_noticia_feed_noticia_email_actualizar(){
     if(hound_noticia_email_is_activado()){
