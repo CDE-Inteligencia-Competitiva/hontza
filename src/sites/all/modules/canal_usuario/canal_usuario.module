@@ -259,7 +259,9 @@ function canal_usuario_get_canal_usuario_acciones($uid){
             if(empty($uid_param)){
                 $uid_param='all';
             }
-            $html[]=canal_usuario_link_import_canal_usuario($uid_param);            
+            if(hound_noticia_email_is_activado()){
+                $html[]=canal_usuario_link_import_canal_usuario($uid_param);
+            }
             if(!empty($uid)){
                 $html[]=canal_usuario_link_ver_canal_usuario($uid);
                 $html[]=canal_usuario_link_edit_canal_usuario($uid);
