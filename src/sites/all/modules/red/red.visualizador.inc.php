@@ -64,3 +64,13 @@ function red_visualizador_get_grupo_activate_observatory_link(){
     $html[]=l(t('Activate Observatory'),$activate_url);
     return implode('',$html);
 }
+function red_visualizador_is_visualizador_pantalla(){
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(module_exists('publico')){
+            if(publico_is_pantalla_publico()){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
