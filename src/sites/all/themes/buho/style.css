@@ -1053,8 +1053,11 @@ ul.pager li a {
   border: 0;
   color: #555555;
   text-decoration: none;
-  margin: 0;  
-  padding: 0.2em 0.75em;
+  margin: 0;
+  /*intelsat-2016*/
+  /*padding: 0.2em 0.75em;*/
+  /*padding: 0.2em 0.2em;*/
+  padding: 0.2em 0.1em;
   font-weight: normal;
   display: inline-block;
 }
