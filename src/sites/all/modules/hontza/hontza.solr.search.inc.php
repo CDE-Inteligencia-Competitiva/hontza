@@ -2156,6 +2156,8 @@ function hontza_solr_search_get_busqueda_avanzada_title_links(){
     $url_advanced_search='hontza_solr/busqueda_avanzada_solr?='.$query_busqueda_avanzada_solr;
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
         $my_grupo_nid=$my_grupo->nid;
+        $query_busqueda_avanzada_solr=hontza_solr_search_get_query_busqueda_avanzada_solr($my_grupo_nid);
+        $url_advanced_search='hontza_solr/busqueda_avanzada_solr?='.$query_busqueda_avanzada_solr;    
         $url_simple_search=$base_url.'/'.$my_grupo->purl.'/vigilancia/validados';
         $url_advanced_search=$base_url.'/'.$my_grupo->purl.'/hontza_solr/busqueda_avanzada_solr?'.$query_busqueda_avanzada_solr;
     }

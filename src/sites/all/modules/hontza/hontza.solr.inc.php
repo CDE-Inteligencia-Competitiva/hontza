@@ -255,10 +255,28 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
     //
     $i=count($my_array);
     //
-    hontza_solr_funciones_add_validate_status_filter($my_array,$form_state['values']['validate_status']);
+    //intelsat-2016-noticias-usuario
+    /*
+    if(!red_solr_inc_is_actualizar_noticias_usuario()){
+        hontza_solr_funciones_add_validate_status_filter($my_array,$form_state['values']['validate_status']);
+    }*/
+    $noticias_usuario_search_array=array();
     //
     //intelsat-2015
-    red_solr_inc_add_multiple_validate_status_filter($my_array,$form_state);
+    //intelsat-2016-noticias-usuario
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        if(red_solr_inc_is_status_activado()){
+            red_solr_inc_add_multiple_validate_status_filter($noticias_usuario_search_array,$form_state);
+        }else{
+            hontza_solr_funciones_add_validate_status_filter($noticias_usuario_search_array,$form_state['values']['validate_status']);
+        }
+    }else{
+        if(red_solr_inc_is_status_activado()){
+            red_solr_inc_add_multiple_validate_status_filter($my_array,$form_state);
+        }else{
+            hontza_solr_funciones_add_validate_status_filter($my_array,$form_state['values']['validate_status']);
+        }    
+    }
     $search_array=array();
     $in_any_field=$form_state['values']['in_any_field'];
     if(!empty($in_any_field)){
@@ -306,7 +324,12 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
     }    
     //
     //intelsat-2015
-    red_solr_inc_add_rated_filter($my_array,$form_state);
+    //intelsat-2016-noticias-usuario-solr
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        red_solr_inc_add_rated_filter($noticias_usuario_search_array,$form_state);
+    }else{
+        red_solr_inc_add_rated_filter($my_array,$form_state);
+    }
     $fuente_tipo=$form_state['values']['fuente_tipo'];
     if(!empty($fuente_tipo)){
         $i=count($my_array);
@@ -321,7 +344,13 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
     $uid=hontza_solr_get_uid_by_username($form_state['values']['item_validador']);
     if(!empty($uid)){
         $i=count($my_array);
-        $my_array[]='f['.$i.']=im_field_item_validador_uid:'.$uid;
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            //$my_array[]='f['.$i.']=(im_field_item_validador_uid:'.$uid.' OR im_field_noticia_validador_uid:'.$uid.')';
+            $noticias_usuario_search_array[]='(im_field_item_validador_uid:'.$uid.' OR im_field_noticia_validador_uid:'.$uid.')';
+        }else{
+            $my_array[]='f['.$i.']=im_field_item_validador_uid:'.$uid;
+        }    
     }
     //
     $search_fechas=hontza_solr_get_search_fechas($form_state['values']['solr_busqueda_fecha_inicio'],$form_state['values']['solr_busqueda_fecha_fin']);
@@ -337,7 +366,9 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
         }
     }
     //
-    if(!empty($search_array)){
+    //intelsat-2016-noticias-usuario
+    $search_array=red_solr_inc_busqueda_avanzada_form_submit_search_array($search_array,$noticias_usuario_search_array);
+    if(!empty($search_array)){        
         $url=$url.'/'.implode(' AND ',$search_array);
     }
     $query=implode('&',$my_array);
@@ -888,6 +919,7 @@ function hontza_solr_get_delete_filters_content(){
             $result[]='<b><i>'.t('Tag').'</i></b>';  
             $result=array_merge($result,$term_array);
         }
+        
         $validador_array=hontza_solr_add_delete_validador_filtros($_REQUEST['f']);
         if(!empty($validador_array)){
             $result[]=hontza_solr_funciones_get_linea_separacion($result);
@@ -983,16 +1015,23 @@ function hontza_solr_add_delete_term_filtros($my_array){
 }
 function hontza_solr_add_delete_validador_filtros($my_array){
     $result=array();
-    if(!empty($my_array) && is_array($my_array)){
-        foreach($my_array as $i=>$value){
-            $value_array=explode(':',$value);
-            if(count($value_array)>1){
-                $field=$value_array[0];
-                if($field=='im_field_item_validador_uid'){
-                    $username=hontza_get_username($value_array[1]);              
-                    if(!empty($username)){
-                        $icono_link=hontza_solr_get_canal_icono_link($value_array[1],'im_field_item_validador_uid',$my_array);
-                        $result[]=$icono_link.$username;
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=red_solr_inc_add_delete_validador_filtros();
+    }else{    
+        if(!empty($my_array) && is_array($my_array)){
+            foreach($my_array as $i=>$value){
+                $value_array=explode(':',$value);
+                if(count($value_array)>1){
+                    $field=$value_array[0];
+                    if($field=='im_field_item_validador_uid'){
+                        //intelsat-2016-noticias-usuario
+                        /*$username=hontza_get_username($value_array[1]);              
+                        if(!empty($username)){
+                            $icono_link=hontza_solr_get_canal_icono_link($value_array[1],'im_field_item_validador_uid',$my_array);
+                            $result[]=$icono_link.$username;
+                        }*/
+                        $is_noticias_usuario=0;
+                        red_solr_inc_add_add_delete_im_field_item_validador_uid_filtros($value_array[1],$result,$my_array,$is_noticias_usuario);
                     }
                 }
             }
@@ -1975,14 +2014,20 @@ function hontza_solr_filename_autocomplete_callback($string){
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
         $where[]='og_ancestry.group_nid='.$my_grupo->nid;
     }
-    $where[]='node.type IN("item")';
-    $where[]='LOWER(files.filename) LIKE "%s%%"';
+    //intelsat-2016-noticias-usuario
+    $node_type_array=array('"item"');
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $node_type_array[]='"noticia"';
+    }
+    $where[]='node.type IN('.implode(',',$node_type_array).')';    
+    $where[]='LOWER(files.filename) LIKE "%%s%%"';
     $sql='SELECT files.* 
     FROM {node} node 
     LEFT JOIN {og_ancestry} og_ancestry ON node.nid=og_ancestry.nid
     LEFT JOIN {content_field_item_fid} item_fid ON node.vid=item_fid.vid
     LEFT JOIN {files} files ON item_fid.field_item_fid_value=files.fid
     WHERE '.implode(' AND ',$where);
+    //print $sql;exit();
     $res=db_query($query=sprintf($sql,strtolower($string)));
     while ($row = db_fetch_object($res)) {
         if(!empty($row->filename)){
@@ -2010,7 +2055,12 @@ function hontza_get_files_array($filename){
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
         $where[]='og_ancestry.group_nid='.$my_grupo->nid;
     }
-    $where[]='node.type IN("item")';
+    //intelsat-2016-noticias-usuario
+    $node_type_array=array('"item"');
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $node_type_array[]='"noticia"';
+    }
+    $where[]='node.type IN('.implode(',',$node_type_array).')';
     $where[]='files.filename="'.$filename.'"';
     $sql='SELECT files.* 
     FROM {node} node 

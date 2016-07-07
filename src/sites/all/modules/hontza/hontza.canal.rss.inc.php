@@ -2016,6 +2016,13 @@ function hontza_canal_rss_get_favicon_url($settings,$favicon_in=''){
             $result=$setting['favicon'];
         }
     }
+    //$theme_default=variable_get('theme_default', '');
+    //if($theme_default=='buho' || hontza_canal_rss_is_custom_favicon()){
+    if(hontza_canal_rss_is_show_custom_favicon()){   
+        if(empty($result)){
+            $result=red_get_default_url_favicon();
+        }
+    }    
     return $result;
 }
 //intelsat-2016
@@ -2025,3 +2032,10 @@ function hontza_canal_rss_is_custom_favicon(){
     }
     return 0;
 }
+function hontza_canal_rss_is_show_custom_favicon(){
+    $theme_default=variable_get('theme_default', '');
+    if($theme_default=='buho' || hontza_canal_rss_is_custom_favicon()){
+        return 1;
+    }
+    return 0;
+}    

@@ -1725,6 +1725,10 @@ function destacar_noticia_usuario_ajax_callback(){
     update_noticia_destacada($nid, 1);
     $result['nid']=$nid;
     $node=node_load($nid);
+    //intelsat-2016
+    if(red_solr_inc_is_rated_clear_node_index(1)){
+        hontza_canal_rss_solr_clear_node_index($node,$node->nid);
+    }    
     $result['a']=get_noticia_destacar_link($node,1);
     print json_encode($result);
     exit();
@@ -1736,6 +1740,10 @@ function no_destacar_noticia_usuario_ajax_callback(){
     update_noticia_destacada($nid, 0);
     $result['nid']=$nid;
     $node=node_load($nid);
+    //intelsat-2016
+    if(red_solr_inc_is_rated_clear_node_index(1)){
+        hontza_canal_rss_solr_clear_node_index($node,$node->nid);
+    }    
     $result['a']=get_noticia_destacar_link($node,1);
     print json_encode($result);
     exit();

@@ -963,6 +963,8 @@ function my_set_notica_node_form_alter(&$form,&$form_state,$form_id){
    red_movil_vigilancia_notica_node_form_alter($form,$form_state,$form_id);
    //intelsat-2016
    hound_noticia_email_notica_node_form_alter($form,$form_state,$form_id);
+   //intelsat-2016-noticias-usuario
+   red_solr_inc_notica_node_form_alter($form,$form_state,$form_id);
    //intelsat-2015
    $form['title']['#maxlength']=1024;
  $form['#submit'][]='my_noticia_usuario_form_submit';
