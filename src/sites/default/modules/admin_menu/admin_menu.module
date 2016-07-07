@@ -342,6 +342,14 @@ function admin_menu_translated_menu_link_alter(&$item, $map) {
  * @ingroup themeable
  */
 function theme_admin_menu_icon() {
-  return '<img class="admin-menu-icon" src="'. (theme_get_setting('toggle_favicon') ? theme_get_setting('favicon') : base_path() .'misc/favicon.ico') .'" width="16" height="16" alt="'. t('Home') .'" />';
+  //intelsat-2016  
+  //global $base_url;    
+  //return '<img class="admin-menu-icon" src="'. (theme_get_setting('toggle_favicon') ? theme_get_setting('favicon') : base_path() .'misc/favicon.ico') .'" width="16" height="16" alt="'. t('Home') .'" />';
+  $favicon=(theme_get_setting('toggle_favicon') ? theme_get_setting('favicon') : base_path() .'misc/favicon.ico');
+  $favicon=hontza_canal_rss_get_favicon_url('',$favicon);
+  /*if(empty($favicon)){
+    $favicon=$base_url.'/sites/default/files/buho_favicon.ico';
+  }*/
+  return '<img class="admin-menu-icon" src="'. $favicon .'" width="16" height="16" alt="'. t('Home') .'" />';  
 }
 
