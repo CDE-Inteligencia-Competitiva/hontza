@@ -103,7 +103,8 @@ class ApacheSolrFacetapiTerm extends FacetapiQueryType implements FacetapiQueryT
       if (isset($response->facet_counts->facet_fields->{$this->facet['field']})) {
         //  
         $values = (array) $response->facet_counts->facet_fields->{$this->facet['field']};
-        
+        //intelsat-2016-noticias-usuario
+        $values=red_solr_inc_get_query_type_term_build($response,$values,$this->facet['field']);
         foreach ($values as $value => $count) {
           // Facet missing may return 0 even if mincount is 1.
           if (empty($settings->settings['facet_mincount']) || $count) {
