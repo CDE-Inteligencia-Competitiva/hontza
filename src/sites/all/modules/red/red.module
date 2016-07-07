@@ -184,7 +184,7 @@ function red_menu(){
     'access callback' => TRUE,    
      );
      $items['red/solr/reset_noticia_usuario_apachesolr_index_entities_node']=array(
-    'title' => 'Delete',
+    'title' => 'Index',
     'page callback' => 'red_solr_reset_noticia_usuario_apachesolr_index_entities_node_callback',
     'access arguments' => array('root'),    
      );
@@ -1714,4 +1714,13 @@ function red_repase_access_fuentes(){
     if(is_fuentes_pipes_todas()){
         hontza_grupos_active_access_tab('fuentes');
     }    
+}
+function red_get_default_url_favicon(){
+    global $base_url;
+    $result='';
+    $theme_default=variable_get('theme_default', '');
+    if($theme_default=='buho'){            
+        $result=$base_url.'/sites/default/files/buho_favicon.ico';
+    }
+    return $result;
 }

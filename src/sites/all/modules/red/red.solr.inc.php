@@ -46,30 +46,71 @@ function red_solr_inc_add_validate_status_filter(&$my_array,$validate_status){
         $i=count($my_array);
         $my_array[]='f['.$i.']=itm_field_item_validate_status:3';*/
     }else if($validate_status==1){
-        $my_array[]='f['.$i.']=itm_field_item_validate_status:1';        
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            $my_array[]='(itm_field_item_validate_status:1 OR itm_field_noticia_validate_statu:1)';            
+        }else{
+            $my_array[]='f['.$i.']=itm_field_item_validate_status:1';
+        }    
     }else if($validate_status==2){
-        $my_array[]='f['.$i.']=itm_field_item_validate_status:2';        
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            $my_array[]='(itm_field_item_validate_status:2 OR itm_field_noticia_validate_statu:2)';
+        }else{
+            $my_array[]='f['.$i.']=itm_field_item_validate_status:2';        
+        }    
     }else if($validate_status==3){
-        $my_array[]='f['.$i.']=itm_field_item_validate_status:3';        
+        //intelsat-2016-noticias-usuario-solr
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            $my_array[]='(itm_field_item_validate_status:3 OR itm_field_noticia_validate_statu:3)';
+        }else{
+            $my_array[]='f['.$i.']=itm_field_item_validate_status:3';
+        }            
     }else if($validate_status==4){
-        $my_array[]='f['.$i.']=itm_field_item_seleccionado_bole:1';        
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            $my_array[]='(itm_field_item_seleccionado_bole:1 OR itm_field_noticia_seleccionado_b:1)';
+        }else{
+            $my_array[]='f['.$i.']=itm_field_item_seleccionado_bole:1';
+        }
     }else if($validate_status==6){
-        $my_array[]='f['.$i.']=itm_field_item_bookmark:1';        
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            $my_array[]='(itm_field_item_bookmark:1 OR itm_field_noticia_bookmark:1)';
+        }else{
+            $my_array[]='f['.$i.']=itm_field_item_bookmark:1';
+        }
     }else if($validate_status==7){
-        $my_array[]='f['.$i.']=itm_field_is_carpeta_noticia_des:1';        
+        //intelsat-2016-noticias-usuario-solr
+        if(red_solr_inc_is_actualizar_noticias_usuario()){            
+            $my_array[]='(itm_field_is_carpeta_noticia_des:1 OR itm_field_is_noticia_usuario_des:1)';
+        }else{
+            $my_array[]='f['.$i.']=itm_field_is_carpeta_noticia_des:1';
+        }    
     }else if($validate_status==8){
+        //intelsat-2016-noticias-usuario-solr
         $my_array[]='f['.$i.']=itm_field_item_validate_status:2';
+        //$my_array[]='f['.$i.']=(itm_field_item_validate_status:2 OR itm_field_noticia_validate_statu:2)';
         $i=count($my_array);
         $my_array[]='f['.$i.']=itm_field_is_carpeta_noticia_des:1';         
     }else if($validate_status==9){
-        $my_array[]='f['.$i.']=itm_field_item_validate_status:2';        
-    }else if($validate_status==10){
+        //intelsat-2016-noticias-usuario-solr
         $my_array[]='f['.$i.']=itm_field_item_validate_status:2';
+        //$my_array[]='f['.$i.']=(itm_field_item_validate_status:2 OR itm_field_noticia_validate_statu:2)';    
+    }else if($validate_status==10){
+        //intelsat-2016-noticias-usuario-solr
+        $my_array[]='f['.$i.']=itm_field_item_validate_status:2';
+        //$my_array[]='f['.$i.']=(itm_field_item_validate_status:2 OR itm_field_noticia_validate_statu:2)';    
         $i=count($my_array);
         $my_array[]='f['.$i.']=itm_field_item_bookmark:1';
     }
 }
 function red_solr_inc_actualizar_items(){
+    //intelsat-2016
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        noticias_usuario_solr_actualizar();       
+    }
     //if(red_crear_usuario_is_crear_usuario_net()){
     if(!red_solr_inc_is_actualizar_items()){    
         return;
@@ -89,12 +130,7 @@ function red_solr_inc_actualizar_items(){
     }
     /*if(red_solr_inc_is_hontza_item_indexado_activado()){
         red_solr_inc_save_hontza_item_indexado($item_array,1);
-    }*/
-    //intelsat-2016
-    /*if(red_solr_inc_is_actualizar_noticias_usuario()){
-         $noticia_array=hontza_get_all_nodes(array('noticia'));
-         red_solr_inc_actualizar_noticia_canal_category_tid($notica_array);
-    }*/   
+    }*/      
 }
 function red_solr_inc_actualizar_seleccionado_boletin($item_array){
     if(!empty($item_array)){
@@ -270,6 +306,11 @@ function red_solr_inc_add_delete_filters_content(&$result){
 }
 function red_solr_inc_add_delete_validate_status_filtros($my_array){
     $result=array();
+    //intelsat-2016-noticias_usuario
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=red_solr_inc_noticias_usuario_add_delete_validate_status_filtros();
+        return $result;
+    }
     if(!empty($my_array) && is_array($my_array)){
         foreach($my_array as $i=>$value){
             $value_array=explode(':',$value);
@@ -407,7 +448,11 @@ function red_solr_inc_add_rated_filter(&$my_array,$form_state){
     if(!empty($rated)){
         $i=count($my_array);
         $rated=$rated*20;
-        $my_array[]='f['.$i.']=ftm_field_item_rated:['.$rated.' TO *]';
+        if(red_solr_inc_is_actualizar_noticias_usuario()){
+            $my_array[]='(ftm_field_item_rated:['.$rated.' TO *] OR ftm_field_noticia_rated:['.$rated.' TO *])';
+        }else{
+            $my_array[]='f['.$i.']=ftm_field_item_rated:['.$rated.' TO *]';
+        }    
     }
 }
 function red_solr_inc_add_beste_delete_filters_content(&$result){
@@ -422,6 +467,11 @@ function red_solr_inc_add_beste_delete_filters_content(&$result){
 }
 function red_solr_inc_add_delete_scoring_filtros($my_array){
     $result=array();
+    //intelsat-2016-noticias-usuario
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=red_solr_inc_noticias_usuario_add_delete_scoring_filtros();
+        return $result;
+    }
     if(!empty($my_array) && is_array($my_array)){
         foreach($my_array as $i=>$value){
             $value_array=explode(':',$value);
@@ -429,12 +479,13 @@ function red_solr_inc_add_delete_scoring_filtros($my_array){
                 $field=$value_array[0];
                 if($field=='ftm_field_item_rated'){
                     $scoring=$value_array[1];
-                    $scoring=red_solr_inc_get_scoring_value($scoring);
+                    /*$scoring=red_solr_inc_get_scoring_value($scoring);
                     if(!empty($scoring)){
                         $scoring_label=red_solr_inc_get_scoring_label($scoring);
                         $icono_link=hontza_solr_get_canal_icono_link($value_array[1],'ftm_field_item_rated',$my_array);
                         $result[]=$icono_link.$scoring_label;
-                    }
+                    }*/
+                    red_solr_inc_add_delete_ftm_field_item_rated_filtros($scoring,$result);
                 }                
             }
         }
@@ -890,6 +941,7 @@ function red_solr_reset_noticia_usuario_apachesolr_index_entities_node_callback(
            }
        }
    }
+   drupal_set_title(t('Index'));
    return date('Y-m-d H:i:s');
 }
 function red_solr_inc_get_apachesolr_index_entities_node_row($nid){
@@ -1483,8 +1535,10 @@ function red_solr_inc_is_termino_in_html_strpos($value,$needle){
 }
 //intelsat-2016
 function red_solr_inc_is_actualizar_noticias_usuario(){
-    if(defined('_IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO') && _IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO==1){
-        return 1;
+    if(module_exists('noticias_usuario_solr')){
+        if(defined('_IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO') && _IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO==1){
+            return 1;
+        }
     }
     return 0;
 }
@@ -1549,4 +1603,89 @@ function red_solr_index_remaining_callback(){
     $environment = apachesolr_environment_load($env_id);
     return drupal_get_form('apachesolr_index_action_form_remaining_confirm',$form_state,$environment);
 }
-     
+function red_solr_inc_get_query_type_term_build($response,$values_in,$facet_field){
+    $result=$values_in;
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_solr_get_query_type_term_build($response,$result,$facet_field);
+    }
+    return $result;
+}
+function red_solr_inc_get_widget_links_element($field_alias,$element_in,$field_in){
+    $result=$element_in;
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_solr_get_widget_links_element($field_alias,$element_in,$field_in);
+    }
+    return $result;
+}
+function red_solr_inc_define_entity_field_name_noticia_validador_uid($entity_field_name,$entity){
+    $result=$entity_field_name;
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_solr_define_entity_field_name_noticia_validador_uid($entity_field_name,$entity);
+    }
+    return $result;
+}
+function red_solr_inc_busqueda_avanzada_form_submit_search_array($search_array_in,$noticias_usuario_search_array){
+    $result=$search_array_in;
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_solr_busqueda_avanzada_form_submit_search_array($result,$noticias_usuario_search_array);
+    }
+    return $result;
+}
+function red_solr_inc_facetapi_check_block_visibility($facet_name){
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        return noticias_usuario_solr_facetapi_check_block_visibility($facet_name);
+    }
+    return TRUE;
+}
+function red_solr_inc_add_delete_validador_filtros(){
+    $result=array();
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_solr_inc_add_delete_validador_filtros();
+    }
+    return $result;
+}
+function red_solr_inc_add_add_delete_im_field_item_validador_uid_filtros($value,&$result,$my_array=array(),$is_noticias_usuario_in=0,$field='im_field_item_validador_uid',$validate_status=''){
+    $label=$value;
+    if($field=='im_field_item_validador_uid'){
+        $label=hontza_get_username($value);
+    }
+    if(!empty($label)){
+        $is_noticias_usuario=$is_noticias_usuario_in;
+        if(!red_solr_inc_is_actualizar_noticias_usuario()){
+            $is_noticias_usuario=0;
+        }
+        if($is_noticias_usuario){
+            $icono_link=noticias_usuario_solr_get_canal_icono_link($value,$field,$validate_status);
+        }else{
+            $icono_link=hontza_solr_get_canal_icono_link($value,$field,$my_array);
+        }
+        $result[]=$icono_link.$label;
+    }
+}
+function red_solr_inc_noticias_usuario_add_delete_validate_status_filtros(){
+    $result=array();
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_add_delete_validate_status_filtros();
+    }
+    return $result;
+}
+function red_solr_inc_noticias_usuario_add_delete_scoring_filtros(){
+    $result=array();
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        $result=noticias_usuario_add_delete_scoring_filtros();
+    }
+    return $result;
+}
+function red_solr_inc_add_delete_ftm_field_item_rated_filtros($scoring,&$result){
+    $scoring=red_solr_inc_get_scoring_value($scoring);
+    if(!empty($scoring)){
+        $scoring_label=red_solr_inc_get_scoring_label($scoring);
+        $icono_link=hontza_solr_get_canal_icono_link($value_array[1],'ftm_field_item_rated',$my_array);
+        $result[]=$icono_link.$scoring_label;
+    }
+}
+function red_solr_inc_notica_node_form_alter(&$form,&$form_state,$form_id){
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        noticias_usuario_solr_notica_node_form_alter($form,$form_state,$form_id);
+    }
+}
