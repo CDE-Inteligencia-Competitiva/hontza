@@ -11,7 +11,7 @@ function panel_admin_banners_callback(){
     if(visualizador_is_red_alerta()){
         $where[]='node.language="es"';
     }else{
-        $where[]='node.language="en"';
+        //$where[]='node.language="en"';       
     }
     $my_limit=30;
     
@@ -39,7 +39,8 @@ function panel_admin_banners_callback(){
     node.created AS node_created,
     content_type_banner.field_pisu_value,
     content_type_banner.field_banner_activado_value,
-    node_revisions.body 
+    node_revisions.body,
+    node.tnid
     FROM {node} node 
     LEFT JOIN {node_revisions} node_revisions ON node.vid = node_revisions.vid 
     LEFT JOIN {content_type_banner} ON node.vid=content_type_banner.vid
@@ -54,17 +55,25 @@ function panel_admin_banners_callback(){
       $rows[$kont][0]=$node_title;
       $rows[$kont]['node_title']=$node_title;
       $rows[$kont][1]=$r->field_pisu_value;
-      $rows[$kont][2]=array('data'=>panel_admin_banners_define_acciones($r),'class'=>'td_nowrap');            
+      $rows[$kont][2]=array('data'=>panel_admin_banners_define_acciones($r),'class'=>'td_nowrap');
+      //intelsat-2016
+      $rows[$kont]['nid']=$r->nid;
+      $rows[$kont]['tnid']=$r->tnid;
       $kont++;
     }
     //
+    //intelsat-2016
+    $rows=panel_admin_banners_unset_translates($rows);
     if($order==t('Title')){
         $rows=array_ordenatu($rows,'node_title', $sort,0);        
     }
-    $rows=hontza_unset_array($rows,array('node_title'));
-    $rows=my_set_estrategia_pager($rows, $my_limit);
+    //intelsat-2016
+    //$unset_array=array('node_title');
+    $unset_array=array('node_title','nid','tnid');
+    $rows=hontza_unset_array($rows,$unset_array);
     
     $rows=my_set_estrategia_pager($rows, $my_limit);
+   
     if (count($rows)>0) {
         $output .= theme('table',$headers,$rows,array('class'=>'table_panel_admin_items'));
         $output .= theme('pager', NULL, $my_limit);    
@@ -146,4 +155,17 @@ function panel_admin_banner_get_title_resumen($resumen,$max=70){
         $result=substr($result,0,$max).'...';
     }
     return $result;
+}
+//intelsat-2016
+function panel_admin_banners_unset_translates($rows_in){
+    $result=array();
+    if(!empty($rows_in)){
+        foreach($rows_in as $i=>$row){
+            //print $row['nid'].'='.$row['tnid'].'<br>';
+            if(empty($row['tnid']) || $row['nid']==$row['tnid']){
+                $result[]=$row;
+            }
+        }
+    }        
+    return $result;        
 }
