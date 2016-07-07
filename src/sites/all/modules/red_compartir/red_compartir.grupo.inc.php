@@ -951,7 +951,7 @@ function red_compartir_grupo_users_facilitators_row_save($u,$u_in){
 }
 //intelsat-2016
 function red_compartir_grupo_hoja_access_denied(){
-    $is_grupo_publico=1;
+    /*$is_grupo_publico=1;
     $grupo_nid=arg(2);
     $grupo_node=node_load($grupo_nid);
     if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
@@ -962,7 +962,7 @@ function red_compartir_grupo_hoja_access_denied(){
     if($is_grupo_publico){
         drupal_access_denied();
         exit();
-    }
+    }*/
 }
 //intelsat-2016
 function red_compartir_grupo_no_compartir_grupo_hoja_access_denied(){
