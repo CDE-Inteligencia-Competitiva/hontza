@@ -12,7 +12,7 @@ require_once('theme-settings.php');
  * Add Custom Generated CSS File
  * This file is generated each time the theme settings page is loaded.
  */
-/*$custom_css = file_directory_path() .'/buho/custom.css';
+/*$custom_css = file_directory_path() .'/buho/custom.css';page
 if (file_exists($custom_css)) {
   drupal_add_css($custom_css, 'theme', 'all', TRUE);
 }*/
@@ -1213,7 +1213,11 @@ function buho_apachesolr_search_noresults() {
   return implode('',$html);
 }
 function buho_admin_menu_icon() {
+  global $base_url;    
   $favicon=(theme_get_setting('toggle_favicon') ? theme_get_setting('favicon') : base_path() .'misc/favicon.ico');
   $favicon=hontza_canal_rss_get_favicon_url('',$favicon);
+  if(empty($favicon)){
+    $favicon=$base_url.'/sites/default/files/buho_favicon.ico';
+  }
   return '<img class="admin-menu-icon" src="'. $favicon .'" width="16" height="16" alt="'. t('Home') .'" />';
 }
