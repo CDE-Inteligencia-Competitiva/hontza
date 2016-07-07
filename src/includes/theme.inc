@@ -1064,15 +1064,23 @@ function theme_get_setting($setting_name, $refresh = FALSE) {
     }
   }
   //gemini
-  if(module_exists('hontza')){
-    if(hontza_canal_rss_is_visualizador_activado()){
-        //$settings['favicon']='/system/files/buho_favicon.ico';
-        $settings['favicon']=publico_get_favicon($settings);        
-    }else{
-        //intelsat-2016
-        $settings['favicon']=hontza_canal_rss_get_favicon_url($settings);
-    }    
+  if($setting_name=='favicon'){
+        if(module_exists('hontza')){
+          if(hontza_canal_rss_is_show_custom_favicon()){                    
+            if(hontza_canal_rss_is_visualizador_activado()){
+                //$settings['favicon']='/system/files/buho_favicon.ico';
+                $settings['favicon']=publico_get_favicon($settings);        
+            }else{
+                //intelsat-2016
+                $settings['favicon']=hontza_canal_rss_get_favicon_url($settings);
+            }
+          }  
+        }    
   }
+  /*if(empty($settings['favicon'])){
+    global $base_url;
+    $settings['favicon']=$base_url.'/sites/default/files/buho_favicon.ico';
+  }*/
   return isset($settings[$setting_name]) ? $settings[$setting_name] : NULL;
 }
 
