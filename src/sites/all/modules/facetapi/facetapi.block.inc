@@ -143,7 +143,10 @@ function facetapi_check_block_visibility($delta) {
   // Parses the raw delta, extracts variables for code readability.
   $parsed[$delta] = facetapi_parse_delta($map[$delta]);
   list($searcher, $realm_name, $facet_name) = $parsed[$delta];
-
+  //intelsat-2016-noticias-usuario
+  if(!red_solr_inc_facetapi_check_block_visibility($facet_name)){
+    return FALSE;
+  }
   // Checks whether block should be displayed.
   if (!facetapi_is_active_searcher($searcher)) {
     return FALSE;

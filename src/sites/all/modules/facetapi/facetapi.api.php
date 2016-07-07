@@ -217,7 +217,7 @@ function hook_facetapi_facet_info(array $searcher_info) {
       ),
     );
   }
-echo print_r($facets,1);
+
   return $facets;
 }
 
