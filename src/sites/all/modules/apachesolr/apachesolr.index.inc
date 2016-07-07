@@ -1247,6 +1247,12 @@ function apachesolr_userreference_indexing_callback($entity, $field_name, $index
         if(hontza_solr_is_empty_userreference($entity->$field_name)){
            $entity->$field_name=hontza_solr_define_entity_field_name_item_validador_uid($entity->$field_name,$entity);
         }
+    }else if($field_name=='field_noticia_validador_uid'){
+        //intelsat-2016-noticias-usuario
+        //$entity->field_item_validador_uid=noticias_usuario_solr_define_entity_field_name_noticia_validador_uid($entity->$field_name,$entity);
+        if(hontza_solr_is_empty_userreference($entity->$field_name)){
+           $entity->$field_name=red_solr_inc_define_entity_field_name_noticia_validador_uid($entity->$field_name,$entity); 
+        }
     }
     //
     foreach ($entity->$field_name as $field_references) {
@@ -1264,7 +1270,9 @@ function apachesolr_userreference_indexing_callback($entity, $field_name, $index
           );
         }else{
             //intelsat-2014
-            if($field_name=='field_item_validador_uid'){
+            //intelsat-2016-noticias-usuario
+            //if($field_name=='field_item_validador_uid'){
+            if(in_array($field_name,array('field_item_validador_uid','field_noticia_validador_uid'))){
                 if(isset($field_references['uid']) && !empty($field_references['uid'])){
                 //if(isset($field_references['uid']) && (!empty($field_references['uid']) || $field_references['uid']===0)){                
                     $fields[] = array(
