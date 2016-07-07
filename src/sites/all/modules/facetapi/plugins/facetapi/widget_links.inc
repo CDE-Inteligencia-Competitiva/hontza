@@ -27,9 +27,11 @@ class FacetapiWidgetLinks extends FacetapiWidget {
     //intelsat-2014
     $my_tree=array();
     $field_alias_array=array('itm_field_item_source_tid','itm_field_item_canal_category_ti','itm_field_item_fid','itm_field_item_validate_status'
-    ,'im_taxonomy_vid_3','im_field_item_canal_reference');
+    ,'im_taxonomy_vid_3','im_field_item_canal_reference','im_field_item_validador_uid');
     if(in_array($this->facet['field alias'],$field_alias_array)){
-        hontza_solr_set_item_source_label($element,$this->facet['field alias']);
+        if(!in_array($this->facet['field alias'],array('im_field_item_validador_uid'))){
+            hontza_solr_set_item_source_label($element,$this->facet['field alias']);
+        }
         if($this->facet['field alias']=='itm_field_item_canal_category_ti'){
             $my_tree=my_get_categorias_canal(0);
             //$element=hontza_solr_set_facetapi_by_tree($element,$my_tree);
@@ -41,7 +43,15 @@ class FacetapiWidgetLinks extends FacetapiWidget {
             $element=red_solr_inc_get_existe_term_solr_left_by_widget_links($element);
         }else if(in_array($this->facet['field alias'],array('im_field_item_canal_reference'))){
             $element=red_solr_inc_get_existe_node_solr_left_by_widget_links($element);
-        }    
+        }else if($this->facet['field alias']=='im_field_item_validador_uid'){            
+            //intelsat-2016-noticias-usuario-solr
+            //$element=red_solr_inc_get_widget_links_element('im_field_item_validador_uid',$element,'im_field_item_validador_uid');
+            $element=red_solr_inc_get_widget_links_element($this->facet['field alias'],$element,'im_field_item_validador_uid');
+        }else if($this->facet['field alias']=='itm_field_item_validate_status'){
+            //intelsat-2016-noticias-usuario-solr
+            //$element=red_solr_inc_get_widget_links_element('itm_field_item_validate_status',$element,'itm_field_item_validate_status');
+            $element=red_solr_inc_get_widget_links_element($this->facet['field alias'],$element,'itm_field_item_validate_status');
+        }        
     }
     //
     //intelsat-2015
