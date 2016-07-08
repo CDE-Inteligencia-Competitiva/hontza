@@ -933,9 +933,18 @@ function apachesolr_index_action_form_cron_submit($form, &$form_state) {
  */
 function apachesolr_index_action_form_remaining_confirm(&$form_state, $environment) {
   $form = array();
-  return confirm_form($form,
+  //intelsat-2016
+  /*return confirm_form($form,
     t('Are you sure you want index all remaining content?'),
     'admin/settings/apachesolr/settings/' . $environment['env_id'] . '/index',
+    NULL,
+    t('Index all remaining')
+  );*/
+  $path='admin/settings/apachesolr/settings/' . $environment['env_id'] . '/index';
+  //$path=red_solr_get_index_action_form_remaining_confirm_destination($path);
+  return confirm_form($form,
+    t('Are you sure you want index all remaining content?'),
+    $path,
     NULL,
     t('Index all remaining')
   );

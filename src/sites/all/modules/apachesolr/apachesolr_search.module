@@ -979,8 +979,10 @@ function apachesolr_search_search_results($keys = NULL, $conditions_in = NULL, $
       // Default parameters
       $params['fq'] = isset($conditions['fq']) ? $conditions['fq'] : array();
       $params['rows'] = $search_page['settings']['apachesolr_search_per_page'];
-      //intelsat-2015      
-      if(hontza_solr_is_all_results() || $is_alerta){
+      //intelsat-2015
+      //intelsat-2016
+      //if(hontza_solr_is_all_results() || $is_alerta){
+      if(hontza_solr_is_all_results() || $is_alerta || red_solr_inc_is_my_order()){
         $params['rows']=100000;
       }
       //
@@ -1038,6 +1040,11 @@ function apachesolr_search_search_results($keys = NULL, $conditions_in = NULL, $
             }else{
                 hontza_solr_print_rss($results);
             }    
+        }else{
+            //intelsat-2016
+            if(red_solr_inc_is_aplicar_my_order()){
+                $results=red_solr_inc_get_my_order_results($results);
+            }
         }
         //
       }
@@ -1188,7 +1195,9 @@ function apachesolr_search_run_empty($name, array $params = array(), $base_path 
  */
 //intelsat-2015
 //se ha añadido is_alerta
-function apachesolr_search_run($name, array $params = array(), $solrsort = '', $base_path = '', $page = 0, DrupalApacheSolrServiceInterface $solr = NULL,$is_alerta=0,$my_solr_conditions='') {
+//intelsat-2016
+//se ha añadido page_in
+function apachesolr_search_run($name, array $params = array(), $solrsort = '', $base_path = '', $page_in = 0, DrupalApacheSolrServiceInterface $solr = NULL,$is_alerta=0,$my_solr_conditions='') {
   // Merge the default params into the params sent in.
   $params += apachesolr_search_basic_params();
   // This is the object that knows about the query coming from the user.
@@ -1198,6 +1207,12 @@ function apachesolr_search_run($name, array $params = array(), $solrsort = '', $
     apachesolr_search_add_spellcheck_params($query);
   }
   // Add the paging parameters
+  //intelsat-2016
+  $page=$page_in;
+  if(red_solr_inc_is_my_order()){
+      $page=0;
+  }
+        
   $query->page = $page;
 
   apachesolr_search_add_boost_params($query);
@@ -1403,7 +1418,13 @@ function apachesolr_search_process_response($response, DrupalSolrQueryInterface 
     $hl_fl = array('content', 'ts_comments');
   }
   $total = $response->response->numFound;
-  apachesolr_search_pager_default_initialize($total, $query->getParam('rows'));
+  //intelsat-2016
+  //apachesolr_search_pager_default_initialize($total, $query->getParam('rows'));
+  $my_limit=$query->getParam('rows');
+  if(red_solr_inc_is_my_order()){
+      $my_limit=red_solr_inc_get_my_limit();  
+  }
+  apachesolr_search_pager_default_initialize($total,$my_limit);
   if ($total > 0) {
     $fl = $query->getParam('fl');
     $languages = language_list();

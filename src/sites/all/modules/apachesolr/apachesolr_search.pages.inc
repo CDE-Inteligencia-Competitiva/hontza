@@ -100,6 +100,16 @@ function apachesolr_search_custom_page_search_form(&$form_state, $search_page, $
     $fq = $query->getParam('fq');
   }
   
+  //intelsat-2016
+  /*$form['basic']['my_order'] = array(
+    '#type' => 'select',
+    '#title'=>t('Order'),  
+    '#options' => red_solr_inc_get_my_order_options(),
+    '#prefix'=>'<div style="float:right;"><div style="float:left;margin-top:-12px;">',
+    '#suffix'=>'</div>',
+    '#attributes'=>array('style'=>'float:left;'),  
+  );*/
+  
   if ($fq || !empty($form_state['post'])) {
     $form['basic']['retain-filters'] = array(
       '#type' => 'checkbox',
@@ -108,7 +118,9 @@ function apachesolr_search_custom_page_search_form(&$form_state, $search_page, $
       '#title' => '<b>'.t('Apply My Filter').'</b>',
       '#default_value' => (int) !empty($_GET['retain-filters']),
       //intelsat-2015    
+      //intelsat-2016
       '#prefix'=>'<div style="float:right;"><div style="float:left;margin-top:-12px;">',
+      //'#prefix'=>'<div style="float:left;margin-top:-12px;">',
       '#suffix'=>'</div>',
       //  
     );
