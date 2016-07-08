@@ -241,9 +241,12 @@ function red_solr_inc_actualizar_bookmark($item_array){
 function red_solr_inc_update_node_bookmark($node){
    if(red_solr_inc_is_status_activado()){
     $bookmark=red_solr_inc_get_bookmark($node);
-    red_solr_inc_update_item_bookmark($node,$bookmark);
-    $updated=0;
-    hontza_solr_set_item_solr_updated($node,$updated);
+    red_solr_inc_update_item_bookmark($node,$bookmark);    
+    //intelsat-2016-noticias-usuario
+    if($node->type=='item'){
+        $updated=0;
+        hontza_solr_set_item_solr_updated($node,$updated);
+    }
     if(red_solr_inc_is_rated_clear_node_index($bookmark)){
         hontza_canal_rss_solr_clear_node_index($node,$node->nid);
     }    
@@ -260,8 +263,13 @@ function red_solr_inc_get_bookmark($node){
     }
     return 0;
 }
-function red_solr_inc_update_item_bookmark($node,$bookmark_value){   
-   db_query('UPDATE {content_type_item} SET field_item_bookmark_value=%d WHERE nid=%d AND vid=%d',$bookmark_value,$node->nid,$node->vid); 
+function red_solr_inc_update_item_bookmark($node,$bookmark_value){
+    if($node->type=='item'){
+        db_query('UPDATE {content_type_item} SET field_item_bookmark_value=%d WHERE nid=%d AND vid=%d',$bookmark_value,$node->nid,$node->vid);
+    }else if($node->type=='noticia'){
+        //intelsat-2016-noticias-usuario
+        db_query('UPDATE {content_type_noticia} SET field_noticia_bookmark_value=%d WHERE nid=%d AND vid=%d',$bookmark_value,$node->nid,$node->vid);
+    }    
 }
 function red_solr_inc_define_entity_field_name_item_bookmark($entity_field_name_array,$entity){
     $bookmark_array=red_solr_inc_get_content_field_item_bookmark_array($entity->nid,$entity->vid);
@@ -1582,10 +1590,14 @@ function red_solr_inc_get_index_status_html(){
     return implode('',$html);
 }
 function red_solr_inc_add_index_status_js(){
+    $destination=drupal_get_destination();
+    //$is_destination=1;
+    //$destination='destination='.my_get_busqueda_simple_content(0,$is_destination);
+    
     $js='$(document).ready(function()
 			{
 			   $("#index_status_btn").click(function(){
-                            window.location.href="'.url('red/solr/index/remaining',array('query'=>drupal_get_destination())).'";
+                            window.location.href="'.url('red/solr/index/remaining',array('query'=>$destination)).'";
                            });
 			});';
 			
@@ -1601,7 +1613,7 @@ function red_solr_index_remaining_callback(){
     require_once 'sites/all/modules/apachesolr/apachesolr.admin.inc';
     $form_state=array();
     $environment = apachesolr_environment_load($env_id);
-    return drupal_get_form('apachesolr_index_action_form_remaining_confirm',$form_state,$environment);
+    return drupal_get_form('apachesolr_index_action_form_remaining_confirm',$form_state,$environment);   
 }
 function red_solr_inc_get_query_type_term_build($response,$values_in,$facet_field){
     $result=$values_in;
@@ -1689,3 +1701,239 @@ function red_solr_inc_notica_node_form_alter(&$form,&$form_state,$form_id){
         noticias_usuario_solr_notica_node_form_alter($form,$form_state,$form_id);
     }
 }
+function red_solr_inc_get_my_order_options(){
+    $result=array();
+    $result[1]=t('By date');
+    $result[2]=t('By validation');
+    $result[3]=t('By rating');
+    $result[4]=t('By comments');
+    $result[5]=t('By bookmarks');
+    return $result;
+}
+function red_solr_inc_is_my_order(){
+    if(red_solr_inc_is_actualizar_noticias_usuario()){
+        if(isset($_SESSION['my_order_solr']) && !empty($_SESSION['my_order_solr'])){
+          return 1;
+        }
+    }
+    return 0;
+}
+function red_solr_inc_get_my_limit(){
+    $result=10;
+    return $result;
+}
+function red_solr_inc_get_my_results($result_in){
+    $result=$result_in;
+    if(red_solr_inc_is_my_order()){
+        $my_limit=red_solr_inc_get_my_limit();
+        if(isset($_REQUEST['page']) && !empty($_REQUEST['page'])){
+            $page=$_REQUEST['page'];
+            $pos=$page*$my_limit;
+            $result=array_slice($result,$pos);
+        }
+    }    
+    return $result;
+}
+function red_solr_inc_is_aplicar_my_order(){
+    if(isset($_SESSION['my_order_solr']) && !empty($_SESSION['my_order_solr'])){
+        if($_SESSION['my_order_solr']!=1){
+            return 1;
+        }
+    }
+    return 0;
+}
+function red_solr_inc_set_my_order($my_order){
+    if(isset($_SESSION['my_order_solr'])){
+        unset($_SESSION['my_order_solr']);
+    }
+    if(!empty($my_order) && $my_order!=1){
+        $_SESSION['my_order_solr']=$my_order;
+    }
+}
+function red_solr_inc_get_my_order_results($result_in){
+    $result=$result_in;
+    $my_order_solr='';
+    if(isset($_SESSION['my_order_solr']) && !empty($_SESSION['my_order_solr'])){
+        $my_order_solr=$_SESSION['my_order_solr'];
+    }
+    if($my_order_solr==2){
+        $result=red_solr_inc_get_my_order_results_validation($result_in);
+    }else if($my_order_solr==3){
+        $result=red_solr_inc_get_my_order_results_rating($result_in);
+    }else if($my_order_solr==4){
+        $result=red_solr_inc_get_my_order_results_commented($result_in);
+    }else if($my_order_solr==5){
+        $result=red_solr_inc_get_my_order_results_bookmarks($result_in);
+    }
+    return $result;
+}
+function red_solr_inc_get_my_order_results_validation($result_in){
+    $my_array=red_solr_inc_set_validation_order($result_in);
+    $is_numeric=1;
+    $result=array_ordenatu($my_array,'validation','desc', $is_numeric,2,'created');
+    return $result;
+}
+function red_solr_inc_set_validation_order($result_in){
+    $result=$result_in;
+    if(!empty($result)){
+        foreach($result as $i=>$row){
+            $my_node=$row['node'];
+            $my_node->nid=$my_node->entity_id;
+            $result[$i]['validation']=red_solr_inc_get_validation_order_value($my_node);
+            $result[$i]['created']=$my_node->created;
+        }
+    }
+    return $result;
+}
+function red_solr_inc_get_validation_order_value($my_node){
+    $result=array();
+    $result[1]=2;
+    $result[2]=3;
+    $result[3]=1;
+    $value=red_despacho_get_validate_status($my_node);
+    if(isset($result[$value]) && !empty($result[$value])){
+        return $result[$value];
+    }
+    return 1000;
+}
+function red_solr_inc_get_my_order_results_rating($result_in){
+    $my_array=red_solr_inc_set_rating_order($result_in);
+    $is_numeric=1;
+    $result=array_ordenatu($my_array,'rating','desc', $is_numeric,2,'created');
+    return $result;
+}
+function red_solr_inc_set_rating_order($result_in){
+    $result=$result_in;
+    $is_value=1;
+    if(!empty($result)){
+        foreach($result as $i=>$row){
+            $my_node=$row['node'];
+            $my_node->nid=$my_node->entity_id;
+            $result[$i]['rating']=hontza_get_node_puntuacion_media_para_txt($my_node->entity_id,$is_value);
+            $result[$i]['created']=$my_node->created;            
+        }
+    }
+    return $result;
+}
+function red_solr_inc_get_my_order_results_commented($result_in){
+    $my_array=red_solr_inc_set_commented_order($result_in);
+    $is_numeric=1;
+    $result=array_ordenatu($my_array,'commented','desc', $is_numeric,2,'created');
+    return $result;
+}
+function red_solr_inc_set_commented_order($result_in){
+    $result=$result_in;
+    if(!empty($result)){
+        foreach($result as $i=>$row){
+            $my_node=node_load($row['node']->entity_id);
+            $result[$i]['commented']=$my_node->comment_count;
+            $result[$i]['created']=$my_node->created;
+        }
+    }
+    return $result;
+}
+function red_solr_inc_get_my_order_results_bookmarks($result_in){
+     $my_array=red_solr_inc_set_bookmarks_order($result_in);
+     $is_numeric=1;
+     $result=array_ordenatu($my_array,'bookmarks','desc', $is_numeric,2,'created');
+     return $result;
+}
+function red_solr_inc_set_bookmarks_order($result_in){
+    $result=$result_in;
+    if(!empty($result)){
+        foreach($result as $i=>$row){
+            $my_node=$row['node'];
+            $my_node->nid=$my_node->entity_id;
+            $result[$i]['bookmarks']=red_solr_inc_get_bookmark($my_node);
+            $result[$i]['created']=$my_node->created;
+        }
+    }
+    return $result;
+}
+function red_solr_get_index_action_form_remaining_confirm_destination($path_in){
+    $result=$path_in;
+    if(red_solr_inc_index_remaining_pantalla()){
+        if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+            $result=$_REQUEST['destination'];
+        }
+    }
+    return $result;
+}
+function red_solr_get_index_action_form_remaining_confirm_destination_url($my_grupo,$query_busqueda_avanzada_solr){
+    global $base_url;
+    $result=url($base_url.'/'.$my_grupo->purl.'/hontza_solr/busqueda_avanzada_solr',array('query'=>$query_busqueda_avanzada_solr));
+    $result=urlencode($result);
+    return $result;
+}
+function red_solr_inc_index_remaining_pantalla(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='red'){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='solr'){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='index'){
+                $param3=arg(3);
+                if(!empty($param3) && $param3=='remaining'){
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+function red_solr_inc_get_tipo_noticia_options(){
+    $result=array();
+    $result[0]='';
+    //$result[1]='Automatic news';
+    $result[1]=t('Automatic');
+    $result[2]=t('User news');
+    return $result;
+}
+function red_solr_inc_get_fuente_tipo_noticia_tid(){
+    $vid=1;
+    $user_news_term=red_solr_inc_taxonomy_get_term_by_name_vid_row('Noticias de usuario',$vid);
+    if(isset($user_news_term->tid) && !empty($user_news_term->tid)){
+        return $user_news_term->tid;
+    }
+    return '';
+}
+function red_solr_inc_apachesolr_index_action_form_remaining_confirm_form_alter(&$form,&$form_state,$form_id){
+    if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+        $url=drupal_get_destination();
+        $url=urldecode(ltrim($url,'destination='));
+        $url_info=parse_url($url);
+        $form['actions']['cancel']['#value']=l(t('Cancel'),$url_info['path'],array('query'=>$url_info['query']));
+    }
+}
+function red_solr_inc_add_tipo_noticia_query($form_state,&$my_array,&$i,$fuente_tipo){
+    if(isset($form_state['values']['tipo_noticia']) && !empty($form_state['values']['tipo_noticia'])){
+        $tipo_noticia=$form_state['values']['tipo_noticia'];    
+        if(!empty($tipo_noticia)){
+            $i=count($my_array);
+            $tipo_noticia_tid=red_solr_inc_get_fuente_tipo_noticia_tid();
+            
+                if($tipo_noticia==1){
+                    //$my_array[]='f['.$i.']=itm_field_item_source_tid:- '.$tipo_noticia_tid;
+                    //$my_array[]='f['.$i.']=itm_field_item_source_tid:([* TO *] NOT '.$tipo_noticia_tid.')';
+                    $my_array[]='f['.$i.']=itm_field_item_source_tid:(*:* NOT '.$tipo_noticia_tid.')';
+                }else if($tipo_noticia==2){
+                    $my_array[]='f['.$i.']=itm_field_item_source_tid:'.$tipo_noticia_tid;
+                }
+            
+        }        
+    }
+}
+function red_solr_inc_unset_page($result_in,$query){
+    $result=$result_in;
+    if(isset($query['page'])){
+        $konp='page='.$query['page'];
+        $result=str_replace($konp.'&','',$result);
+        $result=str_replace($konp,'',$result);
+    }
+    return $result;
+}
+function red_solr_inc_delete_content_field_item_canal_category_tid_solo_null($node,$content_field_item_canal_category_tid_array){
+    if(empty($content_field_item_canal_category_tid_array)){
+        db_query('DELETE FROM {content_field_item_canal_category_tid} WHERE nid=%d AND vid=%d AND field_item_canal_category_tid_value IS NULL',$node->nid,$node->vid);    
+    }
+}    
