@@ -1570,6 +1570,12 @@ function hontza_solr_funciones_unmark_multiple_callback(){
     if(!empty($node_id_array)){
         foreach($node_id_array as $i=>$nid){
             hontza_solr_funciones_delete_bookmark_row($nid,'',$user->uid);
+            //intelsat-2016-noticias-usuario
+            $node=node_load($nid);
+            if(isset($node->nid) && !empty($node->nid)){
+                red_solr_inc_update_node_bookmark($node);
+                hontza_canal_rss_solr_clear_node_index($node,$nid);
+            }
         }    
     }
     //intelsat-2015
@@ -1895,6 +1901,9 @@ function hontza_solr_funciones_mark_multiple_callback(){
             $node=node_load($nid);
             if(isset($node->nid) && !empty($node->nid)){
                 hontza_solr_funciones_bookmark_insert_yes($node->nid,$node->vid,$user->uid);
+                //intelsat-2016-noticias-usuario
+                red_solr_inc_update_node_bookmark($node);                
+                hontza_canal_rss_solr_clear_node_index($node,$nid);
             }    
         }    
     }
@@ -1946,6 +1955,10 @@ function hontza_solr_funciones_get_current_path($is_all=1){
             }
         }
         $result.='is_my_all_results=1';
+    }
+    //intelsat-2016-noticias-usuario
+    if($is_all){
+        $result=red_solr_inc_unset_page($result,$query);
     }
     return $result;
 }

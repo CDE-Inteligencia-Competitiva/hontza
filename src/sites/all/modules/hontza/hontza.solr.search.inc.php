@@ -540,13 +540,15 @@ function hontza_solr_search_is_replace_categorias($form_state,$name){
     return 0;
 }
 function hontza_solr_search_add_item_categorias($node,$tid_array){
-    $content_field_item_canal_category_tid_array=hontza_solr_get_content_field_item_canal_category_tid($node->nid,$node->vid,1);
+    $content_field_item_canal_category_tid_array=hontza_solr_get_content_field_item_canal_category_tid($node->nid,$node->vid,1);    
+    red_solr_inc_delete_content_field_item_canal_category_tid_solo_null($node,$content_field_item_canal_category_tid_array);    
     $delta=hontza_solr_search_get_next_delta($content_field_item_canal_category_tid_array);
     //
     if(!empty($tid_array)){
         foreach($tid_array as $k=>$tid){
             if(!hontza_solr_search_in_content_field_item_canal_category_tid_array($tid,$content_field_item_canal_category_tid_array)){
-                $res=db_query('INSERT INTO {content_field_item_canal_category_tid}(field_item_canal_category_tid_value,nid,vid,delta) VALUES(%d,%d,%d,%d)',$tid,$node->nid,$node->vid,$delta);                                        
+                $res=db_query($sql=sprintf('INSERT INTO {content_field_item_canal_category_tid}(field_item_canal_category_tid_value,nid,vid,delta) VALUES(%d,%d,%d,%d)',$tid,$node->nid,$node->vid,$delta));                                        
+                //print $sql;exit();
                 $delta++;
             }                
         }

@@ -93,6 +93,12 @@ function hontza_solr_busqueda_avanzada_form(){
     drupal_set_title(t('Advanced Search'));
     $form=array();
     //intelsat-2016
+    $form['index_status_html']=array(
+        '#value'=>red_solr_inc_get_index_status_html(),
+        '#prefix'=>'<div style="padding-right:10px;">',
+        '#suffix'=>'</div>',        
+    );
+    //intelsat-2016
     //$width_main='45%';
     $width_main='48%';
     $prefix_main='<div style="float:left;width:100%;"><div style="float:left;width:'.$width_main.';padding-left:5px;">';
@@ -104,6 +110,9 @@ function hontza_solr_busqueda_avanzada_form(){
     $prefix_right3='<div style="float:left;width:28%;padding-left:10px;">';
     $suffix_right3='</div></div>';
     //
+    //intelsat-2016-noticias-usuario
+    $div_tag='<div style="float:left;width:48%;">';
+    $div_tipo_noticia='<div style="float:left;width:48%;padding-left:10px">';
     //intelsat-2015
     $prefix_main_canal_linea='<div style="float:left;width:100%;"><div style="float:left;width:45%;padding-left:5px;">';        
     if(!red_solr_inc_is_status_activado()){
@@ -131,8 +140,19 @@ function hontza_solr_busqueda_avanzada_form(){
 	  '#type' => 'textfield',
 	  '#autocomplete_path' => 'taxonomy/autocomplete/is_busqueda',
 	  '#default_value' => '',
-          '#prefix'=>$prefix_right,
-          '#suffix'=>$suffix_right,  
+          '#prefix'=>$prefix_right.$div_tag,
+          '#suffix'=>'</div>',  
+    );
+    //intelsat-2016-noticias-usuario
+    $form['tipo_noticia'] = array(
+        '#type' => 'select',
+        '#title'=>t('News type'),  
+        '#options' => red_solr_inc_get_tipo_noticia_options(),
+        //'#prefix'=>'<div class="solr_busqueda_avanzada_buttons"><div style="float:left;margin-top:-20px;">',
+        //'#suffix'=>'</div>',
+        '#prefix'=>$div_tipo_noticia,
+        '#suffix'=>'</div>'.$suffix_right,  
+        //'#attributes'=>array('style'=>'float:left;'), 
     );
     $form['in_the_title']=array(
         '#type'=>'textfield',
@@ -140,25 +160,28 @@ function hontza_solr_busqueda_avanzada_form(){
         '#prefix'=>$prefix_main,
          '#suffix'=>$suffix_main,
     );
+    $form['in_the_description']=array(
+        '#type'=>'textfield',
+        '#title'=>t('In the description'),
+        /*'#prefix'=>$prefix_main,
+        '#suffix'=>$suffix_main,*/
+        '#prefix'=>$prefix_right,
+        '#suffix'=>$suffix_right,
+    );
+    /*    
     $form['not_in_the_title']=array(
         '#type'=>'textfield',
         '#title'=>t('Not in the title'),
         '#prefix'=>$prefix_right,
         '#suffix'=>$suffix_right,
-    );
-    $form['in_the_description']=array(
-        '#type'=>'textfield',
-        '#title'=>t('In the description'),
-        '#prefix'=>$prefix_main,
-        '#suffix'=>$suffix_main,
-    );    
+    );        
     $form['not_in_the_description']=array(
         '#type'=>'textfield',
         '#title'=>t('Not in the description'),
         '#prefix'=>$prefix_right,
         '#suffix'=>$suffix_right,
     );
-    
+    */
     //intelsat-2015
     //hontza_solr_funciones_add_tipo_categoria_validate_status_form_field($form);
     hontza_solr_funciones_add_categoria_tipo_scoring_form_field($form);
@@ -230,7 +253,21 @@ function hontza_solr_busqueda_avanzada_form(){
 			'#date_label_position' => 'within',
 			'#title'=>t('End date'),                         
 			'#default_value'=>$fecha_fin);
-          
+
+    //intelsat-2016
+    if(red_solr_inc_is_actualizar_noticias_usuario()){        
+        $form['my_order'] = array(
+        '#type' => 'select',
+        '#title'=>t('Order'),  
+        '#options' => red_solr_inc_get_my_order_options(),
+        //'#prefix'=>'<div style="float:left;margin-top:-20px;padding-left:20px;">',
+        //'#suffix'=>'</div></div>',
+        '#prefix'=>'<div class="solr_busqueda_avanzada_buttons">',
+        '#suffix'=>'</div>',    
+        '#attributes'=>array('style'=>'float:left;'), 
+        );
+    }
+    
     $form['search_btn']=array(
         '#type'=>'submit',
         '#value'=>t('Search'),
@@ -335,6 +372,9 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
         $i=count($my_array);
         $my_array[]='f['.$i.']=itm_field_item_source_tid:'.$fuente_tipo;
     }
+    //intelsat-2016-noticias-usuario-solr
+    red_solr_inc_add_tipo_noticia_query($form_state,$my_array,$i,$fuente_tipo);
+        
     $categorias_canal=$form_state['values']['categorias_canal'];
     if(!empty($categorias_canal)){
         $i=count($my_array);
@@ -384,6 +424,8 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
     //AVISO:::: mirar esto https://www.drupal.org/node/1688150
     //print $url;exit();
     $_SESSION['solr_is_show_save_search']=1;
+    //intelsat-2016
+    red_solr_inc_set_my_order($form_state['values']['my_order']);
     drupal_goto($url,$query);
 }
 function hontza_solr_canal_autocomplete_callback($string){
@@ -1333,7 +1375,7 @@ function hontza_solr_set_indexing_numeric_value($entity_field_name_array,$tid_ar
 }
 function hontza_solr_get_content_field_item_canal_category_tid($nid,$vid,$is_row=0){
     $result=array();
-    $res=db_query($sql=sprintf('SELECT * FROM {content_field_item_canal_category_tid} WHERE nid=%d AND vid=%d AND field_item_canal_category_tid_value IS NOT NULL ORDER BY delta ASC',$nid,$vid));
+    $res=db_query('SELECT * FROM {content_field_item_canal_category_tid} WHERE nid=%d AND vid=%d AND field_item_canal_category_tid_value IS NOT NULL ORDER BY delta ASC',$nid,$vid);
     while($row=db_fetch_object($res)){
         if($is_row){
             $result[]=$row;

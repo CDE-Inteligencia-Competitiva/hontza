@@ -1058,23 +1058,33 @@ function array_ordenatu($sarrera,$izena,$order_erantzuna,$is_numeric=1,$is_type_
             }else{
 		$myArray[$key]  = strtoupper($row->$izena);
                 if($is_type_of_group){
-                    $second_array[$key]=strtoupper($row->$second_field);
+                    if(isset($row->$second_field)){
+                        $second_array[$key]=strtoupper($row->$second_field);
+                    }else{
+                        $second_array[$key]=strtoupper($row[$second_field]);
+                    }    
                 }
             }    
 	}
-	//echo print_r($myArray,1);
+        //echo print_r($myArray,1);
 	//$cfg=my_convert_array($cfg);	
 	//echo print_r($cfg,1);
 	// Sort the data with volume descending, edition ascending
 	// Add $data as the last parameter, to sort by the common key
 	//print 'sort='.$order_erantzuna.'<BR>';
 	if(strcmp(strtolower($order_erantzuna),'desc')==0){	
-		if($is_numeric){
+		//intelsat-2016
+                //if($is_numeric){
+                if($is_numeric && $is_type_of_group!=2){
 			array_multisort($myArray, SORT_DESC, $cfg);
 		}else{
                     //intelsat-2015
                     if($is_type_of_group){
-                        array_multisort($myArray, SORT_DESC,$second_array, SORT_ASC,$cfg);
+                        if($is_type_of_group==2){
+                            array_multisort($myArray, SORT_DESC,$second_array, SORT_DESC,$cfg);
+                        }else{
+                            array_multisort($myArray, SORT_DESC,$second_array, SORT_ASC,$cfg);
+                        }   
                     }else{
 			array_multisort($myArray, SORT_DESC,SORT_STRING, $cfg);
                     }    
@@ -2248,7 +2258,9 @@ function my_get_search_index_word($search){
         $result[]="(node_revisions.body LIKE '%%".$search."%%')";
 	return "(".implode(" OR ",$result).")";
 }
-function my_get_busqueda_simple_content($is_publico=0){
+//intelsat-2016
+//function my_get_busqueda_simple_content($is_publico=0){
+function my_get_busqueda_simple_content($is_publico=0,$is_destination=0){
     //intelsat-2015
     $my_grupo=og_get_group_context();
     $my_grupo_nid='';
@@ -2281,7 +2293,8 @@ function my_get_busqueda_simple_content($is_publico=0){
         return '';
     }
     //intelsat-2015
-    if(hontza_solr_is_resultados_pantalla()){
+    //intelsat-2016
+    if(hontza_solr_is_resultados_pantalla() && !$is_destination){        
         return '';
     }
 	$value='';
@@ -2296,7 +2309,13 @@ function my_get_busqueda_simple_content($is_publico=0){
         $is_solr_activado=hontza_solr_is_solr_activado();
         if($is_solr_activado){
             if(!empty($my_grupo_nid)){
-                $html.='&nbsp;'.l(t('Advanced'),'hontza_solr/busqueda_avanzada_solr',array('query'=>$query_busqueda_avanzada_solr));
+                //intelsat-2016
+                if($is_destination){
+                    $result=red_solr_get_index_action_form_remaining_confirm_destination_url($my_grupo,$query_busqueda_avanzada_solr);
+                    return $result;
+                }else{
+                    $html.='&nbsp;'.l(t('Advanced'),'hontza_solr/busqueda_avanzada_solr',array('query'=>$query_busqueda_avanzada_solr));
+                }
             }else{
                 $html.='&nbsp;'.l(t('Advanced'),'hontza_solr/busqueda_avanzada');
             }    

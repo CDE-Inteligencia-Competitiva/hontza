@@ -161,6 +161,8 @@ function beste_form_alter(&$form,&$form_state,$form_id){
         //intelsat-2016            
         }else if($form_id=='quant_time_form'){
             hontza_grupos_mi_grupo_quant_time_form_form_alter($form,$form_state,$form_id);
+        }else if($form_id=='apachesolr_index_action_form_remaining_confirm'){
+            red_solr_inc_apachesolr_index_action_form_remaining_confirm_form_alter($form,$form_state,$form_id);
         }
         //intelsat-2015
         red_solr_inc_node_title_length_form_alter($form,$form_state, $form_id);
