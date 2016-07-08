@@ -5203,6 +5203,7 @@ body.solr_status_activado div.container-inline-date{
 body.solr_status_activado div.solr_busqueda_avanzada_buttons{
     position:relative;
     top:-45px;
+    padding-left:5px;
 }
 p.parrafo_pregunta_red_texto{
     padding-left: 10px;
@@ -5229,3 +5230,6 @@ div.div_canal_json_overflow{
     width:625px;
     overflow:auto;
 }
+/*div#edit-my-order-wrapper label{
+    float:left !important;
+}*/
