@@ -799,9 +799,14 @@ function buho_set_og_area_trabajo_block_title_link(&$vars, $hook){
 }
 //intelsat-2014
 function buho_preprocess_search_results(&$variables) {
-  $my_limit=10;  
+  //intelsat-2016
+  //$my_limit=10;
+  $my_limit=red_solr_inc_get_my_limit();  
   $variables['search_results'] = '';
-  foreach ($variables['results'] as $i=>$result) {
+  //intelsat-2016
+  $my_results=red_solr_inc_get_my_results($variables['results']);
+  //foreach ($variables['results'] as $i=>$result) {
+  foreach ($my_results as $i=>$result) {  
     if($i>=$my_limit){
         break;
     }
@@ -813,7 +818,9 @@ function buho_preprocess_search_results(&$variables) {
     }
     //
   }
+  
   $variables['pager'] = theme('pager', NULL, $my_limit, 0);
+  
   // Provide alternate search results template.
   $variables['template_files'][] = 'search-results-'. $variables['type'];
   //intelsat-2014
