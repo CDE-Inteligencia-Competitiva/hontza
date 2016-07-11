@@ -1970,15 +1970,19 @@ function hontza_usuarios_acceso_filter_form(){
     $fecha_fin=hontza_get_usuarios_acceso_filter_value('usuarios_acceso_fecha_fin');
     //gemini-2014
     $fs_title=t('Search');
-    if(empty($fecha_inicio) && empty($fecha_fin)){
+    //intelsat-2016
+    //if(empty($fecha_inicio) && empty($fecha_fin)){
+    if(!panel_admin_usuarios_acceso_filter_activated($fecha_inicio,$fecha_fin)){    
         $fs_title=t('Filter by Date');
         $class='file_buscar_fs_vigilancia_class';
     }else{
         $fs_title=t('Filter by Date Activated');
         $class='file_buscar_fs_vigilancia_class fs_search_activated';
     }
-    //    
+    //        
     $form['file_buscar_fs']=array('#type'=>'fieldset','#title'=>$fs_title,'#attributes'=>array('id'=>'file_buscar_fs','class'=>$class));
+    //intelsat-2016
+    panel_admin_usuarios_acceso_add_filter_form($form);        
     //$fecha_inicio=array('Y'=>2013,'n'=>10,'j'=>21);
     $form['file_buscar_fs']['usuarios_acceso_fecha_inicio']=array(
 			'#type' => 'date_select',
@@ -2002,14 +2006,22 @@ function hontza_get_usuarios_acceso_filter_value($f){
 }
 function hontza_usuarios_acceso_filter_form_submit($form,&$form_state){
     $key='usuarios_acceso';
+    //intelsat-2016
+    $panel_admin_key=panel_admin_usuarios_acceso_get_session_key();
     if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
         $name=$form_state['clicked_button']['#name'];
         if(strcmp($name,'limpiar')==0){
             if(isset($_SESSION[$key]['filter']) && !empty($_SESSION[$key]['filter'])){
                 unset($_SESSION[$key]['filter']);
             }
+            //intelsat-2016
+            if(isset($_SESSION[$panel_admin_key]['filter']) && !empty($_SESSION[$panel_admin_key]['filter'])){
+                unset($_SESSION[$panel_admin_key]['filter']);
+            }
         }else{
             $_SESSION[$key]['filter']=array();
+            //intelsat-2016
+            $_SESSION[$panel_admin_key]['filter']=array();
             $fields=hontza_define_usuarios_acceso_filter_fields();
             if(count($fields)>0){
                 foreach($fields as $i=>$f){
@@ -2020,10 +2032,18 @@ function hontza_usuarios_acceso_filter_form_submit($form,&$form_state){
                 }
             }          
         }
-    } 
+    }
+    //intelsat-2016
+    if(isset($_SESSION[$key]['filter']) && !empty($_SESSION[$key]['filter'])){
+        $_SESSION[$panel_admin_key]['filter']=$_SESSION[$key]['filter'];
+    }
 }
 function hontza_define_usuarios_acceso_filter_fields(){
     $result=array('usuarios_acceso_fecha_inicio','usuarios_acceso_fecha_fin');
+    //intelsat-2016
+    if(panel_admin_usuarios_acceso_is_estadisticas()){
+        $result[]='grupo_nid';
+    }
     return $result;
 }
 function hontza_define_usuarios_acceso_table_limit(){

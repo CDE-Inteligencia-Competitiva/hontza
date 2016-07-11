@@ -5,7 +5,16 @@ function create_usuarios_estadisticas_menu(){
     $html[]='<div class="tabs primary" id="tabs-primary">';
     $html[]='<ul>';
     //
-    $param=get_todos_param(arg(1));
+    //intelsat-2016-noticias-usuario
+    //$param=get_todos_param(arg(1));
+    $param0=arg(0);
+    $param1=arg(1);
+    $prefijo='';
+    if($param0=='panel_admin'){
+        $param1=arg(2);
+        $prefijo='panel_admin/';
+    }
+    $param=get_todos_param($param1);
     $class_usuarios=is_class_active('usuarios_estadisticas');
     $class_acceso=is_class_active('usuarios_acceso');
     $class_captacion=is_class_active('usuarios_captacion_informacion');
@@ -17,10 +26,15 @@ function create_usuarios_estadisticas_menu(){
     $html[]='<li'.$class_aportacion.'>'.l(t('Analysis'),'usuarios_aportacion_valor/'.$param,array('query'=>drupal_get_destination())).'</li>';
     $html[]='<li'.$class_generacion.'>'.l(t('Proposals'),'usuarios_generacion_ideas/'.$param,array('query'=>drupal_get_destination())).'</li>';
     */
-    $html[]='<li'.$class_acceso.'>'.l(t('Access'),'usuarios_acceso/'.$param).'</li>';
-    $html[]='<li'.$class_captacion.'>'.l(t('Information Gathering'),'usuarios_captacion_informacion/'.$param).'</li>';
-    $html[]='<li'.$class_aportacion.'>'.l(t('Analysis'),'usuarios_aportacion_valor/'.$param).'</li>';
-    $html[]='<li'.$class_generacion.'>'.l(t('Proposals'),'usuarios_generacion_ideas/'.$param).'</li>';
+    //intelsat-2016-noticias-usuario
+    $usuarios_acceso_url=$prefijo.'usuarios_acceso/'.$param;
+    $usuarios_captacion_informacion_url=$prefijo.'usuarios_captacion_informacion/'.$param;
+    $usuarios_aportacion_valor_url=$prefijo.'usuarios_aportacion_valor/'.$param;
+    $usuarios_generacion_ideas_url=$prefijo.'usuarios_generacion_ideas/'.$param;
+    $html[]='<li'.$class_acceso.'>'.l(t('Access'),$usuarios_acceso_url).'</li>';
+    $html[]='<li'.$class_captacion.'>'.l(t('Information Gathering'),$usuarios_captacion_informacion_url).'</li>';
+    $html[]='<li'.$class_aportacion.'>'.l(t('Analysis'),$usuarios_aportacion_valor_url).'</li>';
+    $html[]='<li'.$class_generacion.'>'.l(t('Proposals'),$usuarios_generacion_ideas_url).'</li>';    
     $html[]='</ul>';
     $html[]='</div></div>';
     //
@@ -35,7 +49,13 @@ function usuarios_captacion_informacion_callback(){
 }
 function get_estadisticas_user_list($konp){
   if(is_usuarios_estadisticas(1,$konp)){
-    $user_list=my_get_og_grupo_user_list('',1,arg(1));
+    //intelsat-2016-noticias-usuario
+    $param1=arg(1);  
+    if(panel_admin_usuarios_acceso_is_usuarios_estadisticas(1,$konp)){
+        $param1=arg(2);
+    }  
+    //$user_list=my_get_og_grupo_user_list('',1,arg(1));
+    $user_list=my_get_og_grupo_user_list('',1,$param1);    
   }else{
     $user_list=my_get_og_grupo_user_list('',1);
   }
@@ -130,9 +150,15 @@ function get_node_creadas_by_user($uid,$type_array,$where_time="1"){
     $where[]="n.uid=".$uid;
     $where[]="n.type IN(".implode(",",$type_array).")";
     //gemini-2014
-    $my_grupo=og_get_group_context();
-    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $where[]='og_ancestry.group_nid='.$my_grupo->nid;
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where);
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='og_ancestry.group_nid='.$my_grupo->nid;
+        }
     }
     //
     $sql="SELECT n.* 
@@ -153,10 +179,16 @@ function get_noticias_flag_by_user($uid,$fid,$where_flag_time="1"){
     $where[]="fc.fid=".$fid;
     $where[]="fc.content_type='node'";
     //gemini-2014
-    $my_grupo=og_get_group_context();
-    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $where[]='og_ancestry.group_nid='.$my_grupo->nid;
-    }
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where);
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='og_ancestry.group_nid='.$my_grupo->nid;
+        }
+    }    
     //
     //
     $sql="SELECT fc.* 
@@ -261,10 +293,16 @@ function get_comment_list_by_user($uid,$node_type='',$where_comment_time="1"){
         }
     }
     //gemini-2014
-    $my_grupo=og_get_group_context();
-    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
-          $where[]='og_ancestry.group_nid='.$my_grupo->nid;
-    }
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where);
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+              $where[]='og_ancestry.group_nid='.$my_grupo->nid;
+        }
+    }               
     //
     $sql="SELECT c.*
     FROM {comments} c
@@ -285,10 +323,17 @@ function get_documentos_adjuntos_by_user($uid,$where_adjuntos_time="1"){
     $where[]="f.uid=".$uid;
     $where[]="(nu.type IS NULL OR nu.type IN('item','noticia','noticias_portada','rss_feed','debate','wiki','idea','oportunidad','proyecto','estrategia','despliegue','decision','informacion'))";
     //gemini-2014
-    $my_grupo=og_get_group_context();
-    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
-          $where[]='og_ancestry.group_nid='.$my_grupo->nid;
-    }
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        //$where[]='NOT nu.nid IS NULL';
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where);
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+              $where[]='og_ancestry.group_nid='.$my_grupo->nid;
+        }
+    }    
     //
     $sql="SELECT f.* 
     FROM {files} f
@@ -385,9 +430,15 @@ function is_class_active($param){
 }
 function get_la_empresa(){
     $param=arg(1);
-    if(!empty($param) && $param!='todos'){
-        return ' '.t('of').' '.$param;
+    //intelsat-2016-noticias-usuario
+    $param0=arg(0);
+    //if(panel_admin_usuarios_acceso_is_usuarios_estadisticas(0,'usuarios_acceso')){
+    if(!empty($param0) && $param0=='panel_admin'){    
+        $param=arg(2);
     }
+        if(!empty($param) && $param!='todos'){
+            return ' '.t('of').' '.$param;
+        }    
     return '';
 }
 function get_header_usuarios($field,$esaldi){

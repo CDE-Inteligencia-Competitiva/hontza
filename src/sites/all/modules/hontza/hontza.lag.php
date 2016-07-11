@@ -487,14 +487,19 @@ function get_empresas_grupo_list(){
     return $result;*/
 }
 function is_usuarios_estadisticas($with_empresa=0,$konp='usuarios_estadisticas'){
-    if(strcmp(arg(0),$konp)==0){
-        if($with_empresa){
-            if(strcmp(arg(1),'todos')==0){
-                return 0;
+    //intelsa-2016-noticias-usuario
+    if(strcmp(arg(0),'panel_admin')==0){
+        return panel_admin_usuarios_acceso_is_usuarios_estadisticas($with_empresa,$konp);
+    }else{
+        if(strcmp(arg(0),$konp)==0){
+            if($with_empresa){
+                if(strcmp(arg(1),'todos')==0){
+                    return 0;
+                }
             }
+            return 1;
         }
-        return 1;
-    }
+    }    
     return 0;
 }
 function set_leido_interesante_nuevo_comentario(&$a1){

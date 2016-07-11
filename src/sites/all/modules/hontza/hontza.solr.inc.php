@@ -373,7 +373,7 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
         $my_array[]='f['.$i.']=itm_field_item_source_tid:'.$fuente_tipo;
     }
     //intelsat-2016-noticias-usuario-solr
-    red_solr_inc_add_tipo_noticia_query($form_state,$my_array,$i,$fuente_tipo);
+    red_solr_inc_add_tipo_noticia_query($form_state,$noticias_usuario_search_array);
         
     $categorias_canal=$form_state['values']['categorias_canal'];
     if(!empty($categorias_canal)){
