@@ -801,9 +801,15 @@ function idea_get_num_ideas_creadas($uid,$where_time="1"){
     $where[]="n.uid=".$uid;
     $where[]="n.type='idea'";
     //gemini-2014
-    $my_grupo=og_get_group_context();
-    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR idea.grupo_nid='.$my_grupo->nid.')';
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where,'idea');
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR idea.grupo_nid='.$my_grupo->nid.')';
+        }
     }
     //
     $sql="SELECT n.* 
