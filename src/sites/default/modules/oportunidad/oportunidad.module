@@ -817,8 +817,10 @@ function my_get_og_grupo_user_list($grupo_nid='',$is_invitado=0,$empresa_nombre=
             if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
                 $where[]='(og_uid.nid = '.$my_grupo->nid.')';
             }else{
-                //AVISO::::para que cuando el grupo esté sin seleccionar devuelva una lista vacía
-                $where[]='(og_uid.nid = '.get_grupo_sin_seleccionar_nid().')';
+                if(!panel_admin_usuarios_acceso_is_estadisticas()){
+                    //AVISO::::para que cuando el grupo esté sin seleccionar devuelva una lista vacía
+                    $where[]='(og_uid.nid = '.get_grupo_sin_seleccionar_nid().')';
+                }    
             }
 	}else{
 		$where[]='(og_uid.nid = '.$grupo_nid.')'; 
@@ -1829,10 +1831,16 @@ function oportunidad_get_num_oportunidades_creadas($uid,$where_time){
     $where[]="n.uid=".$uid;
     $where[]="n.type='oportunidad'";
     //gemini-2014
-    $my_grupo=og_get_group_context();
-    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR oportunidad.grupo_nid='.$my_grupo->nid.')';
-    }
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where,'oportunidad');
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR oportunidad.grupo_nid='.$my_grupo->nid.')';
+        }
+    }    
     //
     $sql="SELECT n.* 
     FROM {node} n 
