@@ -14,6 +14,7 @@ require_once('panel_admin.banners.inc.php');
 require_once('panel_admin.contacts.inc.php');
 //intelsat-2016
 require_once('panel_admin.guias.inc.php');
+require_once('panel_admin.usuarios.acceso.inc.php');
 function panel_admin_perm() {
   return array();
 }
@@ -378,6 +379,25 @@ function panel_admin_menu() {
     'page callback' => 'drupal_get_form',
     'access callback'=>'panel_admin_guias_access',      
     );
+    $items['panel_admin/usuarios_acceso']=array(
+    'title' => 'Access',
+    'page callback' => 'panel_admin_usuarios_acceso_callback',
+    'access callback'=>'panel_admin_admin_access');
+    $items['panel_admin/usuarios_captacion_informacion/%']=array(
+    'title' => 'Access',
+    'page callback' => 'panel_admin_usuarios_acceso_usuarios_captacion_informacion_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/usuarios_aportacion_valor/%']=array(
+    'title' => 'Access',
+    'page callback' => 'panel_admin_usuarios_acceso_usuarios_aportacion_valor_callback',
+    'access callback'=>'panel_admin_admin_access',    
+    );
+    $items['panel_admin/usuarios_generacion_ideas/%']=array(
+    'title' => 'Access',
+    'page callback' => 'panel_admin_usuarios_acceso_usuarios_generacion_ideas_callback',
+    'access callback'=>'panel_admin_admin_access',        
+    );    
     return $items;
 }
 function panel_admin_callback(){
@@ -1507,5 +1527,8 @@ function panel_admin_get_usuarios_block_content(){
     //$url_exportar_csv='red/crear_usuario/exportar_csv';
     $url_exportar_csv='gestion/usuarios/descargar_usuarios';
     $result[]=l(t('Download Users'),$url_exportar_csv,array('attributes'=>array('target'=>'_blank')));
+    //intelsat-2016-noticias-usuario
+    $label_analysis_of_users=t('Analysis of Users');
+    $result[]=l($label_analysis_of_users,'panel_admin/usuarios_acceso/todos');
     return implode('<br>',$result);
 }
