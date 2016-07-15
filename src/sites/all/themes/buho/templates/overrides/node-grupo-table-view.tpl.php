@@ -13,6 +13,19 @@
         <td class="td_label_node_view"><b><?php print t('Summary');?></b>:&nbsp;</td>
         <td class="td_value_node_view"><?php print $node->og_description;?></td>
     </tr>
+    <?php $info_tags=hontza_grupos_mi_grupo_get_tags_fields('',$node);?>
+    <?php if(isset($info_tags['tags']) && !empty($info_tags['tags'])):?>
+    <tr class="tr_node_view">
+        <td class="td_label_node_view"><b><?php print t('Thematic Tags');?></b>:&nbsp;</td>
+        <td class="td_value_node_view"><?php print $info_tags['tags'];?></td>
+    </tr>
+    <?php endif;?>
+    <?php if(isset($info_tags['tags_geograficos']) && !empty($info_tags['tags_geograficos'])):?>
+    <tr class="tr_node_view">
+        <td class="td_label_node_view"><b><?php print t('Geographic Tags');?></b>:&nbsp;</td>
+        <td class="td_value_node_view"><?php print $info_tags['tags_geograficos'];?></td>
+    </tr>
+    <?php endif;?>
     <!--
     <tr class="tr_node_view">
         <td class="td_label_node_view"><b><?php //print t('Subject Area');?></b>:&nbsp;</td>
