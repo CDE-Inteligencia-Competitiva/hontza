@@ -1307,8 +1307,8 @@ function hontza_grupos_mi_grupo_get_rows_tags($rows){
             foreach($result as $i=>$row){
                 $r=$row;
                 $r[0]=$r[0].$r[3];
-                $r[3]=$r['tags'];
-                $r[4]=$r['tags_geograficos'];
+                $r[3]=hontza_grupos_mi_grupo_prepare_tags($r['tags']);
+                $r[4]=hontza_grupos_mi_grupo_prepare_tags($r['tags_geograficos']);
                 unset($r['tags']);
                 unset($r['tags_geograficos']);
                 $result[$i]=$r;
@@ -1318,16 +1318,22 @@ function hontza_grupos_mi_grupo_get_rows_tags($rows){
     return $result;
 }
 //intelsat-2016
-function hontza_grupos_mi_grupo_get_tags_fields($row){
+function hontza_grupos_mi_grupo_get_tags_fields($row,$grupo_node_in=''){
     $result=$row;
-    $grupo_node=node_load($result['my_grupo_nid']);
+    if(isset($grupo_node_in->nid) && !empty($grupo_node_in->nid)){
+        $grupo_node=$grupo_node_in;
+    }else{
+        $grupo_node=node_load($result['my_grupo_nid']);
+    }
     $result['tags']='';
     if(isset($grupo_node->field_grupo_regis_tags[0]['value']) && !empty($grupo_node->field_grupo_regis_tags[0]['value'])){
         $result['tags']=$grupo_node->field_grupo_regis_tags[0]['value'];
+        $result['tags']=hontza_grupos_mi_grupo_prepare_tags($result['tags']);
     }
     $result['tags_geograficos']='';
     if(isset($grupo_node->field_grupo_regis_tags_geo[0]['value']) && !empty($grupo_node->field_grupo_regis_tags_geo[0]['value'])){
-         $result['tags_geograficos']=$grupo_node->field_grupo_regis_tags_geo[0]['value'];                
+         $result['tags_geograficos']=$grupo_node->field_grupo_regis_tags_geo[0]['value'];
+         $result['tags_geograficos']=hontza_grupos_mi_grupo_prepare_tags($result['tags_geograficos']);
     }    
     return $result;
 }
@@ -1513,4 +1519,21 @@ function hontza_grupos_mi_grupo_set_row_field_language($value_in){
         }
     }    
     return $result;
+}
+function hontza_grupos_mi_grupo_prepare_tags($tags){
+    $result=array();
+    $result_in=explode(',',$tags);
+    if(!empty($result_in)){    
+        foreach($result_in as $i=>$value_in){
+            $value=trim($value_in);
+            if(!empty($value)){
+                if($i>0){
+                    $result[]=' '.trim($value);
+                }else{
+                    $result[]=$value;
+                }
+            }
+        }
+    }    
+    return implode(',',$result);
 }
