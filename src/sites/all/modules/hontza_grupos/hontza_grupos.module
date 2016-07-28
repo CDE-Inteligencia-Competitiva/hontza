@@ -728,7 +728,13 @@ function hontza_grupos_define_active_tabs_structure(){
         $result[6]['label']=t('Users');
         $result[6]['key']='users';
         $result[6]['menu_url']='usuarios_acceso/todos';
-        $result[6]['value']=6;
+        $result[6]['value']=7;
+    }
+    if(red_dashboard_is_activado()){
+        $result[7]['label']=t('Group');
+        $result[7]['key']='grupo';
+        $result[7]['menu_url']='mi-grupo';
+        $result[7]['value']=8;
     }
     return $result;
 }
@@ -880,7 +886,7 @@ function hontza_grupos_is_url_menutop_active($s,$group_nid_in=''){
     $key=hontza_grupos_get_tab_key($s);
     if(empty($key)){
         return 1;
-    }    
+    }
     return hontza_grupos_is_activo_pestana($key,$group_nid_in);
 }
 function hontza_grupos_get_tab_key($s){
