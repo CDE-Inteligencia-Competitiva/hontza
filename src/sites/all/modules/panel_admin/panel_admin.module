@@ -15,6 +15,7 @@ require_once('panel_admin.contacts.inc.php');
 //intelsat-2016
 require_once('panel_admin.guias.inc.php');
 require_once('panel_admin.usuarios.acceso.inc.php');
+require_once('panel_admin.dashboard.inc.php');
 function panel_admin_perm() {
   return array();
 }
@@ -397,7 +398,13 @@ function panel_admin_menu() {
     'title' => 'Access',
     'page callback' => 'panel_admin_usuarios_acceso_usuarios_generacion_ideas_callback',
     'access callback'=>'panel_admin_admin_access',        
-    );    
+    );
+    $items['panel_admin/dashboard/settings'] = array(
+    'title' => 'Dashboard settings',
+    'page arguments'=>array('panel_admin_dashboard_settings_form'),    
+    'page callback' => 'drupal_get_form',
+    'access callback'=>'panel_admin_admin_access',    
+    );
     return $items;
 }
 function panel_admin_callback(){
@@ -502,7 +509,7 @@ function panel_admin_in_delta_panel_admin_left($block){
                 return 0;
             }
         //}
-        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68))){
+        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68,69))){
             return 1;
         }
     }
@@ -593,6 +600,8 @@ function panel_admin_set_block_weight(&$block){
     //intelsat-2016    
     }else if($block->delta==68){
         $block->weight=-27;
+    }else if($block->delta==69){
+        $block->weight=-26;
     }
 }
 function panel_admin_is_estadisticas(){
