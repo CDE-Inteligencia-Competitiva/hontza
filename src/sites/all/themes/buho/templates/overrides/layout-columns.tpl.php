@@ -1,6 +1,8 @@
 <?php include 'page.header.inc'; ?>
 <?php if(is_dashboard()):?>
-    <?php if(red_funciones_is_tema_fluid_buho()):?>
+    <?php if(red_dashboard_is_searches()):?>
+        <?php print red_dashboard_get_content_html();?>
+    <?php elseif(red_funciones_is_tema_fluid_buho()):?>
         <?php include(red_funciones_get_fluid_buho_templates_dir().'fluid-buho-layout-columns-dashboard.tpl.php');?>
     <?php else:?>
     <div id='c-left' style="width:31%">
