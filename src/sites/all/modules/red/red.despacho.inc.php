@@ -41,9 +41,13 @@ function red_despacho_is_show_comment_link(){
     }
     return 1;
 }
-function red_despacho_get_source_types_title(){
+function red_despacho_get_source_types_title($with_icono=1){
+    $result=t('Types of Sources');
     $icono=my_get_icono_action('tipos_de_fuentes',$label);
-    return $icono.'&nbsp;'.t('Types of Sources');
+    if($with_icono){
+        $result=$icono.'&nbsp;'.$result;
+    }
+    return $result;
 }
 function red_despacho_get_source_types_block_content(){
     if(red_despacho_is_activado()){
@@ -346,7 +350,8 @@ function red_despacho_boletin_report_get_boletin_despedida($despedida){
     return $despedida;
 }
 function red_despacho_get_boletin_introduccion($introduccion,$boletin_report_titulo_mail){
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){    
         return despacho_boletin_report_get_boletin_introduccion($introduccion,$boletin_report_titulo_mail);
     }
     return $introduccion;
@@ -424,7 +429,8 @@ function red_despacho_boletin_report_is_show_resumen($bg,$param_alerta){
     return 1;
 }
 function red_despacho_boletin_report_get_th_categoria_title_class($tipos_fuente_row){
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){    
         return despacho_boletin_report_get_th_categoria_title_class($tipos_fuente_row);
     }
     return '';
@@ -645,7 +651,8 @@ function red_despacho_get_source_type_options(){
     return $result;
 }
 function red_despacho_boletin_report_get_current_content($current_content,$subject,$bulletin_text_nid){
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){       
         return despacho_boletin_report_word_get_current_content($current_content,$subject,$bulletin_text_nid);
     }
     return $current_content;
@@ -656,7 +663,8 @@ function red_despacho_boletin_report_add_logo_attachment(&$message){
     }
 }
 function red_despacho_boletin_report_is_my_add_css(){
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){    
         return 0;
         //return despacho_boletin_report_word_is_my_add_css();
     }
@@ -701,7 +709,8 @@ function red_despacho_boletin_report_is_forward(){
     return 0;
 }
 function red_despacho_boletin_report_get_boletin_report_forward_content_view_web($content){
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){    
         return despacho_boletin_report_word_get_boletin_report_forward_content_view_web($content);
     }
     return $content;

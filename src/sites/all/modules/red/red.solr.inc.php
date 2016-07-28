@@ -1617,9 +1617,10 @@ function red_solr_index_remaining_callback(){
 }
 function red_solr_inc_get_query_type_term_build($response,$values_in,$facet_field){
     $result=$values_in;
+    $result=red_solr_inc_unset_facet_field_tipo($result,$facet_field);
     if(red_solr_inc_is_actualizar_noticias_usuario()){
         $result=noticias_usuario_solr_get_query_type_term_build($response,$result,$facet_field);
-    }
+    }   
     return $result;
 }
 function red_solr_inc_get_widget_links_element($field_alias,$element_in,$field_in){
@@ -1697,9 +1698,12 @@ function red_solr_inc_add_delete_ftm_field_item_rated_filtros($scoring,&$result)
     }
 }
 function red_solr_inc_notica_node_form_alter(&$form,&$form_state,$form_id){
-    if(red_solr_inc_is_actualizar_noticias_usuario()){
+    /*if(red_solr_inc_is_actualizar_noticias_usuario()){
         noticias_usuario_solr_notica_node_form_alter($form,$form_state,$form_id);
-    }
+    }*/
+    $unset_array=array('field_item_canal_category_tid','field_noticia_validador_uid','field_noticia_validate_status',
+    'field_noticia_seleccionado_bolet','field_noticia_bookmark','field_noticia_rated','field_item_fid');
+    red_movil_unset_form_field_form_alter($form,$form_state,$form_id,$unset_array);
 }
 function red_solr_inc_get_my_order_options(){
     $result=array();
@@ -1937,4 +1941,27 @@ function red_solr_inc_delete_content_field_item_canal_category_tid_solo_null($no
     if(empty($content_field_item_canal_category_tid_array)){
         db_query('DELETE FROM {content_field_item_canal_category_tid} WHERE nid=%d AND vid=%d AND field_item_canal_category_tid_value IS NULL',$node->nid,$node->vid);    
     }
-}    
+}
+function red_solr_inc_is_show_tipo($is_busqueda_avanzada_solr,$term,$noticia_usuario_tid){
+    if($is_busqueda_avanzada_solr){
+        if($term->tid==$noticia_usuario_tid){
+            return 0;
+        }
+    }
+    return 1;
+}
+function red_solr_inc_unset_facet_field_tipo($result_in,$facet_field){
+    $result=array();
+    if($facet_field=='itm_field_item_source_tid'){
+        $noticia_usuario_tid=red_solr_inc_get_fuente_tipo_noticia_tid();
+        if(!empty($result_in)){
+            foreach($result_in as $tid=>$value){
+                if($tid!=$noticia_usuario_tid){
+                    $result[$tid]=$value;
+                }
+            }
+            return $result;
+        }
+    }
+    return $result_in;
+}
