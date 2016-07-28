@@ -37,7 +37,12 @@ function despacho_menu() {
   return $items;
 }
 function despacho_is_show_custom_activo_pestana($key){
-    if(in_array($key,array('debate','wiki','idea','estrategia'))){
+    $my_array=array('debate','wiki','idea','estrategia');
+    if(red_dashboard_is_activado()){
+        $dashboard_array=array('grupo');
+        $my_array=array_merge($my_array,$dashboard_array);
+    }
+    if(in_array($key,$my_array)){
         return 1;
     }
     return 0;
