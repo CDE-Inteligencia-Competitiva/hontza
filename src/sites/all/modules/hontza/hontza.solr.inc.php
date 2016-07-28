@@ -523,6 +523,9 @@ function hontza_solr_is_solr_activado(){
             return 1;
         }
     }
+    if(red_dashboard_is_activado()){
+        return 1;
+    }
     return 0;
 }
 function hontza_solr_is_busqueda_avanzada_pantalla(){

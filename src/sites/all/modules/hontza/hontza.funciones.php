@@ -1729,7 +1729,16 @@ function my_get_tipo_options($is_busqueda_avanzada_solr=0){
   $padres = taxonomy_get_tree(1, 0, -1, 1);
   $taxo = array();
   $taxo[0]=t('Any');
+  //intelsat-2016
+  $noticia_usuario_tid='';
+  if($is_busqueda_avanzada_solr){
+    $noticia_usuario_tid=red_solr_inc_get_fuente_tipo_noticia_tid();
+  }
   foreach ($padres as $padre){
+    //intelsat-2016
+    if(!red_solr_inc_is_show_tipo($is_busqueda_avanzada_solr,$padre,$noticia_usuario_tid)){
+        continue;
+    }  
     $taxo[$padre->tid] = red_solr_inc_get_tipo_fuente_options_label($is_busqueda_avanzada_solr,$padre->name);
     $hijos = taxonomy_get_children($padre->tid);
     if (!empty($hijos)){

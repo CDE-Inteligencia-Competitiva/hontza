@@ -1234,8 +1234,9 @@ function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
           $blocks[64]['info'] =panel_admin_visualizador_registered_left_title();
           $blocks[65]['info'] =panel_admin_visualizador_contact_left_title();
           //$blocks[66]['info'] =panel_admin_visualizador_settings_left_title();
-          $blocks[67]['info'] =red_despacho_get_source_types_title();
+          $blocks[67]['info'] =red_despacho_get_source_types_title(0);
           $blocks[68]['info'] =panel_admin_guias_left_title();
+          $blocks[69]['info'] =panel_admin_dashboard_left_title();
       //
       return $blocks;
     break;
@@ -1884,7 +1885,11 @@ function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
         //intelsat-2016
         case 68:
                  $block['subject']=panel_admin_guias_left_title();        
-                 $block['content']=panel_admin_guias_get_block_content();         
+                 $block['content']=panel_admin_guias_get_block_content();
+        break;         
+        case 69:
+  		 $block['subject']=panel_admin_dashboard_left_title();
+		 $block['content']=panel_admin_dashboard_block_content();
         break;    
       }
     return $block;

@@ -1009,6 +1009,7 @@ function hontza_solr_search_get_item_source_types($node,$is_ficha_completa,$is_j
     $source_types=array();
     $tid_array=array();
     $is_see_more=0;
+    $noticia_usuario_tid=red_solr_inc_get_fuente_tipo_noticia_tid();
     if(!empty($source_types)){
         $tid_array=array_keys($source_types);       
     }else{
@@ -1031,7 +1032,7 @@ function hontza_solr_search_get_item_source_types($node,$is_ficha_completa,$is_j
                     $kont++;
                     if(!$is_see_more){
                         $url='taxonomy/term/'.$tid;
-                        $url=hontza_solr_search_get_source_type_filtrado_solr_url($tid,$url,0,$query);
+                        $url=hontza_solr_search_get_source_type_filtrado_solr_url($tid,$url,0,$query,$noticia_usuario_tid,$node);
                         if(red_movil_is_activado()){
                             $html[]='<li><b>'.$term_name.'</b></li>';
                         }else{
@@ -1261,10 +1262,13 @@ function hontza_solr_search_fivestar_botonera($node,$is_enabled=0,$node_c_d_w=''
     $html[]='</div>';
     return implode('',$html);
 }
-function hontza_solr_search_get_source_type_filtrado_solr_url($tid,$url,$is_categoria_tematica,&$query){
+function hontza_solr_search_get_source_type_filtrado_solr_url($tid,$url,$is_categoria_tematica,&$query,$noticia_usuario_tid='',$node_in=''){
     $query='';        
     if(hontza_solr_is_solr_activado()){
         $result='my_solr/my_search';
+        if($tid==$noticia_usuario_tid){
+            $result.='/bundle:"noticia"';
+        }
         $my_grupo=og_get_group_context();
         $my_array=array();
         if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
@@ -1279,8 +1283,10 @@ function hontza_solr_search_get_source_type_filtrado_solr_url($tid,$url,$is_cate
             }else{
                 if(empty($is_categoria_tematica)){
                     if(!empty($tid)){
-                        $i=count($my_array);
-                        $my_array[]='f['.$i.']=itm_field_item_source_tid:'.$tid;
+                        if($tid!=$noticia_usuario_tid){
+                            $i=count($my_array);
+                            $my_array[]='f['.$i.']=itm_field_item_source_tid:'.$tid;
+                        }    
                     }
                 }else if($is_categoria_tematica==2){
                     if(!empty($tid)){
@@ -1293,11 +1299,14 @@ function hontza_solr_search_get_source_type_filtrado_solr_url($tid,$url,$is_cate
                     $i=count($my_array);
                     $my_array[]='f['.$i.']=itm_field_item_canal_category_ti:'.$my_selected_categoria;
                 }
-            }    
-            $selected_canal_nid=red_funciones_get_filtro_por_canal();
-            if(!empty($selected_canal_nid)){
-                $i=count($my_array);
-                $my_array[]='f['.$i.']=im_field_item_canal_reference:'.$selected_canal_nid;
+            }
+            //if($tid!=$noticia_usuario_tid){
+            if(empty($node_in->type) || (isset($node_in->type) && !empty($node_in->type) && $node_in->type!='noticia')){    
+                $selected_canal_nid=red_funciones_get_filtro_por_canal();            
+                if(!empty($selected_canal_nid)){
+                    $i=count($my_array);
+                    $my_array[]='f['.$i.']=im_field_item_canal_reference:'.$selected_canal_nid;
+                }
             }
             $query=implode('&',$my_array);
             if(!empty($query)){

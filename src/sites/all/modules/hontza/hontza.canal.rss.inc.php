@@ -1757,7 +1757,7 @@ function hontza_canal_rss_usuario_basico_access_denied(){
     }
 }
 //intelsat-2015
-function hontza_canal_rss_is_canal_busqueda_solr($canal_nid,$canal_in=''){
+function hontza_canal_rss_is_canal_busqueda_solr($canal_nid,$canal_in='',$is_url=0){
     $value='';
     if(!empty($canal_in)){
         $canal=$canal_in;
@@ -1767,10 +1767,18 @@ function hontza_canal_rss_is_canal_busqueda_solr($canal_nid,$canal_in=''){
     if(isset($canal->nid) && !empty($canal->nid)){
         $value=$canal->field_canal_busqueda_busqueda[0]['value'];
         if(hontza_solr_is_solr_activado() && hontza_solr_is_busqueda_solr($value)){
-            return 1;
+            if($is_url){
+                return $value;
+            }else{
+                return 1;
+            }    
         }
     }
-    return 0;
+    if($is_url){
+        return '';
+    }else{
+        return 0;
+    }    
 }
 //intelsat-2015
 function hontza_canal_rss_is_kimonolabs_json($content){
