@@ -2124,8 +2124,9 @@ function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$hi
             }
             //
             //$body=my_add_css().'<html><body><div id="wrapper"><div id="container" class="layout-region"><div id="main"><div class="main-inner"><div id="content" class="clearfix" style="clear:both;">'.$body.'</div></div></div></div></div></html></body>';
-            if(!red_despacho_is_activado()){
-                $body=alerta_add_css($body);
+            //if(!red_despacho_is_activado()){
+            if(!red_despacho_is_activado() || red_dashboard_is_activado()){
+                $body=alerta_add_css($body);                
             }                
         }
         $mail_to=trim($mail_to_in);
