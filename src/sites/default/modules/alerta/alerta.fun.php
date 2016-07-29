@@ -396,7 +396,8 @@ function add_introduccion_despedida_html($content_in,$grupo_in='',$uid='',$subje
         $despedida=get_boletin_despedida($grupo,$subject,$uid,$param_alerta);
         //
         //intelsat-2015
-        if(red_despacho_is_activado()){
+        //if(red_despacho_is_activado()){
+        if(red_dashboard_is_despacho_no_dashboard()){
             $introduccion=red_despacho_get_boletin_introduccion($introduccion,$boletin_report_titulo_mail); 
             $despedida=red_despacho_boletin_report_get_boletin_despedida($despedida);
         }        

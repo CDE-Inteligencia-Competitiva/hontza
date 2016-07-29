@@ -2127,7 +2127,7 @@ function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$hi
             //if(!red_despacho_is_activado()){
             if(!red_despacho_is_activado() || red_dashboard_is_activado()){
                 $body=alerta_add_css($body);                
-            }                
+            }            
         }
         $mail_to=trim($mail_to_in);
         //intelsat-2016
@@ -2662,7 +2662,8 @@ function my_web_callback(){
         }
         //
     }
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){    
         print $content;
         exit();
     }
@@ -3054,7 +3055,8 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
                                         $current_content=add_introduccion_despedida_html($content,$grupo,$u->uid,$subject);
                                     }
                                     //intelsat-2015
-                                    if(red_despacho_is_activado()){
+                                    //if(red_despacho_is_activado()){
+                                    if(red_dashboard_is_despacho_no_dashboard()){
                                         $current_content=red_despacho_boletin_report_get_current_content($current_content,$subject,'');
                                     }
                                     //gemini-2013
@@ -3085,8 +3087,9 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
         $content=get_content_by_my_message($content, $por_correo, $my_message,1);
      }
      //intelsat-2015
-     $content=red_despacho_boletin_report_get_current_content($content,$subject,'');
-                                    
+     //if(red_dashboard_is_despacho_no_dashboard()){
+        $content=red_despacho_boletin_report_get_current_content($content,$subject,'');
+     //}                               
      //intelsat-2015
      //save_aviso_procesado($bg, $por_correo, $my_message, 'boletin_grupo');
      save_aviso_procesado($bg, $por_correo, $my_message, 'boletin_grupo',$content);
