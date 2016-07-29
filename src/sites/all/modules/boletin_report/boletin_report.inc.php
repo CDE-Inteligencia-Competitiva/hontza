@@ -372,7 +372,8 @@ function boletin_report_get_content_html($is_download=0,$is_print_exit=1,$id_in=
     $is_pdf=boletin_report_pdf_is_pdf();
     if($is_pdf){
         $content=alerta_add_css($content,$is_download);
-        if(red_despacho_is_activado()){
+        //if(red_despacho_is_activado()){
+        if(red_dashboard_is_despacho_no_dashboard()){
             //$content=str_replace('charset=windows-1252','charset=UTF-8',$content);
             $content=red_despacho_boletin_report_fix_pdf($content);
             //print $content;exit();
