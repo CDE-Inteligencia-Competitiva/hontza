@@ -262,7 +262,8 @@ function hontza_solr_busqueda_avanzada_form(){
         '#options' => red_solr_inc_get_my_order_options(),
         //'#prefix'=>'<div style="float:left;margin-top:-20px;padding-left:20px;">',
         //'#suffix'=>'</div></div>',
-        '#prefix'=>'<div class="solr_busqueda_avanzada_buttons">',
+        //'#prefix'=>'<div class="solr_busqueda_avanzada_buttons">',
+        '#prefix'=>'<div class="solr_busqueda_avanzada_buttons" style="display:none;">',
         '#suffix'=>'</div>',    
         '#attributes'=>array('style'=>'float:left;'), 
         );
