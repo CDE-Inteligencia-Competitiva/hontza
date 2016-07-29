@@ -3329,6 +3329,7 @@ function my_resto_grupos_li(){
                             //$my_url='http://'.$_SERVER['HTTP_HOST'].base_path();
                             $my_url=$base_url.'/';
                             $my_action=$hasi_orri;
+                            $my_action=red_dashboard_get_hasi_orri($my_action);                        
                             //$my_link='<a href="'.$my_url.$my_lang.$row->value.$my_action.'" title="'.red_funciones_get_grupo_privacidad_name($row).'">'.hontza_get_icono_grupo_congelado($row,0,$is_congelado).$icono_privacidad.hontza_get_icono_grupo_red_alerta($row).$row->title.'</a>';
                             $my_link='<a href="'.$my_url.$my_lang.$row->value.$my_action.'" target="_blank" title="'.$title_popup.'">'.hontza_get_icono_grupo_congelado($row,0,$is_congelado).$icono_privacidad.$row->title.'</a>';                                                        
                         }    
