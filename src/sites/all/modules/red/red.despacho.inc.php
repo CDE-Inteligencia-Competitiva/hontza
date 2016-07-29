@@ -684,7 +684,8 @@ function red_despacho_is_gestionar_tipos_fuente(){
     return 0;
 }
 function red_despacho_boletin_report_is_add_introduccion_despedida_html($bulletin_text_nid,$is_edit_content){
-    if(red_despacho_is_activado()){
+    //if(red_despacho_is_activado()){
+    if(red_dashboard_is_despacho_no_dashboard()){
         return despacho_boletin_report_word_is_add_introduccion_despedida_html($bulletin_text_nid,$is_edit_content);
     }
     return 1;

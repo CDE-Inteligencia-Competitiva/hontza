@@ -31,3 +31,10 @@ function red_dashboard_get_content_html(){
 function red_dashboard_get_url_solr_search($canal_busqueda){
     return hontza_canal_rss_is_canal_busqueda_solr('',$canal_busqueda,1);
 }
+function red_dashboard_get_hasi_orri($my_action_in){
+    $result=$my_action_in;
+    if(red_dashboard_is_activado()){
+        $result='/mi-grupo';
+    }
+    return $result;
+}
