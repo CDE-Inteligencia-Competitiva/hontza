@@ -977,7 +977,8 @@ function ver_boletin_grupo_web(){
         $bg=$bg_list[0];
         $por_correo=0;
         $content.=call_boletin_grupo($bg,$nombre_dia,$por_correo);
-        if(red_despacho_is_activado()){    
+        //if(red_despacho_is_activado()){    
+        if(red_dashboard_is_despacho_no_dashboard()){    
             print $content;
             exit();
         }    
@@ -1643,7 +1644,7 @@ function boletin_grupo_historico_table(){
 //intelsat-2015
 function boletin_grupo_define_historico_table_headers(){
     $result=boletin_report_define_historico_table_headers();
-    unset($result[2]);
+    //unset($result[2]);
     $result=array_values($result);
     return $result;
 }
