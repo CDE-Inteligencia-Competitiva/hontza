@@ -469,6 +469,9 @@ function red_copiar_canal_node_form_alter(&$form,&$form_state,$form_id){
     if(red_copiar_is_copiar_activado()){
         compartir_documentos_canal_node_form_alter($form,$form_state,$form_id);
     }
+    if(isset($form['field_is_usuario_exportado'])){
+        unset($form['field_is_usuario_exportado']);
+    }
 }
 function red_copiar_get_compartir_estrategia_link($node){
     $result='';
@@ -503,4 +506,16 @@ function red_copiar_is_canal_usuario_exportado_add_img($canal_nid,$result_in){
         $result=compartir_documentos_is_canal_usuario_exportado_add_img($canal_nid,$result);
     }
     return $result;
+}
+function red_copiar_is_yql_wizard_responsable_uid_required($form_state){
+    if(isset($form_state['yql_obj']) && isset($form_state['yql_obj']->mail_from) && !empty($form_state['yql_obj']->mail_from)){
+        return 0;
+    }
+    /*if(isset($_REQUEST['rss_url']) && !empty($_REQUEST['rss_url'])){
+        return 0;
+    }
+    if(isset($_REQUEST['mail_from']) && !empty($_REQUEST['mail_from'])){
+        return 0;
+    }*/
+    return 1;
 }
