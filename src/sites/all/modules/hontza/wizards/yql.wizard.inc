@@ -181,7 +181,8 @@ function yql_canal_form(&$form, &$form_state){
   //gemini
   $is_required=TRUE;
   if(my_is_simple($form_state) || my_is_opml($form_state)){
-  	$is_required=FALSE;
+  //if(my_is_simple($form_state) || my_is_opml($form_state) || !red_copiar_is_yql_wizard_responsable_uid_required($form_state)){	
+    $is_required=FALSE;
   }
   //
   $form['responsable_uid']= array(
@@ -294,8 +295,10 @@ function yql_canal_form_validate(&$form, &$form_state){
     form_error($form['numero_rss'],t('The value must be between 1-100'));
   }
   //gemini	  
-  if(!my_is_simple($form_state) && !my_is_opml($form_state)){  	
-  	my_validate_responsable($form,$form_state);
+  if(!my_is_simple($form_state) && !my_is_opml($form_state)){
+      //if(red_copiar_is_yql_wizard_responsable_uid_required($form_state)){
+        my_validate_responsable($form,$form_state);
+      //}  
   }
   //  
   //Validar categorias
@@ -1238,7 +1241,9 @@ function prepare_simple_or_opml(&$form,&$form_state){
     }
     //
     //if($is_hound){
-        $form['responsable_uid']['#required']=TRUE;
+        if(red_copiar_is_yql_wizard_responsable_uid_required($form_state)){
+            $form['responsable_uid']['#required']=TRUE;
+        }
     //}        
 	$indefinida_tid=my_get_term_data_tid('Categoria indefinida');	
 	if(my_is_simple($form_state) || my_is_opml($form_state)){
