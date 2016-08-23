@@ -1040,12 +1040,12 @@ function apachesolr_search_search_results($keys = NULL, $conditions_in = NULL, $
             }else{
                 hontza_solr_print_rss($results);
             }    
-        }else{
+        }/*else{
             //intelsat-2016
             if(red_solr_inc_is_aplicar_my_order()){
                 $results=red_solr_inc_get_my_order_results($results);
             }
-        }
+        }*/
         //
       }
     }
@@ -1110,6 +1110,7 @@ function apachesolr_search_conditions_default($search_page) {
   }
   // Add the sort from the page to our conditions
   $sort = isset($_GET['solrsort']) ? $_GET['solrsort'] : '';
+  
   $conditions['apachesolr_search_sort'] = $sort;
   return $conditions;
 }
@@ -1684,8 +1685,10 @@ function apachesolr_search_preprocess_search_results(&$variables) {
     ));
     // Redefine the pager if it was missing
     //pager_default_initialize($total, $params['rows']);
+    //intelsat-2016
     $variables['pager'] = theme('pager');
-
+    //$variables['pager'] = theme('pager',array(),10,0,array(),5);
+    
     // Add template hints for environments
     if (!empty($env_id)) {
       $variables['theme_hook_suggestions'][] = 'search_results__' . $variables['type'] . '__' . $env_id;
