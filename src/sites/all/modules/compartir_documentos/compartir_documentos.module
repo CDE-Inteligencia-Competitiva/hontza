@@ -1309,7 +1309,7 @@ function compartir_documentos_get_field_is_imported_type($node){
 }
 function compartir_documentos_canal_node_form_alter(&$form,&$form_state,$form_id){
     $unset_array=array('field_is_usuario_exportado');
-    compartir_documentos_unset_form_field_form_alter($form,$form_state, $form_id, $unset_array);    
+    compartir_documentos_unset_form_field_form_alter($form,$form_state, $form_id, $unset_array);
 }
 function compartir_documentos_get_estrategia_link($node){
     $result='';
