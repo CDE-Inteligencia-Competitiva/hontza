@@ -466,6 +466,9 @@ function red_copiar_get_fuente_title_color($result_in,$row){
     return $result;
 }
 function red_copiar_canal_node_form_alter(&$form,&$form_state,$form_id){
+    if(isset($form['field_is_usuario_exportado'])){
+        $form['field_is_usuario_exportado']['#title']=t('Channel exported');
+    }
     if(red_copiar_is_copiar_activado()){
         compartir_documentos_canal_node_form_alter($form,$form_state,$form_id);
     }

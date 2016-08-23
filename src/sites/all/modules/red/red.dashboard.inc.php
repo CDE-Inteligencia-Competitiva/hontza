@@ -38,3 +38,13 @@ function red_dashboard_get_hasi_orri($my_action_in){
     }
     return $result;
 }
+function red_dashboard_add_node_links($node_in,$teaser = FALSE, $page = FALSE, $links = TRUE){
+  $node=$node_in;  
+  $node = node_build_content($node, $teaser, $page);
+  if ($links) {
+    $node->links = module_invoke_all('link', 'node', $node, $teaser);
+    drupal_alter('link', $node->links, $node);
+  }
+  
+  return $node;
+}  
