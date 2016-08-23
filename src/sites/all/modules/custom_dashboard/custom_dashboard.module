@@ -66,7 +66,12 @@ function custom_dashboard_get_content_block($canal_nid_in){
                     //$html[]='<div class="views-field-nothing">';
                     //$html[]='<span class="field-content">';
                     //$node_title=custom_dashboard_unset_hound_id_item_title($node);
-                    $node_title=custom_dashboard_fix_hound_id_node_title($node->title);
+                    $node_title=custom_dashboard_fix_hound_id_node_title($node->title);                    
+                    if(!hontza_solr_search_is_usuario_lector()){
+                        $node=red_dashboard_add_node_links($node);
+                        $html[]='<div class="f-interesante">'.hontza_canal_rss_set_flag_link($node->links['flag-leido_interesante']['title']).'</div>';
+                        $html[]='<div class="f-no-interesante">'.hontza_canal_rss_set_flag_link($node->links['flag-leido_no_interesante']['title']).'</div>';
+                    }    	                    
                     $html[]=l($node_title,'node/'.$nid);
                     //$html[]='</span>';
                     //$html[]='</div>';
