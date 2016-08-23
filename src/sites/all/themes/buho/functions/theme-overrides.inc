@@ -162,13 +162,17 @@ function buho_menu_local_tasks() {
  */
 //intelsat-2015
 //function buho_pager($tags = array(), $limit = 10, $element = 0, $parameters = array(), $quantity = 9) {
-function buho_pager($tags = array(), $limit = 10, $element = 0, $parameters = array(), $quantity = 9, $field_pager=''){
+function buho_pager($tags = array(), $limit = 10, $element = 0, $parameters = array(), $quantity_in = 9, $field_pager=''){
   global $pager_page_array, $pager_total;
 /*echo print_r($pager_total_items,1);
 echo print_r($pager_total,1);
 echo print_r($pager_page_array,1);*/
   // Calculate various markers within this pager piece:
   // Middle is used to "center" pages around the current page.
+  $quantity=$quantity_in;
+  if(hontza_solr_is_resultados_pantalla()){
+      $quantity=5;
+  }
   $pager_middle = ceil($quantity / 2);
   // current is the page we are currently paged to
   $pager_current = $pager_page_array[$element] + 1;
