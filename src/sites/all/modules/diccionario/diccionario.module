@@ -101,11 +101,11 @@ function diccionario_menu() {
     return $items;
 }
 function diccionario_form(){
-    $form=array();
-    /*$form['funcion_desactivada']=array(
+    $form=array();    
+    $form['funcion_desactivada']=array(
         '#value'=>'Funcion desactivada',
     );
-    return $form;*/
+    return $form;
     $options=array(
         'hontza_blanco'=>'hontza_blanco',        
     );
