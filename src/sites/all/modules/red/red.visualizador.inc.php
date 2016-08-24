@@ -84,7 +84,8 @@ function red_visualizador_get_visualizador_activado_menu_icono(){
     global $base_url;
     //return '';
     $html='';            
-    if(is_super_admin()){    
+    //if(is_super_admin()){    
+    if(red_visualizador_is_visualizador_activado_menu_icono()){    
         $is_activado=hontza_canal_rss_is_visualizador_activado();
         $style='style="float:left;padding-right:5px;"';
         if($is_activado){
@@ -101,3 +102,13 @@ function red_visualizador_get_visualizador_activado_menu_icono(){
     }    
     return '';
 }
+function red_visualizador_is_visualizador_activado_menu_icono(){
+    if(is_super_admin()){    
+        return 1;
+    }
+    $modo_estrategia=1;
+    if(is_administrador_grupo($modo_estrategia)){
+        return 1;
+    }
+    return 0;    
+} 
