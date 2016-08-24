@@ -74,11 +74,11 @@
         <td class="td_value_node_view"><?php print hontza_grupos_get_active_tabs_html($node);?></td>
     </tr>
     <tr class="tr_node_view">
-        <td class="td_label_node_view"><b><?php print t('Time delay to delete rejected news');?></b>:&nbsp;</td>
+        <td class="td_label_node_view"><b><?php print t('Delete rejected news after');?></b>:&nbsp;</td>
         <td class="td_value_node_view"><?php print hontza_grupos_mi_grupo_get_field_delete_rejected_news_time_html($node); ?></td>
     </tr>
     <tr class="tr_node_view">
-        <td class="td_label_node_view"><b><?php print t('Time delay to delete unread news');?></b>:&nbsp;</td>
+        <td class="td_label_node_view"><b><?php print t('Delete unread news after');?></b>:&nbsp;</td>
         <td class="td_value_node_view"><?php print hontza_grupos_mi_grupo_get_field_delete_unread_news_time_html($node); ?></td>
     </tr>            
     <tr class="tr_node_view">

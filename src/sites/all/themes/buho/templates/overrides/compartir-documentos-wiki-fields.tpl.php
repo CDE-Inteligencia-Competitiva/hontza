@@ -22,7 +22,7 @@
     <div class="field-items">
         <div class="field-item odd">
             <div class="field-label-inline-first" style="float:left;">
-                <?php print t('Is shared');?>:&nbsp;
+                <?php print t('Exported');?>:&nbsp;
             </div>
                 <?php print compartir_documentos_get_wiki_is_shared_string($node);?>
             </div>
@@ -32,7 +32,7 @@
     <div class="field-items">
         <div class="field-item odd">
             <div class="field-label-inline-first" style="float:left;">
-                <?php print t('Is imported');?>:&nbsp;
+                <?php print t('Imported');?>:&nbsp;
             </div>
                 <?php print compartir_documentos_get_wiki_is_imported_string($node);?>
             </div>

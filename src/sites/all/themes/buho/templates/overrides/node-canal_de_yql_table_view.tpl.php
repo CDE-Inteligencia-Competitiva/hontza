@@ -152,7 +152,7 @@
             <td class="td_value_node_view"><?php print hontza_canal_rss_fivestar_static('node',$node->nid,'vote','canal_de_yql',hontza_canal_rss_get_rating_validated_news($info_porcentajes));?></td>
     </tr>
     <tr class="tr_node_view">     
-            <td class="td_label_node_view"><b>%&nbsp;<?php print t('News to Bulletins');?></b>:&nbsp;</td>
+            <td class="td_label_node_view"><b>%&nbsp;<?php print t('Validated News to Bulletins');?></b>:&nbsp;</td>
             <td class="td_value_node_view"><?php print hontza_canal_rss_get_porcentaje_news_to_bulletins($info_porcentajes);?></td>
     </tr>
     <?php if(red_canal_is_canal_opencalais_activado()):?>

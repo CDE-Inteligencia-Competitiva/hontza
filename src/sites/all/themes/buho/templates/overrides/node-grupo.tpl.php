@@ -164,7 +164,7 @@
 		<div class="field-items">
 			<div class="field-item odd">
 				<div class="field-label-inline-first">
-				  <?php print t('Time delay to delete rejected news');?>:&nbsp;
+				  <?php print t('Delete rejected news after');?>:&nbsp;
 				</div>
 				<?php print hontza_grupos_mi_grupo_get_field_delete_rejected_news_time_html($node); ?>
 			</div>
@@ -175,7 +175,7 @@
 		<div class="field-items">
 			<div class="field-item odd">
 				<div class="field-label-inline-first">
-				  <?php print t('Time delay to delete unread news');?>:&nbsp;
+				  <?php print t('Delete unread news after');?>:&nbsp;
 				</div>
 				<?php print hontza_grupos_mi_grupo_get_field_delete_unread_news_time_html($node); ?>
 			</div>
