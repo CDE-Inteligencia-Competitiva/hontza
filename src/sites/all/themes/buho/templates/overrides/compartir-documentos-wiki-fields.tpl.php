@@ -42,7 +42,7 @@
     <div class="field-items">
         <div class="field-item odd">
             <div class="field-label-inline-first" style="float:left;">
-                <?php print t('Frequency');?>:&nbsp;
+                <?php print t('Export frequency');?>:&nbsp;
             </div>
                 <?php print compartir_documentos_get_wiki_frecuencia($node,1);?>
             </div>
@@ -52,7 +52,7 @@
     <div class="field-items">
         <div class="field-item odd">
             <div class="field-label-inline-first" style="float:left;">
-                <?php print t('Frequency hour');?>:&nbsp;
+                <?php print t('Export time');?>:&nbsp;
             </div>
                 <?php print compartir_documentos_get_wiki_frecuencia_hora($node);?>
             </div>
@@ -72,7 +72,7 @@
     <div class="field-items">
         <div class="field-item odd">
             <div class="field-label-inline-first" style="float:left;">
-                <?php print t('Import frequency hour');?>:&nbsp;
+                <?php print t('Import time');?>:&nbsp;
             </div>
                 <?php print compartir_documentos_get_wiki_import_frecuencia_hora($node);?>
             </div>
