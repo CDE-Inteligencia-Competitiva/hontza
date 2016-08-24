@@ -170,9 +170,9 @@ echo print_r($pager_page_array,1);*/
   // Calculate various markers within this pager piece:
   // Middle is used to "center" pages around the current page.
   $quantity=$quantity_in;
-  if(hontza_solr_is_resultados_pantalla()){
+  //if(hontza_solr_is_resultados_pantalla()){
       $quantity=5;
-  }
+  //}
   $pager_middle = ceil($quantity / 2);
   // current is the page we are currently paged to
   $pager_current = $pager_page_array[$element] + 1;
@@ -197,11 +197,21 @@ echo print_r($pager_page_array,1);*/
     $i = 1;
   }
   // End of generation loop preparation.
-
-  $li_first = theme('pager_first', (isset($tags[0]) ? $tags[0] : t('« First')), $limit, $element, $parameters);
-  $li_previous = theme('pager_previous', (isset($tags[1]) ? $tags[1] : t('‹ Previous')), $limit, $element, 1, $parameters);
-  $li_next = theme('pager_next', (isset($tags[3]) ? $tags[3] : t('Next ›')), $limit, $element, 1, $parameters);
-  $li_last = theme('pager_last', (isset($tags[4]) ? $tags[4] : t('Last »')), $limit, $element, $parameters);
+  //intelsat-2016
+  /*$first_label=t('« First');
+  $previous_label=t('‹ Previous');
+  $next_label=t('Next ›');
+  $last_label=t('Last »');
+  if(hontza_solr_is_resultados_pantalla()){*/
+    $first_label=t('<<');
+    $previous_label=t('<');
+    $next_label=t('>');
+    $last_label=t('>>');
+  //}
+  $li_first = theme('pager_first', (isset($tags[0]) ? $tags[0] : $first_label), $limit, $element, $parameters);
+  $li_previous = theme('pager_previous', (isset($tags[1]) ? $tags[1] : $previous_label), $limit, $element, 1, $parameters);
+  $li_next = theme('pager_next', (isset($tags[3]) ? $tags[3] : $next_label), $limit, $element, 1, $parameters);
+  $li_last = theme('pager_last', (isset($tags[4]) ? $tags[4] : $last_label), $limit, $element, $parameters);
  
   if ($pager_total[$element] > 1) {
     if ($li_first) {
