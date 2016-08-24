@@ -139,14 +139,14 @@ function hontza_grupos_form_alter(&$form, &$form_state, $form_id) {
         hontza_grupos_publico_reto_form_alter($form,$form_state,$form_id);
         //gemini-2014
         if(isset($form['field_delete_rejected_news_time'])){
-           $form['field_delete_rejected_news_time']['#title']=t('Time delay to delete rejected news');      
+           $form['field_delete_rejected_news_time']['#title']=t('Delete rejected news after');      
            //intelsat-2015
            //if(!is_super_admin()){
            if(!panel_admin_is_editar_tiempos_borrados_noticias_grupo($grupo_nid,$node)){
            //    
                unset($form['field_delete_rejected_news_time']);
                $form['field_delete_rejected_news_time_disabled']=array(
-                '#title'=>t('Time delay to delete rejected news'),
+                '#title'=>t('Delete rejected news after'),
                 '#type'=>'textfield',
                 '#default_value'=>hontza_grupos_get_delete_rejected_news_time_value_string($node),
                 '#disabled'=>true,
@@ -163,14 +163,14 @@ function hontza_grupos_form_alter(&$form, &$form_state, $form_id) {
            }                     
         }
         if(isset($form['field_delete_unread_news_time'])){
-          $form['field_delete_unread_news_time']['#title']=t('Time delay to delete unread news'); 
+          $form['field_delete_unread_news_time']['#title']=t('Delete unread news after'); 
           //intelsat-2015
           //if(!is_super_admin()){
           if(!panel_admin_is_editar_tiempos_borrados_noticias_grupo($grupo_nid)){
           //    
                unset($form['field_delete_unread_news_time']);
                $form['field_delete_unread_news_time_disabled']=array(
-                '#title'=>t('Time delay to delete unread news'),   
+                '#title'=>t('Delete unread news after'),   
                 '#type'=>'textfield',
                 '#default_value'=>hontza_grupos_get_delete_unread_news_time_value_string($node),
                 '#disabled'=>true,
