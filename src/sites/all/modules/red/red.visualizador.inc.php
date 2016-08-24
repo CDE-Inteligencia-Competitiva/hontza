@@ -80,3 +80,24 @@ function red_visualizador_is_show_banners(){
     }
     return FALSE;
 }
+function red_visualizador_get_visualizador_activado_menu_icono(){
+    global $base_url;
+    //return '';
+    $html='';            
+    if(is_super_admin()){    
+        $is_activado=hontza_canal_rss_is_visualizador_activado();
+        $style='style="float:left;padding-right:5px;"';
+        if($is_activado){
+            $popup=t('Observatory activated');
+            $icono_name='observatorio_activado';
+            $html.='<img src="'.$base_url.'/sites/all/themes/buho/images/'.$icono_name.'.png" alt="'.$popup.'" title="'.$popup.'"'.$style.'/>';
+            return $html;
+        }else{
+            $popup=t('Observatory deactivated');
+            $icono_name='observatorio_desactivado';
+            $html.='<img src="'.$base_url.'/sites/all/themes/buho/images/'.$icono_name.'.png" alt="'.$popup.'" title="'.$popup.'"'.$style.'/>';
+            return $html;
+        }
+    }    
+    return '';
+}
