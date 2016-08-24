@@ -255,7 +255,7 @@ function hontza_solr_busqueda_avanzada_form(){
 			'#default_value'=>$fecha_fin);
 
     //intelsat-2016
-    if(red_solr_inc_is_actualizar_noticias_usuario()){        
+    /*if(red_solr_inc_is_actualizar_noticias_usuario()){        
         $form['my_order'] = array(
         '#type' => 'select',
         '#title'=>t('Order'),  
@@ -267,7 +267,7 @@ function hontza_solr_busqueda_avanzada_form(){
         '#suffix'=>'</div>',    
         '#attributes'=>array('style'=>'float:left;'), 
         );
-    }
+    }*/
     
     $form['search_btn']=array(
         '#type'=>'submit',
