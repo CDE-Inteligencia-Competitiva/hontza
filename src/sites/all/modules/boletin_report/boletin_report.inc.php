@@ -1629,4 +1629,18 @@ function boletin_report_inc_is_fix_imagenes_sin_http(){
 function boletin_report_inc_get_title_of_bulletin_automatico_form_variable_field($boletin_report_array_id,$session_id){
     $result='boletin_report_inc_title_of_bulletin_automatico_form_content_'.$boletin_report_array_id.'_'.$session_id;
     return $result;
-}    
+}
+//intelsat-2016
+function boletin_report_inc_is_boletin_report_row($br){
+    if(isset($br->is_boletin_report) && !empty($br->is_boletin_report) && $br->is_boletin_report==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function boletin_report_inc_is_show_etiquetas($br){
+    if(boletin_report_inc_is_boletin_report_row($br)){
+        return 0;
+    }
+    return 1;
+}   
