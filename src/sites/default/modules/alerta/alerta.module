@@ -2447,12 +2447,16 @@ function boletin_eskubi_aldea($row,$node,$current_type,$max_resumen_in=0,$bg='',
             $html[]='<tr><td>'.date('d-m-Y H:i',$row->fecha).'</td></tr>';
         }
         $html[]='<tr><td><b>'.$eskubi_aldea.'</b></td></tr>';
-        $etiquetas=alerta_inc_etiquetas($node);
-        if(!red_despacho_is_activado()){    
-            if(!empty($etiquetas)){
-                $html[]='<tr><td>'.$etiquetas.'</td></tr>';
-            }
-        }    
+        //intelsat-2016
+        $is_show_etiquetas=boletin_report_inc_is_show_etiquetas($bg);
+        if($is_show_etiquetas){
+          $etiquetas=alerta_inc_etiquetas($node);
+          if(!red_despacho_is_activado()){    
+              if(!empty($etiquetas)){
+                  $html[]='<tr><td>'.$etiquetas.'</td></tr>';
+              }
+          }
+        }      
         //intelsat-2015
         //if(!red_despacho_is_activado()){
         if(red_despacho_boletin_report_is_show_resumen($bg,$param_alerta)){
