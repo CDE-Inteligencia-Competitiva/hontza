@@ -47,4 +47,15 @@ function red_dashboard_add_node_links($node_in,$teaser = FALSE, $page = FALSE, $
   }
   
   return $node;
+}
+function red_dashboard_is_grupo_pantalla(){
+   $param0=arg(0);
+   if($param0=='custom_dashboard'){
+        $my_array=array('searches','search');
+        $param1=arg(1);
+        if(in_array($param1,$my_array)){
+            return 1;
+        }
+   }
+   return 0; 
 }  
