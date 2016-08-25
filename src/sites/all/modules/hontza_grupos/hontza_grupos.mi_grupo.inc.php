@@ -451,6 +451,10 @@ function hontza_grupos_mi_grupo_is_mi_grupo(){
             if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
                 return 1;
             }            
+        }else if($param0=='custom_dashboard'){
+            if(red_dashboard_is_grupo_pantalla()){
+                return 1;
+            }
         }
     }
     /*if(red_funciones_is_perfil_usuario()){
