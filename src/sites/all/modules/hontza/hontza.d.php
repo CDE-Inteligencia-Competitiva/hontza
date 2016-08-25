@@ -283,9 +283,9 @@ function hontza_define_gestion_grupos_propios_header(){
     //$html[]=l(t('Add users to groups'),'user-gestion/usuarios-grupos',array('query'=>'destination=user-gestion/grupos/propios','attributes'=>array('class'=>'add')));
     //$html[]=l(t('Remove users to groups'),'user-gestion/borrar-usuarios-grupos',array('query'=>'destination=user-gestion/grupos/propios','attributes'=>array('class'=>'my_remove')));
     //gemini-2014
-    //AVISO::::se ha comentado 'Activate channels'
+    //AVISO::::se ha comentado 'Active channels'
     /*if(is_super_admin()){
-        $html[]=l(t('Activate channels'),'activar_actualizacion_subdominio',array('query'=>'destination=user-gestion/grupos/propios'));        
+        $html[]=l(t('Active channels'),'activar_actualizacion_subdominio',array('query'=>'destination=user-gestion/grupos/propios'));        
     }*/
     $html[]=hontza_gestion_grupos_propios_filtro();
     //$html[]='<div>';

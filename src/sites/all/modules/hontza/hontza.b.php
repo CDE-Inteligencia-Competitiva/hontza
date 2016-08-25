@@ -278,7 +278,7 @@ function beste_menu_items($items_in){
     'access arguments' => array('Enlazar debate'),
     );
     $items['activar_actualizacion_subdominio']=array(
-    'title'=>t('Activate channels'),
+    'title'=>t('Active channels'),
     'page callback' => 'drupal_get_form',
     'page arguments'   => array('hontza_activar_actualizacion_subdominio_form'),    
     'access arguments' => array('root'),

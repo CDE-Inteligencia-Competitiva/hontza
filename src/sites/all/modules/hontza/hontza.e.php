@@ -2450,8 +2450,8 @@ function hontza_get_gestion_canales_block_content(){
     //gemini-2014
     if(is_super_admin()){
       //intelsat-2015    
-      //$html[]=l(t('Activate channels'),'activar_actualizacion_subdominio',array('query'=>'destination=gestion'));
-      $html[]=l(t('Activate channels'),'activar_actualizacion_subdominio',array('query'=>'destination=panel_admin'));
+      //$html[]=l(t('Active channels'),'activar_actualizacion_subdominio',array('query'=>'destination=gestion'));
+      $html[]=l(t('Active channels'),'activar_actualizacion_subdominio',array('query'=>'destination=panel_admin'));
       //  
     }
     //
