@@ -4,11 +4,21 @@ function custom_dashboard_perm() {
 }
 function custom_dashboard_menu() {
   $items=array();
-  
+  $items['custom_dashboard/searches']=array(
+    '#title'=>t('Searches'),
+    'page callback' => 'custom_dashboard_searches_callback',
+    'access callback'=>'custom_dashboard_searches_access',    
+  );
+  $items['custom_dashboard/search/%/activar']=array(
+    '#title'=>t('Activate search'),
+    'page callback' => 'custom_dashboard_search_activar_callback',
+    'access callback'=>'custom_dashboard_searches_access',    
+  );
   return $items;
 }
 function custom_dashboard_is_searches(){
-    $custom_dashboard_type=panel_admin_dashboard_get_custom_dashboard_type();
+    //$custom_dashboard_type=panel_admin_dashboard_get_custom_dashboard_type();
+    $custom_dashboard_type=custom_dashboard_get_grupo_dashboard_type();
     if($custom_dashboard_type=='searches'){
         return 1;
     }
@@ -24,8 +34,10 @@ function custom_dashboard_get_content_html(){
         if(!empty($canales)){
             foreach($canales as $i=>$canal){
                 if(hontza_canal_rss_is_canal_busqueda_solr($canal->nid)){
-                    $content_block=custom_dashboard_get_content_block($canal->nid);
-                    $html[]=$content_block;
+                    if(custom_dashboard_is_mostrar_dashboard($canal)){
+                        $content_block=custom_dashboard_get_content_block($canal->nid);
+                        $html[]=$content_block;
+                    }    
                 }else{
                     //busqueda_rss_exportar_busqueda_rss($canal->nid);
                 }    
@@ -104,4 +116,94 @@ function custom_dashboard_fix_hound_id_node_title($node_title){
         }
     }
     return implode(']',$result);
+}
+function custom_dashboard_get_grupo_dashboard_type(){
+    $my_grupo=og_get_group_context();
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        if(isset($my_grupo->field_grupo_dashboard_type[0]['value'])){
+            return $my_grupo->field_grupo_dashboard_type[0]['value'];
+        }
+    }
+    return '';
+}
+function custom_dashboard_searches_access(){
+    if(is_administrador_grupo()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function custom_dashboard_searches_callback(){
+
+    $headers=array();
+    $headers[0]=t('Search');
+    $headers[1]=t('Actions');
+    
+    $my_limit=30;
+
+    $where=array();
+    $where[]='1';
+    $where[]='node.type="canal_busqueda"';
+
+    $rows=array();
+    $my_grupo=og_get_group_context();
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $where[]='og_ancestry.group_nid='.$my_grupo->nid;
+        $sql='SELECT node.title,content_type_canal_busqueda.* 
+        FROM {node} node
+        LEFT JOIN {content_type_canal_busqueda} ON node.vid=content_type_canal_busqueda.vid
+        LEFT JOIN {og_ancestry} ON og_ancestry.nid=content_type_canal_busqueda.nid
+        WHERE '.implode(' AND ',$where).'
+        ORDER BY node.title ASC';
+
+        $res=db_query($sql);        
+        $rows=array();
+        $kont=0;
+        while ($r = db_fetch_object($res)) {
+          $rows[$kont]=array();
+          $rows[$kont][0]=$r->title;
+          $rows[$kont][1]= custom_dashboard_searches_define_acciones($r);
+          $kont++;
+        }
+    }    
+    //
+    $rows=my_set_estrategia_pager($rows, $my_limit);
+    if (count($rows)>0) {
+        $output .= theme('table',$headers,$rows,array('class'=>'table_panel_admin_noticias'));
+        $output .= theme('pager', NULL, $my_limit);    
+    }else {
+        $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+    }
+    drupal_set_title(t('Searches'));
+    //
+    //return panel_admin_noticias_define_gestion_noticias_header().drupal_get_form('panel_admin_noticias_gestion_noticias_bulk_form',array($output));
+    return $output;
+}
+function custom_dashboard_searches_define_acciones($r){
+    $html=array();
+    $destination='destination=custom_dashboard/searches';
+    if(isset($r->field_is_mostrar_dashboard_value) && $r->field_is_mostrar_dashboard_value==1){
+         $html[]=l(my_get_icono_action('validar_facilitador_deshacer',t('Reject')),'custom_dashboard/search/'.$r->nid.'/activar',array('query'=>$destination,'html'=>true)); 
+    }else{
+        $html[]=l(my_get_icono_action('validar_facilitador_gris',t('Validate')),'custom_dashboard/search/'.$r->nid.'/activar',array('query'=>$destination,'html'=>true));    
+    }
+    return implode('&nbsp;',$html);
+}
+function custom_dashboard_search_activar_callback(){
+    $nid=arg(2);
+    $node=node_load($nid);
+    $value=1;
+    //if(isset($node->field_is_mostrar_dashboard[0]['value']) && $node->field_is_mostrar_dashboard[0]['value']==1){
+    if(custom_dashboard_is_mostrar_dashboard($node)){    
+        $value=0;
+    }
+    db_query($sql=sprintf('UPDATE {content_type_canal_busqueda} SET field_is_mostrar_dashboard_value=%d WHERE nid=%d AND vid=%d',$value,$node->nid,$node->vid));
+    //print $sql;
+    hontza_solr_clear_cache_content($node->nid,1);   
+    drupal_goto('custom_dashboard/searches');
+}
+function custom_dashboard_is_mostrar_dashboard($canal){
+    if(isset($canal->field_is_mostrar_dashboard[0]['value']) && $canal->field_is_mostrar_dashboard[0]['value']==1){
+        return 1;
+    }
+    return 0;    
 }
