@@ -730,7 +730,7 @@ function hontza_grupos_define_active_tabs_structure(){
         $result[6]['menu_url']='usuarios_acceso/todos';
         $result[6]['value']=7;
     }
-    if(red_dashboard_is_activado()){
+    if(red_dashboard_is_activado() || !hontza_grupos_mi_grupo_is_grupo_tab_activado()){
         $result[7]['label']=t('Group');
         $result[7]['key']='grupo';
         $result[7]['menu_url']='mi-grupo';

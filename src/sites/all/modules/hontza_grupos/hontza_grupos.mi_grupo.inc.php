@@ -159,6 +159,10 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
     /*if(red_visualizador_is_visulizador_grupo_defined()){
         $html[]=red_visualizador_get_grupo_activate_observatory_link();
     }*/
+    //intelsat-2016
+    if(red_dashboard_is_activado()){
+        $html[]=l(t('Searches'),'custom_dashboard/searches');
+    }
     //
     return implode('<br>',$html);
 }
@@ -1536,4 +1540,14 @@ function hontza_grupos_mi_grupo_prepare_tags($tags){
         }
     }    
     return implode(',',$result);
+}
+//intelsat-2016
+function hontza_grupos_mi_grupo_is_grupo_tab_activado(){
+    if(defined('_IS_GRUPO_TAB_ACTIVADO')){
+        if(_IS_GRUPO_TAB_ACTIVADO==1){
+            return 1;
+        }
+        return 0;
+    }
+    return 1;
 }
