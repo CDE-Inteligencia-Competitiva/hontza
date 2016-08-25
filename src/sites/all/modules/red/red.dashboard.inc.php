@@ -19,7 +19,7 @@ function red_dashboard_is_despacho_no_dashboard(){
 function red_dashboard_is_searches(){
     if(red_dashboard_is_activado()){
         return custom_dashboard_is_searches();
-    }
+    }    
     return 0;
 }
 function red_dashboard_get_content_html(){
@@ -33,7 +33,7 @@ function red_dashboard_get_url_solr_search($canal_busqueda){
 }
 function red_dashboard_get_hasi_orri($my_action_in){
     $result=$my_action_in;
-    if(red_dashboard_is_activado()){
+    if(red_dashboard_is_activado() || !hontza_grupos_mi_grupo_is_grupo_tab_activado()){
         $result='/mi-grupo';
     }
     return $result;
