@@ -159,35 +159,12 @@
 			</div>
 		</div>
 	  </div>
-            
-        <div class="field field-type-text field-field-grupo-delete-rejected-news-time" style="float:left;clear:both;">
-		<div class="field-items">
-			<div class="field-item odd">
-				<div class="field-label-inline-first">
-				  <?php print t('Delete rejected news after');?>:&nbsp;
-				</div>
-				<?php print hontza_grupos_mi_grupo_get_field_delete_rejected_news_time_html($node); ?>
-			</div>
-		</div>
-	  </div>
-    
-          <div class="field field-type-text field-field-delete-unread-news-time" style="float:left;clear:both;">
-		<div class="field-items">
-			<div class="field-item odd">
-				<div class="field-label-inline-first">
-				  <?php print t('Delete unread news after');?>:&nbsp;
-				</div>
-				<?php print hontza_grupos_mi_grupo_get_field_delete_unread_news_time_html($node); ?>
-			</div>
-		</div>
-	  </div>
-    
       
           <div class="field field-type-text field-field-grupo-activate-channels" style="float:left;clear:both;">
 		<div class="field-items">
 			<div class="field-item odd">
 				<div class="field-label-inline-first">
-				  <?php print t('Activate channels');?>:&nbsp;
+				  <?php print t('Active channels');?>:&nbsp;
 				</div>
 				<?php print hontza_grupos_get_activate_channels_html($node); ?>
 			</div>
