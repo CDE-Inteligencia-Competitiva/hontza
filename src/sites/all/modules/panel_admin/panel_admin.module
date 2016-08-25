@@ -509,7 +509,7 @@ function panel_admin_in_delta_panel_admin_left($block){
                 return 0;
             }
         //}
-        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68,69))){
+        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68))){
             return 1;
         }
     }
@@ -600,9 +600,9 @@ function panel_admin_set_block_weight(&$block){
     //intelsat-2016    
     }else if($block->delta==68){
         $block->weight=-27;
-    }else if($block->delta==69){
+    }/*else if($block->delta==69){
         $block->weight=-26;
-    }
+    }*/
 }
 function panel_admin_is_estadisticas(){
     $param0=arg(0);
