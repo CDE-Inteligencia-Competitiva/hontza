@@ -2694,17 +2694,20 @@ function my_get_og_grupo_list($user_id='',$all=0,$grupo_nid=0,$is_set_primer=1,$
                 $kont=0;
 		  while ($row = db_fetch_object($result)) {
                         $node=node_load($row->nid);
-                        $my_result[$kont]=$row;
-                        $my_result[$kont]->type_of_group=hontza_get_type_of_group($node,'',$group_tid);
-                        $my_result[$kont]->type_of_group_tid=$group_tid;
-                        $my_result[$kont]->users_in_group=get_group_member_count($row);
-                        $my_result[$kont]->subject_area=hontza_grupos_get_subject_area_by_row($row);
-                        if($is_grupo_local){
-                            $my_result[$kont]->is_grupo_local=1;
-                        }
-                        //intelsat-2015
-                        hontza_grupos_mi_grupo_set_tabs_activados_remoto($node,$row,$my_result[$kont]);
-                        $kont++;
+                        //intelsat-2016
+                        if(hontza_grupos_mi_grupo_is_show_grupo_colaborativo_observatorio($is_visualizador_grupos_colaborativos,$node)){
+                            $my_result[$kont]=$row;
+                            $my_result[$kont]->type_of_group=hontza_get_type_of_group($node,'',$group_tid);
+                            $my_result[$kont]->type_of_group_tid=$group_tid;
+                            $my_result[$kont]->users_in_group=get_group_member_count($row);
+                            $my_result[$kont]->subject_area=hontza_grupos_get_subject_area_by_row($row);
+                            if($is_grupo_local){
+                                $my_result[$kont]->is_grupo_local=1;
+                            }
+                            //intelsat-2015
+                            hontza_grupos_mi_grupo_set_tabs_activados_remoto($node,$row,$my_result[$kont]);
+                            $kont++;
+                        }    
 		  }
 	}
 	if(!empty($grupo_nid) && $is_set_primer){
