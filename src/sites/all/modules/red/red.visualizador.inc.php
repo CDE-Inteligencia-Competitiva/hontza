@@ -61,7 +61,7 @@ function red_visualizador_is_visulizador_grupo_defined(){
 function red_visualizador_get_grupo_activate_observatory_link(){
     $html=array();
     $activate_url='grupo/activate_observatory/edit';
-    $html[]=l(t('Activate Observatory'),$activate_url);
+    $html[]=l(t('Public Observatory'),$activate_url);
     return implode('',$html);
 }
 function red_visualizador_is_visualizador_pantalla(){

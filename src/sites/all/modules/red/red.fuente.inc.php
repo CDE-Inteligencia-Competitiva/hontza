@@ -399,7 +399,7 @@ function red_fuentes_pipes_todas_filtro_form(){
         '#title'=>t('Region'),
         '#options'=>red_regiones_define_regiones_options(1),    
         "#default_value"=>red_fuentes_pipes_todas_get_filter_value('region'));*/
-    $form['file_buscar_fs']['region_fs']=red_regiones_define_fieldset('',red_fuentes_pipes_todas_get_filter_value('region'));    
+    //$form['file_buscar_fs']['region_fs']=red_regiones_define_fieldset('',red_fuentes_pipes_todas_get_filter_value('region'));    
     $form['file_buscar_fs']['calidad']=
         array('#type'=>'select',
         '#title'=>t('Quality'),

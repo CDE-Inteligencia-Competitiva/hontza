@@ -269,7 +269,7 @@ function red_yql_node_form_alter(&$form,&$form_state,$form_id){
         }
         if(isset($form['field_canal_region']) || hontza_is_sareko_id('LOKALA')){
            unset($form['field_canal_region']);
-           $form['canal_fs']=red_regiones_define_fieldset($node);
+           //$form['canal_fs']=red_regiones_define_fieldset($node);
         }
     }    
 }
@@ -297,7 +297,7 @@ function red_supercanal_node_form_alter(&$form,&$form_state,$form_id){
             $default_value='';
             //$default_value=$form['field_fuente_region'][0]['#default_value']['value'];
             unset($form[$field_fuente_region]);                        
-            $form['region_fs']=red_regiones_define_fieldset($node);
+            //$form['region_fs']=red_regiones_define_fieldset($node);
         }
     }    
 }
