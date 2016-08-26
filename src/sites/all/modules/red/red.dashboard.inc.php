@@ -58,4 +58,10 @@ function red_dashboard_is_grupo_pantalla(){
         }
    }
    return 0; 
+}
+function red_dashboard_get_grupo_dashboard_type_label($grupo_node){
+  if(red_dashboard_is_activado()){
+    return custom_dashboard_get_grupo_dashboard_type_label($grupo_node);
+  }
+  return '';
 }  

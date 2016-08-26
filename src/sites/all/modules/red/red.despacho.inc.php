@@ -836,7 +836,7 @@ function red_despacho_boletin_report_set_edition_type_value_string($is_edit,$is_
 }
 function red_despacho_get_canal_duplicate_news_options(){
     $result=array();
-    $label=t('Duplicate URLs');
+    $label=t('Allow repeated URLs');
     $result[0]=$label;
     $result[1]=$label;
     return $result;
@@ -865,7 +865,7 @@ function red_despacho_get_protected_value($obj,$name) {
 }
 function red_despacho_vigilancia_add_import_canal_duplicate_news_form_field(&$form){
     if(red_despacho_vigilancia_is_add_import_canal_duplicate_news_form_field_activado()){
-        $form['canal_is_duplicate_news']=array('#type'=>'checkbox','#title'=>'<b>'.t('Duplicate URLs').'</b>');
+        $form['canal_is_duplicate_news']=array('#type'=>'checkbox','#title'=>'<b>'.t('Allow repeated URLs').'</b>');
     }
 }
 function red_despacho_vigilancia_is_add_import_canal_duplicate_news_form_field_activado(){
