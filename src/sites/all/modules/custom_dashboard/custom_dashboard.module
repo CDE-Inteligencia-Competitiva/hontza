@@ -117,14 +117,20 @@ function custom_dashboard_fix_hound_id_node_title($node_title){
     }
     return implode(']',$result);
 }
-function custom_dashboard_get_grupo_dashboard_type(){
-    $my_grupo=og_get_group_context();
-    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+function custom_dashboard_get_grupo_dashboard_type($grupo_node_in=''){
+    $my_grupo='';
+    if(isset($grupo_node_in->nid) && !empty($grupo_node_in->nid)){
+        $my_grupo=$grupo_node_in;
+    }else{    
+        $my_grupo=og_get_group_context();
+        if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+
+        }    
+    }    
         if(isset($my_grupo->field_grupo_dashboard_type[0]['value'])){
             return $my_grupo->field_grupo_dashboard_type[0]['value'];
-        }
-    }
-    return '';
+        }    
+    return 'normal';
 }
 function custom_dashboard_searches_access(){
     if(is_administrador_grupo()){
@@ -135,8 +141,8 @@ function custom_dashboard_searches_access(){
 function custom_dashboard_searches_callback(){
 
     $headers=array();
-    $headers[0]=t('Search');
-    $headers[1]=t('Actions');
+    $headers[0]=t('Searches');
+    $headers[1]=t('Select');
     
     $my_limit=30;
 
@@ -159,10 +165,12 @@ function custom_dashboard_searches_callback(){
         $rows=array();
         $kont=0;
         while ($r = db_fetch_object($res)) {
-          $rows[$kont]=array();
-          $rows[$kont][0]=$r->title;
-          $rows[$kont][1]= custom_dashboard_searches_define_acciones($r);
-          $kont++;
+          if(hontza_canal_rss_is_canal_busqueda_solr($r->nid)){  
+              $rows[$kont]=array();
+              $rows[$kont][0]=$r->title;
+              $rows[$kont][1]= custom_dashboard_searches_define_acciones($r);
+              $kont++;
+          }
         }
     }    
     //
@@ -206,4 +214,12 @@ function custom_dashboard_is_mostrar_dashboard($canal){
         return 1;
     }
     return 0;    
+}
+function custom_dashboard_get_grupo_dashboard_type_label($grupo_node){
+    $grupo_dashboard_type=custom_dashboard_get_grupo_dashboard_type($grupo_node);
+    $dashboard_type_options=panel_admin_dashboard_get_dashboard_type_options();
+    if(isset($dashboard_type_options[$grupo_dashboard_type]) && !empty($dashboard_type_options[$grupo_dashboard_type])){
+        return $dashboard_type_options[$grupo_dashboard_type];
+    }
+    return '';
 }
