@@ -919,9 +919,9 @@ function apachesolr_cron($env_id = NULL,$actualizar_items=1) {
   set_time_limit(3600);
   //
   //intelsat-2014
-  if(hontza_is_sareko_id('ROOT')){
+  /*if(hontza_is_sareko_id('ROOT')){
       return;
-  }
+  }*/
   //intelsat-2015
   if($actualizar_items){
     hontza_solr_actualizar_items();
