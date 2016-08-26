@@ -103,9 +103,13 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
     //
     $url_mi_grupo='mi-grupo';
     $my_grupo=og_get_group_context();
+    //intelsat-2016
+    $my_lang=hontza_grupos_mi_grupo_get_lang_url();        
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $url_mi_grupo=$base_url.'/'.$my_grupo->purl.'/mi-grupo';
-        $html[]=l(t('Group Settings'),$url_mi_grupo,array('absolute'=>TRUE));
+        //intelsat-2016
+        //$url_mi_grupo=$base_url.'/'.$my_grupo->purl.'/mi-grupo';
+        $url_mi_grupo=$base_url.$my_lang.'/'.$my_grupo->purl.'/mi-grupo';
+        $html[]=l(t('Group Settings'),$url_mi_grupo,array('absolute'=>TRUE));        
     }else{
         $html[]=l(t('Group Settings'),$url_mi_grupo);
     }
@@ -124,7 +128,9 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
                             $options=array('html'=>TRUE,'query'=>drupal_get_destination(),array('attributes'=>array('title'=>t('Disconnect from Network'),'alt'=>t('Disconnect from Network'))));
                             $url_no_network='red_compartir/no_compartir_grupo_hoja/'.$nid;
                             if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-                                $url_no_network=$base_url.'/'.$my_grupo->purl.'/'.$url_no_network;
+                                //intelsat-2016
+                                //$url_no_network=$base_url.'/'.$my_grupo->purl.'/'.$url_no_network;
+                                $url_no_network=$base_url.$my_lang.'/'.$my_grupo->purl.'/'.$url_no_network;
                                 $options['absolute']=TRUE;
                             }                        
                             //$label=my_get_icono_action('no_network', t('Disconnect from Network')).t('Disconnect from Network');
@@ -136,7 +142,9 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
                             //$url_sign_network='red_compartir/compartir_grupo_hoja/'.$nid;
                             $url_sign_network=hontza_registrar_get_url_sign_network($nid);
                             if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-                                $url_sign_network=$base_url.'/'.$my_grupo->purl.'/'.$url_sign_network;
+                                //intelsat-2016
+                                //$url_sign_network=$base_url.'/'.$my_grupo->purl.'/'.$url_sign_network;
+                                $url_sign_network=$base_url.$my_lang.'/'.$my_grupo->purl.'/'.$url_sign_network;
                                 $options['absolute']=TRUE;
                             }                        
                             //$label=my_get_icono_action('network', t('Connect to Network')).t('Connect to Network');
@@ -160,7 +168,8 @@ function hontza_grupos_mi_grupo_get_manage_group_content(){
         $html[]=red_visualizador_get_grupo_activate_observatory_link();
     }*/
     //intelsat-2016
-    if(red_dashboard_is_activado()){
+    //if(red_dashboard_is_activado()){
+    if(red_dashboard_is_searches()){
         $html[]=l(t('Searches'),'custom_dashboard/searches');
     }
     //
@@ -182,9 +191,13 @@ function hontza_grupos_mi_grupo_get_users_content(){
     $remove_from_group='';
     //
     $label_list_of_users=t('List of Users');
+    //intelsat-2016
+    $my_lang=hontza_grupos_mi_grupo_get_lang_url();
     //    
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $html[]=l($label_list_of_users,$base_url.'/'.$my_grupo->purl.'/hontza_grupos/usuarios_mas_contacto',array('absolute'=>TRUE));
+        //intelsat-2016
+        //$html[]=l($label_list_of_users,$base_url.'/'.$my_grupo->purl.'/hontza_grupos/usuarios_mas_contacto',array('absolute'=>TRUE));
+        $html[]=l($label_list_of_users,$base_url.$my_lang.'/'.$my_grupo->purl.'/hontza_grupos/usuarios_mas_contacto',array('absolute'=>TRUE));
         //$url_add_remove_users='og/users/'.$my_grupo->nid.'/add_user';
         $url_add_remove_users='og/users/'.$my_grupo->nid;
         //intelsat-2015
@@ -200,7 +213,9 @@ function hontza_grupos_mi_grupo_get_users_content(){
     if(is_administrador_grupo(1)){
         $label_analysis_of_users=t('Analysis of Users');
         if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-            $html[]=l($label_analysis_of_users,$base_url.'/'.$my_grupo->purl.'/usuarios_acceso/todos',array('absolute'=>TRUE));
+            //intelsat-2016
+            //$html[]=l($label_analysis_of_users,$base_url.'/'.$my_grupo->purl.'/usuarios_acceso/todos',array('absolute'=>TRUE));
+            $html[]=l($label_analysis_of_users,$base_url.$my_lang.'/'.$my_grupo->purl.'/usuarios_acceso/todos',array('absolute'=>TRUE));
         }else{
             $html[]=l($label_analysis_of_users,'usuarios_acceso/todos');        
         }
@@ -1554,4 +1569,43 @@ function hontza_grupos_mi_grupo_is_grupo_tab_activado(){
         return 0;
     }
     return 1;
+}
+function hontza_grupos_mi_grupo_get_lang_url(){
+    global $language;
+    $result='';
+    if($language->language!='en'){
+        $result='/'.$language->language;
+        return $result;
+    }
+    return '';
+}
+//intelsat-2016        
+function hontza_grupos_mi_grupo_active_channel_grupo_node_form_alter(&$form,&$form_state, $form_id){
+    /*if(isset($form['#field_info']['field_group_active_refresh']['allowed_values_php'])){
+        $value='$result=array();
+        $result[0]=t("Active channels");
+        $result[1]=t("Active channels");
+        return $result;';
+        $form['#field_info']['field_group_active_refresh']['allowed_values_php']=$value;
+        echo print_r($form['#field_info']['field_group_active_refresh'],1);exit();
+    }*/
+    /*$field_group_active_refresh=$form['field_group_active_refresh']['#default_value'];
+    //$field_group_active_refresh_weight=$form['field_group_active_refresh']['#weight'];
+    if(isset($form['field_group_active_refresh'])){
+        unset($form['field_group_active_refresh']);
+    }    
+    $form['field_group_active_refresh']=array(
+        '#type'=>'checkbox',
+        '#title'=>t('Active channels'),
+        '#default_value'=>$field_group_active_refresh,
+        //'#weight'=>field_group_active_refresh_weight,
+    );*/
+    /*$form['field_group_active_refresh']['#title']=t("Active channels");
+    $form['#field_info']['field_group_active_refresh']['widget']['label']=t("Active channels");*/
+}
+function hontza_grupos_mi_grupo_get_active_refresh_options(){
+    $result=array();
+    $result[0]=t('Active channels');
+    $result[1]=t('Active channels');
+    return $result;
 }

@@ -209,6 +209,7 @@ function hontza_grupos_form_alter(&$form, &$form_state, $form_id) {
         if(isset($form['field_is_active_votes'])){
             unset($form['field_is_active_votes']);
         }
+        //hontza_grupos_mi_grupo_active_channel_grupo_node_form_alter($form,$form_state, $form_id);
         //       
     }    
 }
