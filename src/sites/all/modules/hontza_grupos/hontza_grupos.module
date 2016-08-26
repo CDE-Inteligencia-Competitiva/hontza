@@ -210,6 +210,7 @@ function hontza_grupos_form_alter(&$form, &$form_state, $form_id) {
             unset($form['field_is_active_votes']);
         }
         //hontza_grupos_mi_grupo_active_channel_grupo_node_form_alter($form,$form_state, $form_id);
+        hontza_grupos_mi_grupo_is_grupo_observatorio_grupo_node_form_alter($form,$form_state, $form_id,$node);
         //       
     }    
 }

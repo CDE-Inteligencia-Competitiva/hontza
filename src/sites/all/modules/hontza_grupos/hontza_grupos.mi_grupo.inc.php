@@ -1609,3 +1609,78 @@ function hontza_grupos_mi_grupo_get_active_refresh_options(){
     $result[1]=t('Active channels');
     return $result;
 }
+function hontza_grupos_mi_grupo_is_grupo_observatorio_options(){
+    $result=array();
+    $result[0]=t('Public observatory');
+    $result[1]=t('Public observatory');
+    return $result;
+}
+function hontza_grupos_mi_grupo_is_show_grupo_colaborativo_observatorio($is_visualizador_grupos_colaborativos,$grupo_node){
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if($is_visualizador_grupos_colaborativos){
+            if(hontza_is_user_anonimo()){
+                if(hontza_grupos_mi_grupo_is_grupo_colaborativo($grupo_node)){
+                    if(isset($grupo_node->field_is_grupo_observatorio)){
+                        if(isset($grupo_node->field_is_grupo_observatorio[0]['value']) && $grupo_node->field_is_grupo_observatorio[0]['value']==1){
+                            return 1;
+                        }
+                        return 0;
+                    }
+                }    
+            }
+        }
+    }    
+    return 1;
+}
+function hontza_grupos_mi_grupo_is_grupo_colaborativo($grupo_node){
+    if(isset($grupo_node->taxonomy[27])){
+        return 1;
+    }
+    return 0;
+}
+function hontza_grupos_mi_grupo_is_grupo_observatorio_grupo_node_form_alter(&$form,&$form_state, $form_id,$grupo_node){
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(isset($form['field_is_grupo_observatorio'])){            
+            $form['field_is_grupo_observatorio']['#description']=t('When activated, highlighted news of this collaborative group will be');
+            /*if(!hontza_grupos_mi_grupo_is_grupo_colaborativo($grupo_node)){
+                unset($form['field_is_grupo_observatorio']);
+            }*/            
+        }
+        hontza_grupos_mi_grupo_add_is_grupo_observatorio_form_js($grupo_node);    
+    }else{
+        if(isset($form['field_is_grupo_observatorio'])){
+            unset($form['field_is_grupo_observatorio']);
+        }
+    }
+}
+function hontza_grupos_mi_grupo_add_is_grupo_observatorio_form_js($grupo_node){
+    $is_grupo_colaborativo=hontza_grupos_mi_grupo_is_grupo_colaborativo($grupo_node);
+    if(hontza_canal_rss_is_visualizador_activado()){
+        $js='
+            var is_grupo_colaborativo='.$is_grupo_colaborativo.';
+            $(document).ready(function()
+            {
+                if(is_grupo_colaborativo){
+                    $("#edit-field-is-grupo-observatorio-value-wrapper").css("display","block");
+                }else{    
+                    $("#edit-field-is-grupo-observatorio-value-wrapper").css("display","none");
+                }
+                $("#edit-taxonomy-6").change(function()
+                {
+                   if(is_show_grupo_observatorio_checkbox($(this).val())){
+                        $("#edit-field-is-grupo-observatorio-value-wrapper").css("display","block");
+                   }else{
+                        $("#edit-field-is-grupo-observatorio-value-wrapper").css("display","none");
+                   }
+                });
+                function is_show_grupo_observatorio_checkbox(tid){
+                    if(tid==27){
+                        return 1;
+                    }
+                    return 0;
+                }
+            });';
+
+        drupal_add_js($js,'inline');        
+    }
+}
