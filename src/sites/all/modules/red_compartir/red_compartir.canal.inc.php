@@ -636,7 +636,7 @@ function red_compartir_canales_copy_filtro_form(){
         '#title'=>t('Region'),
         '#options'=>  red_regiones_define_regiones_options(1),    
         "#default_value"=>red_compartir_canales_copy_get_filter_value('region'));*/
-     $form['file_buscar_fs']['region_fs']=red_regiones_define_fieldset('', red_compartir_canales_copy_get_filter_value('region'));       
+     //$form['file_buscar_fs']['region_fs']=red_regiones_define_fieldset('', red_compartir_canales_copy_get_filter_value('region'));       
     
     $form['file_buscar_fs']['average']=
         array('#type'=>'select',
