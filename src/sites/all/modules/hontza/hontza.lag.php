@@ -431,6 +431,8 @@ function my_get_usuarios_estadisticas_por_empresa_content(){
     }
     //gemini-2014
     $my_grupo=og_get_group_context();
+    //intelsat-2016
+    $my_lang=hontza_grupos_mi_grupo_get_lang_url();
     if(isset($user->uid) && !empty($user->uid)){
         $html=array();
         $html[]='<div class="item-list">';
@@ -445,7 +447,9 @@ function my_get_usuarios_estadisticas_por_empresa_content(){
                 //$my_link=l($my_link,'usuarios_estadisticas/'.$my_link);
                 //$my_link=l($my_link,'usuarios_captacion_informacion/'.$my_link);
                 if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-                    $my_link=l($my_link,$base_url.'/'.$my_grupo->purl.'/usuarios_acceso/'.$my_link,array('absolute'=>TRUE));
+                    //intelsat-2016
+                    //$my_link=l($my_link,$base_url.'/'.$my_grupo->purl.'/usuarios_acceso/'.$my_link,array('absolute'=>TRUE));
+                    $my_link=l($my_link,$base_url.$my_lang.'/'.$my_grupo->purl.'/usuarios_acceso/'.$my_link,array('absolute'=>TRUE));
                 }else{    
                     $my_link=l($my_link,'usuarios_acceso/'.$my_link);
                 }
