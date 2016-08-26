@@ -29,7 +29,7 @@ function panel_admin_dashboard_settings_form(){
 }
 function panel_admin_dashboard_get_dashboard_type_options(){
     $result=array();
-    $result['normal']=t('Normal');
+    $result['normal']=t('Standard');
     $result['searches']=t('Searches');
     return $result;
 }
