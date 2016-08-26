@@ -364,7 +364,7 @@ function panel_admin_menu() {
     'access callback'=>'panel_admin_admin_access',    
     );
     $items['panel_admin/activate_observatory/edit']=array(
-    'title' => 'Activate Observatory',
+    'title' => 'Public Observatory',
     'page callback' => 'panel_admin_activate_observatory_edit_callback',
     'access callback'=>'panel_admin_admin_access',    
     );
@@ -1163,7 +1163,7 @@ function panel_admin_visualizador_get_block_content(){
     $html=array();
     if(hontza_canal_rss_is_visualizador_defined()){
         $activate_url='panel_admin/activate_observatory/edit';
-        $html[]=l(t('Activate Observatory'),$activate_url);        
+        $html[]=l(t('Public Observatory'),$activate_url);        
     }
     if(hontza_canal_rss_is_visualizador_activado()){
         $edit_main_content_url=panel_admin_visualizador_get_edit_main_content_url();
@@ -1466,8 +1466,11 @@ function panel_admin_activate_observatory_edit_callback(){
 function panel_admin_activate_observatory_edit_form(){
     $form=array();
     $form['activate_observatory']=array(
-        '#title'=>t('Activate Observatory'),
-        '#type'=>'checkbox',        
+         //intelsat-2016
+        '#title'=>t('Activate Public Groups'),
+        '#type'=>'checkbox',
+        //intelsat-2016
+        '#description'=>'When activated, highlighted news of public groups will be published',        
     );
     $activate_observatory=variable_get('is_visualizador',0);
     if($activate_observatory){
@@ -1482,6 +1485,8 @@ function panel_admin_activate_observatory_edit_form(){
     $form['cancel_btn']=array(
         '#value'=>l(t('Cancel'),$url_cancel),        
     );
+    //intelsat-2016
+    drupal_set_title(t('Public Observatory'));
     return $form;
 }
 function panel_admin_activate_observatory_edit_form_submit($form,&$form_state){
