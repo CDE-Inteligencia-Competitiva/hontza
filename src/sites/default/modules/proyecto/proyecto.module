@@ -1690,7 +1690,7 @@ function get_lista_proyectos_title(){
         $result='Not Approved Projects';
     }else{
         //$result.='-Last';
-        $result='Last Projects';
+        $result='Latest Projects';
     }
     return t($result);
 }
