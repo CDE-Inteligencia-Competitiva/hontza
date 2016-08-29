@@ -1409,7 +1409,7 @@ function help_oportunidad_list(){
     return help_popup_window(15330, 'help',my_get_help_link_object());
 }
 function get_lista_oportunidad_title(){
-    $result='Last Opportunities';
+    $result='Latest Opportunities';
     if(is_idea('oportunidades_mas_valoradas')){
         //$result.='-Top Rated';
         $result='Top Rated Opportunities';
