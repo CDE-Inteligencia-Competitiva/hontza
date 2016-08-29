@@ -1165,7 +1165,8 @@ function panel_admin_visualizador_get_block_content(){
         $activate_url='panel_admin/activate_observatory/edit';
         $html[]=l(t('Public Observatory'),$activate_url);        
     }
-    if(hontza_canal_rss_is_visualizador_activado()){
+    $is_panel_admin=1;
+    if(hontza_canal_rss_is_visualizador_activado($is_panel_admin)){
         $edit_main_content_url=panel_admin_visualizador_get_edit_main_content_url();
         $html[]=l(t('Edit Main Content'),$edit_main_content_url);
         $edit_about_us_url=panel_admin_visualizador_get_edit_about_us_url();
