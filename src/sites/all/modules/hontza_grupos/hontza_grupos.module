@@ -211,6 +211,7 @@ function hontza_grupos_form_alter(&$form, &$form_state, $form_id) {
         }
         //hontza_grupos_mi_grupo_active_channel_grupo_node_form_alter($form,$form_state, $form_id);
         hontza_grupos_mi_grupo_is_grupo_observatorio_grupo_node_form_alter($form,$form_state, $form_id,$node);
+        hontza_grupos_mi_grupo_add_grupo_node_validate($form,$form_state, $form_id);
         //       
     }    
 }
@@ -733,6 +734,7 @@ function hontza_grupos_define_active_tabs_structure(){
         $result[6]['value']=7;
     }
     if(red_dashboard_is_activado() || !hontza_grupos_mi_grupo_is_grupo_tab_activado()){
+    //if(!hontza_grupos_mi_grupo_is_grupo_tab_activado()){
         $result[7]['label']=t('Group');
         $result[7]['key']='grupo';
         $result[7]['menu_url']='mi-grupo';
@@ -745,6 +747,11 @@ function hontza_grupos_is_activo_pestana($key,$group_nid_in='',$grupo_node='',$r
     //intelsat-2016
     if($key=='fuentes'){
         return 0;
+    }
+    if($key=='grupo'){
+      if(red_dashboard_is_activado() || !hontza_grupos_mi_grupo_is_grupo_tab_activado()){
+        return 0;
+      }  
     }
     //intelsat-2015
     if(red_despacho_is_show_custom_activo_pestana($key)){
@@ -785,7 +792,7 @@ function hontza_grupos_is_activo_pestana($key,$group_nid_in='',$grupo_node='',$r
     //
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
         if(isset($my_grupo->field_group_active_tabs) && !empty($my_grupo->field_group_active_tabs)){
-            $pestana_value=hontza_grupos_get_pestana_value($key);
+            $pestana_value=hontza_grupos_get_pestana_value($key);            
             if(!empty($pestana_value)){
                 foreach($my_grupo->field_group_active_tabs as $i=>$row){
                     $value=$row['value'];
