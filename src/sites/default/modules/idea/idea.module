@@ -1182,8 +1182,10 @@ function create_menu_ideas(){
     }else{
         $html[]='<li class="ideas_menu_li" id="li_ultimas_ideas">';
     }
-    //$html[]=l('Last ideas','ideas');
-    $html[]=l(t('.Last'),'ideas');
+    //$html[]=l('Latest Ideas','ideas');
+    //intelsat-2016
+    //$html[]=l(t('.Last'),'ideas');
+    $html[]=l(t('.Latest'),'ideas');
     $html[]='</li>';
     //
     if(is_idea('mas_valoradas') && !is_ficha_node('idea')){
@@ -1207,7 +1209,9 @@ function create_menu_ideas(){
     }else{
         $html[]='<li class="ideas_menu_li" id="li_oportunidades">';
     }
-    $html[]=l(t('.Last'),'ideas/oportunidades');
+    //intelsat-2016
+    //$html[]=l(t('.Last'),'ideas/oportunidades');
+    $html[]=l(t('.Latest'),'ideas/oportunidades');
     $html[]='</li>';
     //
     if((is_idea('oportunidades_mas_valoradas') && !is_ficha_node('idea')) || (is_oportunidad('mas_valoradas') && !is_ficha_node('oportunidad'))){
@@ -1224,7 +1228,9 @@ function create_menu_ideas(){
         $html[]='<li class="ideas_menu_li" id="li_proyectos">';
     }
     //$html[]=l('Last','ideas/proyectos');
-    $html[]=l(t('Last'),'proyectos/todas');
+    //intelsat-2016
+    //$html[]=l(t('Last'),'proyectos/todas');
+    $html[]=l(t('Latest'),'proyectos/todas');
     $html[]='</li>';
     //
     if(is_idea('borrador') && !is_ficha_node('idea')){
@@ -2539,7 +2545,7 @@ function get_lista_ideas_title(){
     $param=arg(1);
     if(strcmp(arg(0),'ideas')==0 && empty($param)){
         //$result.='-Last';
-        $result='Last Ideas';
+        $result='Latest Ideas';
     }else if(is_idea('mas_valoradas')){
         //$result.='-Top Rated';
         $result='Top Rated Ideas';
