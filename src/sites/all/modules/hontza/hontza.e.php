@@ -1402,8 +1402,7 @@ function hontza_area_debate_create_menu_node_list(){
     $html[]='<div id="tabs-primary" class="tabs primary">';
     $html[]='<ul>';
     //intelsat-2015
-    //$last_title=t('Last Discussions');
-    $last_title=t('Last Comments');
+    $last_title=t('Latest Comments');
     $html[]='<li'.hontza_area_debate_menu_class('').'>'.l($last_title,'area-debate').'</li>';
     $html[]='<li'.hontza_area_debate_menu_class('lo-mas-valorado').'>'.l(t('Top Rated Discussions'),'area-debate/lo-mas-valorado').'</li>';
     $html[]='</ul>';
@@ -1446,8 +1445,7 @@ function hontza_area_trabajo_create_menu_node_list(){
     $html[]='<div class="tab-wrapper clearfix primary-only">';
     $html[]='<div id="tabs-primary" class="tabs primary">';
     $html[]='<ul>';
-    //$last_title=t('Last Documents');
-    $last_title=t('Last Inputs');
+    $last_title=t('Latest Inputs');
     $html[]='<li'.hontza_area_trabajo_menu_class('').'>'.l($last_title,'area-trabajo').'</li>';
     $html[]='<li'.hontza_area_trabajo_menu_class('lo-mas-valorado').'>'.l(t('Top Rated Documents'),'area-trabajo/lo-mas-valorado').'</li>';
     $html[]='</ul>';
