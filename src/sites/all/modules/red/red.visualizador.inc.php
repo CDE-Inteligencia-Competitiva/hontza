@@ -111,4 +111,22 @@ function red_visualizador_is_visualizador_activado_menu_icono(){
         return 1;
     }
     return 0;    
-} 
+}
+function red_visualizador_get_grupo_node_array(){
+    $result=array();
+    $sql='SELECT * FROM {node} WHERE type="grupo"';
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        //$grupo_node=node_load($row->nid);
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_visualizador_get_content_type_row($grupo_node){
+    $res=db_query('SELECT * FROM {content_type_grupo} WHERE nid=%d AND vid=%d',$grupo_node->nid,$grupo_node->vid);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
