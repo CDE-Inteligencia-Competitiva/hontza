@@ -1113,9 +1113,9 @@ function hontza_canal_rss_is_vcard_activado(){
     return 0;
 }
 //intelsat-2015
-function hontza_canal_rss_is_visualizador_activado(){
+function hontza_canal_rss_is_visualizador_activado($is_panel_admin=0){
     if(module_exists('visualizador')){
-        if(visualizador_is_visualizador_activado()){
+        if(visualizador_is_visualizador_activado($is_panel_admin)){
             return 1;
         }
     }
