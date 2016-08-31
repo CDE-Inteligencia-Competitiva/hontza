@@ -687,3 +687,10 @@ function red_canal_array_reverse_item_array($item_array_in,&$batch){
       }
   }
 }
+function red_canal_get_activated_channel_options(){
+    $result=array();
+    $label=t('Activated channel');
+    $result[0]=$label;
+    $result[1]=$label;
+    return $result;
+}
