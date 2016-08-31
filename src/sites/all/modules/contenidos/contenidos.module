@@ -76,7 +76,7 @@ function contenidos_menu() {
     'access callback'=>'contenidos_custom_access',
   );
   $items['contenidos/canales/activate_confirm']=array(
-    'title'=>t('Activate channel'),
+    'title'=>t('Activated channel'),
     'page callback' => 'drupal_get_form',
     'page arguments'   => array('contenidos_canales_activate_confirm_form'),
     'access callback'=>'contenidos_custom_access',
