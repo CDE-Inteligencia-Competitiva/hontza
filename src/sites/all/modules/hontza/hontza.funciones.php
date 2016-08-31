@@ -242,7 +242,7 @@ function my_add_menu_node_link($param){
                                 if(hontza_is_congelar_canal_sareko_id() && hontza_activar_actualizacion_canal_access($node)){
                                     $label_activar='';
                                     if(hontza_is_canal_congelado($node)){
-                                        $label_activar=t('Activate channel');
+                                        $label_activar=t('Activated channel');
                                     }else{
                                         $label_activar=t('Deactivate channel');
                                     }

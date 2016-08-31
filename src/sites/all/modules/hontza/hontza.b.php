@@ -289,7 +289,7 @@ function beste_menu_items($items_in){
     'access arguments' => array('root'),
     );
     $items['activar_actualizacion_canal']=array(
-    'title'=>t('Activate channel'),
+    'title'=>t('Activated channel'),
     /*'page callback' => 'drupal_get_form',
     'page arguments'   => array('hontza_activar_actualizacion_canal_form'),*/
     'page callback' => 'hontza_activar_actualizacion_canal_callback',    
@@ -316,7 +316,7 @@ function beste_menu_items($items_in){
     'access arguments' => array('access content'),
     );
     $items['vigilancia/activar_actualizacion_canal_ajax']=array(                
-    'title'=>t('Activate Channel'),
+    'title'=>t('Activated channel'),
     'page callback' => 'hontza_activar_actualizacion_canal_ajax_callback',  
     'access arguments' => array('access content'),
     );

@@ -1711,7 +1711,7 @@ function hontza_is_congelar_canal_sareko_id(){
     return 1;
 }
 function hontza_activar_actualizacion_canal_form(){
-    drupal_set_title(t('Activate channel'));
+    drupal_set_title(t('Activated channel'));
     $canal_nid=arg(1);
     $form=array();
     $active_refresh=0;
@@ -1728,7 +1728,7 @@ function hontza_activar_actualizacion_canal_form(){
     );
     $form['active_refresh']=array(
         '#type'=>'checkbox',
-        '#title'=>t('Activate channel'),        
+        '#title'=>t('Activated channel'),        
     );
     if(!empty($active_refresh)){
         $form['active_refresh']['#attributes']['checked']='checked';

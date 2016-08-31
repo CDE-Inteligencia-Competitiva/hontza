@@ -821,7 +821,7 @@ function hontza_activar_actualizacion_canal_ajax_callback(){
     if(isset($_POST['activar_canal_nid']) && !empty($_POST['activar_canal_nid'])){
         $new_value=hontza_activar_actualizacion_canal($_POST['activar_canal_nid']);
     }
-    $result['label']=t('Activate Channel');
+    $result['label']=t('Activated channel');
     $result['yes_label']=t('No');
     if($new_value){
         $result['label']=t('Deactivate Channel');
