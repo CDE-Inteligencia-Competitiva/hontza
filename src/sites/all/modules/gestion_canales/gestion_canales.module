@@ -20,7 +20,7 @@ function gestion_canales_menu() {
     'access callback' => 'gestion_canales_custom_access',   
   );
   $items['gestion/gestion_canales/activate_confirm']=array(
-    'title'=>t('Activate channel'),
+    'title'=>t('Activated channel'),
     'page callback' => 'drupal_get_form',
     'page arguments'   => array('gestion_canales_activate_confirm_form'),
     //intelsat-2015  
