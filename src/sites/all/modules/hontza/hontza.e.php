@@ -1589,6 +1589,8 @@ function hontza_is_item_duplicado($elemento,$source='',$canal_in='',$url_rss_in=
     //intelsat-2015
     //if(hontza_is_sareko_id_desduplicados()){
     if(hontza_is_sareko_id_desduplicados($source)){
+        //intelsat-2016
+        /*
         //intelsat-2015
         if(hontza_solr_search_is_canal_correo($source,$canal_in,$url_rss_in)){
             return 0;
@@ -1600,11 +1602,18 @@ function hontza_is_item_duplicado($elemento,$source='',$canal_in='',$url_rss_in=
         if(count($item_uniq_array)>0){
             return 1;
         }
-        /*$uniqTxtID=hontza_get_elemento_uniq($elemento);
-        $item_uniq_txt_id_array=hontza_get_uniq_item_array($uniqTxtID,1,$source);
-        if(count($item_uniq_txt_id_array)>0){
-            return 1;
-        }*/        
+        //$uniqTxtID=hontza_get_elemento_uniq($elemento);
+        //$item_uniq_txt_id_array=hontza_get_uniq_item_array($uniqTxtID,1,$source);
+        //if(count($item_uniq_txt_id_array)>0){
+        //    return 1;
+        //}
+        */
+        return red_despacho_is_item_duplicado($elemento,$source,$canal_in,$url_rss_in,1);
+    }else{
+        //intelsat-2016
+        if(!red_despacho_is_sareko_id_desduplicados($source)){
+            return red_despacho_is_item_duplicado($elemento,$source,$canal_in,$url_rss_in,0);
+        }
     }
     return 0;
 }
@@ -1624,14 +1633,8 @@ function hontza_is_sareko_id_desduplicados($source_in=''){
         }
         return 0;
     }*/
-    $source=clone $source_in;
-    $source=(array) $source;
-    $feed_nid=red_despacho_get_protected_value($source,'feed_nid');
-    //if(isset($source->feed_nid) && !empty($source->feed_nid)){
-    if(!empty($feed_nid)){
-        if(red_despacho_is_canal_duplicate_news($feed_nid)){
-            return 0;
-        }
+    if(!red_despacho_is_sareko_id_desduplicados($source_in)){
+        return 0;
     }
     return 1;
 }
@@ -1906,11 +1909,15 @@ function hontza_content_full_text($node,$is_content_body_value=0){
     //
     return $result;
 }
-function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info_cut=''){
+//intelsat-2016
+//function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info_cut=''){
+function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info_cut='',$is_solo_url=1){        
     $result=array();
     $link='';
     $guid='';
     $url='';
+    //intelsat-2016
+    $title='';
     //
     if(is_array($elemento)){
         if(isset($elemento['link'])){
@@ -1922,6 +1929,10 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
         if(isset($elemento['url'])){
             $url=(string) $elemento['url'];
         }
+        //intelsat-2016
+        if(isset($elemento['title'])){
+            $title=(string) $elemento['title'];
+        }
     }else{
         if(isset($elemento->link)){
             $link=(string) $elemento->link;
@@ -1931,6 +1942,10 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
         }
         if(isset($elemento->url)){
             $url=(string) $elemento->url;
+        }
+        //intelsat-2016
+        if(isset($elemento->title)){
+            $title=(string) $elemento->title;
         }    
     }
     if(empty($link) && empty($guid) && empty($url)){
@@ -1993,9 +2008,17 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
                 $or[]='feeds_node_item.guid LIKE "'.$link_ini.'%%'.$link_end.'"';
             }
         }
-        $where[]='('.implode(' OR ',$or).')';
+        //intelsat-2016
+        //$where[]='('.implode(' OR ',$or).')';
+        $or_url='('.implode(' OR ',$or).')';
+        if($is_solo_url){
+            $where[]=$or_url;
+        }else{
+            $where[]=$or_url.' AND n.title="%s"';
+        }
         $my_grupo=og_get_group_context();
         //simulando
+        //http://192.168.110.210/proba/hontza/estatico.rss
         //$my_grupo='';
         if($with_grupo==1 && isset($my_grupo->nid) && !empty($my_grupo->nid)){
             $where[]='og_ancestry.group_nid='.$my_grupo->nid;
@@ -2020,7 +2043,12 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
         /*if(!empty($info_cut['guid'])){
             print $sql;exit();
         }*/
-        $res=db_query($sql);
+        //intelsat-2016
+        if($is_solo_url){
+            $res=db_query($sql);
+        }else{
+            $res=db_query($sql,$title);
+        }
         while($row=db_fetch_object($res)){
             $result[]=$row;
         }
