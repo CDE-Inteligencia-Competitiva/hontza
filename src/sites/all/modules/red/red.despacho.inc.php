@@ -1011,4 +1011,37 @@ function red_despacho_boletin_report_get_email_body_id(){
         return _DESPACHO_EMAIL_BODY_ID;
     }
     return '';
-}        
+}
+function red_despacho_is_sareko_id_desduplicados($source_in=''){
+    $source=clone $source_in;
+    $source=(array) $source;
+    $feed_nid=red_despacho_get_protected_value($source,'feed_nid');
+    //if(isset($source->feed_nid) && !empty($source->feed_nid)){
+    if(!empty($feed_nid)){
+        if(red_despacho_is_canal_duplicate_news($feed_nid)){
+            return 0;
+        }
+    }
+    return 1;
+}
+function red_despacho_is_item_duplicado($elemento,$source='',$canal_in='',$url_rss_in='',$is_solo_url=1){
+        //intelsat-2015
+        if(hontza_solr_search_is_canal_correo($source,$canal_in,$url_rss_in)){
+            return 0;
+        }
+        //
+        $info_cut=hontza_get_item_url_cut($elemento);
+        //intelsat-2016
+        //$item_uniq_array=hontza_get_guid_url_item_array($elemento,1,$source,$info_cut);
+        $item_uniq_array=hontza_get_guid_url_item_array($elemento,1,$source,$info_cut,$is_solo_url);
+        //echo print_r($item_uniq_array,1);exit();
+        if(count($item_uniq_array)>0){
+            return 1;
+        }
+        //$uniqTxtID=hontza_get_elemento_uniq($elemento);
+        //$item_uniq_txt_id_array=hontza_get_uniq_item_array($uniqTxtID,1,$source);
+        //if(count($item_uniq_txt_id_array)>0){
+        //    return 1;
+        //}        
+    return 0;
+}     
