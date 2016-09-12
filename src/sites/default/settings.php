@@ -89,7 +89,8 @@
  *   $db_url = 'mysqli://username:password@localhost/databasename';
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
-$db_url['default'] = 'mysql://user:password@localhost/hontza';
+$db_url['default'] = 'mysql://username:password@localhost/hontza';
+
 $db_prefix = '';
 
 define('_SAREKO_ID', 'BLANCO');
@@ -107,6 +108,7 @@ define('_IS_GUARDAR_BOLETIN_REPORT_AUTOMATICO',0);
 define('_IS_CUSTOM_CSS_HONTZA',1);
 define('_IS_BOOKMARK',1);
 define('_IS_BOOKMARK_ADMIN',1);
+define('_IS_SOLR_SEND',1);
 //define('_IS_SOLR_ACTUALIZAR_ITEMS',0);
 define('_IS_CANAL_USUARIO',1);
 define('_IS_SOLR_STATUS',1);
@@ -118,7 +120,10 @@ define('_IS_CANAL_JSON',1);
 define('_IS_FACILITADOR_WITH_USER',1);
 define('_IS_CANAL_OPENCALAIS',1);
 define('_IS_ESTRATEGIA_CONGELAR_VOTO',1);
-
+define('_RED_EXPORTAR_RSS_PREFIJO_SITES','default');
+define('_IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO',1);
+define('_IS_CANAL_DUPLICATE_NEWS',1);
+define('_IS_GRUPO_TAB_ACTIVADO',0);
 //Red fields
 define('_FIELD_RED_ITEM_WEB_NAME','field_igape_item_web');
 define('_FIELD_RED_IDIOMAS_NAME','field_igape_idiomas');
@@ -285,4 +290,4 @@ set_time_limit(3600);
 # $conf['locale_custom_strings_en'] = array(
 #   'forum'      => 'Discussion board',
 #   '@count min' => '@count minutes',
-# ); 
+# );
