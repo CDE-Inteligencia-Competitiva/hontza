@@ -1030,6 +1030,8 @@ function apachesolr_search_search_results($keys = NULL, $conditions_in = NULL, $
             $my_solr_conditions=$conditions;
         }
         //
+        //simulando
+        //$solrsort='itm_field_item_validate_status desc';
         $results = apachesolr_search_run('apachesolr', $params, $solrsort, $search_page['search_path'], $page, $solr,$is_alerta,$my_solr_conditions);
         //intelsat-2014
         if(hontza_solr_is_all_results()){
