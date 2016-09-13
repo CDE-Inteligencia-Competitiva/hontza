@@ -521,6 +521,7 @@ function hontza_solr_search_set_my_destination($is_solr=0){
     global $base_root;    
     if($is_solr){
         $result=hontza_solr_get_busqueda().'&solrsort=ds_created desc';
+        //print $result;exit();
         if(isset($_REQUEST['is_select_bookmark_all']) && !empty($_REQUEST['is_select_bookmark_all'])){
             $result.='&is_select_bookmark_all=1';
         }
@@ -873,7 +874,12 @@ function hontza_solr_search_add_solrsort($url){
         $result=$url;
         parse_str($url_info['query'],$my_array);
         if(!isset($my_array['solrsort'])){
-            $result.='&solrsort=ds_created desc';
+            //intelsat-2016
+            /*if(isset($_SESSION['my_order_solrsort_form']) && !empty($_SESSION['my_order_solrsort_form'])){
+                $result.=$_SESSION['my_order_solrsort_form'];
+            }else{*/
+                $result.='&solrsort=ds_created desc';
+            //}
         }
         return $result;
     }    

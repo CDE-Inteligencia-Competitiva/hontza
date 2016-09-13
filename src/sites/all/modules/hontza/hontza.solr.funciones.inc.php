@@ -1177,6 +1177,8 @@ function hontza_solr_funciones_save_bookmark_multiple_vote($node){
                     foreach($node_id_array as $i=>$nid){
                         $node_vote=node_load($nid);
                         hontza_solr_funciones_insert_votingapi($node_vote,$value);
+                        //intelsat-2016
+                        red_solr_inc_update_node_rated($node_vote);
                         //hontza_solr_funciones_delete_bookmark_row($node_vote->nid,$node_vote->vid,$user->uid);
                         //intelsat-2015
                         hontza_canal_rss_solr_on_bookmark_multiple_vote($nid);
