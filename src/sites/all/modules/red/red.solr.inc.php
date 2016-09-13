@@ -1708,10 +1708,10 @@ function red_solr_inc_notica_node_form_alter(&$form,&$form_state,$form_id){
 function red_solr_inc_get_my_order_options(){
     $result=array();
     $result[1]=t('By date');
-    $result[2]=t('By validation');
-    $result[3]=t('By rating');
+    //$result[2]=t('By validation');
+    //$result[3]=t('By rating');
     $result[4]=t('By comments');
-    $result[5]=t('By bookmarks');
+    //$result[5]=t('By bookmarks');
     return $result;
 }
 function red_solr_inc_is_my_order(){
@@ -1964,4 +1964,21 @@ function red_solr_inc_unset_facet_field_tipo($result_in,$facet_field){
         }
     }
     return $result_in;
+}
+function red_apachesolr_query_prepare($query) {
+  $query->setAvailableSort('is_comment_count', array(
+    'title' => t('By comments'),
+    'default' => 'desc',
+  ));
+}
+function red_solr_inc_get_query_solrsort($form_state){
+  $field='ds_created';
+  if(isset($form_state['values']['my_order']) && !empty($form_state['values']['my_order'])){
+    if($form_state['values']['my_order']==4){
+        $field='is_comment_count desc,ds_created';
+    }
+  }
+  $result='&solrsort='.$field.' desc';
+  $_SESSION['my_order_solrsort_form']=$result;
+  return $result;    
 }
