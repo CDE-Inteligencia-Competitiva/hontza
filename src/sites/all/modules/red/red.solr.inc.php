@@ -422,7 +422,11 @@ function red_solr_inc_actualizar_rated($item_array){
 function red_solr_inc_update_node_rated($node){
    if(red_solr_inc_is_status_activado()){
     $rated=red_solr_inc_get_rated($node);
-    red_solr_inc_update_item_rated($node,$rated);
+    if($node->type=='item'){
+        red_solr_inc_update_item_rated($node,$rated);
+    }else if($node->type=='noticia'){
+        red_solr_inc_update_noticia_rated($node,$rated);
+    }    
     $updated=0;
     hontza_solr_set_item_solr_updated($node,$updated);
     if(red_solr_inc_is_rated_clear_node_index($rated)){        
@@ -434,8 +438,12 @@ function red_solr_inc_get_rated($node){
     $result=hontza_get_node_puntuacion_media_para_txt($node->nid,1);
     return $result;
 }
-function red_solr_inc_update_item_rated($node,$rated_value){   
-   db_query('UPDATE {content_type_item} SET field_item_rated_value=%f WHERE nid=%d AND vid=%d',$rated_value,$node->nid,$node->vid); 
+function red_solr_inc_update_item_rated($node,$rated_value){
+    if($node->type=='item'){
+        db_query('UPDATE {content_type_item} SET field_item_rated_value=%f WHERE nid=%d AND vid=%d',$rated_value,$node->nid,$node->vid);
+    }else if($node->type=='noticia'){
+        red_solr_inc_update_noticia_rated($node,$rated_value);
+    }
 }
 function red_solr_inc_define_entity_field_name_item_rated($entity_field_name_array,$entity){
     $rated_array=red_solr_inc_get_content_field_item_rated_array($entity->nid,$entity->vid);
@@ -1981,4 +1989,11 @@ function red_solr_inc_get_query_solrsort($form_state){
   $result='&solrsort='.$field.' desc';
   $_SESSION['my_order_solrsort_form']=$result;
   return $result;    
+}
+function red_solr_inc_update_noticia_rated($node,$rated_value){
+    if(red_solr_inc_is_actualizar_noticias_usuario()){        
+        if($node->type=='noticia'){
+            db_query('UPDATE {content_type_noticia} SET field_noticia_rated_value=%f WHERE nid=%d AND vid=%d',$rated_value,$node->nid,$node->vid);
+        }
+    }
 }

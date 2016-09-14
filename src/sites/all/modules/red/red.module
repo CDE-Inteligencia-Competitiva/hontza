@@ -1004,7 +1004,9 @@ function red_on_noticia_de_usuario_save($op,&$node){
     //intelsat-2015
     if(hontza_canal_rss_is_visualizador_activado()){
         publico_vigilancia_on_noticia_de_usuario_save($op,$node);
-    }    
+    }
+    //intelsat-2016
+    hontza_canal_rss_update_apachesolr_index_entities_node_changed($node->nid);   
 }
 function red_on_node_delete(&$node){
     if(hontza_is_servidor_red_alerta()){
