@@ -618,7 +618,9 @@ function hontza_og_canales_create_order_array($my_list_in){
 	$info['my_list']=$result;
 	return $info;
 }
-function hontza_get_all_nodes($types,$groups='',$fecha_ini='',$is_limit_in=0,$nid_in='',$is_node_load=1){
+//intelsat-2016
+//function hontza_get_all_nodes($types,$groups='',$fecha_ini='',$is_limit_in=0,$nid_in='',$is_node_load=1){
+function hontza_get_all_nodes($types,$groups='',$fecha_ini='',$is_limit_in=0,$nid_in='',$is_node_load=1,$is_noticia_usuario_my_sended=0){
     //intelsat-2015
     $is_limit=$is_limit_in;
     $result=array();
@@ -641,11 +643,20 @@ function hontza_get_all_nodes($types,$groups='',$fecha_ini='',$is_limit_in=0,$ni
         $left_join_hontza_item_indexado=' LEFT JOIN {hontza_item_indexado} ON n.vid=hontza_item_indexado.vid ';
         $where[]='hontza_item_indexado.indexado!=1';
     }*/
+    //intelsat-2016
+    if($is_noticia_usuario_my_sended){
+        $where[]='apachesolr_index_entities_node.my_sended=0';
+        $left_join_apachesolr_index_entities_node=' LEFT JOIN {apachesolr_index_entities_node} ON n.nid=apachesolr_index_entities_node.entity_id ';
+    }
     $sql='SELECT n.* 
     FROM {node} n
     LEFT JOIN {og_ancestry} og_ancestry ON n.nid=og_ancestry.nid 
-    '.$left_join_hontza_item_indexado.'
+    '.$left_join_hontza_item_indexado.$left_join_apachesolr_index_entities_node.'
     WHERE '.implode(' AND ',$where);
+    //intelsat-2016
+    if($is_noticia_usuario_my_sended){
+        $sql.=' GROUP BY n.nid ';
+    }    
     //intelsat-2015
     /*
     if(red_solr_inc_is_hontza_item_indexado_activado()){
