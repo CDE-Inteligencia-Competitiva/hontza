@@ -707,7 +707,9 @@ function fivestar_vote($type, $cid, $tag, $value) {
     hontza_validar_con_accion($cid);
     //intelsat-2015
     hontza_solr_funciones_save_bookmark_multiple_vote($node);
-    if($node->type=='item'){
+    //intelsat-2016
+    //if($node->type=='item'){
+    if(in_array($node->type,array('item','noticia'))){
         //$updated=0;
         //hontza_solr_set_item_solr_updated($node,$updated);
         red_solr_inc_update_node_rated($node);
@@ -1064,13 +1066,13 @@ function fivestar_form(&$form_state, $content_type, $content_id) {
 
   $star_display = variable_get('fivestar_style_'. $node->type, 'average');
   $text_display = variable_get('fivestar_text_'. $node->type, 'dual');
-
+  
   if ($star_display == 'average' && ($text_display == 'average' || $text_display == 'none')) {
     // Save a query and don't retrieve the user vote unnecessarily.
-    $votes = fivestar_get_votes($content_type, $content_id, 'vote', 0);
+      $votes = fivestar_get_votes($content_type, $content_id, 'vote', 0);
   }
   else {
-    $votes = fivestar_get_votes($content_type, $content_id);
+      $votes = fivestar_get_votes($content_type, $content_id);  
   }
 
   $values = array(
