@@ -8,7 +8,9 @@ function noticias_usuario_solr_menu() {
   return $items;
 }
 function noticias_usuario_solr_actualizar(){
-    $noticia_array=hontza_get_all_nodes(array('noticia'));
+    //$noticia_array=hontza_get_all_nodes(array('noticia'));
+    $is_noticia_usuario_my_sended=1;
+    $noticia_array=hontza_get_all_nodes(array('noticia'),'','',0,'',1,$is_noticia_usuario_my_sended);
     //red_solr_inc_actualizar_noticia_canal_category_tid($notica_array);
     noticias_usuario_solr_actualizar_canal_category_tid($noticia_array);
     noticias_usuario_solr_actualizar_validador($noticia_array);
@@ -34,15 +36,17 @@ function noticias_usuario_solr_actualizar_canal_category_tid($noticia_array){
                     if(!empty($tid_array)){
                         $delta=0;
                         foreach($tid_array as $k=>$tid){
-                            if($delta>0){
+                            //if($delta>0){
                                 if(!hontza_canal_rss_existe_content_field_item_canal_category_tid_vid_delta($node->vid,$delta)){
                                     $res=db_query('INSERT INTO {content_field_item_canal_category_tid}(field_item_canal_category_tid_value,nid,vid,delta) VALUES(%d,%d,%d,%d)',$tid,$node->nid,$node->vid,$delta);                                        
                                 }else{
                                     $res=db_query('UPDATE {content_field_item_canal_category_tid} SET field_item_canal_category_tid_value=%d WHERE nid=%d AND vid=%d AND delta=%d',$tid,$node->nid,$node->vid,$delta);                            
                                 }                                    
-                            }else{
+                            /*}else{
+                                
                                 $res=db_query('UPDATE {content_field_item_canal_category_tid} SET field_item_canal_category_tid_value=%d WHERE nid=%d AND vid=%d AND delta=0',$tid,$node->nid,$node->vid);
-                            }    
+
+                            }*/    
                             $delta++;
                         }
                     }
@@ -348,7 +352,8 @@ function noticias_usuario_solr_update_node_rated($node){
    } 
 }
 function noticias_usuario_solr_update_noticia_rated($node,$rated_value){   
-   db_query('UPDATE {content_type_noticia} SET field_noticia_rated_value=%f WHERE nid=%d AND vid=%d',$rated_value,$node->nid,$node->vid); 
+   //db_query('UPDATE {content_type_noticia} SET field_noticia_rated_value=%f WHERE nid=%d AND vid=%d',$rated_value,$node->nid,$node->vid);
+   red_solr_inc_update_noticia_rated($node,$rated_value); 
 }
 function noticias_usuario_solr_facetapi_check_block_visibility($facet_name){
     //print $facet_name.'<br>';
@@ -531,9 +536,4 @@ function noticias_usuario_add_delete_scoring_filtros(){
         red_solr_inc_add_add_delete_im_field_item_validador_uid_filtros($scoring_label,$result,array(),$is_noticias_usuario,$field);
     }    
     return $result;
-}
-function noticias_usuario_solr_notica_node_form_alter(&$form,&$form_state,$form_id){
-    $unset_array=array('field_item_canal_category_tid','field_noticia_validador_uid','field_noticia_validate_status',
-    'field_noticia_seleccionado_bolet','field_noticia_bookmark','field_noticia_rated','field_item_fid');
-    red_movil_unset_form_field_form_alter($form,$form_state,$form_id,$unset_array);
 }
