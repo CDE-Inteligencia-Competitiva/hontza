@@ -1643,4 +1643,45 @@ function boletin_report_inc_is_show_etiquetas($br){
         return 0;
     }
     return 1;
-}   
+}
+//intelsat-2016      
+function boletin_report_inc_add_tipo_link_form_field(&$form,$fieldset_name=''){
+    $tipo_link=red_despacho_boletin_report_get_tipo_link_default_value($row);
+    $tipo_link_form_field= array(
+        '#type' => 'select',
+        '#title' => t('Links'),
+        '#options' => boletin_report_get_tipo_link_options(),
+        '#default_value' =>$tipo_link,
+        //'#required' => TRUE
+    );
+    if(!empty($fieldset_name)){
+        $form[$fieldset_name]['tipo_link']=$tipo_link_form_field;        
+    }else{
+        $form['tipo_link']=$tipo_link_form_field;  
+    }
+}
+//intelsat-2016 
+function boletin_report_inc_is_tipo_link_row($bg,$param_alerta){
+    if(!empty($bg) && isset($bg->is_boletin_report) && !empty($bg->is_boletin_report)){
+        return 1;
+    }
+    if(isset($param_alerta->tipo_link)){
+        return 1;
+    }
+    if(isset($bg->tipo_link)){
+        return 1;
+    }
+    return 0;    
+}
+function boletin_report_inc_is_links_to_web($bg,$param_alerta){
+    if(!empty($bg->tipo_link) && $bg->tipo_link==2){
+        return 1;        
+    }
+    if(!empty($param_alerta->tipo_link) && $param_alerta->tipo_link==2){
+        return 1;        
+    }
+    if(!empty($bg->tipo_link) && $bg->tipo_link==2){
+        return 1;        
+    }
+    return 0;    
+}    

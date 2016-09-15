@@ -404,14 +404,7 @@ if(hontza_canal_rss_is_publico_activado()){
      publico_alerta_add_is_boletin_publico_form_field($form,$row);
 }
 //intelsat-2016
-$tipo_link=red_despacho_boletin_report_get_tipo_link_default_value($row);
-$form['metodo_fs']['tipo_link'] = array(
-        '#type' => 'select',
-        '#title' => t('Links'),
-        '#options' => boletin_report_get_tipo_link_options(),
-        '#default_value' =>$tipo_link,
-        //'#required' => TRUE
-      );
+boletin_report_inc_add_tipo_link_form_field($form,'metodo_fs');      
 
 $form['boleting_report_btn_submit']=array(
   '#type' => 'submit',
