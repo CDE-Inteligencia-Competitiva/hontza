@@ -632,7 +632,8 @@ $form['metodo_fs']['hora_array'] = array(
 );
 
 
-
+//intelsat-2016
+alerta_inc_add_tipo_link_form_field($form,'metodo_fs');
 
 $form['boleting_grupo_btn_submit']=array(
   '#type' => 'submit',
@@ -737,6 +738,8 @@ function save_boletin_grupo_my_edit(&$form, &$form_state){
     }
     $row=get_boletin_grupo_row($values['grupo_nid']);
     save_boletin_grupo_usuarios($row->id,$values['usuarios']);
+    //intelsat-2016
+    boletin_grupo_save_tipo_link($row->id,$values);
 }
 function get_usuarios_grupo_options($grupo_nid,$with_empty=0,$is_create_grupo=0){
 	$result=array();
@@ -1912,4 +1915,12 @@ function boletin_grupo_custom_access(){
         return TRUE;
     }
     return FALSE;
-}    
+}
+//intelsat-2016
+function boletin_grupo_save_tipo_link($id,$values){
+    if(alerta_inc_is_tipo_link()){
+        if(isset($values['tipo_link']) && !empty($values['tipo_link'])){
+            db_query('UPDATE {boletin_grupo_array} SET tipo_link=%d WHERE id=%d',$values['tipo_link'],$id);
+        }
+    }
+}  
