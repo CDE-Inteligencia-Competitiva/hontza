@@ -821,7 +821,9 @@ function apachesolr_index_action_form(&$form_state, $env_id) {
   $form['action']['remaining'] = array(
     '#prefix' => '<div>',
     '#type' => 'submit',
-    '#value' => t('Index all queued content'),
+    //intelsat-2016
+    //'#value' => t('Index all queued content'),
+    '#value' => t('Index queue'),
     '#submit' => array('apachesolr_index_action_form_remaining_submit'),
   );
   $form['action']['remaining_description'] = array(
@@ -943,10 +945,10 @@ function apachesolr_index_action_form_remaining_confirm(&$form_state, $environme
   $path='admin/settings/apachesolr/settings/' . $environment['env_id'] . '/index';
   //$path=red_solr_get_index_action_form_remaining_confirm_destination($path);
   return confirm_form($form,
-    t('Are you sure you want index all remaining content?'),
+    t('Index queue?'),
     $path,
     NULL,
-    t('Index all remaining')
+    t('Index')
   );
 }
 
