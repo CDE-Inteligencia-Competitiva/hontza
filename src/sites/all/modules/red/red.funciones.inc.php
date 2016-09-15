@@ -2198,12 +2198,20 @@ function red_funciones_set_title_help_icon($title_in){
     }
     $html[]=$title;
     $html[]='<div style="float:right;">';
+    //intelsat-2016
+    //if(hontza_solr_is_resultados_pantalla()){
     if(hontza_solr_is_resultados_pantalla()){
         $html[]=hontza_solr_search_get_busqueda_avanzada_title_links();
         $html[]=my_show_help_icon();
     //intelsat-2015        
     }else if(hontza_canal_rss_is_carpeta_dinamica_guardada()){
         $html[]=hontza_canal_rss_get_busqueda_title_links();
+        $html[]='<div style="float:right;padding-left:5px;">'.my_show_help_icon().'</div>';
+    //intelsat-2016    
+    }else if(hontza_solr_is_busqueda_avanzada_pantalla()){
+        $is_show_simple_search=1;
+        $is_show_advanced_search=0;
+        $html[]=hontza_solr_search_get_busqueda_avanzada_title_links($is_show_simple_search,$is_show_advanced_search);
         $html[]='<div style="float:right;padding-left:5px;">'.my_show_help_icon().'</div>';
     }    
     $html[]='</div>';

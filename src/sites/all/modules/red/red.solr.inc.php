@@ -3,14 +3,14 @@ function red_solr_inc_get_get_status_options($is_multiple=0){
     if(!$is_multiple){
         $result[0]=t('.All');
     }
-    $result[2]=t('Validated');
     $result[1]=t('Pending');
     $result[3]=t('Rejected');
+    $result[2]=t('Validated');    
     if(red_solr_inc_is_status_activado()){
-        $result[4]=t('Selected to Bulletin');
         $result[5]=t('Commented');
         $result[6]=t('Bookmarked');
-        $result[7]=t('Highlighted');
+        $result[4]=t('Selected to Bulletin');        
+        $result[7]=t('.Highlighted');
         if(!$is_multiple){
             $result[8]=t('Validated and Highlighted');
             $result[9]=t('Validated and Commented');
@@ -378,7 +378,8 @@ function red_solr_inc_add_busqueda_avanzada_rated_form_field(&$form,$prefix_righ
         );
     }else{
         $form['rated']= array(
-              '#title' => t('Scoring'),
+              //'#title' => t('Scoring'),
+              '#title' => t('Score'),
               '#type' => 'select',
               '#options' => red_solr_inc_get_rated_options(),
               '#prefix'=>$prefix_right3,
@@ -476,7 +477,8 @@ function red_solr_inc_add_beste_delete_filters_content(&$result){
         $scoring_array=red_solr_inc_add_delete_scoring_filtros($_REQUEST['f']);
         if(!empty($scoring_array)){
             $result[]=hontza_solr_funciones_get_linea_separacion($result);
-            $result[]='<b><i>'.t('Scoring').'</i></b>';
+            //$result[]='<b><i>'.t('Scoring').'</i></b>';
+            $result[]='<b><i>'.t('Score').'</i></b>';
             $result=array_merge($result,$scoring_array);
         }
     }
@@ -1590,7 +1592,7 @@ function red_solr_inc_get_index_status_html(){
         $html[]='<p style="color:red;">'.t('Results may be inaccurate. There are @status_remaining news waiting to be indexed',array('@status_remaining'=>$status['remaining'])).'</p>';        
         $html[]='</div>';
         $html[]='<div style="padding:5px;float:left;">';
-        $html[]='<input id="index_status_btn" type="button" value="'.t('Index all queued content').'">';
+        $html[]='<input id="index_status_btn" type="button" value="'.t('Index queue').'">';
         $html[]='</div>';
         $html[]='</fieldset>';
         red_solr_inc_add_index_status_js();
@@ -1897,7 +1899,8 @@ function red_solr_inc_get_tipo_noticia_options(){
     $result=array();
     $result[0]='';
     //$result[1]='Automatic news';
-    $result[1]=t('Automatic');
+    //$result[1]=t('Automatic');
+    $result[1]=t('Channel news');
     $result[2]=t('User news');
     return $result;
 }

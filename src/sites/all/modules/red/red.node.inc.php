@@ -50,3 +50,16 @@ function red_node_items_deleted_drupal_set_message($kont_items){
         drupal_set_message(t('@kont_items news have been deleted',array('@kont_items'=>$kont_items)));
     }
 }
+function red_node_is_delete($node_type_array){
+    $param2=arg(2);
+    if(!empty($param2) && $param2=='delete'){    
+        if(!empty($node_type_array)){
+            foreach($node_type_array as $i=>$node_type){
+                if(is_ficha_node_left($node_type)){
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}    
