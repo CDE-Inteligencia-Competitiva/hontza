@@ -1622,7 +1622,10 @@ function hontza_solr_is_item_actualizado($node){
     return 0;
 }
 function hontza_solr_set_item_solr_updated($node,$updated){
-    $res=db_query('UPDATE {content_type_item} SET field_item_solr_updated_value=%d WHERE nid=%d AND vid=%d',$updated,$node->nid,$node->vid);
+    //intelsat-2016
+    if(!isset($node->type) || empty($node->type) || $node->type=='item'){
+        $res=db_query('UPDATE {content_type_item} SET field_item_solr_updated_value=%d WHERE nid=%d AND vid=%d',$updated,$node->nid,$node->vid);
+    }    
     //intelsat-2015
     hontza_solr_search_clear_cache_content($node);
 }
@@ -1961,8 +1964,12 @@ function hontza_solr_actualizar_validate_status($item_array){
        }
    } 
 }
-function hontza_solr_update_item_validate_status($node,$validate_status){   
-   db_query('UPDATE {content_type_item} SET field_item_validate_status_value=%d WHERE nid=%d AND vid=%d',$validate_status,$node->nid,$node->vid); 
+function hontza_solr_update_item_validate_status($node,$validate_status){
+    if($node->type=='item'){
+    db_query('UPDATE {content_type_item} SET field_item_validate_status_value=%d WHERE nid=%d AND vid=%d',$validate_status,$node->nid,$node->vid); 
+    }else if($node->type=='noticia'){
+    db_query('UPDATE {content_type_noticia} SET field_noticia_validate_status_value=%d WHERE nid=%d AND vid=%d',$validate_status,$node->nid,$node->vid);         
+    }
 }
 function hontza_solr_define_entity_field_name_item_validate_status($entity_field_name_array,$entity){
     $validate_status_array=hontza_solr_get_content_field_item_validate_status_array($entity->nid,$entity->vid);

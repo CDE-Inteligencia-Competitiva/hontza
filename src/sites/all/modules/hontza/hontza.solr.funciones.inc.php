@@ -1526,7 +1526,12 @@ function hontza_solr_funciones_destacar_bookmark_callback(){
                 update_noticia_destacada($nid,1);
             }else{
                 update_item_carpeta_destacada($nid,1);
-            }    
+            }
+            $updated=0;
+            hontza_solr_set_item_solr_updated($node,$updated);
+            //if(red_solr_inc_is_rated_clear_node_index($seleccionado_boletin)){
+                hontza_canal_rss_solr_clear_node_index($node,$node->nid);
+            //}           
         }    
     }
     //intelsat-2015

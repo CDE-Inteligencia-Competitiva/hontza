@@ -626,6 +626,8 @@ function hontza_solr_search_validar_multiple_callback(){
             $row->nid=$nid;
             hontza_delete_flag_content($row);
             $flag_result = flag('flag','leido_interesante',$row->nid);
+            //intelsat-2016
+            red_solr_inc_on_flag($row->nid);    
         }    
     }
     //intelsat-2015
@@ -659,6 +661,8 @@ function hontza_solr_search_rechazar_multiple_callback(){
            $row->nid=$nid;
            hontza_delete_flag_content($row);
            $flag_result = flag('flag','leido_no_interesante',$row->nid);
+            //intelsat-2016
+            red_solr_inc_on_flag($row->nid);
         }    
     }
     //intelsat-2015
