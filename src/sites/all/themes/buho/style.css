@@ -4842,7 +4842,9 @@ div#block-hontza-0 li{
     font-size: 12px;
 }*/
 #page-hontza-solr-busqueda-avanzada  div.form-item{
+    margin-top: 5px;
     margin-bottom:5px;
+    padding-right: 10px;
 }
 #page-my-solr-my-search div#edit-keys-wrapper{ 
     /*width:200px;*/
@@ -5176,11 +5178,14 @@ body#page-publico-alerta-user-mis-boletines-grupo .form-submit{
 }
 #page-hontza-solr-busqueda-avanzada.solr_status_activado div#edit-solr-busqueda-fecha-inicio-wrapper,
 #page-hontza-solr-busqueda-avanzada.solr_status_activado div#edit-solr-busqueda-fecha-fin-wrapper{
-    width:35%;
-    margin-top:-60px; 
+    /*width:35%;*/
+    width:40%;
+    /*margin-top:-60px;*/
+    margin-top:-45px;
 }
 #page-hontza-solr-busqueda-avanzada.solr_status_activado .solr_busqueda_avanzada_buttons{
     clear:both;
+    padding-left: 5px;
 }
 #new_font_wrapper #navigation #ul_a{
     margin-top:-6px;
@@ -5203,7 +5208,6 @@ body.solr_status_activado div.container-inline-date{
 body.solr_status_activado div.solr_busqueda_avanzada_buttons{
     position:relative;
     top:-45px;
-    padding-left:5px;
 }
 p.parrafo_pregunta_red_texto{
     padding-left: 10px;
