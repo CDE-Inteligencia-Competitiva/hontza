@@ -145,8 +145,9 @@ function hontza_solr_busqueda_avanzada_form(){
     );
     //intelsat-2016-noticias-usuario
     $form['tipo_noticia'] = array(
-        '#type' => 'select',
-        '#title'=>t('News type'),  
+        '#type' => 'select',        
+        //'#title'=>t('News type'),
+        '#title'=>t('Origin'),  
         '#options' => red_solr_inc_get_tipo_noticia_options(),
         //'#prefix'=>'<div class="solr_busqueda_avanzada_buttons"><div style="float:left;margin-top:-20px;">',
         //'#suffix'=>'</div>',
@@ -263,17 +264,31 @@ function hontza_solr_busqueda_avanzada_form(){
         //'#prefix'=>'<div style="float:left;margin-top:-20px;padding-left:20px;">',
         //'#suffix'=>'</div></div>',
         '#prefix'=>'<div class="solr_busqueda_avanzada_buttons" style="padding-bottom:40px;">',
+        //'#prefix'=>'<div style="padding-bottom:40px;">',
         //'#prefix'=>'<div class="solr_busqueda_avanzada_buttons" style="display:none;">',
         '#suffix'=>'</div>',    
         '#attributes'=>array('style'=>'float:left;'), 
         );
+        //intelsat-2016
+        if(defined('_IS_CLAVES') && _IS_CLAVES==1){
+            //$form['solr_busqueda_fecha_inicio']['#prefix']='<div style="margin-top:-350px;">';
+            //$form['solr_busqueda_fecha_fin']['#suffix']='</div>';
+            $form['my_order']['#prefix']='<div class="solr_busqueda_avanzada_buttons" style="float:left;clear:both;margin-top:25px;margin-bottom:10px;">';
+        }
     }
+
     
     $form['search_btn']=array(
         '#type'=>'submit',
         '#value'=>t('Search'),
         '#prefix'=>'<div class="solr_busqueda_avanzada_buttons">',        
     );
+    //intelsat-2016
+    /*if(red_solr_inc_is_actualizar_noticias_usuario()){    
+        if(defined('_IS_CLAVES') && _IS_CLAVES==1){
+                $form['search_btn']['#prefix']='<div class="solr_busqueda_avanzada_buttons" style="float:left;clear:both;padding-top:5px;">';
+        }
+    }*/
     $destination='vigilancia/pendientes';
     $form['cancel_btn']=array(
         '#value'=>l(t('Cancel'),$destination),

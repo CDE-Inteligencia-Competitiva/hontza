@@ -630,7 +630,11 @@ function is_vigilancia_left($is_block=0){
 	if(is_ficha_node_left('canal_de_yql','canal')){
 		return 1;
 	}
-        if($is_block){
+	//intelsat-2016
+	if(red_node_is_delete(array('item','noticia'))){
+		return 1;
+	}
+	    if($is_block){
             if(in_array(arg(0),array('busqueda'))){
                 return 1;
             }

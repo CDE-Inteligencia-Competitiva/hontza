@@ -2163,7 +2163,9 @@ function hontza_solr_search_reports_area_left_title(){
     $result=$icono.$result;
     return $result;
 }
-function hontza_solr_search_get_busqueda_avanzada_title_links(){
+//intelsat-2016
+//function hontza_solr_search_get_busqueda_avanzada_title_links(){
+function hontza_solr_search_get_busqueda_avanzada_title_links($is_show_simple_search=1,$is_show_advanced_search=1){
     global $base_url;
     $html=array();
     $my_grupo=og_get_group_context();
@@ -2179,9 +2181,19 @@ function hontza_solr_search_get_busqueda_avanzada_title_links(){
         $url_advanced_search=$base_url.'/'.$my_grupo->purl.'/hontza_solr/busqueda_avanzada_solr?'.$query_busqueda_avanzada_solr;
     }
     //
-    $html[]='<input id="solr_title_simple_search_btn" type="button" value="'.t('Simple Search').'"/>';
+    //intelsat-2016
+    $style_simple_search='';
+    if(!$is_show_simple_search){
+        $style_simple_search=' style="display:none;"';
+    }
+    $html[]='<input id="solr_title_simple_search_btn" type="button" '.$style_simple_search.'value="'.t('Simple Search').'"/>';
     //
-    $html[]='<input id="solr_title_advanced_search_btn" type="button" value="'.t('Advanced Search').'"/>';    
+    //intelsat-2016
+    $style_advanced_search='';
+    if(!$is_show_advanced_search){
+        $style_advanced_search=' style="display:none;"';
+    }
+    $html[]='<input id="solr_title_advanced_search_btn" type="button" '.$style_advanced_search.' value="'.t('Advanced Search').'"/>';    
     $html[]=hontza_solr_search_add_busqueda_avanzada_title_links_js($url_simple_search,$url_advanced_search);
     return implode('&nbsp;',$html);
 }
