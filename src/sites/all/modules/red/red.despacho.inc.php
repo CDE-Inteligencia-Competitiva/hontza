@@ -208,9 +208,14 @@ function red_despacho_modificar_taxonomia_save(&$form_state,&$node_array,$node_i
                 }else if($node->type=='noticia'){
                     if(hontza_solr_search_is_replace_categorias($form_state,'replace_categories_btn')){
                         hontza_solr_search_modificar_noticia_usuario_categorias($node,$tid_array);
+                        hontza_solr_search_modificar_item_categorias($node,$tid_array);
                     }else if(hontza_solr_search_is_replace_categorias($form_state,'add_categories_btn')){
-                        hontza_solr_search_add_noticia_usuario_categorias($node,$tid_array); 
+                        hontza_solr_search_add_noticia_usuario_categorias($node,$tid_array);
+                        hontza_solr_search_add_item_categorias($node,$tid_array); 
                     }
+                    //intelsat-2016
+                    hontza_canal_rss_solr_clear_node_index($node,$nid);
+                    // 
                 }
             }
         }

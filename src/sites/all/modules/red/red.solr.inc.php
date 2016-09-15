@@ -158,9 +158,11 @@ function red_solr_inc_update_node_seleccionado_boletin($node,$is_sended=0,$selec
     //intelsat-2015
     $updated=0;
     hontza_solr_set_item_solr_updated($node,$updated);
-    if(red_solr_inc_is_rated_clear_node_index($seleccionado_boletin)){
+    //intelsat-2016
+    //se ha comentado esto
+    //if(red_solr_inc_is_rated_clear_node_index($seleccionado_boletin)){
         hontza_canal_rss_solr_clear_node_index($node,$node->nid);
-    }    
+    //}    
    }
 }
 function red_solr_inc_get_seleccionado_boletin($node,$with_sended=0){
@@ -182,8 +184,12 @@ function red_solr_inc_get_seleccionado_boletin($node,$with_sended=0){
     }
     return 0; 
 }
-function red_solr_inc_update_item_seleccionado_boletin($node,$seleccionado_boletin_value){   
-   db_query('UPDATE {content_type_item} SET field_item_seleccionado_boletin_value=%d WHERE nid=%d AND vid=%d',$seleccionado_boletin_value,$node->nid,$node->vid); 
+function red_solr_inc_update_item_seleccionado_boletin($node,$seleccionado_boletin_value){
+    if($node->type=='item'){    
+       db_query('UPDATE {content_type_item} SET field_item_seleccionado_boletin_value=%d WHERE nid=%d AND vid=%d',$seleccionado_boletin_value,$node->nid,$node->vid);
+    }else if($node->type=='noticia'){
+       db_query('UPDATE {content_type_noticia} SET field_noticia_seleccionado_bolet_value=%d WHERE nid=%d AND vid=%d',$seleccionado_boletin_value,$node->nid,$node->vid); 
+    } 
 }
 function red_solr_inc_define_entity_field_name_item_seleccionado_boletin($entity_field_name_array,$entity){
     $seleccionado_boletin_array=red_solr_inc_get_content_field_item_seleccionado_boletin_array($entity->nid,$entity->vid);
@@ -1999,4 +2005,15 @@ function red_solr_inc_update_noticia_rated($node,$rated_value){
             db_query('UPDATE {content_type_noticia} SET field_noticia_rated_value=%f WHERE nid=%d AND vid=%d',$rated_value,$node->nid,$node->vid);
         }
     }
+}
+function red_solr_inc_on_flag($nid){
+            hontza_canal_rss_solr_on_flag_update_node_validate_status($nid);
+            $node=node_load($nid);
+            if(isset($node->nid) && !empty($node->nid)){            
+                $updated=0;            
+                hontza_solr_set_item_solr_updated($node,$updated);
+                //if(red_solr_inc_is_rated_clear_node_index($seleccionado_boletin)){
+                    hontza_canal_rss_solr_clear_node_index($node,$node->nid);
+                //}
+            }        
 }
