@@ -230,7 +230,7 @@ function alerta_solr_inc_set_conditions_solrsort($conditions,$is_alerta){
         if(isset($result['apachesolr_search_sort']) && !empty($result['apachesolr_search_sort'])){
             return $result;
         }
-        $result['apachesolr_search_sort']='ds_created desc';            
+        $result['apachesolr_search_sort']='ds_created desc';
     }    
     //
     return $result;

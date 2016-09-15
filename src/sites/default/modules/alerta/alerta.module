@@ -778,6 +778,9 @@ $form['limite_resumen']=alerta_limite_resumen_form_field($row);
 
 $form['limite_resumen_comentario']=alerta_limite_resumen_comentario_form_field($row);
 
+//intelsat-2016
+alerta_inc_add_tipo_link_form_field($form); 
+
 $form['alerta_canal_btn_submit']=array(
   '#type' => 'submit',
   '#value' => t('Save'),
@@ -1166,6 +1169,9 @@ $form['limite_resumen']=alerta_limite_resumen_form_field($row);
 
 $form['limite_resumen_comentario']=alerta_limite_resumen_comentario_form_field($row);
 
+//intelsat-2016
+alerta_inc_add_tipo_link_form_field($form); 
+
 $form['alerta_categoria_btn_submit']=array(
   '#type' => 'submit',
   '#value' => t('Save'),
@@ -1316,6 +1322,8 @@ function save_alerta_user(&$form, &$form_state,$tipo_in,$categorias_string,$aler
     save_alerta_user_canales($my_id,$values['canales']);
     save_alerta_user_usuarios($my_id,$values['usuarios']);
     save_alerta_user_invitados_respuesta($my_id);
+    //intelsat-2016
+    alerta_inc_save_tipo_link($my_id,$values);
     on_alerta_save_goto();
 }
 function get_categorias_string_by_values($values){
@@ -1521,6 +1529,9 @@ $form['my_limite']=array(
 $form['limite_resumen']=alerta_limite_resumen_form_field($row);
 
 $form['limite_resumen_comentario']=alerta_limite_resumen_comentario_form_field($row);
+
+//intelsat-2016
+alerta_inc_add_tipo_link_form_field($form);      
 
 $form['alerta_usuario_btn_submit']=array(
   '#type' => 'submit',
@@ -2438,8 +2449,10 @@ function boletin_eskubi_aldea($row,$node,$current_type,$max_resumen_in=0,$bg='',
             $body=$node->body;
             $body=boletin_report_set_img_src_absolutos($body);
         }
-    //}    
-    $eskubi_aldea=get_node_eskubi_aldea_link($node,$row->nid,$bg);
+    //}
+    //intelsat-2016    
+    //$eskubi_aldea=get_node_eskubi_aldea_link($node,$row->nid,$bg);
+    $eskubi_aldea=get_node_eskubi_aldea_link($node,$row->nid,$bg,$param_alerta);
     //if(!empty($eskubi_aldea)){
         $html=array();
         $html[]='<table class="mail_table_eskubi_aldea" style="border:0px;">';
@@ -2521,7 +2534,9 @@ function get_alerta_categorias_term_list($categorias_string){
     }
     return $result;
 }
-function get_node_eskubi_aldea_link($node,$my_nid='',$bg=''){
+//intelsat-2016
+//function get_node_eskubi_aldea_link($node,$my_nid='',$bg=''){
+function get_node_eskubi_aldea_link($node,$my_nid='',$bg='',$param_alerta=''){
     //intelsat-2015
     global $base_url;
     $node_title=estrategia_set_title_max_len(htmlkarakter($node->title));
@@ -2563,9 +2578,13 @@ function get_node_eskubi_aldea_link($node,$my_nid='',$bg=''){
         return t('News deleted with this identifier').': '.$my_nid;
         //return '';
     }
-    if(!empty($bg) && isset($bg->is_boletin_report) && !empty($bg->is_boletin_report)){
-        if(!empty($bg->tipo_link) && $bg->tipo_link==2){
-            if(isset($node->field_enlace_noticia) && isset($node->field_enlace_noticia[0]) && isset($node->field_enlace_noticia[0]['url'])){
+    //intelsat-2016   
+    //if(!empty($bg) && isset($bg->is_boletin_report) && !empty($bg->is_boletin_report)){
+    if(boletin_report_inc_is_tipo_link_row($bg,$param_alerta)){
+        //intelsat-2016   
+        //if(!empty($bg->tipo_link) && $bg->tipo_link==2){
+        if(boletin_report_inc_is_links_to_web($bg,$param_alerta)){
+            if(isset($node->field_enlace_noticia) && isset($node->field_enlace_noticia[0]) && isset($node->field_enlace_noticia[0]['url'])){        
                 $url=$node->field_enlace_noticia[0]['url'];
                 $html='<a href="'.$url.'">'.$node_title.'</a>';
             }else{
