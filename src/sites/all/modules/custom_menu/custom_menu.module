@@ -44,14 +44,19 @@ function custom_menu_get_menu_desplegable(){
                     //$href=custom_menu_get_href($row);
                     $html[]='<li id="'.$li_id.'" class="li_grupo_custom_menu li_pointer" my_pos="'.$i.'" grupo_id="'.$grupo_id.'"'.$style.'>'.$row.'</li>';
                 }else{
-                    $id='';
+                    //intelsat-2016
+                    //se ha comentado esto
+                    /*$id='';
                     $konp=custom_menu_get_all_my_groups_link();
                     if($konp==$row){
                         $id=' id="id_all_groups"';
                     }
-                    $html[]='<li '.$id.'class="sin_menu_tabs li_pointer"'.$style.'>'.$row.'</li>';
-                }    
+                    $html[]='<li '.$id.'class="sin_menu_tabs li_pointer"'.$style.'>'.$row.'</li>';*/
+                }                   
             }
+            //intelsat-2016
+            $id=' id="id_all_groups"';
+            $html[]='<li '.$id.'class="sin_menu_tabs li_pointer"'.$style.'>'.custom_menu_get_all_my_groups_link().'</li>'; 
         }else{
             //intelsat-2015
             $html[]=custom_menu_get_menu_desplegable_get_usuario_sin_grupos($style);
@@ -472,6 +477,8 @@ function custom_menu_get_grupos_array(&$rows,$is_custom_menu_red=0){
         $my_list=red_funciones_unset_shared_group($my_list);
         //if(hontza_is_sareko_id_red(0)){
         //if(hontza_is_sareko_id_red()){
+        //intelsat-2016
+        $grupos_red_alerta=array();
         if(hontza_is_sareko_user()){
             //echo print_r($my_list,1);
             //$grupos_red_alerta=red_get_user_grupos_red_alerta();
@@ -479,7 +486,7 @@ function custom_menu_get_grupos_array(&$rows,$is_custom_menu_red=0){
                 $grupos_red_alerta=red_servidor_grupo_get_grupos_red_alerta();
                 //echo print_r($grupos_red_alerta,1);
             }else{
-                $grupos_red_alerta=red_compartir_grupo_get_user_grupos_red_alerta();
+                //$grupos_red_alerta=red_compartir_grupo_get_user_grupos_red_alerta();
                 //echo print_r($grupos_red_alerta,1);
             }            
             $my_list=array_merge($my_list,$grupos_red_alerta);
