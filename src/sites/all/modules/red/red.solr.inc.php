@@ -253,9 +253,9 @@ function red_solr_inc_update_node_bookmark($node){
         $updated=0;
         hontza_solr_set_item_solr_updated($node,$updated);
     }
-    if(red_solr_inc_is_rated_clear_node_index($bookmark)){
+    //if(red_solr_inc_is_rated_clear_node_index($bookmark)){
         hontza_canal_rss_solr_clear_node_index($node,$node->nid);
-    }    
+    //}    
    } 
 }
 function red_solr_inc_get_bookmark($node){
@@ -1872,7 +1872,7 @@ function red_solr_inc_set_bookmarks_order($result_in){
 }
 function red_solr_get_index_action_form_remaining_confirm_destination($path_in){
     $result=$path_in;
-    if(red_solr_inc_index_remaining_pantalla()){
+    if(red_solr_inc_is_index_remaining_pantalla()){
         if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
             $result=$_REQUEST['destination'];
         }
@@ -1885,7 +1885,7 @@ function red_solr_get_index_action_form_remaining_confirm_destination_url($my_gr
     $result=urlencode($result);
     return $result;
 }
-function red_solr_inc_index_remaining_pantalla(){
+function red_solr_inc_is_index_remaining_pantalla(){
     $param0=arg(0);
     if(!empty($param0) && $param0=='red'){
         $param1=arg(1);
