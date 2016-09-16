@@ -674,6 +674,11 @@ function is_vigilancia_left($is_block=0){
         if(hontza_canal_json_is_pantalla()){
             return 1;
         }
+        //intelsat-2016
+        if(red_solr_inc_is_index_remaining_pantalla()){
+        	return 1;
+        }
+        //
         return 0;
 }
 function is_fuentes_left(){

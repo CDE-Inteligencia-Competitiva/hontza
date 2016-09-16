@@ -685,6 +685,10 @@ function is_vigilancia(){
     if(hontza_canal_json_is_pantalla()){
         return 1;
     }
+    if(red_solr_inc_is_index_remaining_pantalla()){
+        return 1;
+    } 
+    //
 	return 0;
 }
 function is_area_trabajo(){
