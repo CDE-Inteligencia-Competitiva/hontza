@@ -3917,7 +3917,7 @@ function set_t_string_by_language($string){
         if(in_array($string,array('.All','.Last','...Downloaded','...Shared','..Downloaded','..Shared','.Highlighted'))){
             $result=ltrim($string,'.');
             return $result;
-        }else if(in_array($string,array('#Search'))){
+        }else if(in_array($string,array('#Search','#Index'))){
             $result=ltrim($string,'#');
             return $result;
         }
