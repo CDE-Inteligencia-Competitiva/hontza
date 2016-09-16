@@ -948,7 +948,7 @@ function apachesolr_index_action_form_remaining_confirm(&$form_state, $environme
     t('Index queue?'),
     $path,
     NULL,
-    t('Index')
+    t('#Index')
   );
 }
 
