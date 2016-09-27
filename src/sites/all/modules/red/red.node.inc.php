@@ -62,4 +62,29 @@ function red_node_is_delete($node_type_array){
         }
     }
     return 0;
+}
+function red_node_inc_is_unset_de_la_botonera_gris_del_node(){
+    $node=my_get_node();
+    if(isset($node->nid) && !empty($node->nid)){
+        $node_type_array=array('canal_de_supercanal','canal_de_yql','debate','decision','despliegue','estrategia','fuentedapper','fuentehtml','     idea','informacion','item','my_report','noticia');
+        if(in_array($node->type,$node_type_array)){
+            return 1;
+        }
+        if($node->type=='grupo'){
+            if(hontza_is_og_vocab_terms()){
+                if(is_show_modificar_vocab()){            
+                    return 0;
+                }
+                return 1;
+            }
+            return 1;
+        }
+    }
+    if(hontza_is_og_vocab_terms()){
+        if(is_show_modificar_vocab()){            
+            return 0;
+        }
+        return 1;
+    }        
+    return 0;
 }    

@@ -1579,11 +1579,12 @@ function red_funciones_unset_de_la_botonera_gris_del_node($result_in){
     //intelsat-2015
     //if(!is_super_admin()){
     //if(!red_is_administrador()){    
+    if(red_node_inc_is_unset_de_la_botonera_gris_del_node()){    
         /*$my_array=explode('</a>',$result_in);
         echo print_r($my_array,1);
         exit();*/
         return '';
-    //}
+    }    
     return $result_in;
 }
 function red_funciones_get_grupo_privacidad_name($row='',$tid_in=''){
