@@ -28,10 +28,15 @@ function custom_menu_get_menu_desplegable(){
         $style='';
         $temp=0;
         if(!empty($grupos_array)){
+            //intelsat-2016
+            $i=0;
+            custom_menu_add_create_group_link($html,$i);        
             //intelsat-2015
+            /*
             //if(red_crear_usuario_is_activado()){
                 custom_menu_add_grupos_apuntarse_link($html,$temp,$style);
             //}
+            */            
             $num=count($grupos_array);
             foreach($grupos_array as $i=>$row){
                 //$html[]='<li>'.$row[0].'</li>';                
@@ -54,6 +59,8 @@ function custom_menu_get_menu_desplegable(){
                     $html[]='<li '.$id.'class="sin_menu_tabs li_pointer"'.$style.'>'.$row.'</li>';*/
                 }                   
             }
+            //intelsat-2016
+            custom_menu_add_grupos_apuntarse_link($html,$temp,$style);
             //intelsat-2016
             $id=' id="id_all_groups"';
             $html[]='<li '.$id.'class="sin_menu_tabs li_pointer"'.$style.'>'.custom_menu_get_all_my_groups_link().'</li>'; 
@@ -851,9 +858,14 @@ function custom_menu_get_ul_class($is_menu_tabs=0){
     }
     return implode(' ',$class_array);
 }
-function custom_menu_get_all_my_groups_link(){    
-    return l(t('All my groups'),'mis-grupos');
-    //return l(t('All my groups'),'mis-grupos',array('attributes'=>array('target'=>'_blank')));
+function custom_menu_get_all_my_groups_link(){
+    $hontza_network='Red Hontza';
+    if(red_is_subdominio_proyecto_alerta()){
+        $hontza_network='Red Alerta';
+    }
+    $label_all_my_groups=t('My groups on !hontza_network',array('!hontza_network'=>$hontza_network));    
+    return l($label_all_my_groups,'mis-grupos');
+    //return l($label_all_my_groups,'mis-grupos',array('attributes'=>array('target'=>'_blank')));
 }
 //intelsat-2015
 function custom_menu_get_menu_desplegable_get_usuario_sin_grupos($style){
@@ -862,13 +874,8 @@ function custom_menu_get_menu_desplegable_get_usuario_sin_grupos($style){
     }
     $html=array();
     $i=0;
-    if(red_crear_usuario_is_rol_administrador_creador_grupo()){
-        $li_id='li_crear_grupo';
-        $grupo_id='crear_grupo';
-        $url=l(t('Create Group'),'node/add/grupo',array('attributes'=>array('target'=>'_blank')));
-        $html[]='<li id="'.$li_id.'" class="li_grupo_custom_menu li_pointer" my_pos="'.$i.'" grupo_id="'.$grupo_id.'"'.$style.'>'.$url.'</li>';
-        $i++;
-    }
+    //intelsat-2016
+    custom_menu_add_create_group_link($html,$i);
     //if(custom_menu_is_grupos_apuntarse()){
         custom_menu_add_grupos_apuntarse_link($html,$i,$style);
     //}
@@ -1034,3 +1041,13 @@ function custom_menu_cron(){
         custom_menu_red_grupos_subdominios();
     }
 }
+function custom_menu_add_create_group_link(&$html,&$i){
+    $style='';
+    if(red_crear_usuario_is_rol_administrador_creador_grupo()){
+        $li_id='li_crear_grupo';
+        $grupo_id='crear_grupo';
+        $url=l(t('Create Group'),'node/add/grupo',array('attributes'=>array('target'=>'_blank')));
+        $html[]='<li id="'.$li_id.'" class="li_grupo_custom_menu li_pointer" my_pos="'.$i.'" grupo_id="'.$grupo_id.'"'.$style.'>'.$url.'</li>';
+        $i++;
+    }
+}    
