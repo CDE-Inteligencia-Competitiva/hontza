@@ -16,14 +16,22 @@ function email_html_simular_callback(){
     $html=email_html_get_plantilla_html();
 }
 function email_html_get_plantilla_html(){
+    global $base_url;
     $url='http://online.hontza.es/sites/default/files/plantilla_mail/plantilla_mail.html';
+    $is_default=1;
     //if(hontza_is_sareko_id('GESTION_CLAVES')){
     if(red_is_claves_activado()){    
         $url='http://online.hontza.es/sites/default/files/plantilla_mail/plantilla_mail_claves.html';
+        $is_default=0;
     }else if(email_html_is_custom_plantilla_html($custom_name)){
         $url='http://online.hontza.es/sites/default/files/plantilla_mail/plantilla_mail_'.$custom_name.'.html';
+        $is_default=0;
     }
     $message=file_get_contents($url);
+    if($is_default){
+        $url_login='"http://solr.hontza.es/user"';
+        $message=str_replace($url_login,'"'.$base_url.'/user'.'"',$message);
+    }
     return $message;
 }
 function email_html_is_activado(){
