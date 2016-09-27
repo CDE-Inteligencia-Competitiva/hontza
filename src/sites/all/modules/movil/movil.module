@@ -124,6 +124,11 @@ function movil_get_logo($logo,$with_auth=0){
     $theme_buho_settings=variable_get('theme_fusion_mobile_settings','');    
     $src=$theme_buho_settings['logo_path'];
     $result=$base_url.'/system/files/'.basename($src);    
+    //if(!file_exists($result)){    
+    //if(!file_exists($src)){  
+    if(!movil_is_theme_logo($src)){  
+      $result=$base_url.'/sites/default/files/buho_logo.png';
+    }
     if(!$with_auth){    
         if(!hontza_is_user_anonimo()){
             return '';
@@ -559,4 +564,14 @@ function movil_get_movil_iframe_url(){
         return _MOVIL_IFRAME_URL;
     }
     return '';
-}    
+}
+function movil_is_theme_logo($src){
+   $konp=basename($src);
+   if($konp=='logo.jpg'){
+    return 0;
+   } 
+   if(file_exists($src)){  
+    return 1;
+   } 
+   return 0;
+}      
