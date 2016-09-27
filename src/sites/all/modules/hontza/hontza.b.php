@@ -1433,7 +1433,7 @@ function borrar_usuario_grupo_form(){
   );
     
     $form['borrar_btn']=array('#type'=>'submit','#name'=>'borrar_btn','#value'=>t('Delete'));
-    $form['cancel_btn']=array('#value'=>l(t('Cancel'),'user-gestion/borrar-usuarios-grupos')); 
+    $form['cancel_btn']=array('#value'=>l(t('Cancel'),'user-gestion/grupos/propios')); 
     
     return $form;
 }
