@@ -496,6 +496,12 @@ function panel_admin_is_panel_admin_left(){
     if(panel_admin_is_expertos()){
         return 1;
     }
+    if(hontza_grupos_mi_grupo_is_borrar_usuario_grupo()){
+        return 1;
+    }
+    if(panel_admin_is_user_delete()){
+        return 1;
+    }
     return 0;
 }
 function panel_admin_in_delta_panel_admin_left($block){
@@ -1547,3 +1553,21 @@ function panel_admin_get_usuarios_block_content(){
     $result[]=l($label_analysis_of_users,'panel_admin/usuarios_acceso/todos');
     return implode('<br>',$result);
 }
+//intelsat-2016
+function panel_admin_is_user_delete(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='user'){
+        $param1=arg(1);
+        if(!empty($param1) && is_numeric($param1)){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='delete'){
+                if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+                    if($_REQUEST['destination']=='gestion/usuarios'){
+                        return 1;
+                    }
+                }
+            }
+        }        
+    }
+    return 0;    
+}    
