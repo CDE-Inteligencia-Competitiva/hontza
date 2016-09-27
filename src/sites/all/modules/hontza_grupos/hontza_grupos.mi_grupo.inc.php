@@ -437,11 +437,13 @@ function hontza_grupos_mi_grupo_is_mi_grupo(){
             }
             $node=my_get_node();            
             if(isset($node->type) && !empty($node->type) && $node->type=='grupo'){
-                if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+                //intelsat-2016
+                //se ha comentado esto
+                /*if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
                     if($_REQUEST['destination']=='user-gestion/grupos/propios'){
                         return 0;
                     }
-                }
+                }*/
                 return 1;
             }
             
@@ -1705,3 +1707,12 @@ function hontza_grupos_mi_grupo_grupo_node_validate($form, &$form_state){
        hontza_grupos_mi_grupo_add_is_grupo_observatorio_form_js($grupo_node);
     }
 }
+function hontza_grupos_mi_grupo_is_borrar_usuario_grupo(){
+    $param0=arg(0);    
+        if(!empty($param0) && $param0=='user-gestion'){
+            $param1=arg(1);    
+            if(!empty($param1) && $param1=='borrar_usuario_grupo'){
+                return 1;
+            }
+        }
+}        
