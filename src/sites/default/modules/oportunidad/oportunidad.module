@@ -1003,6 +1003,8 @@ function is_add_primera_oportunidad($my_kont,$type){
     return is_add_primera_ayuda($my_kont, $type);
 }
 function get_oportunidad_simbolo_img($is_taula_header=0,$title_in=''){
+    //intelsat-2016
+    global $base_url;
     $html=array();
     //intelsat-2015
     if(empty($title_in)){
@@ -1014,7 +1016,7 @@ function get_oportunidad_simbolo_img($is_taula_header=0,$title_in=''){
     //gemini-2014
     $style=idea_get_simbolo_style($is_taula_header);
     //
-    $html[]='<img '.$style.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/oportunidad.png"/>';
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/oportunidad.png"/>';
     //gemini-2014
     if(!$is_taula_header){
         $html[]='&nbsp;';
@@ -1022,8 +1024,10 @@ function get_oportunidad_simbolo_img($is_taula_header=0,$title_in=''){
     return implode('',$html);
 }
 function get_title_oportunidad_simbolo_img(){
+    //intelsat-2016
+    global $base_url;
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/oportunidad_title.png"/>';
+    $html[]='<img src="http://"'.$base_url.'/sites/default/files/my_images/oportunidad_title.png"/>';
     return implode('',$html);
 }
 function create_oportunidad_guraso_fieldset($oportunidad_nid,$idea_nid,$node_idea_nid,$tipo_adheridos){
