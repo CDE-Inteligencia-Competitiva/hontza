@@ -1187,8 +1187,9 @@ function add_link_reto_title($title_in,$estrategia_nid,$description=''){
 }
 //gemini
 function get_add_img(){
-	//$src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/download_manager.png';
-	$src='http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/add.png';
+	//intelsat-2016
+  global $base_url;
+  $src=$base_url.'/sites/all/themes/buho/images/icons/add.png';
 	$img='<img src="'.$src.'"/>';
 	return $img;
 }
@@ -2074,11 +2075,13 @@ function arbol_estrategico_callback(){
     }    
 }
 function get_estrategia_simbolo_img($is_taula_header=0){
+    //intelsat-2016
+    global $base_url;
     $html=array();
     //gemini-2014
     $style=estrategia_get_simbolo_style($is_taula_header);    
     //
-    $html[]='<img '.$style.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/estrategia.png"/>';
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/estrategia.png"/>';
     //gemini-2014
     if(!$is_taula_header){
         $html[]='&nbsp;';
@@ -2086,8 +2089,10 @@ function get_estrategia_simbolo_img($is_taula_header=0){
     return implode('',$html);
 }
 function get_title_estrategia_simbolo_img(){
+    //intelsat-2016
+    global $base_url;
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/estrategia_title.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/estrategia_title.png"/>';
     return implode('',$html);
 }
 function get_desplegar_estrategia_content(){
@@ -2122,6 +2127,8 @@ function get_desplegar_estrategia_content(){
         return implode('<BR>',$result);
 }
 function get_menu_gezia_img($is_class=0){
+    //intelsat-2016
+    global $base_url;
     $class='';
     if(!empty($is_class)){
         if($is_class==1){
@@ -2134,7 +2141,7 @@ function get_menu_gezia_img($is_class=0){
     }
     $html=array();
     $html[]='&nbsp;';
-    $html[]='<img '.$class.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/menu_gezia.png"/>';
+    $html[]='<img '.$class.' src="'.$base_url.'/sites/default/files/my_images/menu_gezia.png"/>';
     $html[]='&nbsp;';
     return implode('',$html);
 }
