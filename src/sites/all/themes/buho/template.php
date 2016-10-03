@@ -1223,8 +1223,16 @@ function buho_admin_menu_icon() {
   global $base_url;    
   $favicon=(theme_get_setting('toggle_favicon') ? theme_get_setting('favicon') : base_path() .'misc/favicon.ico');
   $favicon=hontza_canal_rss_get_favicon_url('',$favicon);
-  if(empty($favicon)){
+
+   if(empty($favicon)){
     $favicon=$base_url.'/sites/default/files/buho_favicon.ico';
-  }
+   }
+   //intelsat-2016
+   $pos=strpos($base_url,'https');
+   if($pos===FALSE){
+
+   }else{
+   	$favicon=str_replace('http://','https://',$favicon);
+   }	
   return '<img class="admin-menu-icon" src="'. $favicon .'" width="16" height="16" alt="'. t('Home') .'" />';
 }
