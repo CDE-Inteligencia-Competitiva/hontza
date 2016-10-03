@@ -1371,6 +1371,8 @@ function get_estado_del_proyecto_by_field($param){
     return $result;
 }
 function get_proyecto_simbolo_img($is_taula_header=0,$title_in='',$file_name_in=''){
+    //intelsat-2016
+    global $base_url;
     $html=array();
     //intelsat-2015
     if(empty($title_in)){
@@ -1387,15 +1389,17 @@ function get_proyecto_simbolo_img($is_taula_header=0,$title_in='',$file_name_in=
     //gemini-2014
     $style=idea_get_simbolo_style($is_taula_header);
     //
-    $html[]='<img '.$style.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/'.$file_name.'.png" alt="'.$title.'" title="'.$title.'"/>';
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/'.$file_name.'.png" alt="'.$title.'" title="'.$title.'"/>';
     if(!$is_taula_header){
         $html[]='&nbsp;';
     }
     return implode('',$html);
 }
 function get_title_proyecto_simbolo_img(){
+    //intelsat-2016
+    global $base_url;
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/proyecto_title.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/proyecto_title.png"/>';
     return implode('',$html);
 }
 function create_proyecto_guraso_fieldset($proyecto_nid,$oportunidad_nid,$node_oportunidad_nid,$tipo_adheridos){
