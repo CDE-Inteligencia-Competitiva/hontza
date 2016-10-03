@@ -754,6 +754,8 @@ function set_despliegue_seleccionado($node){
     return set_idea_seleccionada($node);
 }
 function get_decision_simbolo_img($is_taula_header=0,$title_in=''){
+    //intelsat-2016
+    global $base_url;
     $html=array();
     //intelsat-2015
     if(empty($title_in)){
@@ -765,15 +767,16 @@ function get_decision_simbolo_img($is_taula_header=0,$title_in=''){
     //gemini-2014
     $style=estrategia_get_simbolo_style($is_taula_header); 
     //
-    $html[]='<img '.$style.' src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/decision.png" alt="'.$title.'" title="'.$title.'"/>';
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/decision.png" alt="'.$title.'" title="'.$title.'"/>';
     if(!$is_taula_header){
         $html[]='&nbsp;';
     }
     return implode('',$html);
 }
 function get_title_decision_simbolo_img(){
+    global $base_url;
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/default/files/my_images/decision_title.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/decision_title.png"/>';
     return implode('',$html);
 }
 function my_help_decision(){
