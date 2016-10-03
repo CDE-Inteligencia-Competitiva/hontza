@@ -2030,7 +2030,7 @@ function hontza_canal_rss_get_favicon_url($settings,$favicon_in=''){
         if(empty($result)){
             $result=red_get_default_url_favicon();
         }
-    }    
+    }
     return $result;
 }
 //intelsat-2016

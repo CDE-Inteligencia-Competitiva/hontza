@@ -1465,34 +1465,46 @@ function hontza_canal_usuarios_menu_class($arg_type,$param_in=''){
     }
     return '';
 }
-function hontza_get_title_fuente_simbolo_img(){  
+function hontza_get_title_fuente_simbolo_img(){
+    //intelsat-2016
+    global $base_url;       
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/fuente32.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/all/themes/buho/images/icons/fuente32.png"/>';
     return implode('',$html);
 }
-function hontza_get_title_wiki_simbolo_img(){  
+function hontza_get_title_wiki_simbolo_img(){
+    //intelsat-2016
+    global $base_url;  
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/wiki32.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/all/themes/buho/images/icons/wiki32.png"/>';
     return implode('',$html);
 }
-function hontza_get_wiki_img(){  
+function hontza_get_wiki_img(){
+    //intelsat-2016
+    global $base_url;  
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/trabajo.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/all/themes/buho/images/icons/trabajo.png"/>';
     return implode('',$html);
 }
-function hontza_get_title_debate_simbolo_img(){  
+function hontza_get_title_debate_simbolo_img(){
+    //intelsat-2016
+    global $base_url;  
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/debate32.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/all/themes/buho/images/icons/debate32.png"/>';
     return implode('',$html);
 }
-function hontza_get_debate_img(){  
+function hontza_get_debate_img(){
+    //intelsat-2016
+    global $base_url;  
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/debate.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/all/themes/buho/images/icons/debate.png"/>';
     return implode('',$html);
 }
-function hontza_get_title_canal_simbolo_img(){  
+function hontza_get_title_canal_simbolo_img(){
+    //intelsat-2016
+    global $base_url;  
     $html=array();
-    $html[]='<img src="http://'.$_SERVER['HTTP_HOST'].base_path().'sites/all/themes/buho/images/icons/canal32.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/all/themes/buho/images/icons/canal32.png"/>';
     return implode('',$html);
 }
 function hontza_is_atom_by_xml($xml){

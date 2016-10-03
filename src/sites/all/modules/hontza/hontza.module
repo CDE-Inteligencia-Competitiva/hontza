@@ -2976,11 +2976,15 @@ function my_help_fuentes(){
 }
 //gemini
 function my_get_help_link_object(){
-	//return '';
+  //intelsat-2016
+	global $base_url;
+  //return '';
 	//$src='/hontza3/sites/all/modules/help_popup/help.gif';
 	//$src=url('sites/all/modules/help_popup/help.gif');
-	$my_url='http://'.$_SERVER['HTTP_HOST'].base_path();
-	$src=$my_url.'sites/all/modules/help_popup/help.gif';
+	//intelsat-2016
+  //$my_url='http://'.$_SERVER['HTTP_HOST'].base_path();
+	$my_url=$base_url.'/';
+  $src=$my_url.'sites/all/modules/help_popup/help.gif';
 	$html='<img class="iconhelp" alt="help" src="'.$src.'" />';
 	return $html;
 }
