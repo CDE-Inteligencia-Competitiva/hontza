@@ -83,7 +83,7 @@
     <?php $menutop=hontza_set_menutop_by_group($menutop);?>
     <?php $menutop=my_get_menutop($menutop);?>
     <?php $menutop=hontza_navigation_menutop_page_header($menutop,1);?>  
-    <?php if ($menutop):?>  
+    <?php if ($menutop):?>
     <?php $menutop=hontza_set_menutop_monitoring_default($menutop);?>
     <?php endif;?>
     <?php $menutop=red_funciones_set_menutop_active_trail($menutop);?>
@@ -152,12 +152,13 @@
           	  <?php my_show_breadcrumb($breadcrumb); ?>
                   <?php //gemini-2014?>
                   <?php if(!hontza_is_tag_node_pantalla()):?>
+                  <?php //intelsat-2016?>
+                  <?php //$title=red_node_inc_get_node_delete_title();?>  
                   <?php if ($title): ?>
                         <?php //intelsat-2015 ?>
                         <?php $title=hontza_solr_search_get_solr_pantalla_title($title);?>
                         <?php $title_in=$title;?>
-                        <?php $title=red_funciones_set_title_help_icon($title);?>
-            
+                        <?php $title=red_funciones_set_title_help_icon($title);?>                                 
                                 <?php //if(is_idea()):?>
                                 <?php if(is_ficha_node('oportunidad') || is_oportunidad() || oportunidad_is_ideas_oportunidades()):?>
                                     <div style="float:left;">
