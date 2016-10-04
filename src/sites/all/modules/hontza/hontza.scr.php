@@ -678,6 +678,9 @@ function is_vigilancia_left($is_block=0){
         if(red_solr_inc_is_index_remaining_pantalla()){
         	return 1;
         }
+        if(boletin_report_inc_is_noticia_boletines()){
+        	return 1;
+        }
         //
         return 0;
 }

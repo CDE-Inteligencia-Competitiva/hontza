@@ -1413,7 +1413,7 @@ function hontza_area_debate_create_menu_node_list(){
     $html[]='<div id="tabs-primary" class="tabs primary">';
     $html[]='<ul>';
     //intelsat-2015
-    $last_title=t('Latest Comments');
+    $last_title=t('Latest discussions');
     $html[]='<li'.hontza_area_debate_menu_class('').'>'.l($last_title,'area-debate').'</li>';
     $html[]='<li'.hontza_area_debate_menu_class('lo-mas-valorado').'>'.l(t('Top Rated Discussions'),'area-debate/lo-mas-valorado').'</li>';
     $html[]='</ul>';

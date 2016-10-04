@@ -2039,7 +2039,8 @@ function hontza_canales_menu(){
     if(red_despacho_is_show_lo_mas_comentado()){
         $html[]='<li'.hontza_canales_menu_class('lo-mas-comentado').'>'.l(t('Most commented'),'canales/'.$canal_nid.'/lo-mas-comentado').'</li>';
     }
-    $html[]='<li'.hontza_canales_menu_class('ultimas').'>'.l(t('.Last'),'canales/'.$canal_nid.'/ultimas').'</li>';
+    //intelsat-2016
+    $html[]='<li'.hontza_canales_menu_class('ultimas').'>'.l(t('.Latest'),'canales/'.$canal_nid.'/ultimas').'</li>';    
     //intelsat-2015
     if(!hontza_canal_rss_is_usuario_basico()){
         $html[]='<li'.hontza_canales_menu_class('rechazados').'>'.l(t('Rejected'),'canales/'.$canal_nid.'/rechazados').'</li>';
@@ -2505,7 +2506,8 @@ function hontza_vigilancia_menu(){
             $html[]='<li'.hontza_canales_menu_class('lo-mas-comentado',$arg_type).'>'.l(t('Most commented'),$url_comentado).'</li>';
         }    
         //$html[]='<li'.hontza_canales_menu_class('ultimas',$arg_type).'>'.l(t('All'),'vigilancia/ultimas').'</li>';
-        $html[]='<li'.hontza_canales_menu_class($param_ultimos,$arg_type).'>'.l(t('.Last'),$url_ultimos).'</li>';
+        //intelsat-2016
+        $html[]='<li'.hontza_canales_menu_class($param_ultimos,$arg_type).'>'.l(t('.Latest'),$url_ultimos).'</li>';
         //intelsat-2015
         if(!hontza_canal_rss_is_usuario_basico()){
             $html[]='<li'.hontza_canales_menu_class('rechazados',$arg_type).'>'.l(t('Rejected'),'vigilancia/rechazados').'</li>';
