@@ -634,6 +634,8 @@ function boletin_report_noticia_boletines_callback(){
    }
    $output.=l(t('Return'),$url_volver);
    $output .='</div>';
+   //intelsat-2016
+   drupal_set_title(t('List of bulletins'));
    //
    return $output;
 }
@@ -1684,4 +1686,18 @@ function boletin_report_inc_is_links_to_web($bg,$param_alerta){
         return 1;        
     }
     return 0;    
+}
+//intelsat-2016 
+function boletin_report_inc_is_noticia_boletines(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='node'){
+         $param1=arg(1);
+         if(!empty($param1) && is_numeric($param1)){
+            $param2=arg(2);
+            if(!empty($param2) && $param2=='noticia_boletines'){
+                return 1;
+            }    
+         }   
+    }
+    return 0;
 }    
