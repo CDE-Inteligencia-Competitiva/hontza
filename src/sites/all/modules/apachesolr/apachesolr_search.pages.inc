@@ -115,7 +115,7 @@ function apachesolr_search_custom_page_search_form(&$form_state, $search_page, $
       '#type' => 'checkbox',
       //intelsat-2015  
       //'#title' => '<b>'.t('Retain current filters').'</b>',
-      '#title' => '<b>'.t('Apply My Filter').'</b>',
+      '#title' => '<b>'.t('Search on results').'</b>',
       '#default_value' => (int) !empty($_GET['retain-filters']),
       //intelsat-2015    
       //intelsat-2016
