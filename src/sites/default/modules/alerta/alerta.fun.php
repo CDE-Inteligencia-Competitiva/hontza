@@ -968,6 +968,11 @@ function is_alerta_user($type=''){
     if(isset($node->type) && !empty($node->type) && in_array($node->type,array('bulletin_text'))){
         return 1;
     }
+    /*
+    //intelsat-2016
+    if(boletin_report_inc_is_noticia_boletines()){
+        return 1;    
+    }*/
     //
     return 0;
 }
