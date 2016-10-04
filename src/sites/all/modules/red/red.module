@@ -1723,7 +1723,7 @@ function red_get_default_url_favicon(){
     $result='';
     $theme_default=variable_get('theme_default', '');
     if($theme_default=='buho'){            
-        $result=$base_url.'/sites/default/files/buho_favicon.ico';
+        $result=$base_url.'/sites/default/files/buho_favicon.ico';         
     }
     return $result;
 }

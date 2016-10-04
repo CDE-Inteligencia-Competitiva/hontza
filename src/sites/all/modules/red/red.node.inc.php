@@ -87,4 +87,4 @@ function red_node_inc_is_unset_de_la_botonera_gris_del_node(){
         return 1;
     }        
     return 0;
-}    
+}

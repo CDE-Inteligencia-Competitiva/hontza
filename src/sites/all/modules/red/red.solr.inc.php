@@ -1336,16 +1336,16 @@ function red_solr_inc_get_select_options_label($element){
 function red_solr_inc_get_boletin_report_bulk_actions_links($style){
     $html=array();
     $html[]='<div style="'.$style.'">';
-    $html[]=l(my_get_icono_action('boletin', t('Select for the Bulletin'),''),'hontza_solr/report_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_report_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
+    $html[]=l(my_get_icono_action('no-boletin',t('Select for the Bulletin'),''),'hontza_solr/unselect_report_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_report_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
     $html[]='</div>';
-    $html[]='<div style="'.$style.'">';
-    $html[]=l(my_get_icono_action('no-boletin', t('Unselect from Bulletin'),''),'hontza_solr/unselect_report_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_unselect_report_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
-    $html[]='</div>';        
+    $html[]='<div style="'.$style.'">';    
+    $html[]=l(my_get_icono_action('boletin',t('Unselect from Bulletin'),''),'hontza_solr/report_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_unselect_report_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
+    $html[]='</div>';                
     return implode('',$html);
 }
 function red_solr_inc_unselect_report_titles_html($node_id_array,$url_return,&$is_return,&$title,$is_solr){
     $html=array();
-    $title=t('Unselect from Bulletin');
+    $title=t('Select for the Bulletin');
     if(!empty($node_id_array)){
         $is_return=0;
         $html[]=hontza_solr_funciones_get_selected_node_titles($node_id_array);
@@ -1356,13 +1356,13 @@ function red_solr_inc_unselect_report_titles_html($node_id_array,$url_return,&$i
 function red_solr_inc_get_mark_bulk_actions_links($is_solr,$style){
     $html=array();
     $html[]='<div style="'.$style.'">';
-    //if($is_solr){
-        $html[]=l(my_get_icono_action('bookmark', t('Mark'),''),'hontza_solr/mark_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_mark_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));        
-    $html[]='</div>';
-    $html[]='<div style="'.$style.'">';
     //}else{
-        $html[]=l(my_get_icono_action('no_bookmark', t('Unmark'),''),'hontza_solr/unmark_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_unmark_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
+        $html[]=l(my_get_icono_action('no_bookmark', t('Mark'),''),'hontza_solr/mark_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_mark_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
     //}    
+    $html[]='</div>';    
+    $html[]='<div style="'.$style.'">';
+    //if($is_solr){
+        $html[]=l(my_get_icono_action('bookmark', t('Unmark'),''),'hontza_solr/unmark_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_unmark_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));        
     $html[]='</div>';
     return implode('',$html); 
 }
