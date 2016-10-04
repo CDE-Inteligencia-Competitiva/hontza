@@ -3914,7 +3914,7 @@ function in_my_allowed_protocols($string, $decode = TRUE) {
 function set_t_string_by_language($string){
     global $language;
     if($language->language=='en'){
-        if(in_array($string,array('.All','.Last','...Downloaded','...Shared','..Downloaded','..Shared','.Highlighted'))){
+        if(in_array($string,array('.All','.Last','...Downloaded','...Shared','..Downloaded','..Shared','.Highlighted','.Latest'))){
             $result=ltrim($string,'.');
             return $result;
         }else if(in_array($string,array('#Search','#Index'))){
