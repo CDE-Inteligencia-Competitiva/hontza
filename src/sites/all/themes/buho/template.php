@@ -121,9 +121,15 @@ function buho_preprocess(&$vars, $hook) {
 function buho_preprocess_page(&$vars) {
 
   /*itles are ignored by content type when they are not desired in the design.*/
+  //intelsat-2016
+  $param2='';  
   $vars['original_title'] = $vars['title'];
   if (!empty($vars['node']) && in_array($vars['node']->type, array('item', 'noticia'))) {
-    $vars['title'] = '';
+    //intelsat-2016
+  	$param2=arg(2);
+    if($param2!='delete'){
+    	$vars['title'] = '';
+    }
   }
  
   //gemini
