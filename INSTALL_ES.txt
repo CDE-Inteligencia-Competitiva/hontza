@@ -141,7 +141,7 @@ sed -i s/8080/8983/g /usr/local/tomcat/conf/server.xml
 chown -R tomcat:tomcat /usr/local/tomcat
 
 -Comprobar que tomcat se inicia con el usuario "tomcat"
-su -u tomcat /usr/local/tomcat/bin/startup.sh
+sudo -u tomcat /usr/local/tomcat/bin/startup.sh
 
 
 3.- Descargar e instalar SOLR
@@ -169,7 +169,7 @@ wget http://ftp.drupal.org/files/projects/apachesolr-6.x-1.8.tar.gz
 tar -zxf apachesolr-6.x-1.8.tar.gz
 
 -Copiar los ficheros de configuración del módulo a SOLR
-rsync -av apachesolr/solr-conf/solr-4.x/  /usr/local/tomcat/solr/conf/
+rsync -av apachesolr/*  /usr/local/tomcat/solr/conf/
 
 -Copiar los ficehros XML de configuración, desde la carpeta de Hontza, descargada desde Github.
 cp hontza-[version]/db/solrconfig.xml /usr/local/tomcat/solr/conf/
@@ -184,7 +184,7 @@ cp hontza-[version]/db/schema.xml /usr/local/tomcat/solr/conf/
 </solr>
 
 mkdir /usr/local/tomcat/solr/hontza
-cp -r /usr/local/tomcat/solr/conf /usr/local/tomcat/hontza/ins/
+cp -r /usr/local/tomcat/solr/conf /usr/local/tomcat/solr/hontza/
 
 -Activar la validación de usuarios en Tomcat. Para ello añada el siguiente contenido en el fichero: /usr/local/tomcat/webapps/solr/WEB-INF/web.xml
 
