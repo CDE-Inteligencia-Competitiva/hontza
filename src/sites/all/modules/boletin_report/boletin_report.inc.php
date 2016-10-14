@@ -794,8 +794,7 @@ function boletin_report_get_boletines_historicos_inicio(){
     if(empty($content)){
         return '';
     }
-    //$help_block=help_popup_block();
-    $help_block='';
+    $help_block=help_popup_block(468297);
     $html='<div class="block block-hontza block-odd region-odd clearfix " id="block-hontza-home-boletines-personalizados">';    
     //intelsat-2015
     //$title=t('Customised Bulletins');

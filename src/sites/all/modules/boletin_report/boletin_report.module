@@ -1306,7 +1306,6 @@ function boletin_report_exec($br_in,$nombre_dia,$por_correo=1,$bulletin_text_nid
 
                     //print implode('',$html_body);exit();
                     //
-                    //my_send_mail('inazio@netkam.com',t('Group Bulletin').$grupo_title, implode('',$html_body));
                     
                     //gemini-2014
                     /***********************************Esto se ha pasado de abajo a este lugar*********************/
