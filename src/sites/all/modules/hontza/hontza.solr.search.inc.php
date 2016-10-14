@@ -2121,13 +2121,15 @@ function hontza_solr_search_is_usuario_lector_access_denied(){
 function hontza_solr_search_grupo_left_title(){
     $title=t('Group');
     $icono=my_get_icono_action('descripcion_grupo', $title,'descripcion_grupo').'&nbsp;';
-    $result=$icono.$title;
+    $help_block=help_popup_block(468300);
+    $result=$icono.$title.$help_block;
     return $result;
 }
 function hontza_solr_search_users_left_title(){
     $title=t('Users');
     $icono=my_get_icono_action('user', $title,'users_left').'&nbsp;';
-    $result=$icono.$title;
+    $help_block=help_popup_block(468301);
+    $result=$icono.$title.$help_block;
     return $result;
 }
 function hontza_solr_search_add_source_left_title(){
@@ -2164,7 +2166,8 @@ function hontza_solr_search_reports_area_left_title(){
     $title=t('Reports Area');
     $result=l($title,'boletin_report/report_view_list');
     $icono=my_get_icono_action('boletin_left',$title,'boletin_left').'&nbsp;';
-    $result=$icono.$result;
+    $help_block=help_popup_block(468303);
+    $result=$icono.$result.$help_block;
     return $result;
 }
 //intelsat-2016
