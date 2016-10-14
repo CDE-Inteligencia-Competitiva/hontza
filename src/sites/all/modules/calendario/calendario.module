@@ -31,7 +31,7 @@ function calendario_get_content(){
     }
         $delta=51;
         $help_block='';
-        //$help_block=help_popup_block();    
+        $help_block=calendario_help_popup_block();    
         $html.='<div class="block block-hontza block-odd region-odd clearfix " id="block-hontza-'.$delta.'">';
         //intelsat-2015
         $icono=my_get_icono_action('calendario', t('Calendar'),'calendario').'&nbsp;';
@@ -492,7 +492,8 @@ function calendario_view_block($delta){
                             $title=t('Calendar');
                             $icono=my_get_icono_action('calendario', t('Calendar'),'calendario').'&nbsp;';
                             //
-                            $block['subject'] = $icono.$title;
+                            $help_block=calendario_help_popup_block();
+                            $block['subject'] = $icono.$title.$help_block;
                             $result=calendario_create_html();
                             $block['content'] = $result['output'];
                         }
@@ -959,4 +960,7 @@ function calendario_get_url_year($year_link){
     $result=hontza_solr_search_prepare_redirect_url($result);
     $result=html_entity_decode($result);        
     return $result;
+}
+function calendario_help_popup_block(){
+    return help_popup_block(468291);
 }
