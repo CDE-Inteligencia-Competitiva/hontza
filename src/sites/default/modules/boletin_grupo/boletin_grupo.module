@@ -1574,7 +1574,8 @@ function boletin_grupo_get_boletin_grupo_block(){
     $title=t('Group Bulletin');
     $icono=my_get_icono_action('boletin_grupo_dashboard',$title,'boletin_grupo_dashboard').'&nbsp;';
     //
-    $html[]='<h3 class="title">'.$icono.$title.'</h3>';
+    $help_block=help_popup_block(468305);
+    $html[]='<h3 class="title">'.$icono.$title.$help_block.'</h3>';
     $html[]='<div class="content">';
     $html[]=boletin_grupo_get_boletin_grupo_block_links();
     $html[]='</div>';
