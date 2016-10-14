@@ -247,7 +247,8 @@ function alerta_get_alerts_block(){
         $title=t('My Alerts');
         $icono=my_get_icono_action('alerta',$title,'alerta').'&nbsp;';
         //
-        $html[]='<h3 class="title">'.$icono.$title.'</h3>';
+        $help_block=help_popup_block(468304);
+        $html[]='<h3 class="title">'.$icono.$title.$help_block.'</h3>';
         $html[]='<div class="content">';
         $html[]=alerta_get_alerts_block_links();
         $html[]='</div>';
@@ -292,7 +293,8 @@ function alerta_get_bulletins_block(){
     $title=t('Customised Bulletins');
     $icono=my_get_icono_action('boletin_personalizado_dashboard',$title,'boletin_personalizado_dashboard').'&nbsp;';
     //
-    $html[]='<h3 class="title">'.$icono.$title.'</h3>';
+    $help_block=help_popup_block(468306);
+    $html[]='<h3 class="title">'.$icono.$title.$help_block.'</h3>';
     $html[]='<div class="content">';
     $html[]=alerta_get_bulletins_block_links();
     $html[]='</div>';
@@ -342,7 +344,8 @@ function alerta_get_settings_block(){
     $title=t('Settings');
     $icono=my_get_icono_action('configuracion',$title,'configuracion').'&nbsp;';
     //
-    $html[]='<h3 class="title">'.$icono.$title.'</h3>';
+    $help_block=help_popup_block(468307);
+    $html[]='<h3 class="title">'.$icono.$title.$help_block.'</h3>';
     $html[]='<div class="content">';
     $html[]=$links_html;
     $html[]='</div>';
