@@ -81,15 +81,17 @@
     <!--  
     <div id="footer-inner">
     -->
+    <!--
     <div id="footer-inner" class="footer-inner-integrated-services" style="padding-top:20px;">  
-      <?php print $contentfooter; ?>
+      <?php //print $contentfooter; ?>
       <?php //gemini ?>
       <?php //print $footer_message; ?>
       <?php //print 'Powered by Hontza 3.0.';?>
-      <?php print get_frase_powered('castellano');?>
+      <?php //print get_frase_powered('castellano');?>
         <BR>
-      <?php print get_frase_powered('ingles');?>
+      <?php //print get_frase_powered('ingles');?>
     </div>
+    -->
   </div>
   <?php else:?>
 
