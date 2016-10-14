@@ -805,3 +805,20 @@ function red_crear_usuario_is_imagen_red_todo(){
     }
     return 0;
 }
+function red_crear_usuario_get_frase_powered(){
+    $html=array();
+    $html[]='<div id="footer-inner" class="footer-inner-integrated-services" style="padding-top:20px;float:left;clear:both;width:100%;">';  
+    $html[]=red_crear_usuario_get_footer_div_left_empty();    
+    //print $contentfooter;
+    $html[]=get_frase_powered('castellano');
+    $html[]='<BR>';
+    $html[]=red_crear_usuario_get_footer_div_left_empty();
+    $html[]=get_frase_powered('ingles');
+    $html[]='</div>';
+    return implode('',$html);
+}
+function red_crear_usuario_get_footer_div_left_empty(){
+    $html=array();
+    $html[]='<div style="float:left;width:33%;">&nbsp;</div>';
+    return implode('',$html);
+}
