@@ -24,12 +24,14 @@
             <?php print hontza_solr_help_close_window_link();?>
             <!-- gemini -->
             <?php if($user->uid==1):?>
-                  <?php //print l('Edit','node/'.$node->nid.'/edit',array('query'=>drupal_get_destination()));?>
-                  <?php if($node->nid):?>
-                          <?php print l(t('Edit'),'node/'.$node->nid.'/edit',array('query'=>drupal_get_destination()));?>
-              <?php else:?>
-                          <?php print l(t('Añadir'),'node/add/my-help',array('query'=>drupal_get_destination()));?>
-                  <?php endif;?>
+                  <?php if(red_node_is_add_edit_help_popup()):?>
+                    <?php //print l('Edit','node/'.$node->nid.'/edit',array('query'=>drupal_get_destination()));?>
+                    <?php if($node->nid):?>
+                            <?php print l(t('Edit'),'node/'.$node->nid.'/edit',array('query'=>drupal_get_destination()));?>
+                    <?php else:?>
+                            <?php print l(t('Añadir'),'node/add/my-help',array('query'=>drupal_get_destination()));?>
+                    <?php endif;?>
+                  <?php endif;?>  
             <?php endif;?>
           <?php endif;?>
           <!--
