@@ -2521,11 +2521,12 @@ function boletin_report_bulletin_text_node_form_alter(&$form,&$form_state,$form_
     //intelsat-2015
     $form['title_of_series']=array(
         '#type'=>'textfield',
-        '#title'=>t('Serie'),
+        '#title'=>t('Series'),
         '#weight' =>-1000,
         '#attributes'=>array('readonly'=>'readonly')        
     );
-    $form['title']['#title']=t('Bulletin');
+    $form['title']['#title']=t('Title and number of Bulletin');
+    $form['title']['#description']=t('Please include the Series and a number or a date, for example: My Customised Bulletin - April 2014, My Customised Bulletin, nº 23, etc');
     //
     //intelsat-2015
     $form['body_field']['body']['#title']=t('Body');            
@@ -2727,7 +2728,7 @@ function boletin_report_historico_table(){
 }
 function boletin_report_define_historico_table_headers(){
     $headers=array();
-    $headers[0]=array('data'=>t('Bulletin'),'field'=>'title');
+    $headers[0]=array('data'=>t('Title and number of Bulletin'),'field'=>'title');
     //$headers[1]=array('data'=>t('Sending'),'field'=>'is_sended');
     $headers[1]=array('data'=>t('Date'),'field'=>'fecha_sended');
     $headers[2]=array('data'=>t('Edition'),'field'=>'is_edit');

@@ -1212,7 +1212,7 @@ function boletin_report_inc_title_of_bulletin_automatico_form(&$form_state,$cont
     $title_of_bulletin=boletin_report_inc_get_title_of_bulletin_automatico($boletin_report_array_id);
     $form['title_of_bulletin_fs']['title_of_bulletin']=array(
         '#type'=>'textfield',
-        '#title'=>t('Bulletin'),
+        '#title'=>t('Title and number of Bulletin'),
         '#default_value'=>$title_of_bulletin,
     );
     //intelsat-2016
