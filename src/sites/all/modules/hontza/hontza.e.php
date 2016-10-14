@@ -1456,7 +1456,7 @@ function hontza_area_trabajo_create_menu_node_list(){
     $html[]='<div class="tab-wrapper clearfix primary-only">';
     $html[]='<div id="tabs-primary" class="tabs primary">';
     $html[]='<ul>';
-    $last_title=t('Latest Inputs');
+    $last_title=t('Latest Documents');
     $html[]='<li'.hontza_area_trabajo_menu_class('').'>'.l($last_title,'area-trabajo').'</li>';
     $html[]='<li'.hontza_area_trabajo_menu_class('lo-mas-valorado').'>'.l(t('Top Rated Documents'),'area-trabajo/lo-mas-valorado').'</li>';
     $html[]='</ul>';

@@ -1383,13 +1383,19 @@ function hontza_canal_rss_get_logos_apis($powered=''){
         }        
         $html[]='<div style="width:'.$width.';margin: 0px auto -1em;float:left;'.$background_color.$margin_top.'padding-top:10px;">';
         if(red_crear_usuario_is_custom_css_hontza()){
-            $html[]='<div style="float:left;width:33%;">&nbsp;</div>';
+            //$html[]='<div style="float:left;width:33%;">&nbsp;</div>';
+            $html[]=red_crear_usuario_get_footer_div_left_empty();
         }
         $html[]=hontza_canal_rss_get_text_linked_services();
         $html[]=hontza_canal_rss_get_alchemy_api_logo();
         //$html[]=hontza_canal_rss_get_kimonolabs_logo();        
         $html[]=hontza_canal_rss_get_opencalais_logo();
         $html[]=hontza_canal_rss_get_yahoo_developer_network_logo();
+        if(hontza_is_user_anonimo()){
+            if(red_crear_usuario_is_custom_css_hontza() && hontza_is_footer()){
+                $html[]=red_crear_usuario_get_frase_powered();
+            }
+        }    
         $html[]='</div>';
     }
     return implode('',$html);
