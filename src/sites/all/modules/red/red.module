@@ -764,7 +764,8 @@ function red_get_source_download_block_title($with_icon=0){
     //intelsat-2015
     if($with_icon){
         $icono=my_get_icono_action('exchange-resources-left', $result).'&nbsp;';
-        $result=$icono.$result;
+        $help_block=help_popup_block(468302);
+        $result=$icono.$result.$help_block;
     }
     return $result;
 }

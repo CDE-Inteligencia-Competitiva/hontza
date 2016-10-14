@@ -88,3 +88,13 @@ function red_node_inc_is_unset_de_la_botonera_gris_del_node(){
     }        
     return 0;
 }
+function red_node_is_add_edit_help_popup(){
+    if(hontza_is_sareko_id('ROOT')){
+        return 1;
+    }
+    /*if(isset($_REQUEST['is_online']) && !empty($_REQUEST['is_online'])){
+        return 0;
+    }
+    return 1;*/
+    return 0;
+}
