@@ -63,7 +63,8 @@ function custom_dashboard_get_content_block($canal_nid_in){
     $nid_array=custom_dashboard_get_busqueda_nid_array($canal_nid_in,$canal_busqueda);
     $url=red_dashboard_get_url_solr_search($canal_busqueda);
     $info_url=parse_url($url);
-    $html[]='<h3 class="title">'.l($canal_busqueda->title,$info_url['path'],array('query'=>$info_url['query'])).'</h3>';
+    $help_block=help_popup_block(468655);
+    $html[]='<h3 class="title">'.l($canal_busqueda->title,$info_url['path'],array('query'=>$info_url['query'])).$help_block.'</h3>';
     $html[]='<div class="content" style="height:300px;">';
     //$html[]='<div class="view view-og-home-noticiasvalidadas-dash view-id-og-home-noticiasvalidadas-dash view-display-id-block-1 view-dom-id-6 ">';
     //$html[]='<div class="view-content">';
