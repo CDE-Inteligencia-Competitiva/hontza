@@ -271,7 +271,7 @@ function mis_grupos_form($is_db=1){
         if(custom_menu_red_is_activado() && $is_db && custom_menu_red_is_db_request()){
             $form=custom_menu_red_mis_grupos_form_db();
             if(!empty($form)){
-                return $form;
+              return $form;
             }
         }
     }
@@ -351,7 +351,8 @@ foreach($sareko_id_array as $i=>$sareko_id){
     $my_limit=2000;  
   
     $sort='asc';
-    $field='node_title';
+    //$field='node_title';
+    $field='server';
     if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
         $sort=$_REQUEST['sort'];
     }
@@ -380,7 +381,11 @@ foreach($sareko_id_array as $i=>$sareko_id){
         }
     }
     
-    
+    if($field=='server'){
+      $is_type_of_group=1;
+    }
+
+
     //intelsat-2016
     if(!hontza_grupos_mi_grupo_is_este_servidor()){
         $grupos_red_alerta=array();
