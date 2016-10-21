@@ -1094,14 +1094,14 @@ function array_ordenatu($sarrera,$izena,$order_erantzuna,$is_numeric=1,$is_type_
                     }    
 		}
 	}else{
-		if($is_numeric){
-			array_multisort($myArray, SORT_ASC, $cfg);
+         if($is_numeric){
+            array_multisort($myArray, SORT_ASC, $cfg);
 		}else{
                     //intelsat-2015
                     if($is_type_of_group){
                         array_multisort($myArray, SORT_ASC,$second_array, SORT_ASC,$cfg);
                     }else{
-			array_multisort($myArray, SORT_ASC,SORT_STRING, $cfg);
+			            array_multisort($myArray, SORT_ASC,SORT_STRING, $cfg);
                     }    
 		}	
 	}

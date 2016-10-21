@@ -1089,6 +1089,11 @@ if(isset($_REQUEST['search']) && !empty($_REQUEST['search'])){
 if(!empty($search)){
   $where[]="(node.title LIKE '%%".$search."%%' OR nr.body LIKE '%%".$search."%%')";
 }
+//intelsat-2016
+//Para poner a la izquierda el bloque de categorias tematicas en debates
+/*if(is_area_debate()){
+  print arg(1);exit();  
+}*/
 //
 $sql="SELECT node.nid AS nid, node.created AS node_created,node.uid as node_uid,node.title AS node_title,u.name AS username
 ,votingapi_cache_node_average.value AS votingapi_cache_node_average_value     

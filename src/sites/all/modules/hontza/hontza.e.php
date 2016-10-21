@@ -6,26 +6,26 @@ function hontza_get_resumen_etiqueta($node_taxonomy,$is_ficha_completa=0,$node='
     }else{
         if(!empty($node_taxonomy)){
         	$my_array=array();
-		foreach($node_taxonomy as $etiqueta){
-                    if(hontza_in_etiquetas_vocabulary($etiqueta)){
-                        //print $etiqueta->name.'<BR>';
-			$my_array[]=$etiqueta->name;
-                    }    
-		}
-		$s=implode(' ',$my_array);
-		if(red_is_rojo()){
-                    return $s;
-                }
-                //$max=48;
-		//$max=33;
-                $max=70;
-		//return $s;
-		if(strlen($s)>$max){
-			$s=substr($s,0,$max-3).'..';			
-			return $s;
-		}
-		return $s;
-	}
+    		foreach($node_taxonomy as $etiqueta){
+                        if(hontza_in_etiquetas_vocabulary($etiqueta)){
+                            //print $etiqueta->name.'<BR>';
+    			             $my_array[]=$etiqueta->name;
+                        }    
+    		}
+    		$s=implode(' ',$my_array);
+    		if(red_is_rojo()){
+                        return $s;
+                    }
+                    //$max=48;
+    		//$max=33;
+                    $max=70;
+    		//return $s;
+    		if(strlen($s)>$max){
+    			$s=substr($s,0,$max-3).'..';			
+    			return $s;
+    		}
+    		return $s;
+	   }
 	return '';
     }    
 }

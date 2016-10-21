@@ -1336,7 +1336,17 @@ function hontza_solr_search_get_resumen_etiqueta($node_taxonomy,$is_ficha_comple
     global $base_url;
     $html=array();
     $popup_array=array();
-    $is_see_more=0;
+    $is_see_more=0;    
+    $my_lang='';
+    if($language->language!='en'){
+        $my_lang='/'.$language->language;
+    }
+    //$url=$base_url.'/'.$purl.'/'.$url.'/'.$r->id.'/previsualizacion_boletin';
+    $my_grupo=hontza_get_grupo_by_feed_nid($source);
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $purl='/'.$my_grupo->purl.'/';
+    }    
+    $my_base_url=$base_url.$my_lang.$pulr.$url.'/';
     if(!empty($node_taxonomy)){
         $max=4;
         $kont=0;
@@ -1354,16 +1364,17 @@ function hontza_solr_search_get_resumen_etiqueta($node_taxonomy,$is_ficha_comple
                         $url='taxonomy/term/'.$tid;
                         $url=hontza_solr_search_get_tag_filtrado_solr_url($tid,$url,$query);
                         //intelsat-2015
-                        $url=$base_url.'/'.$url;                        
+                        $url=$my_base_url.'/'.$url;
+                        $icono=hontza_solr_search_my_get_icono_action_tag();
                         if(red_movil_is_activado()){
-                            $link='<b>'.$term->name.'</b>';
-                        }else{    
-                            if(empty($query)){
-                                $link=l($term->name,$url);
+                            $link='<b>'.$icono.$term->name.'</b>';
+                        }else{
+                           if(empty($query)){
+                                $link=l($icono.$term->name,$url,array('html'=>true));
                             }else{                            
-                                $link=l($term->name,$url,array('query'=>$query));
+                                $link=l($icono.$term->name,$url,array('query'=>$query,'html'=>true));
                             }
-                        }    
+                        }
                         if($is_ficha_completa){
                             $html[]=$link;
                         }else{
@@ -2217,4 +2228,7 @@ function hontza_solr_search_add_busqueda_avanzada_title_links_js($url_simple_sea
         });  
      });</script>';
     return $result;
-}        
+}
+function hontza_solr_search_my_get_icono_action_tag(){
+    return my_get_icono_action('tag',t('Tag'),'',array(),'','','',' width="16" height="16"');        
+}
