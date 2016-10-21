@@ -107,13 +107,13 @@ function custom_menu_red_get_grupos_db_array(&$rows,$is_show=0){
 }
 function custom_menu_red_encode($rows){
     $result=serialize($rows);
-    //$result=base64_encode(serialize($rows));
+    $result=base64_encode(serialize($rows));
     //$result=base64_encode(json_encode($rows));    
     return $result;        
 }
 function custom_menu_red_decode($rows){
     $result=unserialize($rows);
-    //$result=unserialize(base64_decode($rows));            
+    $result=unserialize(base64_decode($rows));            
     //$result=json_decode(base64_decode($rows));    
     return $result;        
 }
@@ -123,12 +123,15 @@ function custom_menu_red_mis_grupos_form_db(){
     $custom_menu_red_row=custom_menu_red_get_custom_menu_red_row($user->uid);
     if(isset($custom_menu_red_row->id) && !empty($custom_menu_red_row->id)){
         $form=custom_menu_red_decode($custom_menu_red_row->mis_grupos_form_value);
+
+
         $form=custom_menu_red_fix_mis_grupos_order_link($form);        
     }
     return $form;
 }
 function custom_menu_red_delete_all_custom_menu_red(){
     db_query('DELETE FROM {custom_menu_red} WHERE 1');
+    db_query('ALTER TABLE {custom_menu_red} AUTO_INCREMENT=1');
 }
 function custom_menu_red_is_red_grupos_subdominios_script(){
     $param0=arg(0);
