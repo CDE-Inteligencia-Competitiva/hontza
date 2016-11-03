@@ -89,7 +89,7 @@ function alerta_solr_get_canal_busqueda_nid_array($canal_busqueda,$value_in=''){
     }else{
         $value=$value_in;
     }    
-           if(hontza_solr_is_solr_activado() && hontza_solr_is_busqueda_solr($value)){
+           if(hontza_solr_is_solr_activado() && hontza_solr_is_busqueda_solr($value)){            
                if($value=='my_solr/my_search?f=Array'){
                    return $result;
                }
@@ -109,6 +109,9 @@ function alerta_solr_get_canal_busqueda_nid_array($canal_busqueda,$value_in=''){
                 $s.='########################<br>';                
                 drupal_set_message($s);*/                
                 $result=$nid_array;
+                /*if(module_exists('crm_exportar')){
+                    print count($result).'<br>';
+                }*/
                //} 
            }else{
                $view='';
