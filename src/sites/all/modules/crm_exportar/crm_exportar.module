@@ -1,4 +1,5 @@
 <?php
+require_once('crm_exportar.textos.inc.php');
 function crm_exportar_perm() {
   return array();
 }
@@ -32,25 +33,62 @@ function crm_exportar_menu() {
     'page callback' => 'crm_exportar_change_link_type_ajax_callback',
     'access callback' => 'crm_exportar_change_link_type_access',
   );
-  $items['crm_exportar/get_ip']=array(
+  /*$items['crm_exportar/get_ip']=array(
     'title'=>'Home',
     'page callback' => 'crm_exportar_get_ip_callback',
     'access callback' => TRUE,
+  );*/
+  $items['crm_exportar/textos/importar']=array(
+    'title'=>'Clients',
+    'page arguments' => array('crm_exportar_textos_importar_form'),       
+    'page callback' => 'drupal_get_form',       
+    'access arguments' => array('root'),
+  );
+  $items['crm_exportar/textos/links']=array(
+    'title'=>'Clients',
+    'page callback' => 'crm_exportar_textos_links_callback',
+    'access callback' => 'crm_exportar_exportar_custom_access',
+  );
+  $items['crm_exportar/textos/autocomplete']=array(
+    'title'=>'Clients',
+    'page callback' => 'crm_exportar_textos_autocomplete_callback',
+    'access callback' => 'crm_exportar_exportar_custom_access',
+  );
+  $items['crm_exportar/textos/exportar_noticias_kont']=array(
+    'title'=>'Update results',
+    'page callback' => 'crm_exportar_textos_exportar_noticias_kont_callback',
+    'access callback' => 'crm_exportar_exportar_custom_access',
   );
   return $items;
 }
 function crm_exportar_exportar_custom_access(){
+  global $user;
   /*if(is_super_admin()){
       return TRUE;
   }
   return FALSE;*/
+  if(crm_exportar_is_crm_exportar_texto()){
+    $modo_estrategia=1;
+    if(hontza_is_user_anonimo()){
+      return FALSE;
+    }    
+    if(is_super_admin()){
+      return TRUE;
+    }  
+    //if(!red_funciones_is_administrador_grupo()){
+    //if(is_administrador_grupo($modo_estrategia)){
+    if(isset($user->roles[ADMINISTRADOR_DE_GRUPO])){
+      return TRUE;
+    }
+    return FALSE;      
+  }
   return TRUE;  
 }
 function crm_exportar_exportar_noticias_callback(){
   crm_exportar_ip_access_denied();
   crm_exportar_exportar_noticias();  
 }
-function crm_exportar_exportar_noticias(){
+function crm_exportar_exportar_noticias($crm_in='',$is_kont=0){
   $crm=arg(2);  
   $fecha_ini=crm_exportar_convertir_fecha(arg(3));
   $fecha_fin=crm_exportar_convertir_fecha(arg(4));
@@ -70,40 +108,85 @@ function crm_exportar_exportar_noticias(){
         $fecha_fin=crm_exportar_convertir_fecha($_POST['fecha_fin']);
       }
   }
+  if($is_kont){
+    $crm=$crm_in;
+  }
   //$value='my_solr/my_search?f[0]=im_og_gid%3A187709&f[1]=im_field_item_canal_reference%3A253463&solrsort=ds_created desc';
   //$value='my_solr/my_search?f[0]=im_og_gid:188959&f[1]=im_taxonomy_vid_3:211690&solrsort=ds_created desc';
   $group_array=hontza_get_all_nodes(array('grupo'),'','',0,'',0);
-  $tid_array=crm_exportar_get_tid_array($crm);
+  $crm_texto=crm_exportar_get_crm_texto($crm);
+  $tid_array=array();
+  //if(!crm_exportar_is_crm_exportar_texto()){
+    $tid_array=crm_exportar_get_tid_array($crm);
+  //}  
   $nid_array=array();
+  $texto='';
   $fechas_solr=hontza_solr_get_search_fechas($fecha_ini,$fecha_fin);
   if(!empty($fechas_solr)){
-      $fechas_solr='/('.$fechas_solr.')';
-  }  
+    if(crm_exportar_is_crm_exportar_texto()){
+      if(!empty($crm_texto)){
+        $texto='/("'.$crm_texto.'" AND '.$fechas_solr.')';
+        $fechas_solr='/('.$fechas_solr.')';
+      }else{
+        $fechas_solr='/('.$fechas_solr.')';
+      }
+    }else{
+      $fechas_solr='/('.$fechas_solr.')';    
+    }  
+  }else{
+    if(crm_exportar_is_crm_exportar_texto()){
+      if(!empty($crm_texto)){
+        $texto='/"'.$crm_texto.'"';
+      }
+    }  
+  }
   if(!empty($param_solr)){
     $is_solr=crm_exportar_is_param_solr($param_solr);
   }else{  
     //$is_solr=1;
     $is_solr=0;      
   }
-  if(!empty($tid_array)){
-    if($is_solr){    
-        if(!empty($group_array)){
-            foreach($group_array as $i=>$row){
-                foreach($tid_array as $b=>$tid){
-                      $value='my_solr/my_search'.$fechas_solr.'?f[0]=im_og_gid:'.$row->nid.'&f[1]=im_taxonomy_vid_3:'.$tid.'&solrsort=ds_created desc';                  
-                      $result=alerta_solr_get_canal_busqueda_nid_array('',$value);                  
-                      $nid_array=array_merge($nid_array,$result);
-                }      
-            }  
-        }
-    }else{
-        $nid_array=crm_exportar_get_nid_array_mysql($tid_array,$fecha_ini,$fecha_fin,$is_post);
-    }    
+  if(crm_exportar_is_crm_exportar_texto()){
+    $is_solr=1;
   }  
-  /*echo print_r($nid_array,1);
-  exit();*/
-  $channel=array();
-  crm_exportar_node_feed($nid_array,$channel,$crm,$is_post);
+    if(!empty($tid_array) || crm_exportar_is_crm_exportar_texto()){
+      if($is_solr){
+          if(!empty($group_array)){
+              foreach($group_array as $i=>$row){
+                  if(crm_exportar_is_crm_exportar_texto()){
+                      $value='my_solr/my_search'.$texto.'?f[0]=im_og_gid:'.$row->nid.'&solrsort=ds_created desc';
+                      $result=alerta_solr_get_canal_busqueda_nid_array('',$value);                  
+                      /*if(crm_exportar_is_crm_exportar_texto()){
+                        print $row->title.'='.count($result).'<br>';
+                      }*/  
+                      $nid_array=array_merge($nid_array,$result);                      
+                  }//else{  
+                    foreach($tid_array as $b=>$tid){
+                          $value='my_solr/my_search'.$fechas_solr.'?f[0]=im_og_gid:'.$row->nid.'&f[1]=im_taxonomy_vid_3:'.$tid.'&solrsort=ds_created desc';                  
+                          $result=alerta_solr_get_canal_busqueda_nid_array('',$value);                  
+                          $nid_array=array_merge($nid_array,$result);
+                    }
+                  //}                      
+              }  
+          }
+      }else{
+          if(!crm_exportar_is_crm_exportar_texto()){
+            $nid_array=crm_exportar_get_nid_array_mysql($tid_array,$fecha_ini,$fecha_fin,$is_post);
+          }  
+      }    
+    }    
+  /*if(crm_exportar_is_crm_exportar_texto()){
+    if(count($nid_array)>0){
+      echo print_r($nid_array,1);
+      exit();
+    }
+  }*/  
+  if($is_kont){
+    return count($nid_array);
+  }else{  
+    $channel=array();
+    crm_exportar_node_feed($nid_array,$channel,$crm,$is_post);
+  }
   exit();
 }
 function crm_exportar_is_exportar_noticias(){    
@@ -162,7 +245,10 @@ function crm_exportar_node_feed($nids = FALSE, $channel = array(),$crm,$is_post=
       $item =$node_array[$nid];  
     }else{
       $item = node_load($nid);
-    }
+      if(!(isset($item->nid) && !empty($item->nid))){
+        continue;
+      }
+    }   
     $item->build_mode = NODE_BUILD_RSS;
     $item->link = url("node/$nid", array('absolute' => TRUE));
 
@@ -274,7 +360,7 @@ function crm_exportar_format_rss_item($title, $link_in, $description, $args = ar
       $output .= ' <tag>'. $term_name ."</tag>\n";
   }
   $output .= ' <id>'.$id."</id>\n";
-  if(is_super_admin()){
+  if(is_super_admin() || crm_exportar_is_crm_exportar_texto()){
       $group_title=crm_exportar_get_item_group_title($node);
       $output .= ' <group>'.$group_title."</group>\n";
   }
@@ -344,10 +430,19 @@ function crm_exportar_crear_url_form(){
         '#title'=>t('Password'),
         );
     }
-    $form['file_buscar_fs']['tag']=array(
-        '#type'=>'textfield',
-        '#title'=>t('Tag'),
-    );
+    if(crm_exportar_is_crm_exportar_texto()){
+      $form['file_buscar_fs']['tag']=array(
+        '#type' => 'textfield',
+        '#title' => t('Tag'),
+        //'#maxlength' => 128,
+        '#autocomplete_path' => 'crm_exportar/textos/autocomplete',
+      );
+    }else{
+      $form['file_buscar_fs']['tag']=array(
+          '#type'=>'textfield',
+          '#title'=>t('Tag'),
+      );
+    }  
     $form['file_buscar_fs']['is_time']=array(
         '#type'=>'checkbox',
         '#title'=>t('Is Unix time'),
@@ -356,7 +451,7 @@ function crm_exportar_crear_url_form(){
         $form['file_buscar_fs']['is_solr']=array(
             '#type'=>'checkbox',
             '#title'=>t('Is Solr'),
-            //'#attributes'=>array('checked'=>'checked'),
+            '#attributes'=>array('checked'=>'checked'),
         );
     }
     $form['file_buscar_fs']['fecha_inicio']=array(
@@ -375,8 +470,16 @@ function crm_exportar_crear_url_form(){
         '#type'=>'submit',
         '#value'=>t('Send'),
         '#prefix'=>'<div style="padding-top:10px;">',
-        '#suffix'=>'</div>',
+        //'#suffix'=>'</div>',
     );
+    if(crm_exportar_is_crm_exportar_texto()){
+      $form['file_buscar_fs']['clientes_btn']=array(
+          '#value'=>l(t('Clients'),'crm_exportar/textos/links',array('attributes'=>array('target'=>'_blank'))),
+          '#suffix'=>'</div>',
+      );
+    }else{
+      $form['file_buscar_fs']['send_btn']['#suffix']='</div>';
+    }  
     drupal_set_title(t('Create crm url'));    
     return $form;
 }
@@ -913,4 +1016,17 @@ function crm_exportar_get_crm_exportar_ip_array($remote_addr){
 function crm_exportar_get_ip_callback(){
     print $_SERVER['REMOTE_ADDR'];
     exit();
+}
+function crm_exportar_is_crm_exportar_texto(){
+  if(defined('_IS_CRM_EXPORTAR_TEXTO') && _IS_CRM_EXPORTAR_TEXTO==1){
+    return 1;
+  }
+  return 0;
+}
+function crm_exportar_get_crm_texto($crm){
+  $result=$crm;
+  if(crm_exportar_is_crm_exportar_texto()){
+    $result=str_ireplace('CRM:','',$result);
+  }
+  return $result;
 }
