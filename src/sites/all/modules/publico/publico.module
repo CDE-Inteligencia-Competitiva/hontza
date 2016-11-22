@@ -597,7 +597,7 @@ function publico_is_file_contact($my_path){
    LEFT JOIN {files} files ON upload.fid=files.fid
    WHERE files.filepath="%s"
    ',$my_path));
-   print $sql;
+   //print $sql;
    while($r=db_fetch_object($res)){
        return 1;
    }
