@@ -124,6 +124,7 @@ define('_RED_EXPORTAR_RSS_PREFIJO_SITES','default');
 define('_IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO',1);
 define('_IS_CANAL_DUPLICATE_NEWS',1);
 define('_IS_GRUPO_TAB_ACTIVADO',0);
+define('_IS_BOLETIN_REPORT_SHOW_ATTACHMENTS',1);
 //Red fields
 define('_FIELD_RED_ITEM_WEB_NAME','field_igape_item_web');
 define('_FIELD_RED_IDIOMAS_NAME','field_igape_idiomas');
