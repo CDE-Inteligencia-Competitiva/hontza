@@ -170,7 +170,12 @@ function boletin_report_menu() {
     'title' => 'Unselect from Bulletin',
     'page callback' => 'boletin_report_unselect_report_bookmark_callback',
     'access arguments' => array('report content'),
-    ); 
+    );
+    /*$items['boletin_report/files/%'] = array(
+    'title' => 'Attachments',
+    'page callback' => 'boletin_report_inc_files_callback',
+    'access callback' => 'boletin_report_inc_files_access',
+    );*/  
     //     
   return $items;
 }

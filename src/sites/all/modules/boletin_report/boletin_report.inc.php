@@ -1700,3 +1700,54 @@ function boletin_report_inc_is_noticia_boletines(){
     }
     return 0;
 }    
+//intelsat-2016
+function boletin_report_inc_is_show_attachments(){
+    if(red_despacho_is_activado()){
+        return 0;
+    }
+    if(defined('_IS_BOLETIN_REPORT_SHOW_ATTACHMENTS') && _IS_BOLETIN_REPORT_SHOW_ATTACHMENTS==1){
+        return 1;
+    }
+    return 0;
+}
+//intelsat-2016
+function boletin_report_inc_get_attachments_html($node){
+    $result=array();
+    if(isset($node->files) && !empty($node->files)){
+        $icono=my_get_icono_action('ficheros_adjuntos',t('Attachments')).'&nbsp;';            
+        $url_file='';
+        foreach($node->files as $fid=>$row){
+            $url_file=hontza_get_url_file($row->filepath);
+            //$url_file=str_replace('system/files','boletin_report/files',$url_file);
+            $result[]='<div>'.$icono.l($row->filename,$url_file,array('attributes'=>array('target'=>'_blank','absolute'=>TRUE))).'</div>';
+
+        }
+        $attachments_html=implode('',$result);
+        $html=array();
+            $html[]='<tr>';
+            $html[]='<td>';
+            $html[]='<table class="mail_table" style="width:100%;border:0px;">';
+            $html[]='<tr><th><b>'.t('Attachments').'</b></th></tr>';
+            $html[]='<tr>';
+            $html[]='<td>'.$attachments_html.'</td>';
+            $html[]='</tr>';
+            $html[]='</table>';
+            $html[]='</td>';
+            $html[]='</tr>';
+            return implode('',$html);
+
+    }
+    return '';    
+}
+//intelsat-2016
+function boletin_report_inc_files_access(){
+    /*if(boletin_report_inc_is_show_attachments()){
+        return TRUE;
+    }*/
+    return FALSE;    
+}
+//intelsat-2016
+function boletin_report_inc_files_callback(){
+    return 'Desactivado';
+    //return file_download();
+}
