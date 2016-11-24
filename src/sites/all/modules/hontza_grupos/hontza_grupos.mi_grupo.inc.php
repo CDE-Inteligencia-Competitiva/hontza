@@ -1715,4 +1715,13 @@ function hontza_grupos_mi_grupo_is_borrar_usuario_grupo(){
                 return 1;
             }
         }
-}        
+}
+function hontza_grupos_mi_get_grupo_by_node($node){
+    $result=panel_admin_get_node_grupo($node);
+    if(isset($result->nid) && !empty($result->nid)){
+        return $result;
+    }else{
+        $result=og_get_group_context();
+        return $result;
+    }
+}
