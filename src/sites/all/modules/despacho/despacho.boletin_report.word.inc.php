@@ -6,7 +6,10 @@ function despacho_boletin_report_word_get_current_content($current_content,$subj
     }
     //$path=$base_url.'/sites/all/modules/despacho/despacho_boletin_report_word/';
     $path=despacho_boletin_report_word_get_path();
-    $filename=$path.'despacho_boletin_report_word.html';
+    //intelsat-2016
+    //$filename=$path.'despacho_boletin_report_word.html';
+    $filename=despacho_boletin_report_word_get_filename();
+    $filename=$path.$filename;
     $result=file_get_contents($filename);
     $result=utf8_encode($result);
     $result=despacho_boletin_report_word_add_logo($result,$path);
@@ -202,7 +205,12 @@ function despacho_boletin_report_word_add_logo_attachment(&$message){
 }
 function despacho_boletin_report_word_get_path(){
     global $base_url;
-    return $base_url.'/sites/all/modules/despacho/despacho_boletin_report_word/';
+    $name='despacho_boletin_report_word';
+    if(red_informatica_is_informatica_activado()){
+        $name='informatica_boletin_report_word';
+    }
+    $result=$base_url.'/sites/all/modules/despacho/'.$name.'/';
+    return $result;
 }
 function despacho_boletin_report_word_is_my_add_css(){
     if(boletin_report_inc_is_boletin_report_my_web()){
@@ -389,5 +397,12 @@ function despacho_boletin_report_word_get_background_tipos_fuente(&$link_tipos_f
             }
         }
     }    
+    return $result;
+}
+function despacho_boletin_report_word_get_filename(){
+    $result='despacho_boletin_report_word.html';
+    if(red_informatica_is_informatica_activado()){
+        $result='informatica_boletin_report_word.html';
+    }
     return $result;
 }
