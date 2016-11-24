@@ -44,6 +44,8 @@ if(!empty($mailchimp_template_id)){
     $opts['template_id']=$mailchimp_template_id;
     $content = array('html_main'=>$body_in,
     //'text' => 'Texto'
+    //'html_mytexto'=>$body_in,
+    //'HTML_MYTEXTO'=>$body_in,    
     );
 }else{
     $content = array('html'=>$body_in, 
