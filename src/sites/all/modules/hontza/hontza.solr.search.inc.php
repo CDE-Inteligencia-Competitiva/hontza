@@ -1334,6 +1334,8 @@ function hontza_solr_search_get_categorias_tematicas_filtrado_solr_url($tid,$url
 function hontza_solr_search_get_resumen_etiqueta($node_taxonomy,$is_ficha_completa,$node){
     //intelsat-2015
     global $base_url;
+    //intelsat-2016
+    global $language;
     $html=array();
     $popup_array=array();
     $is_see_more=0;    
@@ -1342,11 +1344,14 @@ function hontza_solr_search_get_resumen_etiqueta($node_taxonomy,$is_ficha_comple
         $my_lang='/'.$language->language;
     }
     //$url=$base_url.'/'.$purl.'/'.$url.'/'.$r->id.'/previsualizacion_boletin';
-    $my_grupo=hontza_get_grupo_by_feed_nid($source);
+    //$my_grupo=hontza_get_grupo_by_feed_nid($source);
+    $my_grupo=hontza_grupos_mi_get_grupo_by_node($node);
+    $purl='/';
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-        $purl='/'.$my_grupo->purl.'/';
+        $purl='/'.$my_grupo->purl.'/';        
     }    
-    $my_base_url=$base_url.$my_lang.$pulr.$url.'/';
+    //$my_base_url=$base_url.$my_lang.$purl.$url.'/';
+    $my_base_url=$base_url.$my_lang.$purl;
     if(!empty($node_taxonomy)){
         $max=4;
         $kont=0;
@@ -1364,7 +1369,8 @@ function hontza_solr_search_get_resumen_etiqueta($node_taxonomy,$is_ficha_comple
                         $url='taxonomy/term/'.$tid;
                         $url=hontza_solr_search_get_tag_filtrado_solr_url($tid,$url,$query);
                         //intelsat-2015
-                        $url=$my_base_url.'/'.$url;
+                        //$url=$my_base_url.'/'.$url;
+                        $url=$my_base_url.$url;
                         $icono=hontza_solr_search_my_get_icono_action_tag();
                         if(red_movil_is_activado()){
                             $link='<b>'.$icono.$term->name.'</b>';

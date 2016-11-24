@@ -646,12 +646,13 @@ function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
     if(isset($feeds_node_item->url) && !empty($feeds_node_item->url)){
         $link=$feeds_node_item->url;
     }
+
     if(empty($link)){
         $link=$feeds_node_item->guid;
         if(empty($link)){
             return $s;
         }
-    }    
+    }
     //
     $link=hontza_limpiar_link_para_alchemy($link);
     //
@@ -672,10 +673,14 @@ function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
     }
 
 
-    // Extract page text from a HTML document (ignoring navigation links, ads, etc.).
-    $result = $alchemyObj->HTMLGetText($htmlFile, $link);
+    
     
 
+
+
+
+    // Extract page text from a HTML document (ignoring navigation links, ads, etc.).
+    $result = $alchemyObj->HTMLGetText($htmlFile, $link);
     $xml = new SimpleXMLElement($result);
     if(isset($xml->text)){
         //return $xml->text;
