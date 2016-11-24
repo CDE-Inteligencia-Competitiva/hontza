@@ -1929,9 +1929,9 @@ function red_solr_inc_apachesolr_index_action_form_remaining_confirm_form_alter(
 function red_solr_inc_add_tipo_noticia_query($form_state,&$my_array){
     if(isset($form_state['values']['tipo_noticia']) && !empty($form_state['values']['tipo_noticia'])){
         $tipo_noticia=$form_state['values']['tipo_noticia'];    
-        if(!empty($tipo_noticia)){
+        if(!empty($tipo_noticia)){            
             //$i=count($my_array);
-            $tipo_noticia_tid=red_solr_inc_get_fuente_tipo_noticia_tid();            
+            $tipo_noticia_tid=red_solr_inc_get_fuente_tipo_noticia_tid();
                 if($tipo_noticia==1){
                     //$my_array[]='f['.$i.']=itm_field_item_source_tid:- '.$tipo_noticia_tid;
                     //$my_array[]='f['.$i.']=itm_field_item_source_tid:([* TO *] NOT '.$tipo_noticia_tid.')';
@@ -1940,8 +1940,7 @@ function red_solr_inc_add_tipo_noticia_query($form_state,&$my_array){
                 }else if($tipo_noticia==2){
                     //$my_array[]='f['.$i.']=itm_field_item_source_tid:'.$tipo_noticia_tid;
                     $my_array[]='bundle:"noticia"';
-                }
-            
+                }                                    
         }        
     }
 }

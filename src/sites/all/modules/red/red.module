@@ -26,6 +26,8 @@ require_once('red.validar_usuario.network.inc.php');
 require_once('red.deportes.inc.php');
 require_once('red.dashboard.inc.php');
 //require_once('red.debate.inc.php');
+require_once('red.informatica.inc.php');
+
 function red_perm(){
     $perm_array=array();    
     return $perm_array;
