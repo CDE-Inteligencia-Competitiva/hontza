@@ -787,6 +787,8 @@ function boletin_report_admin_grupo_access($grupo_nid){
     }
 }
 function boletin_report_get_boletines_historicos_inicio(){
+    //intelsat-2016
+    //$is_fecha_boletin_inicio=1;    
     //intelsat-2015
     $content=boletin_grupo_get_ultimo_boletin_grupo_content();
     //
