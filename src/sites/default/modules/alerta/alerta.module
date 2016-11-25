@@ -728,6 +728,8 @@ if(!$is_busqueda){
           alerta_inc_add_grupos_canales($row,$form,$is_busqueda);  
 
 
+//intelsat-2016
+red_informatica_mcapi_add_boletin_report_form_fields($row,$form);
 
 $form['send_method'] = array(
         '#type' => 'select',
@@ -1127,6 +1129,8 @@ $form['titulo']=array(
 $form['is_recibir']=create_is_recibir_txek($row);
 //
 $form=add_grupos_categorias_txek_fieldset($form,$row);
+//intelsat-2016
+red_informatica_mcapi_add_boletin_report_form_fields($row,$form);
 //
 $form['send_method'] = array(
         '#type' => 'select',
@@ -1324,6 +1328,7 @@ function save_alerta_user(&$form, &$form_state,$tipo_in,$categorias_string,$aler
     save_alerta_user_invitados_respuesta($my_id);
     //intelsat-2016
     alerta_inc_save_tipo_link($my_id,$values);
+    red_informatica_alerta_save_mailchimp_fields($my_id,$values);
     on_alerta_save_goto();
 }
 function get_categorias_string_by_values($values){
@@ -1487,6 +1492,9 @@ $form['usuarios_fs']['is_todos_usuarios']=array(
           );*/
             
            alerta_inc_add_grupos_usuarios($row,$form);
+
+//intelsat-2016
+red_informatica_mcapi_add_boletin_report_form_fields($row,$form);
 
 
 $form['send_method'] = array(
@@ -2764,13 +2772,13 @@ function call_alerta_canal($row_in,$nombre_dia,$user_mail,$por_correo=1){
     $content=add_introduccion_despedida_html($content,'',$row->uid,$subject,$row);
     //intelsat-2015
     $content=red_despacho_boletin_report_get_current_content($content, $subject,'');
-                
      if(!empty($content) && $por_correo){
         if(in_array($row->send_method,array('mail','mimemail'))){
             //gemini-2013
             if($hay_novedades){
-                my_send_mail($user_mail,$subject, $content,$row->send_method,$row->is_recibir);
-            }    
+                //my_send_mail($user_mail,$subject, $content,$row->send_method,$row->is_recibir);
+                red_informatica_my_send_mail($user_mail,$subject,$content,$row,$por_correo);
+            }              
         }
      }else{
         $content=get_content_by_my_message($content, $por_correo, $my_message);
@@ -2851,7 +2859,8 @@ function call_alerta_categoria($row,$nombre_dia,$user_mail,$por_correo=1){
                                 if(in_array($row->send_method,array('mail','mimemail'))){
                                     //gemini-2013
                                     if($hay_novedades){
-                                        my_send_mail($user_mail,$subject, $content,$row->send_method,$row->is_recibir);
+                                      //my_send_mail($user_mail,$subject, $content,$row->send_method,$row->is_recibir);
+                                      red_informatica_my_send_mail($user_mail,$subject,$content,$row,$por_correo);
                                     }
                                 }
         }else{
@@ -2925,7 +2934,8 @@ function call_alerta_autor($row_in,$nombre_dia,$user_mail,$por_correo=1){
         if(in_array($row->send_method,array('mail','mimemail'))){
             //gemini-2013
             if($hay_novedades){
-                my_send_mail($user_mail,$subject, $content,$row->send_method,$row->is_recibir);
+                //my_send_mail($user_mail,$subject, $content,$row->send_method,$row->is_recibir);
+                red_informatica_my_send_mail($user_mail,$subject,$content,$row,$por_correo);
             }    
 
         }
