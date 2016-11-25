@@ -173,7 +173,11 @@ function despacho_boletin_report_word_add_logo($result_in,$path,$is_content=0){
     }else{
         //$filename=$path.'despacho_boletin_report_logo.png';
         //$filename=$path.'despacho_boletin_report_logo.jpg';
-        $filename=$path.'Boletín_ICB_word_archivos/image001.png';
+        if(red_informatica_is_informatica_activado()){
+            $filename=$path.'Boletin_informatica_word_archivos/image001.png';
+        }else{    
+            $filename=$path.'Boletín_ICB_word_archivos/image001.png';
+        }
     }        
     $content=file_get_contents($filename);
     if($is_content){
