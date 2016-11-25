@@ -684,7 +684,12 @@ function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
     $xml = new SimpleXMLElement($result);
     if(isset($xml->text)){
         //return $xml->text;
-        $my_value=$xml->text;
+        if(red_informatica_is_informatica_activado()){
+            $my_value=utf8_decode($xml->text);
+        }else{    
+            $my_value=$xml->text;
+        }
+        
         if(empty($my_value)){
            return $s; 
         }
