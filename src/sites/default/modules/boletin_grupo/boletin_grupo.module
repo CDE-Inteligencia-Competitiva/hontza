@@ -583,6 +583,8 @@ $form['formato_fs']['introduccion']=array(
 
 //
 $form['contenidos_fs']=create_contenidos_fieldset_txek($row);
+//intelsat-2016
+red_informatica_mcapi_add_boletin_report_form_fields($row,$form);
 $form['limites_fs']=create_limites_fieldset($row);
 //
 $form['metodo_fs']=array(
@@ -740,6 +742,7 @@ function save_boletin_grupo_my_edit(&$form, &$form_state){
     save_boletin_grupo_usuarios($row->id,$values['usuarios']);
     //intelsat-2016
     boletin_grupo_save_tipo_link($row->id,$values);
+    red_informatica_boletin_grupo_save_mailchimp_fields($row->id,$values);
 }
 function get_usuarios_grupo_options($grupo_nid,$with_empty=0,$is_create_grupo=0){
 	$result=array();
@@ -1797,7 +1800,9 @@ function boletin_grupo_pdf_callback(){
 function boletin_grupo_forward_form(){
     $form=array();
     $grupo_nid=arg(1);
-    $boletin_grupo_array_today_id=arg(3);                
+    $boletin_grupo_array_today_id=arg(3);
+    //intelsat-2016
+    $row=get_boletin_grupo_row(arg(1));                    
     $form['grupo_nid']=array(
         '#type'=>'hidden',
         '#default_value'=>$grupo_nid,
@@ -1813,6 +1818,15 @@ function boletin_grupo_forward_form(){
           '#description'=>t('Please include the email of recipients separated by commas')." (".t("Please verify your email list, It won't be checked the validity of emails").")",  
           '#required' => FALSE
           );
+
+    //intelsat-2016
+    if(red_informatica_is_informatica_activado()){
+        $form['forward_receptores_fs']['email_externos']['#prefix']='<div style="display:none">';
+        $form['forward_receptores_fs']['email_externos']['#suffix']='</div>';
+    }
+    red_informatica_mcapi_add_boletin_report_form_fields($row,$form);
+
+
     $form['forward_btn']=array(
         '#type'=>'submit',
         '#name'=>'forward_btn',
@@ -1870,7 +1884,17 @@ function boletin_grupo_forward_form_submit(&$form, &$form_state){
         $grupo_nid=$values['grupo_nid'];
         $boletin_grupo_array_today_id=$values['boletin_grupo_array_today_id'];
         $email_externos=$values['email_externos'];
-        boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$email_externos);
+        //intelsat-2016
+        $mailchimp_list_id='';
+        if(isset($values['mailchimp_list_id']) && !empty($values['mailchimp_list_id'])){
+            $mailchimp_list_id=$values['mailchimp_list_id'];
+        }
+        $mailchimp_template_id='';
+        if(isset($values['mailchimp_template_id']) && !empty($values['mailchimp_template_id'])){
+            $mailchimp_template_id=$values['mailchimp_template_id'];
+        }
+        //boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$email_externos);
+        boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$email_externos,$mailchimp_list_id,$mailchimp_template_id);
         $uid=$user->uid;
         $fecha_forward=date('Y-m-d H:i:s');
         $boletin_grupo_array_id=boletin_grupo_get_boletin_grupo_array_id($boletin_grupo_array_today_id);
@@ -1879,7 +1903,9 @@ function boletin_grupo_forward_form_submit(&$form, &$form_state){
     }
 }
 //intelsat-2015
-function boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$email_externos){
+//intelsat-2016
+//function boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$email_externos){
+function boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$email_externos,$mailchimp_list_id='',$mailchimp_template_id=''){
     $row=boletin_grupo_get_boletin_grupo_array_today_row($boletin_grupo_array_today_id);
     if(isset($row->id) && !empty($row->id)){
         $title='';
@@ -1892,14 +1918,24 @@ function boletin_grupo_forward_loop($grupo_nid,$boletin_grupo_array_today_id,$em
         $is_print_exit=0;
         $content=boletin_grupo_get_content_html($is_download,$is_print_exit,$grupo_nid,$boletin_grupo_array_today_id);
         $mail_html=alerta_add_css($content,0);
+        $current_content_mcapi=$mail_html;
         $user_mail_array=explode(',',$email_externos);
         if(count($user_mail_array)>0){
             foreach($user_mail_array as $i=>$user_mail){
                 $is_activo=1;
                 $current_content=$mail_html;
-                my_send_mail($user_mail,$subject,$current_content,$row->send_method,$is_activo);                  
+                if(!red_informatica_is_informatica_activado()){
+                  my_send_mail($user_mail,$subject,$current_content,$row->send_method,$is_activo);                  
+                }            
             }
         }
+        //intelsat-2016
+        if(red_informatica_is_informatica_activado()){
+          $row->mailchimp_list_id=$mailchimp_list_id;
+          $row->mailchimp_template_id=$mailchimp_template_id;
+          $por_correo=1;          
+          red_informatica_my_send_mail('user@hontza.es',$subject,$current_content_mcapi,$row,$por_correo);
+        }  
     }
 }
 //intelsat-2015
