@@ -27,10 +27,12 @@ function alerta_solr_get_busqueda_nid_array($query){
     return $result;
 }
 function alerta_solr_get_grupo_nid_by_node($node){
-    $values=array_values($node->og_groups);
-    if(isset($values[0]) && !empty($values[0])){
-        return $values[0]; 
-    }
+    if(isset($node->og_groups) && !empty($node->og_groups)){
+        $values=array_values($node->og_groups);
+        if(isset($values[0]) && !empty($values[0])){
+            return $values[0]; 
+        }
+    }    
     return '';
 }
 function alerta_solr_get_solr_filters_active($facet,$my_solr_conditions){

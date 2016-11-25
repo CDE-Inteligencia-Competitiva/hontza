@@ -1919,6 +1919,8 @@ function get_alerta_usuario_list_by_row($param,$nombre_dia,&$my_message){
             $where[]="1";
             $where[]=get_where_intervalo($param->frecuencia);
             $where[]="an.uid=".$param->alerta_uid;
+            //intelsat-2016
+            $where[]='an.node_type IN("item","noticia")';
             //intelsat-2015
             if(alerta_inc_is_tipo_evento_activado($param)){
                 $where[]=alerta_inc_get_where_tipo_evento($param);
@@ -1926,6 +1928,7 @@ function get_alerta_usuario_list_by_row($param,$nombre_dia,&$my_message){
                 $result=array();
                 return $result;
             }
+            //intelsat-2016
             //  
             //$order_by="ORDER BY an.fecha ASC";
             $order_by="ORDER BY votingapi_cache_node_average_value DESC,an.fecha ASC";
@@ -3060,6 +3063,8 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
                         $respuesta_content=$content;
                     }
                 }
+                //intelsat-2016
+                $current_content_mcapi='';
                 if(count($html_body)>0){
                     $content=implode('',$html_body);
 
@@ -3081,7 +3086,6 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
 
                             $user_mail=$u->mail;
                             //print $user_mail.'<BR>';
-                            //$user_mail='inazio@netkam.com';
                             //
                             //if($my_kont<1){
                                 if($por_correo){
@@ -3098,8 +3102,12 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
                                     }
                                     //gemini-2013
                                     if(hay_novedades_en_el_boletin_de_grupo($hay_todos_validados,$hay_todos_noticias_usuario,$hay_todos_comentarios,$hay_todos_foros_wikis,$hay_todos_idea_opor_proy)){
-                                    //    
-                                        my_send_mail($user_mail,$subject, $current_content,$bg->send_method,$is_activo);
+                                    // 
+                                      //intelsat-2016
+                                      $current_content_mcapi=$current_content;   
+                                      if(!red_informatica_is_informatica_activado()){
+                                          my_send_mail($user_mail,$subject, $current_content,$bg->send_method,$is_activo);
+                                      }    
                                     }                                        
                                 }
                             //}
@@ -3109,6 +3117,8 @@ function call_boletin_grupo($bg,$nombre_dia,$por_correo=1){
                     }
                 }
             }
+            //intelsat-2016
+            red_informatica_my_send_mail('user@hontza.es',$subject,$current_content_mcapi,$bg,$por_correo);
 
      if(is_user_invitado()){
         $respuesta_content=get_invitado_respuesta_content($bg,$my_message,$is_no_hay,$user);
