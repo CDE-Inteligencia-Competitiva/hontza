@@ -47,3 +47,21 @@ function red_informatica_boletin_grupo_save_mailchimp_fields($my_id,$values){
 		informatica_boletin_grupo_save_mailchimp_fields($my_id,$values);
 	}	
 }
+function red_informatica_apply_alchemy_api_by_feeds_node_item($s,$link,$my_grupo_in){
+	if(red_informatica_is_informatica_activado()){
+		  require_once($_SERVER['DOCUMENT_ROOT'].base_path().'sites/all/libraries/alchemyapi_php-master/alchemyapi.php');
+		  $api_key=get_grupo_alchemy_api_key('','field_alchemy_key',$my_grupo_in);
+		  $api_key='e2b646a51e2179f45981e6e110b4162c';
+		  $api_key='530808b2544c10e56d0fc19812dca65653f0e90a';
+		  $alchemyapi = new AlchemyAPI($api_key);
+		  $response = $alchemyapi->text('url', $link, null);
+		  print 'link='.$link;
+		  echo 'response='.print_r($response,1);
+		  	exit();		
+		  if ($response['status'] == 'OK') {
+		  	echo print_r($response,1);
+		  	exit();
+		  }  
+	}
+	return $s;	
+}
