@@ -52,6 +52,8 @@ class FeedsNodeProcessor extends FeedsProcessor {
     //intelsat-2015
     $config=$source->getConfig();  
     $url=$config['FeedsHTTPFetcher']['source'];
+    //intelsat-2016
+    $grupo_source=hontza_get_grupo_by_feed_nid($source);
     //
     
     while ($item = $batch->shiftItem()) {      
@@ -113,7 +115,12 @@ class FeedsNodeProcessor extends FeedsProcessor {
           $my_tags=_community_tags_get_node_tags($node->nid,$vids);
           //
           if($is_alchemy){
-              $node->body=apply_alchemy_api_by_feeds_node_item($node->body,$node->feeds_node_item);
+              $node->body=apply_alchemy_api_by_feeds_node_item($node->body,$node->feeds_node_item,$grupo_source);
+              //intelsat-2016
+              //$node->teaser=$node->body;
+              if(red_informatica_is_informatica_activado()){
+                $node->teaser=node_teaser($node->body);
+              }
           }
           //gemini-2014
           //$begiratu=0;
@@ -137,7 +144,8 @@ class FeedsNodeProcessor extends FeedsProcessor {
             red_despacho_unset_hound_id_item_title($node,$source->feed_nid);
           }
           node_save($node);
-          
+          //print $node->body;exit();
+
           //intelsat-2014
           hontza_solr_save_item($node);
           hontza_social_insert_item_interest_hontza_by_feed_item($node,$item);
@@ -158,7 +166,9 @@ class FeedsNodeProcessor extends FeedsProcessor {
           
           //gemini
           if($is_open_calais){
-                canal_open_calais_term_save($node,$my_tags);
+                //intelsat-2016
+                //canal_open_calais_term_save($node,$my_tags);
+                canal_open_calais_term_save($node,$my_tags,$grupo_source);
           }
           //gemini-2013
           if($is_validacion_automatica){
