@@ -308,11 +308,15 @@ function is_open_calais_by_source($source,$canal_nid='',$node_in=''){
     }
     return 0;
 }
-function canal_open_calais_term_save($node,$my_tags=''){
+//intelsat-2016
+//function canal_open_calais_term_save($node,$my_tags=''){
+function canal_open_calais_term_save($node,$my_tags='',$my_grupo_in=''){
     //return '';
     $nid=$node->nid;
     //$apikey = "7ka2pejw2v5cbtyyksu8pxd9";
-    $apikey=get_grupo_opencalais_api_key();
+    //intelsat-2016
+    //$apikey=get_grupo_opencalais_api_key();
+    $apikey=get_grupo_opencalais_api_key($my_grupo_in);
     $oc = new OpenCalais($apikey);
 
     $content='';
@@ -639,7 +643,9 @@ function is_alchemy_by_source($source,$canal_nid='',$node_in=''){
     }
     return 0;
 }
-function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
+//intelsat-2016
+//function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
+function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item,$my_grupo_in=''){
     global $user;
     //
     $link='';
@@ -655,22 +661,24 @@ function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
     }
     //
     $link=hontza_limpiar_link_para_alchemy($link);
+    /*if(red_informatica_is_informatica_activado()){
+        return red_informatica_apply_alchemy_api_by_feeds_node_item($s,$link,$my_grupo_in);
+    }*/
     //
     require_once($_SERVER['DOCUMENT_ROOT'].base_path().'sites/all/libraries/alchemy_api/my_module/AlchemyAPI.php');
 
     $alchemyObj = new AlchemyAPI();
-
-
+    
     // Load the API key from disk.
-    $alchemyObj->loadAPIKey($_SERVER['DOCUMENT_ROOT'].base_path().'sites/all/libraries/alchemy_api/my_module/api_key.txt');
+    $alchemyObj->loadAPIKey($_SERVER['DOCUMENT_ROOT'].base_path().'sites/all/libraries/alchemy_api/my_module/api_key.txt',$my_grupo_in);
 
     //gemini-2013
     //$htmlFile = file_get_contents($link);
-    $htmlFile = @file_get_contents($link);
+    /*$htmlFile = @file_get_contents($link);
     
     if($htmlFile==false){
        return $s;
-    }
+    }*/
 
 
     
@@ -680,21 +688,23 @@ function apply_alchemy_api_by_feeds_node_item($s,$feeds_node_item){
 
 
     // Extract page text from a HTML document (ignoring navigation links, ads, etc.).
-    $result = $alchemyObj->HTMLGetText($htmlFile, $link);
+    //$result = $alchemyObj->HTMLGetText($htmlFile, $link);
+    $result = $alchemyObj->URLGetText($link);
     $xml = new SimpleXMLElement($result);
     if(isset($xml->text)){
         //return $xml->text;
-        if(red_informatica_is_informatica_activado()){
-            $my_value=utf8_decode($xml->text);
-        }else{    
+        /*if(red_informatica_is_informatica_activado()){
+            $my_value=utf8_decode($xml->text);            
+        }else{*/    
             $my_value=$xml->text;
-        }
+        //}
         
         if(empty($my_value)){
            return $s; 
         }
         return $my_value;
     }
+
     //return '';
     return $s;
 }
@@ -1154,10 +1164,13 @@ function group_api_keys_form_submit($form_id,&$form){
         drupal_set_message(t('API Keys saved'),'status');
    }
 }
-function get_grupo_alchemy_api_key($api_key_in,$field_name='field_alchemy_key'){
+function get_grupo_alchemy_api_key($api_key_in,$field_name='field_alchemy_key',$my_grupo_in=''){
     $result=$api_key_in;
-    $my_grupo=og_get_group_context();
-     
+    if(empty($my_grupo_in)){
+        $my_grupo=og_get_group_context();    
+    }else{
+        $my_grupo=$my_grupo_in;       
+    } 
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
        if(isset($my_grupo->$field_name)) {
             $my_array=$my_grupo->$field_name;
@@ -1168,10 +1181,14 @@ function get_grupo_alchemy_api_key($api_key_in,$field_name='field_alchemy_key'){
     }
     return $result;
 }
-function get_grupo_opencalais_api_key(){
+//intelsat-2016
+//function get_grupo_opencalais_api_key(){
+function get_grupo_opencalais_api_key($my_grupo_in=''){
     //intelsat-2015
     //$api_key=get_grupo_alchemy_api_key("7ka2pejw2v5cbtyyksu8pxd9",'field_opencalais_key');
-    $api_key=get_grupo_alchemy_api_key('','field_opencalais_key');
+    //intelsat-2016
+    //$api_key=get_grupo_alchemy_api_key('','field_opencalais_key');
+    $api_key=get_grupo_alchemy_api_key('','field_opencalais_key',$my_grupo_in);
     if(empty($api_key)){
         drupal_set_message('Estás utilizando la api genérica de Opencalais');
         $api_key='EuXqzZznh2VvbaLKI0dXMhiym9CumMki';
