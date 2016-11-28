@@ -35,14 +35,17 @@ class AlchemyAPI
 		}
 	}
 
-	public function loadAPIKey($filename)
+	//intelsat-2016
+	//public function loadAPIKey($filename)
+	public function loadAPIKey($filename,$my_grupo_in='')
 	{
 		$handle = fopen($filename, 'r');
 		$theData = fgets($handle, 512);
 		fclose($handle);
 		$this->_apiKey = rtrim($theData);
                 //gemini-2013
-                $this->_apiKey =get_grupo_alchemy_api_key($this->_apiKey);
+                $this->_apiKey =get_grupo_alchemy_api_key($this->_apiKey,'field_alchemy_key',$my_grupo_in);
+                //$this->_apikey='530808b2544c10e56d0fc19812dca65653f0e90a';                
                 //
 		if (strlen($this->_apiKey) < 5)
 		{
