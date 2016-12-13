@@ -474,11 +474,17 @@ function red_compartir_grupo_user_save($u_in,$is_edit=0,$uid_edit=0,$is_servidor
         if(red_is_not_admin($u)){
         //    
             if(!empty($roles)){
-                foreach($roles as $rid=>$rol_name){
-                    if(!red_compartir_grupo_is_rol_limitado($rid)){
-                        db_query($sql=sprintf('REPLACE INTO {users_roles}(rid, uid) VALUES(%d,%d)',$rid,$u->uid));        
-                        //print $sql.'<BR>';
-                    }    
+                //intelsat-2016
+                //foreach($roles as $rid=>$rol_name){
+                foreach($roles as $my_rid=>$rol_name){
+                    $rid=_role_id($rol_name);
+                    //intelsat-2016
+                    if(!empty($rid)){
+                        if(!red_compartir_grupo_is_rol_limitado($rid)){
+                            db_query($sql=sprintf('REPLACE INTO {users_roles}(rid, uid) VALUES(%d,%d)',$rid,$u->uid));        
+                            //print $sql.'<BR>';
+                        }
+                    }        
                 }
             }        
         }
@@ -896,7 +902,12 @@ function red_compartir_grupo_is_rol_limitado($rid){
     //3: Administrador
     //4: Creador de Grupo
     //10:Developer
-    $rid_array=array(3,4,10);
+    //intelsat-2016
+    //$rid_array=array(3,4,10);
+    $rid_array=array();
+    $rid_array[]=_role_id('Administrador');
+    $rid_array[]=_role_id('Creador de Grupos');
+    $rid_array[]=_role_id('Developer');
     if(in_array($rid,$rid_array)){
         return 1;
     }
