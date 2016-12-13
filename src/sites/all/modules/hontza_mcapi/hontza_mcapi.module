@@ -43,6 +43,7 @@ $mailchimp_template_id=$br_in->mailchimp_template_id;
 if(!empty($mailchimp_template_id)){
     $opts['template_id']=$mailchimp_template_id;
     $content = array('html_main'=>$body_in,
+    'html_titulo_email' => $subject,    
     //'text' => 'Texto'
     //'html_mytexto'=>$body_in,
     //'HTML_MYTEXTO'=>$body_in,    
