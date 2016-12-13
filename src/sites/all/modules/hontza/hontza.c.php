@@ -2200,7 +2200,8 @@ function gestion_usuarios_callback(){
    $where=array();
    $where[]="1";
    $where[]="users.uid not in ('0', '1')";
-   
+   //intelsat-2016
+   $or_array=array();
    if(!empty($filter_fields)){
        foreach($filter_fields as $k=>$f){
            $v=hontza_get_gestion_usuarios_filter_value($f);
@@ -2211,7 +2212,12 @@ function gestion_usuarios_callback(){
            if(!empty($v)){
                 switch($f){
                     case 'users_name':
-                        $where[]="users.name LIKE '%".$v."%'";
+                        //$where[]="users.name LIKE '%".$v."%'";
+                        $or_array=array();
+                        $or_array[]="users.name LIKE '%".$v."%'";
+                        $or_array[]="users.name LIKE '".$v."%'";
+                        $or_array[]="users.name LIKE '%".$v."'";
+                        $where[]='('.implode(' OR ',$or_array).')';
                         break;
                     case 'profile_values_profile_nombre_value':
                         $where[]="profile_values_profile_nombre.value LIKE '%%".$v."%%'";
