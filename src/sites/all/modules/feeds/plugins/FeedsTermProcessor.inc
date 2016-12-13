@@ -158,7 +158,7 @@ class FeedsTermProcessor extends FeedsProcessor {
     $form['vocabulary'] = array(
       '#type' => 'select',
       '#title' => t('Import to vocabulary'),
-      '#description' => t('Choose the vocabulary to import into. <strong>CAUTION:</strong> when deleting terms through the "Delete items" tab, Feeds will delete <em>all</em> terms from this vocabulary.'),
+      '#description' => t('Choose the vocabulary to import into. <strong>CAUTION:</strong> when deleting terms through the "Delete news" tab, Feeds will delete <em>all</em> terms from this vocabulary.'),
       '#options' => $options,
       '#default_value' => $this->config['vocabulary'],
     );

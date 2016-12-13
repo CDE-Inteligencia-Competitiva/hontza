@@ -25,7 +25,7 @@ class FeedsFileBatch extends FeedsImportBatch {
    * Implementation of FeedsImportBatch::getRaw();
    */
   public function getRaw() {
-    return file_get_contents(realpath($this->file_path));
+     return file_get_contents(realpath($this->file_path));
   }
 
   /**

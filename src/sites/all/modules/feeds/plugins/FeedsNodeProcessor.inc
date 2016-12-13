@@ -118,9 +118,7 @@ class FeedsNodeProcessor extends FeedsProcessor {
               $node->body=apply_alchemy_api_by_feeds_node_item($node->body,$node->feeds_node_item,$grupo_source);
               //intelsat-2016
               //$node->teaser=$node->body;
-              if(red_informatica_is_informatica_activado()){
-                $node->teaser=node_teaser($node->body);
-              }
+              $node->teaser=node_teaser($node->body);
           }
           //gemini-2014
           //$begiratu=0;
