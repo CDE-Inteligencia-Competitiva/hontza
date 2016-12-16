@@ -2505,7 +2505,7 @@ function hontza_gestion_usuarios_bulk_form(){
        );
     }
     //intelsat-2015
-    panel_admin_add_gestion_usuarios_delete_bulk_form_field($form);
+    //panel_admin_add_gestion_usuarios_delete_bulk_form_field($form);
     //
     //$title=t('Unblock the selected users');
     $title=t('Activate');
@@ -2565,7 +2565,7 @@ function hontza_gestion_usuarios_bulk_form_submit($form, &$form_state) {
             //intelsat-2015                
             }else if(strcmp($button_name,'delete_user_btn')==0){
                 $_SESSION['gestion_usuarios_delete_uid_array']=$uid_array;
-                drupal_goto('panel_admin/delete_user_confirm');
+                //drupal_goto('panel_admin/delete_user_confirm');
             //intelsat-2016
             }else if(strcmp($button_name,'send_message_btn')==0){
                 //$_SESSION['gestion_usuarios_send_message_uid_array']=$uid_array;

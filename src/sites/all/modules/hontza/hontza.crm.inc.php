@@ -73,3 +73,10 @@ function hontza_crm_is_show_link_type_action($node=''){
     }
     return 0;
 }
+function hontza_crm_inc_is_busqueda_solr_publico(){
+    $param1=arg(1);
+    if(!empty($param1) && $param1=='textos_exportar_todas_noticias_automatic_tags'){
+        return  1;
+    }
+    return 0;
+}
