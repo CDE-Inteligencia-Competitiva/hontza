@@ -1,5 +1,6 @@
 <?php
 require_once('crm_exportar.textos.inc.php');
+require_once('crm_exportar.tags.inc.php');
 function crm_exportar_perm() {
   return array();
 }
@@ -63,6 +64,17 @@ function crm_exportar_menu() {
     'title'=>'Home',
     'page callback' => 'crm_exportar_textos_exportar_todas_noticias_callback',
     'access callback' => 'crm_exportar_exportar_custom_access',
+  );
+  $items['crm_exportar/tags/automatic']=array(
+    'title'=>'Automatic tags',
+    'page callback' => 'crm_exportar_tags_automatic_callback',
+    //'access arguments' => array('root'),
+    'access callback' => TRUE,  
+  );
+  $items['crm_exportar/textos_exportar_todas_noticias_automatic_tags']=array(
+    'title'=>'Home',
+    'page callback' => 'crm_exportar_textos_exportar_todas_noticias_automatic_tags_callback',
+    'access callback' => TRUE,
   );
   return $items;
 }
@@ -185,8 +197,8 @@ function crm_exportar_exportar_noticias($crm_in='',$is_kont=0,$is_todas=0){
                       /*if(crm_exportar_is_crm_exportar_texto()){
                         //print $row->title.'='.count($result).'<br>';exit();
                         //print $value;
-                        //exit();                                                                        
-                      }*/                        
+                        //exit();                                                                         
+                      }*/                                 
                       $nid_array=array_merge($nid_array,$result);                      
                   }//else{  
                     foreach($tid_array as $b=>$tid){
@@ -391,7 +403,8 @@ function crm_exportar_format_rss_item($title, $link_in, $description, $args = ar
     $teaser=node_teaser(strip_tags($description));
     /*$output .= ' <description>'. check_plain($description) ."</description>\n";
     $output .= ' <teaser>'. check_plain($teaser) ."</teaser>\n";*/
-    $output .= ' <description>'. check_plain($teaser) ."</description>\n";
+    //$output .= ' <description>'. check_plain($teaser) ."</description>\n";
+    $output .= ' <description>'. check_plain($description) ."</description>\n";
   }else{
     $output .= ' <description>'. check_plain($description) ."</description>\n";    
   }
@@ -1120,11 +1133,29 @@ function crm_exportar_get_crm_texto($crm){
 function crm_exportar_get_group_array(){
   $group_array=array();
   if(crm_exportar_is_crm_exportar_texto()){
-    //Solo hay que esportar en este caso las noticias de este grupo
-    $grupo_node=node_load(143311);
+    //Solo hay que exportar en este caso las noticias de este grupo
+    $grupo_nid=143311;
+    /*if(hontza_is_sareko_id('TAGS')){
+      $grupo_nid=140432;
+    }*/
+    $grupo_node=node_load($grupo_nid);
     $group_array[]=$grupo_node;    
   }else{  
     $group_array=hontza_get_all_nodes(array('grupo'),'','',0,'',0);
   }
   return $group_array;
 }
+function crm_exportar_is_crm_exportar_tag(){
+  $sareko_id_array=array('TAGS');
+  if(in_array(_SAREKO_ID,$sareko_id_array)){
+    if(defined('_IS_CRM_EXPORTAR_TAG') && _IS_CRM_EXPORTAR_TAG==1){
+      return 1;
+    }
+  }  
+  return 0;
+}
+/*function crm_exportar_cron(){
+  if(crm_exportar_is_crm_exportar_tag()){
+    crm_exportar_tags_automatic_callback();
+  }  
+}*/
