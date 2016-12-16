@@ -1124,6 +1124,7 @@ function panel_admin_add_gestion_usuarios_delete_bulk_form_field(&$form){
     }
 }
 function panel_admin_delete_user_confirm_confirm_form(){
+    drupal_access_denied();
     drupal_set_title(t('Are you sure you want to delete these users?'));
     $form=array();
     $uid_array=array();
