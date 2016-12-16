@@ -296,6 +296,9 @@ function alerta_solr_is_apachesolr_access_apachesolr_query_alter(){
     if(hontza_crm_inc_is_crm_exportar_noticias()){
         return 1;
     }
+    if(hontza_crm_inc_is_busqueda_solr_publico()){
+        return 1;
+    }
     return 0;
 }
 //intelsat-2015
