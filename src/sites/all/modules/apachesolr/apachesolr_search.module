@@ -1200,7 +1200,12 @@ function apachesolr_search_run_empty($name, array $params = array(), $base_path 
 //se ha añadido is_alerta
 //intelsat-2016
 //se ha añadido page_in
-function apachesolr_search_run($name, array $params = array(), $solrsort = '', $base_path = '', $page_in = 0, DrupalApacheSolrServiceInterface $solr = NULL,$is_alerta=0,$my_solr_conditions='') {
+function apachesolr_search_run($name, array $params = array(), $solrsort = '', $base_path = '', $page_in = 0, DrupalApacheSolrServiceInterface $solr = NULL,$is_alerta_in=0,$my_solr_conditions='') {
+  //intelsat-2016
+  $is_alerta=$is_alerta_in;
+  if(hontza_crm_inc_is_busqueda_solr_publico()){
+    $is_alerta=1;
+  }
   // Merge the default params into the params sent in.
   $params += apachesolr_search_basic_params();
   // This is the object that knows about the query coming from the user.
@@ -1240,7 +1245,7 @@ function apachesolr_search_run($name, array $params = array(), $solrsort = '', $
     $query->addParam('fl', 'teaser');
   }
   //intelsat-2015
-  //se ha añadido is_alerta  
+  //se ha añadido is_alerta
   list($final_query, $response) = apachesolr_do_query($query, $page,$is_alerta,$my_solr_conditions);
   $env_id = $query->solr('getId');  
     
