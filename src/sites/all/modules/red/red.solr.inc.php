@@ -855,6 +855,7 @@ function red_solr_inc_apachesolr_index_batch_index_remaining_callback(){
     //apachesolr_index_batch_index_remaining($env_id);
     $limit=$status['remaining'];
     $kont=apachesolr_index_entities($env_id, $limit);
+    //drupal_set_message('kont='.$kont.'='.date('Y-m-d H:i:s'));
     return 'kont='.$kont.'='.date('Y-m-d H:i:s');
 }
 function red_solr_inc_update_all_my_sended($sended){
