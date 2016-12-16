@@ -1628,7 +1628,12 @@ function apachesolr_index_key($field) {
  */
 //intelsat-2015
 //se ha añadido is_alerta
-function apachesolr_do_query(DrupalSolrQueryInterface $current_query,$my_page='',$is_alerta=0,$my_solr_conditions='') {
+function apachesolr_do_query(DrupalSolrQueryInterface $current_query,$my_page='',$is_alerta_in=0,$my_solr_conditions='') {
+  //intelsat-2016
+  $is_alerta=$is_alerta_in;
+  if(hontza_crm_inc_is_busqueda_solr_publico()){
+    $is_alerta=1;
+  }
   if (!is_object($current_query)) {
     throw new Exception(t('NULL query object in function apachesolr_do_query()'));
   }
@@ -1665,6 +1670,7 @@ function apachesolr_do_query(DrupalSolrQueryInterface $current_query,$my_page=''
   }
   
   $query = apachesolr_current_query($env_id, $current_query);
+ 
     
 
   // Verify if this query was already executed in the same page load
@@ -1675,16 +1681,21 @@ function apachesolr_do_query(DrupalSolrQueryInterface $current_query,$my_page=''
       // Return cached query object
       return array($query, $response);
     }
-  }  
+  }
+
+ 
+
   $query->addParam('start', $query->page * $query->getParam('rows'));  
-  
+    
   // This hook allows modules to modify the query and params objects.
   drupal_alter('apachesolr_query', $query);
+
+  
     if ($query->abort_search) {
       // A module implementing HOOK_apachesolr_query_alter() aborted the search.
       return array(NULL, array());
     }
-    
+   
     
   $keys = $query->getParam('q');
 
@@ -1715,6 +1726,7 @@ function apachesolr_do_query(DrupalSolrQueryInterface $current_query,$my_page=''
   // The response is cached so that it is accessible to the blocks and anything
   // else that needs it beyond the initial search.
   apachesolr_static_response_cache($searcher, $response);
+   
   
   return array($query, $response);
 }
