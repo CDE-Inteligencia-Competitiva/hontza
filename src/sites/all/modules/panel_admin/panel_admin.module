@@ -16,6 +16,7 @@ require_once('panel_admin.contacts.inc.php');
 require_once('panel_admin.guias.inc.php');
 require_once('panel_admin.usuarios.acceso.inc.php');
 require_once('panel_admin.dashboard.inc.php');
+require_once('panel_admin.crm_exportar.inc.php');
 function panel_admin_perm() {
   return array();
 }
@@ -405,6 +406,41 @@ function panel_admin_menu() {
     'page callback' => 'drupal_get_form',
     'access callback'=>'panel_admin_admin_access',    
     );
+    $items['panel_admin/crm_exportar/delete_tags']=array(
+    'title' => 'Delete tags',
+    'page arguments'=>array('panel_admin_crm_exportar_delete_tags_form'),    
+    'page callback' => 'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',    
+    );
+    $items['panel_admin/crm_exportar/clientes']=array(
+    'title' => 'Clients',
+    'page callback' => 'panel_admin_crm_exportar_clientes_callback',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/textos/importar']=array(
+    'title'=>'Clients',
+    'page arguments' => array('panel_admin_crm_exportar_textos_importar_form'),       
+    'page callback' => 'drupal_get_form',       
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
+  );
+    $items['panel_admin/crm_exportar/%/edit']=array(
+    'title' => 'Edit Client',
+    'page arguments' =>array('panel_admin_crm_exportar_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/create']=array(
+    'title' => 'Create Client',
+    'page arguments' =>array('panel_admin_crm_exportar_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/%/delete']=array(
+    'title' => 'Delete Client',
+    'page arguments' =>array('panel_admin_crm_exportar_delete_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
     return $items;
 }
 function panel_admin_callback(){
@@ -515,7 +551,7 @@ function panel_admin_in_delta_panel_admin_left($block){
                 return 0;
             }
         //}
-        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68))){
+        if(in_array($block->delta,array(21,25,16,20,43,50,7,17,18,15,19,24,23,31,20,61,62,63,64,65,68,71))){
             return 1;
         }
     }
@@ -609,6 +645,9 @@ function panel_admin_set_block_weight(&$block){
     }/*else if($block->delta==69){
         $block->weight=-26;
     }*/
+    else if($block->delta==71){
+        $block->weight=-25;
+    }
 }
 function panel_admin_is_estadisticas(){
     $param0=arg(0);
