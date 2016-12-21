@@ -17,15 +17,23 @@ function crm_exportar_textos_exportar_todas_noticias_automatic_tags_callback(){
 	exit();
 }
 function crm_exportar_tags_automatic_save($result){
-	$vid=3;
+	$vid=hontza_crm_inc_get_tags_vid();
+	$uid=1;	
 	if(!empty($result)){
 		if(isset($result->nid_tag_array) && !empty($result->nid_tag_array)){
 			$nid_tag_array=$result->nid_tag_array;
 			foreach($nid_tag_array as $i=>$my_row){
 				$nid=$my_row->nid;
 				$row=$my_row->row;
-				if(isset($row->name) && !empty($row->name)){
-					$term_name='CRM:'.$row->name;
+				$uid=1;
+				$my_user_info=my_get_user_info($node);
+				if(empty($my_user_info['uid'])){
+					$uid=0;
+				}else{
+					$uid=$my_user_info['uid'];
+				}				
+				if(isset($row->value) && !empty($row->value)){
+					$term_name='CRM:'.$row->value;
 					$term_row=red_solr_inc_taxonomy_get_term_by_name_vid_row($term_name,$vid);
 					if(!isset($term_row->tid)){
 						$term = array(
@@ -43,7 +51,14 @@ function crm_exportar_tags_automatic_save($result){
 								$node->taxonomy[$term_row->tid]->vid=$vid;
 								$node->taxonomy[$term_row->tid]->name=$term_name;*/
 								db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node->nid, $node->vid,$term_row->tid);
-								hontza_canal_rss_solr_clear_node_index($node,$nid);
+								hontza_canal_rss_solr_clear_node_index($node,$nid);								
+							}
+							$community_tags_array=crm_exportar_tags_get_community_tags_array($node->nid,$term_row->tid,$uid);
+							$num=count($community_tags_array);
+							if($num==0){
+								$time=time();
+								$date_field='date';
+								db_query('INSERT INTO {community_tags} (nid,tid,uid,'.$date_field.') VALUES (%d,%d,%d,%d)', $node->nid,$term_row->tid,$uid,$time);
 							}
 						}	
 					}					
@@ -51,4 +66,24 @@ function crm_exportar_tags_automatic_save($result){
 			}
 		}
 	}
+}
+function crm_exportar_tags_get_community_tags_array($nid,$tid,$uid){
+	$result=array();
+	$where=array();
+	$where[]='community_tags.nid='.$nid;
+	$where[]='community_tags.tid='.$tid;
+	$where[]='community_tags.uid='.$uid;
+	$sql='SELECT * FROM {community_tags} WHERE '.implode(' AND ',$where);
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+function crm_exportar_tags_get_crm_boolean($row){
+	$result=$row->value;
+	if(!empty($row->booleano)){
+		$result='('.$row->booleano.')';		
+	}
+	return $result;
 }

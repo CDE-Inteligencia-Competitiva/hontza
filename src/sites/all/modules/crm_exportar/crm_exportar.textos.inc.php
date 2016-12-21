@@ -2,8 +2,8 @@
 function crm_exportar_textos_importar_form(){
 	$form = array();
   //simulando
-  $form['my_msg']['#value']='Funcion desactivada';
-  return $form;
+  /*$form['my_msg']['#value']='Funcion desactivada';
+  return $form;*/
   //
   $form['browser'] = array(
     '#type' => 'fieldset',
@@ -45,13 +45,20 @@ function crm_exportar_textos_importar_csv($file_path,$form_state) {
     $lineas=estrategia_get_lineas_csv($file_path,"\t");
     $changed=time();          
     if(!empty($lineas)){
+        db_query('DELETE FROM {crm_exportar_textos} WHERE 1');
         foreach($lineas as $i=>$row){
-          $name=trim($row[0]);
-          $value=trim($row[1]);
-          db_query('INSERT INTO {crm_exportar_textos}(name,value,changed,uid) VALUES("%s","%s",%d,%d)',$name,$value,$changed,$user->uid);
-          print $name.'='.$value.'<br>';
+          /*$name=trim($row[0]);
+          $value=trim($row[1]);*/
+          $name=trim($row[4]);
+          $columna1=trim($row[5]);
+          $account_number=trim($row[6]);
+          $value=trim($row[7]);
+          $booleano=trim($row[8]);
+          db_query('INSERT INTO {crm_exportar_textos}(name,value,changed,uid,columna1,account_number,booleano) VALUES("%s","%s",%d,%d,"%s","%s","%s")',$name,$value,$changed,$user->uid,$columna1,$account_number,$booleano);
+          //drupal_set_message($name.'='.$value);
         }
     }
+    drupal_goto('panel_admin/crm_exportar/clientes');        
 }
 function crm_exportar_textos_links_callback(){
   $html=array();
@@ -112,7 +119,7 @@ function crm_exportar_textos_links_callback(){
   $result=implode('',$resumen_html).implode('',$html);
   return $result;
 }
-function crm_exportar_textos_get_array($where_in='',$is_todas=0){
+function crm_exportar_textos_get_array($where_in='',$is_todas=0,$id=''){
   $result=array();
   $where=array();
   if(empty($where_in)){
@@ -123,7 +130,13 @@ function crm_exportar_textos_get_array($where_in='',$is_todas=0){
   $table='crm_exportar_textos';
   if($is_todas){
     $table='backup_crm_exportar_textos';
+    if(crm_exportar_is_crm_exportar_tag()){
+      $table='crm_exportar_textos';
+    }
   }
+  if(!empty($id)){
+    $where[]=$table.'.id='.$id;
+  }  
   $res=db_query('SELECT * FROM {'.$table.'} WHERE '.implode(' AND ',$where).' ORDER BY id ASC');
   while($row=db_fetch_object($res)){
     $result[]=$row;
@@ -219,8 +232,9 @@ function crm_exportar_textos_get_tags($i,$tag_array,$nid_tag_array,$nid,$nid_dup
     $output.="<tags>\n";
     if(isset($_REQUEST['is_duplicate_news']) && !empty($_REQUEST['is_duplicate_news'])){
       $output.="\t<tag>\n";
-      $output.="\t\t<title>". check_plain($tag_array[$i])."</title>\n";
-      $output.="\t\t<id>".$row->id."</id>\n";
+      //$output.="\t\t<title>". check_plain($tag_array[$i])."</title>\n";
+      $output.="\t\t<title>". check_plain($row->value)."</title>\n";      
+      $output.="\t\t<id>".$row->account_number."</id>\n";
       $output.="\t</tag>\n";    
     }else{
       /*foreach($nid_tag_array as $i=>$my_row){
@@ -232,8 +246,8 @@ function crm_exportar_textos_get_tags($i,$tag_array,$nid_tag_array,$nid,$nid_dup
           foreach($nid_duplicate_news_array[$nid]['nid_tag_array'] as $i=>$my_row){
             $row=$my_row->row;
             $output.="\t<tag>\n";
-            $output.="\t\t<title>". check_plain($row->name)."</title>\n";
-            $output.="\t\t<id>".$row->id."</id>\n";
+            $output.="\t\t<title>". check_plain($row->value)."</title>\n";
+            $output.="\t\t<id>".$row->account_number."</id>\n";
             $output.="\t</tag>\n"; 
           }
         }  
@@ -294,8 +308,12 @@ function crm_exportar_textos_exportar_todas_noticias($is_automatic_tags=0){
     $textos_array=crm_exportar_textos_get_array($where,$is_todas);
         if(!empty($textos_array)){
           foreach($textos_array as $i=>$row){
+            //simulando
+            /*if(empty($row->booleano)){
+              continue;
+            }*/
             //$url='crm_exportar/exportar_noticias/'.urlencode($row->name).'/0/0';
-            $my_result=crm_exportar_exportar_noticias($row->name,$is_kont,$is_todas);
+            $my_result=crm_exportar_exportar_noticias($row->name,$is_kont,$is_todas,$row);
             $result=$my_result['nid_array'];
             crm_exportar_textos_add_nid_tag_array($result,$row,$nid_tag_array);
             $nid_array=array_merge($nid_array,$result);                        
@@ -324,10 +342,20 @@ function crm_exportar_textos_exportar_todas_noticias($is_automatic_tags=0){
     if(crm_exportar_is_crm_exportar_tag()){
       $automatic_result=(object) $automatic_result;
       crm_exportar_tags_automatic_save($automatic_result);
-      red_solr_inc_apachesolr_index_batch_index_remaining_callback();  
+      //red_solr_inc_apachesolr_index_batch_index_remaining_callback();  
     }
     //return $automatic_result;
   //}
   crm_exportar_node_feed($nid_array,$channel,$crm,$is_post,$is_todas,$nid_tag_array,$nid_duplicate_news_array);
   exit();
+}
+function crm_exportar_textos_get_row($id){
+  $where='';
+  $is_todas=1;
+  $crm_exportar_textos_array=crm_exportar_textos_get_array($where,$is_todas,$id);
+  if(count($crm_exportar_textos_array)>0){
+    return $crm_exportar_textos_array[0];
+  }
+  $my_result=new stdClass();
+  return $my_result;
 }              

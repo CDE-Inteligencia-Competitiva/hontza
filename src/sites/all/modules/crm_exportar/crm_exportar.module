@@ -105,7 +105,7 @@ function crm_exportar_exportar_noticias_callback(){
   crm_exportar_ip_access_denied();
   crm_exportar_exportar_noticias();  
 }
-function crm_exportar_exportar_noticias($crm_in='',$is_kont=0,$is_todas=0){
+function crm_exportar_exportar_noticias($crm_in='',$is_kont=0,$is_todas=0,$row_in=''){
   $crm=arg(2);  
   $fecha_ini=crm_exportar_convertir_fecha(arg(3));
   $fecha_fin=crm_exportar_convertir_fecha(arg(4));
@@ -115,7 +115,10 @@ function crm_exportar_exportar_noticias($crm_in='',$is_kont=0,$is_todas=0){
       $fecha_ini=crm_exportar_convertir_fecha(strtotime('2016-06-01 00:00:00'));
       $fecha_fin=0;
     }
-    $crm=$crm_in;      
+    $crm=$crm_in;
+    if(crm_exportar_is_crm_exportar_tag()){
+      $crm=crm_exportar_tags_get_crm_boolean($row_in);
+    }      
   }
   if(crm_exportar_is_crm_exportar_texto()){
     if($is_kont){
@@ -147,7 +150,7 @@ function crm_exportar_exportar_noticias($crm_in='',$is_kont=0,$is_todas=0){
   //intelsat-2016
   //$group_array=hontza_get_all_nodes(array('grupo'),'','',0,'',0);
   $group_array=crm_exportar_get_group_array();
-  $crm_texto=crm_exportar_get_crm_texto($crm);
+  $crm_texto=crm_exportar_get_crm_texto($crm,$row_in);
   $tid_array=array();
   //if(!crm_exportar_is_crm_exportar_texto()){
     $tid_array=crm_exportar_get_tid_array($crm);
@@ -196,8 +199,8 @@ function crm_exportar_exportar_noticias($crm_in='',$is_kont=0,$is_todas=0){
                       $result=alerta_solr_get_canal_busqueda_nid_array('',$value);                  
                       /*if(crm_exportar_is_crm_exportar_texto()){
                         //print $row->title.'='.count($result).'<br>';exit();
-                        //print $value;
-                        //exit();                                                                         
+                        print $value;
+                        exit();                                                                         
                       }*/                                 
                       $nid_array=array_merge($nid_array,$result);                      
                   }//else{  
@@ -1119,14 +1122,17 @@ function crm_exportar_is_crm_exportar_texto(){
   }
   return 0;
 }
-function crm_exportar_get_crm_texto($crm){
+function crm_exportar_get_crm_texto($crm,$row){
   $result=$crm;
   if(crm_exportar_is_crm_exportar_texto()){
     $result=str_ireplace('CRM:','',$result);
     /*if(empty($result)){
       $result='CRM:';
     }*/
-    $result='("'.$result.'" AND (itm_field_item_validate_status:2 OR itm_field_noticia_validate_statu:2))';
+    if(!isset($row->booleano) || empty($row->booleano)){
+      $result='"'.$result.'"';
+    }
+    $result='('.$result.' AND (itm_field_item_validate_status:2 OR itm_field_noticia_validate_statu:2))';
   }
   return $result;
 }
