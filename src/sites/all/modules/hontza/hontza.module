@@ -1238,6 +1238,11 @@ function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
           $blocks[68]['info'] =panel_admin_guias_left_title();
           $blocks[69]['info'] =panel_admin_dashboard_left_title();
           //$blocks[70]['info'] =t('Categories of Discussions');
+          if(hontza_crm_is_activado()){
+            if(crm_exportar_is_crm_exportar_tag()){
+              $blocks[71]['info']=panel_admin_crm_exportar_left_title();
+            }
+          }
       //
       return $blocks;
     break;
@@ -1896,6 +1901,10 @@ function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
           $block['subject']=red_debate_inc_get_categorias_title();
           $block['content']=red_debate_inc_get_categorias_block_content();
         break;*/
+        case 71:
+          $block['subject']=panel_admin_crm_exportar_left_title();
+          $block['content']=panel_admin_crm_exportar_block_content();
+        break;
       //    
       }
     return $block;
@@ -3358,6 +3367,9 @@ function my_get_user_info($node,$is_mail=0,$bg=''){
         }else{
             if(hontza_canal_rss_is_visualizador_activado()){
                 $info['username']=publico_vigilancia_get_info_username_noticia($node);
+            }else{
+              //intelsat-2016
+              $info['username']=t('Anonymous');              
             }
         }
 	
@@ -3372,7 +3384,8 @@ function my_get_user_info($node,$is_mail=0,$bg=''){
 	
 	//
 	$info['img']=$result;
-	
+	//intelsat-2016
+  $info['uid']=$uid;
 	return $info;
 }
 //gemini
