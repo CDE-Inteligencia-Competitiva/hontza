@@ -34,8 +34,9 @@ function crm_exportar_tags_automatic_save($result){
 				}				
 				if(isset($row->value) && !empty($row->value)){
 					$term_name='CRM:'.$row->value;
-					$term_row=red_solr_inc_taxonomy_get_term_by_name_vid_row($term_name,$vid);
-					if(!isset($term_row->tid)){
+					//$term_row=red_solr_inc_taxonomy_get_term_by_name_vid_row($term_name,$vid);
+                                        $term_row=crm_exportar_tags_taxonomy_get_term_by_name_vid_row($term_name,$vid);
+                                        if(!isset($term_row->tid)){
 						$term = array(
 						 'name' => $term_name,
 						 'vid' => $vid,				
@@ -53,12 +54,13 @@ function crm_exportar_tags_automatic_save($result){
 								db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $node->nid, $node->vid,$term_row->tid);
 								hontza_canal_rss_solr_clear_node_index($node,$nid);								
 							}
-							$community_tags_array=crm_exportar_tags_get_community_tags_array($node->nid,$term_row->tid,$uid);
+                                                        $community_tags_uid=$uid;
+							$community_tags_array=crm_exportar_tags_get_community_tags_array($node->nid,$term_row->tid,$community_tags_uid);
 							$num=count($community_tags_array);
 							if($num==0){
 								$time=time();
 								$date_field='date';
-								db_query('INSERT INTO {community_tags} (nid,tid,uid,'.$date_field.') VALUES (%d,%d,%d,%d)', $node->nid,$term_row->tid,$uid,$time);
+								db_query('INSERT INTO {community_tags} (nid,tid,uid,'.$date_field.') VALUES (%d,%d,%d,%d)', $node->nid,$term_row->tid,$community_tags_uid,$time);
 							}
 						}	
 					}					
@@ -86,4 +88,15 @@ function crm_exportar_tags_get_crm_boolean($row){
 		$result='('.$row->booleano.')';		
 	}
 	return $result;
+}
+function crm_exportar_tags_taxonomy_get_term_by_name_vid_row($term_name,$vid) {
+  $res = db_query("SELECT t.tid, t.name FROM {term_data} t WHERE LOWER(t.name) = LOWER('%s') AND t.vid = %d",trim($term_name), $vid);
+  //$result = array();
+  while ($term = db_fetch_object($res)) {
+    //$result[] = $term;
+    return $term;  
+  }
+  //return $result;
+  $my_result=new stdClass();
+  return $my_result;
 }
