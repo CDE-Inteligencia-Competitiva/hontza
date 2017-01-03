@@ -240,7 +240,18 @@ function hound_enlazar_inc_set_hound_url_from_time($url_in,$last_import_time){
     if(hound_enlazar_inc_is_activado()){
         $url=str_replace('from=','from='.$last_import_time,$url);
     }else{
-        $pos=strpos($url_in,'/from/');
+        $my_url=$url_in;
+        //intelsat-2016-hound-filter
+        $is_hound_filter_activado=0;
+        if(module_exists('hound')){
+            if(hound_is_hound_filter_activado()){
+                $is_hound_filter_activado=1;
+                $my_url=urldecode($my_url);
+                $url=$my_url;
+            }
+        }
+        $konp='/from/';
+        $pos=strpos($my_url,$konp);
         if($pos===FALSE){
             return $url;
             /*$parse=parse_url($url);
@@ -252,9 +263,40 @@ function hound_enlazar_inc_set_hound_url_from_time($url_in,$last_import_time){
             }
             return $url;*/
         }else{
+            //intelsat-2016-hound-filter
+            $result_url=$url;
             $s=substr($url,0,$pos);
+            //simulando
+            //$last_import_time=0;
             $url=$s.'/from/'.$last_import_time;
+            //intelsat-2016-hound-filter
+            if($is_hound_filter_activado){
+                //+1 por el 0 (/from/0)
+                $url.=substr($result_url,$pos+strlen($konp)+1);
+                //$url=urlencode($url);
+                $info_url=parse_url($url);
+                parse_str($info_url['query'],$info);
+                $url=$info_url['scheme'].'://'.$info_url['host'].'/'.$info_url['path'].'?'.hound_urlencode_query($info_url['query']);
+                //print urldecode($url);exit();
+            }
         }
     }
     return $url;
-}    
+}
+function hound_urlencode_query($query){
+    $result=$query;
+    $konp='q=';
+    $pos=strpos($query,$konp);
+    if($pos===FALSE){
+        $result=$query;
+    }else{
+        if($pos>0){
+            $result=$query;
+        }else{
+            $result='q='.urlencode(substr($query,strlen($konp)));
+            return $result;
+        }
+    }
+    $result=urlencode($query);
+    return $result;
+}

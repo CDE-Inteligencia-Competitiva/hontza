@@ -530,7 +530,7 @@ function hound_editing_form_alter(&$form,&$form_state,$form_id,$nid){
             //intelsat-2016
             //hound_add_editing_js();
             //intelsat-2016
-            hound_enlazar_inc_editing_form_alter($form);
+            //hound_enlazar_inc_editing_form_alter($form);
             
             hound_add_editing_js($nid);
         }else{
@@ -1439,3 +1439,27 @@ function hound_is_active_access(){
 function hound_cron(){
     hound_noticia_feed_noticia_email_actualizar();
 }
+//intelsat-2016-hound-filter
+function hound_is_hound_filter_activado(){
+  if(defined('_IS_HOUND_FILTER') && _IS_HOUND_FILTER==1){
+      return 1;
+  }
+  return 0;
+}
+//intelsat-2016-hound-filter
+function hound_is_show_filtros_rss($is_hound,$nid){
+    if($is_hound){
+        $feeds_source=get_feeds_source($nid);
+        if(isset($feeds_source->source) && !empty($feeds_source->source)){
+            $konp='query.yahooapis.com/v1/public/yql';
+            $pos=strpos($feeds_source->source,$konp);
+            if($pos===FALSE){
+                return 0;
+            }else{
+                return 1;
+            }
+        }
+        return 0;
+    }
+    return 1;
+}    
