@@ -1877,10 +1877,21 @@ function hontza_argumentos_canal_presave(&$node){
         hontza_argumentos_canal_de_supercanal_presave($node);            
     }else if($node->type=='canal_de_yql'){
         if(isset($node->nid) && !empty($node->nid)){
-            if(hontza_is_hound_canal($node->nid)){
+            //intelsat-2016-hound-filter
+            $is_hound_filter_activado=0;
+            if(module_exists('hound')){
+                $is_hound_filter_activado=hound_is_hound_filter_activado();
+            }
+            if($is_hound_filter_activado){
+                //intelsat-2016-hound-filter
                 hontza_argumentos_canal_hound_presave($node);
-            }else{
                 hontza_canal_de_yql_presave($node);
+            }else{
+                if(hontza_is_hound_canal($node->nid)){
+                    hontza_argumentos_canal_hound_presave($node);
+                }else{
+                    hontza_canal_de_yql_presave($node);
+                }
             }
         }    
     }
@@ -1971,9 +1982,24 @@ function hontza_yql_field_nombrefuente_canal_form_alter(&$form,&$form_state,$for
     $form['field_nombrefuente_canal'][0]['#title']=t('Name of source').'/'.t('URL');
     //
     $nid=hontza_get_nid_by_form($form);    
+    /*$canal=node_load($nid);
+    echo print_r($canal,1);
+    exit();*/
+    //intelsat-2016-hound-filter
+    $is_hound=0;
     if(hontza_is_hound_canal($nid)){
+        $is_hound=1;
+    }
+    $is_show_filtros_rss=0;
+    if(module_exists('hound')){
+        $is_show_filtros_rss=hound_is_show_filtros_rss($is_hound,$nid);
+    }    
+    if($is_hound){    
         hound_editing_form_alter($form,$form_state,$form_id,$nid);
-    }else{
+    }
+    //intelsat-2016-hound-filter
+    //else{
+    if($is_show_filtros_rss){
         $rss_array=hontza_get_rss_array_by_field_nombrefuente_canal($form);
         if(count($rss_array)>1){
             $form['field_nombrefuente_canal'][0]['#prefix']='<div style="display:none;">';
@@ -2203,7 +2229,7 @@ function hontza_limpiar_returns($s){
     return $result;
 }
 //gemini-2014
-function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form){
+function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form,$form_state=''){
     $form['filtros1'] = array(
       '#title' => t('Apply filter 1 to RSS feeds'),
       '#type' => 'fieldset',
@@ -2333,7 +2359,9 @@ function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form){
     );
     
     //gemini-2013
-    if($is_hound){
+    //intelsat-2016-hound-filter
+    //if($is_hound){
+    if($is_hound && my_is_simple($form_state)){    
         $form['filtros5']['#prefix']='<div style="display:none;">';
         $form['filtros5']['#suffix']='</div>';        
     }

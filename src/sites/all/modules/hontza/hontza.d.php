@@ -1263,8 +1263,12 @@ function hontza_get_block_content_anadir_canal(){
         //intelsat-2015
         //if(!hontza_canal_rss_is_visualizador_activado()){
             //if(hontza_is_sareko_id('ROOT')){
-            if(hontza_is_hound_actions()){
-                //$result[]=l(t('Hound Filter'), 'crear/canal-yql',array('query'=>array('simple'=>0,'is_hound'=>1)));
+            if(hontza_is_hound_actions()){                
+                if(module_exists('hound')){
+                  if(hound_is_hound_filter_activado()){
+                    $result[]=l(t('Hound Filter'), 'crear/canal-yql',array('query'=>array('simple'=>0,'is_hound'=>1)));
+                  }
+                }
                 $result[]=l(t('Import Hound'), 'crear/canal-yql',array('query'=>array('simple'=>1,'is_hound'=>1)));               
             }
             //intelsat-2016
