@@ -1,14 +1,16 @@
 <?php
 function panel_admin_crm_exportar_left_title(){
-	return t('CRM EXPORT');
+    return t('TAGGING & EXPORT XML');
 }
 function panel_admin_crm_exportar_block_content(){
 	$html=array();
 	$html[]=l(t('Delete tags'),'panel_admin/crm_exportar/delete_tags');
-	$html[]=l(t('Import'),'panel_admin/crm_exportar/textos/importar');
-	$html[]=l(t('Create Client'),'panel_admin/crm_exportar/create');	
-	$html[]=l(t('Clients'),'panel_admin/crm_exportar/clientes');
-	return implode('<BR>',$html);
+	$html[]=l(t('Import csv'),'panel_admin/crm_exportar/textos/importar');
+	$html[]=l(t('Create Search'),'panel_admin/crm_exportar/create');	
+	$html[]=l(t('List of Searches'),'panel_admin/crm_exportar/clientes');
+        $html[]=l(t('Tagging & Export XML'),'crm_exportar/crear_url',array('attributes'=>array('target'=>'_blank')));
+	//$html[]=l(t('IP Filter'),'panel_admin/crm_exportar/filtro_ip');
+        return implode('<BR>',$html);
 }
 function panel_admin_crm_exportar_delete_tags_form(){
 	$form=array();
@@ -27,21 +29,32 @@ function panel_admin_crm_exportar_delete_tags_form_submit($form,&$form_state){
     drupal_goto($destination);
 }
 function panel_admin_crm_exportar_delete_tags(){
+    $nid_array=array();
 	$vid=hontza_crm_inc_get_tags_vid();
 	$term_data_array=panel_admin_crm_exportar_get_term_data_array($vid);
 	if(!empty($term_data_array)){
 		foreach($term_data_array as $i=>$row){
+                    $nid_array=panel_admin_crm_exportar_get_term_node_nid_array($row->tid,$nid_array);
 			taxonomy_del_term($row->tid);
 			db_query('DELETE FROM {community_tags} WHERE tid='.$row->tid);
 		}
 	}
 	db_query('DELETE FROM {term_data} WHERE vid='.$vid);
+    if(!empty($nid_array)){
+        foreach($nid_array as $i=>$nid){
+            $node=node_load($nid);
+            if(isset($node->nid) && !empty($node->nid)){
+                hontza_canal_rss_solr_clear_node_index($node,$nid);
+            }    
+        }        
+    }
 }
 function panel_admin_crm_exportar_get_term_data_array($vid){
 	$result=array();
 	$where=array();
 	$where[]='1';
 	$where[]='term_data.vid='.$vid;
+        $where[]='term_data.name LIKE "%%CRM:%%"';
 	$res=db_query('SELECT * FROM {term_data} WHERE '.implode(' AND ',$where));
 	while($row=db_fetch_object($res)){
 		$result[]=$row;
@@ -52,9 +65,9 @@ function panel_admin_crm_exportar_clientes_callback(){
 	$output='';    
     $headers=array();
     //$headers[0]=array('field'=>'name','data'=>t('Account Name'));
-    $headers[0]=array('field'=>'value','data'=>t('Value'));
+    $headers[0]=array('field'=>'value','data'=>t('Tag'));
     //$headers[2]=array('field'=>'columna1','data'=>t('Column1'));
-    $headers[1]=array('field'=>'booleano','data'=>t('Boolean'));
+    $headers[1]=array('field'=>'booleano','data'=>t('Boolean Search'));
     $headers[2]=t('Actions');
     //$headers[1]=t('Actions');    
    
@@ -94,15 +107,12 @@ function panel_admin_crm_exportar_clientes_callback(){
     if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
         $sort=$_REQUEST['sort'];
     }
-    /*if(isset($_REQUEST['order']) && !empty($_REQUEST['order'])){
+    if(isset($_REQUEST['order']) && !empty($_REQUEST['order'])){
         $order=$_REQUEST['order'];
-        if($order==t('Title')){
-            $field='node_title';
-        }else if($order==t('Order')){
-            //$is_numeric=1;
-            $field='field_pisu_value';
+        if($order==t('Boolean Search')){
+            $field='booleano';
         }
-    }*/
+    }
     
     $sql='SELECT *
     FROM {crm_exportar_textos} crm_exportar_textos  
@@ -138,7 +148,7 @@ function panel_admin_crm_exportar_clientes_callback(){
     }else {
         $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
     }
-    drupal_set_title(t('List of Clients'));
+    drupal_set_title(t('List of Searches'));
     //
     return panel_admin_crm_exportar_clientes_header().$output;
 }
@@ -170,7 +180,7 @@ function panel_admin_crm_exportar_form(){
 	$id='';
 	$param=arg(3);
 	$row=new stdClass();
-	$title=t('Create Client');
+	$title=t('Create Search');
 	if(!empty($param) && $param=='edit'){
 		$id=arg(2);
 		$row=panel_admin_crm_exportar_get_crm_exportar_texto_row($id);
@@ -178,27 +188,27 @@ function panel_admin_crm_exportar_form(){
 			'#type'=>'hidden',
 			'#default_value'=>$id,
 		);
-		$title=t('Edit Client');
+		$title=t('Edit Search');
 	}	
 		$form['name']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Name'),
+			'#title'=>t('Notes'),
 			'#default_value'=>$row->name,
 		);
 		$form['value']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Value'),
+			'#title'=>t('Tag'),
 			'#default_value'=>$row->value,
 		);
 		$form['account_number']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Account Number'),
+			'#title'=>t('Index key'),
 			'#default_value'=>$row->account_number,
 			//'#attributes'=>array('readonly'=>'readonly'),
 		);
 		$form['booleano']=array(
 			'#type'=>'textarea',
-			'#title'=>t('Boolean'),
+			'#title'=>t('Boolean Search'),
 			'#default_value'=>$row->booleano,
 		);
 		$form['save_btn']=array(
@@ -235,7 +245,7 @@ function panel_admin_crm_exportar_form_submit($form, &$form_state){
 			db_query('UPDATE {crm_exportar_textos} SET name="%s",value="%s",account_number="%s",booleano="%s" WHERE id=%d',$name,$value,$account_number,$booleano,$id);
 		}
 	}
-	drupal_goto('panel_admin/crm_exportar');	
+	drupal_goto('panel_admin/crm_exportar/clientes');	
 }
 function panel_admin_crm_exportar_delete_form(){
 	$form=array();
@@ -253,13 +263,13 @@ function panel_admin_crm_exportar_delete_form(){
 		);*/
 		$form['value']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Value'),
+			'#title'=>t('Tag'),
 			'#default_value'=>$row->value,
 			'#attributes'=>array('readonly'=>'readonly'),
 		);
 		$form['account_number']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Account Number'),
+			'#title'=>t('Index key'),
 			'#default_value'=>$row->account_number,
 			'#attributes'=>array('readonly'=>'readonly'),
 		);
@@ -275,7 +285,7 @@ function panel_admin_crm_exportar_delete_form(){
 		$form['cancel_btn']=array(
 			'#value'=>l(t('Cancel'),'panel_admin/crm_exportar/clientes'),
 		);
-		drupal_set_title($title);
+		drupal_set_title(t('Delete Search'));
 	return $form;
 }
 function panel_admin_crm_exportar_delete_form_submit($form, &$form_state){
@@ -287,6 +297,7 @@ function panel_admin_crm_exportar_delete_form_submit($form, &$form_state){
 			db_query('DELETE FROM {crm_exportar_textos} WHERE id=%d',$id);			
 		}
 	}
+	drupal_goto('panel_admin/crm_exportar/clientes');	
 }
 function panel_admin_crm_exportar_get_row_html($r){
 	$html=array();
@@ -345,22 +356,22 @@ function panel_admin_crm_exportar_clientes_filtro_form(){
     $key='panel_admin_crm_exportar_clientes_filtro';
     $form['file_buscar_fs']['name']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Name'),
+			'#title'=>t('Notes'),
 			'#default_value'=>panel_admin_crm_exportar_get_filter_value('name',$key),
 		);
 		$form['file_buscar_fs']['value']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Value'),
+			'#title'=>t('Tag'),
 			'#default_value'=>panel_admin_crm_exportar_get_filter_value('value',$key),
 		);
 		$form['file_buscar_fs']['account_number']=array(
 			'#type'=>'textfield',
-			'#title'=>t('Account Number'),
+			'#title'=>t('Index key'),
 			'#default_value'=>panel_admin_crm_exportar_get_filter_value('account_number',$key),
 		);
 		$form['file_buscar_fs']['booleano']=array(
 			'#type'=>'textarea',
-			'#title'=>t('Boolean'),
+			'#title'=>t('Boolean Search'),
 			'#default_value'=>panel_admin_crm_exportar_get_filter_value('booleano',$key),
 		);
 
@@ -414,4 +425,14 @@ function panel_admin_crm_exportar_clientes_filtro_form_submit(&$form, &$form_sta
             }            
         }
     } 
-}			
+}
+function panel_admin_crm_exportar_get_term_node_nid_array($tid,$nid_array){
+  $result=$nid_array;  
+  $res = db_query("SELECT * FROM {term_node} term_node WHERE term_node.tid=%d",$tid);
+  while ($row = db_fetch_object($res)) {
+    if(!in_array($row->nid,$result)){
+        $result[]=$row->nid;
+    }  
+  }
+  return $result;
+}

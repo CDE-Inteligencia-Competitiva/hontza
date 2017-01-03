@@ -17,6 +17,7 @@ require_once('panel_admin.guias.inc.php');
 require_once('panel_admin.usuarios.acceso.inc.php');
 require_once('panel_admin.dashboard.inc.php');
 require_once('panel_admin.crm_exportar.inc.php');
+require_once('panel_admin.crm_exportar.filtro_ip.inc.php');
 function panel_admin_perm() {
   return array();
 }
@@ -440,6 +441,35 @@ function panel_admin_menu() {
     'page arguments' =>array('panel_admin_crm_exportar_delete_form'),
     'page callback'=>'drupal_get_form',
     'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/filtro_ip']=array(
+    'title' => 'IP Filter',
+    'page callback'=>'panel_admin_crm_exportar_filtro_ip_callback',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',       
+    );
+    $items['panel_admin/crm_exportar/filtro_ip/create']=array(
+    'title' => 'Create Ip',
+    'page arguments' =>array('panel_admin_crm_exportar_filtro_ip_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
+    );
+    $items['panel_admin/crm_exportar/filtro_ip/%/edit']=array(
+    'title' => 'Edit Ip',
+    'page arguments' =>array('panel_admin_crm_exportar_filtro_ip_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
+    );
+    $items['panel_admin/crm_exportar/filtro_ip/%/delete']=array(
+    'title' => 'Edit Ip',
+    'page arguments' =>array('panel_admin_crm_exportar_filtro_ip_delete_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
+    );
+    $items['panel_admin/crm_exportar/filtro_ip/activar']=array(
+    'title' => 'Activate Ip Filter',
+    'page arguments' =>array('panel_admin_crm_exportar_filtro_ip_activar_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
     );
     return $items;
 }
