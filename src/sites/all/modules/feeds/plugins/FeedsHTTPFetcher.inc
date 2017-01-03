@@ -37,9 +37,9 @@ class FeedsHTTPBatch extends FeedsImportBatch {
                 //intelsat-2015                    
                 $this->url=hound_set_ip_url($this->url);
                     
-                /*
-                if(user_access('root')){
-                    print 'url='.$this->url;exit();
+                
+                /*if(user_access('root')){
+                    print 'url='.urldecode($this->url);exit();
                 }*/
             }
     //
