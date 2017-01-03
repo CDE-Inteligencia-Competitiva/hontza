@@ -501,31 +501,37 @@ function agregar_fuente_form(&$form, &$form_state){
 	  $form['fuentes'][$i]['#value']=$form_state['yql_obj']->xml_list[$i-1];
 	}
 	//
-            if($is_hound){                
+            if($is_hound){
+                //intelsat-2016-hound-filter
+                if(my_is_simple($form_state)){	
                     $form['fuentes'][$i]['#default_value']=hontza_get_hound_rss1();
                     yql_add_filter_hound_js($i);
                     $form['fuentes'][$i]['#prefix']='<div style="display:none">';
                     $form['fuentes'][$i]['#suffix']='</div>';
-                if(hontza_is_hound_text_input()){
-                                hound_add_select_text_input($form);                              
+                    if(hontza_is_hound_text_input()){
+                                    hound_add_select_text_input($form);                              
+                    }else{
+                                    //gemini-2013
+                                    $hound_options=hontza_define_hound_options();
+                                    $form['fuentes']['hound'.$i] = array(
+                                            '#title' => t('Hound '.$i),
+                                            '#type' => 'select',
+                                            '#options'=>$hound_options,
+                                            '#required'=>TRUE,
+                                          );                            
+                                    if(hontza_is_hound_search($hound_options)){
+                                        $form['fuentes']['hound'.$i.'_search'] = array(
+                                                '#title' => t('Hound search'),
+                                                //'#type' => 'textfield',
+                                                '#type' => 'textarea',
+                                                '#maxlength'=>1024,
+                                        );                                                            
+                                    }
+                    }
                 }else{
-                                //gemini-2013
-                                $hound_options=hontza_define_hound_options();
-                                $form['fuentes']['hound'.$i] = array(
-                                        '#title' => t('Hound '.$i),
-                                        '#type' => 'select',
-                                        '#options'=>$hound_options,
-                                        '#required'=>TRUE,
-                                      );                            
-                                if(hontza_is_hound_search($hound_options)){
-                                    $form['fuentes']['hound'.$i.'_search'] = array(
-                                            '#title' => t('Hound search'),
-                                            //'#type' => 'textfield',
-                                            '#type' => 'textarea',
-                                            '#maxlength'=>1024,
-                                    );                                                            
-                                }
-                }                
+                    $url=yql_get_hound_url_by_data('',$form_state['yql_obj']);
+                    $form['fuentes'][$i]['#default_value']=$url;                    
+                }  
             }
         
         
@@ -723,7 +729,7 @@ function filtros_form(&$form, &$form_state){
         $form['filtros5']['#suffix']='</div>';        
     }
     */
-    hontza_set_form_filtros_yql($is_hound,0,$form);    
+    hontza_set_form_filtros_yql($is_hound,0,$form,$form_state);    
   }
   else{
     $form['text'] = array(
@@ -1246,7 +1252,9 @@ function prepare_simple_or_opml(&$form,&$form_state){
         }
     //}        
 	$indefinida_tid=my_get_term_data_tid('Categoria indefinida');	
-	if(my_is_simple($form_state) || my_is_opml($form_state)){
+	//intelsat-2016-hound-filter
+        //if(my_is_simple($form_state) || my_is_opml($form_state)){
+        if(my_is_simple($form_state) || my_is_opml($form_state) || $is_hound){
 		$js='var is_import_html='.$is_import_html.';
                 var is_hound='.$is_hound.';
                 var hound_url="'.hontza_define_hound_url().'"    
@@ -1278,7 +1286,9 @@ function prepare_simple_or_opml(&$form,&$form_state){
                    }
                 });';
 		//
-		if(my_is_simple($form_state)){
+                //intelsat-2016-hound-filter
+		//if(my_is_simple($form_state)){
+                if(my_is_simple($form_state) || $is_hound){
                     //intelsat-2014
                     if(hontza_social_is_activado()){
                         if(social_learning_collections_is_import_table_html()){
@@ -1336,11 +1346,13 @@ function prepare_simple_or_opml(&$form,&$form_state){
                                 }
                             }    
                           }
-				
-			$form['simple']=array(
-				  '#type' => 'hidden',
-				  '#value' => 1,			  
-			);                        
+			//intelsat-2016-hound-filter
+                        if(my_is_simple($form_state)){	
+                            $form['simple']=array(
+                                      '#type' => 'hidden',
+                                      '#value' => 1,			  
+                            );
+                        }    
 		}else{
 			$form['#attributes'] = array('enctype' => "multipart/form-data");
 			$form['fuentes'] = array(
