@@ -1735,7 +1735,12 @@ function user_delete($edit, $uid) {
   //  
   $account = user_load(array('uid' => $uid));
   //intelsat-2016
-  red_facilitator_delete_users_facilitators_network($account,'',1);  
+  red_facilitator_delete_users_facilitators_network($account,'',1);
+  if(red_is_servidor_central()){
+      if(module_exists('red_servidor')){
+          red_servidor_validar_usuario_network_delete_user_from_tables($account);
+      }
+  }
   sess_destroy_uid($uid);
   _user_mail_notify('status_deleted', $account);
   db_query('DELETE FROM {users} WHERE uid = %d', $uid);

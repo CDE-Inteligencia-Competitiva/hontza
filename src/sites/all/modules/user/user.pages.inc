@@ -320,6 +320,8 @@ function user_profile_form_validate($form, &$form_state) {
         red_validar_usuario_network($form_state['values']);
       }  
   }
+  //intelsat-2016
+  red_facilitador_user_profile_form_facilitador_validate($form,$form_state);
 }
 
 /**
@@ -340,7 +342,7 @@ function user_profile_form_submit($form, &$form_state) {
   }
   
   //intelsat-2016
-  user_facilitator_save($values_bakup,$account,$category);
+  $result=user_facilitator_save($values_bakup,$account,$category);
   
   //gemini-2014
   if(hontza_is_sareko_id_red()){
@@ -354,6 +356,11 @@ function user_profile_form_submit($form, &$form_state) {
   /*
   //intelsat-2015
   user_facilitator_save($values_bakup,$account,$category);*/
+  //intelsat-2016
+  /*if(isset($result['is_delete_users_facilitators_network']) && !empty($result['is_delete_users_facilitators_network'])){
+    facilitator_delete_users_facilitators_network($account);
+  }*/
+  red_facilitator_delete_users_facilitators_network($account,$result);
   //
   // Clear the page cache because pages can contain usernames and/or profile information:
   cache_clear_all();
@@ -695,9 +702,11 @@ function user_add_services_tab_fields(&$form,$account, $edit){
 }
 //intelsat-2015
 function user_facilitator_save($form_state_values,$account,$category){
+    $result=array();
     if(hontza_canal_rss_is_facilitador_activado()){
-        facilitator_save($form_state_values,$account,$category);
+        $result=facilitator_save($form_state_values,$account,$category);
     }
+    return $result;
 }
 //intelsat-2015
 function user_get_is_facilitador_value($uid){
