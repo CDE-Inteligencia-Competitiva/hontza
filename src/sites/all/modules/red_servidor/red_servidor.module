@@ -201,7 +201,7 @@ function red_servidor_menu() {
         'access arguments' =>array('root'),
     );
     $items['red_servidor/validar_usuario_network/registrados_todos']=array(
-        'title'=>'Users',
+        'title'=>'All Users',
         'page callback'=>'red_servidor_validar_usuario_network_registrados_callback',   
         'access arguments' =>array('root'),
     );
@@ -223,6 +223,18 @@ function red_servidor_menu() {
     $items['red_servidor/usuarios_csv/crear_csv']=array(
         'title'=>'Users',
         'page callback'=>'red_servidor_usuarios_csv_inc_crear_csv_callback',   
+        'access arguments' =>array('root'),
+    );
+    $items['red_servidor/validar_usuario_network/%/delete/%']=array(
+        'title'=>'Delete Register',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('red_servidor_validar_usuario_network_registrados_delete_form'),   
+        'access arguments' =>array('root'),
+    );
+    $items['red_servidor/validar_usuario_network/activar_borrar_registrados']=array(
+        'title'=>'Users',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('red_servidor_validar_usuario_network_activar_borrar_registrados_form'),   
         'access arguments' =>array('root'),
     );
     return $items;

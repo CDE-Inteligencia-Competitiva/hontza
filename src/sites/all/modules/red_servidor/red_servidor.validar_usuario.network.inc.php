@@ -319,14 +319,48 @@ function red_servidor_validar_usuario_network_registrados_callback(){
     $headers[2]=array('data'=>t('Hontza URL'),'field'=>'base_url');
     $headers[3]=array('data'=>t('Hontza id'),'field'=>'sareko_id');
     $headers[4]=array('data'=>t('Date'),'field'=>'created');
+    $headers[5]='&nbsp';
     $kont=0;
     $rows=array();
     $type=arg(2);
-    $table='red_servidor_validar_usuario_network';
+    /*$table='red_servidor_validar_usuario_network';
     if(!empty($type) && $type=='registrados_todos'){
         $table='red_servidor_validar_usuario_network_todos';
-    }
-    $res=db_query('SELECT * FROM {'.$table.'} WHERE 1 ORDER BY '.$field.' '.$sort);    
+    }*/
+    
+    $filter_fields=red_validar_usuario_network_registrados_filter_fields();
+   	$key='red_validar_usuario_network_registrados_filtro';
+
+    $where=array();
+    $where[]='1';
+
+    
+   
+  if(!empty($filter_fields)){
+       foreach($filter_fields as $k=>$f){
+           $v=red_validar_usuario_network_registrados_get_filter_value($f,$key);
+           if(!empty($v)){
+                switch($f){
+                    case 'name':                        
+                    case 'mail':                    
+                    case 'sareko_id':
+                        $where[]=$f.'="'.$v.'"';
+                        break;
+                    case 'base_url':
+                        $where[]=$f.' LIKE "%%'.$v.'%%"';
+                        break;                    
+                    default:    
+                        $where[]=$f.'="'.$v.'"';
+                        break;
+                }
+           } 
+       }
+   }
+    
+    
+    $table=red_servidor_validar_usuario_get_table($type);
+    $my_type=$type;
+    $res=db_query('SELECT * FROM {'.$table.'} WHERE '.implode(' AND ',$where).' ORDER BY '.$field.' '.$sort);    
     while($r=db_fetch_object($res)){
         $rows[$kont][0]=$r->name;
         $rows[$kont][1]=$r->mail;
@@ -335,7 +369,8 @@ function red_servidor_validar_usuario_network_registrados_callback(){
         $rows[$kont][4]='';
         if(!empty($r->created)){    
             $rows[$kont][4]=date('Y-m-d H:i',$r->created);
-        }    
+        }
+        $rows[$kont][5]=array('class'=>'td_nowrap','data'=>red_servidor_validar_usuario_network_registrados_define_acciones($r,$type));
         $kont++;        
     }
     $type=arg(3);
@@ -351,8 +386,8 @@ function red_servidor_validar_usuario_network_registrados_callback(){
     }else {
         $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
     }
-    $links=red_servidor_validar_usuario_network_registrados_get_links();
-    $output=red_servidor_registrar_registrados_navegar_menu().$links.$output;
+    $links=red_servidor_validar_usuario_network_registrados_get_links($my_type);
+    $output=red_servidor_registrar_registrados_navegar_menu().$links.red_validar_usuario_network_registrados_header().$output;
     return $output;
 }
 function red_servidor_validar_usuario_network_save_user_subdominios_todos($row){
@@ -404,7 +439,7 @@ function red_servidor_validar_usuario_network_registrados_exportar_csv($rows){
         }
         estrategia_call_download_resumen_preguntas_clave_canales_csv($data_csv_array,'usuarios',"\t");  
 }
-function red_servidor_validar_usuario_network_registrados_get_links(){
+function red_servidor_validar_usuario_network_registrados_get_links($type){
     global $base_url;
     $html=array();
     $html[]='<div>';
@@ -416,6 +451,260 @@ function red_servidor_validar_usuario_network_registrados_get_links(){
     $url_exportar=$base_url.$grupo.'/'.request_uri();*/
     $url_exportar=$base_url.request_uri().'/exportar_csv';
     $html[]=l(t('Export csv'),$url_exportar,array('attributes'=>array('target'=>'_blank'),'absolute'=>true));
+    $html[]=l('Activar borrado en tablas auxiliares','red_servidor/validar_usuario_network/activar_borrar_registrados/'.$type,array('attributes'=>array('target'=>'_blank'),'absolute'=>true));
     $html[]='</div>';
-    return implode('',$html);
+    return implode('&nbsp;|&nbsp;',$html);
+}
+function red_servidor_validar_usuario_network_delete_user_from_tables($account){
+    $is_validar_usuario_network_activar_borrar_registrados=variable_get('is_validar_usuario_network_activar_borrar_registrados',0);
+    if($is_validar_usuario_network_activar_borrar_registrados){
+        db_query('DELETE FROM {red_servidor_validar_usuario_network} WHERE name="%s" OR mail="%s"',$account->name,$account->mail);
+        db_query('DELETE FROM {red_servidor_validar_usuario_network_todos} WHERE name="%s" OR mail="%s"',$account->name,$account->mail);
+    }    
+}
+function red_servidor_validar_usuario_network_registrados_define_acciones($r,$type){
+    $html=array();
+    $destination='destination=red_servidor/validar_usuario_network/'.$type;
+    //$html[]=l(my_get_icono_action('edit',t('Edit')),'panel_admin/crm_exportar/'.$r->id.'/edit',array('query'=>$destination,'html'=>true));
+    $html[]=l(my_get_icono_action('delete',t('Delete')),'red_servidor/validar_usuario_network/'.$r->id.'/delete/'.$type,array('query'=>$destination,'html'=>true));
+    //$html[]=l(my_get_icono_action('viewmag',t('View')),'node/'.$r->nid,array('query'=>$destination,'html'=>true));
+    //$html[]=panel_admin_banners_define_accion_activado($r,$destination);
+    return implode('&nbsp;',$html);
+}
+function red_servidor_validar_usuario_network_registrados_delete_form(){
+    $form=array();
+    $id=arg(2);
+    $type=arg(4);
+    $table=red_servidor_validar_usuario_get_table($type);
+    $row=red_servidor_validar_usuario_get_row($table,$id);
+    
+    $form['my_id']=array(
+        '#type'=>'hidden',
+        '#value'=>$id,
+    );
+    $form['type']=array(
+        '#type'=>'hidden',
+        '#value'=>$type,
+    );
+    
+    /*$headers[0]=array('data'=>t('Name'),'field'=>'name');
+    $headers[1]=array('data'=>t('Email'),'field'=>'mail');
+    $headers[2]=array('data'=>t('Hontza URL'),'field'=>'base_url');
+    $headers[3]=array('data'=>t('Hontza id'),'field'=>'sareko_id');
+    $headers[4]=array('data'=>t('Date'),'field'=>'created');*/
+    
+    $form['name']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Name'),
+        '#default_value'=>$row->name,
+        '#atriibutes'=>array('readonly'=>'readonly'),
+    );
+    
+    $form['mail']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Email'),
+        '#default_value'=>$row->mail,
+        '#atriibutes'=>array('readonly'=>'readonly'),
+    );
+    
+    $form['base_url']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Hontza URL'),
+        '#default_value'=>$row->base_url,
+        '#atriibutes'=>array('readonly'=>'readonly'),
+    );
+    
+    $form['sareko_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Hontza id'),
+        '#default_value'=>$row->sareko_id,
+        '#atriibutes'=>array('readonly'=>'readonly'),
+    );
+    
+    $created='';
+    if(!empty($row->created)){    
+            $created=date('Y-m-d H:i',$row->created);
+        }
+    
+    $form['date']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Date'),
+        '#default_value'=>$created,
+        '#atriibutes'=>array('readonly'=>'readonly'),
+    );
+    
+    $form['delete_btn']=array(
+        '#type'=>'submit',
+	'#value'=>t('Delete'),
+    );
+    $form['cancel_btn']=array(
+        '#value'=>l(t('Cancel'),'red_servidor/validar_usuario_network/'.$type),
+    );
+    
+    return $form;
+}
+function red_servidor_validar_usuario_get_table($type){
+    $table='red_servidor_validar_usuario_network';
+    if(!empty($type) && $type=='registrados_todos'){
+        $table='red_servidor_validar_usuario_network_todos';
+    }
+    return $table;   
+}
+function red_servidor_validar_usuario_get_row($table,$id){
+    $result=red_servidor_validar_usuario_get_array($table,$id);
+    if(count($result)>0){
+        return $result[0];
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
+function red_servidor_validar_usuario_get_array($table,$id){
+    $result=array();
+    $res=db_query('SELECT * FROM {'.$table.'} WHERE id=%d',$id);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_validar_usuario_network_registrados_header(){
+    my_add_buscar_js();
+    return drupal_get_form('red_validar_usuario_network_registrados_filtro_form');
+}
+function red_validar_usuario_network_registrados_filtro_form(){
+    $fs_title=t('Search');
+    if(!red_validar_usuario_network_registrados_is_filter_activated()){
+        $fs_title=t('Filter');
+        $class='file_buscar_fs_vigilancia_class';
+    }else{
+        $fs_title=t('Filter Activated');
+        $class='file_buscar_fs_vigilancia_class fs_search_activated';
+    }
+    //        
+    $form=array();
+    $form['file_buscar_fs']=array('#type'=>'fieldset','#title'=>$fs_title,'#attributes'=>array('id'=>'file_buscar_fs','class'=>$class));
+    $key='red_validar_usuario_network_registrados_filtro';
+    $form['file_buscar_fs']['name']=array(
+			'#type'=>'textfield',
+			'#title'=>t('Name'),
+			'#default_value'=>red_validar_usuario_network_registrados_get_filter_value('name',$key),
+		);
+		$form['file_buscar_fs']['mail']=array(
+			'#type'=>'textfield',
+			'#title'=>t('Mail'),
+			'#default_value'=>red_validar_usuario_network_registrados_get_filter_value('mail',$key),
+		);
+		$form['file_buscar_fs']['base_url']=array(
+			'#type'=>'textfield',
+			'#title'=>t('Hontza URL'),
+			'#default_value'=>red_validar_usuario_network_registrados_get_filter_value('base_url',$key),
+		);
+		$form['file_buscar_fs']['sareko_id']=array(
+			'#type'=>'textfield',
+			'#title'=>t('Hontza id'),
+			'#default_value'=>red_validar_usuario_network_registrados_get_filter_value('sareko_id',$key),
+		);
+
+    $form['file_buscar_fs']['file_buscar_fs']['my_submit']=array(
+        '#type'=>'submit',
+        '#value'=>t('Apply'),
+    );
+    $form['file_buscar_fs']['file_buscar_fs']['limpiar']=array(
+        '#type'=>'submit',
+        '#name'=>'limpiar',
+        '#value'=>t('Reset'),
+    );
+    return $form;	
+}
+function red_validar_usuario_network_registrados_is_filter_activated(){
+    $fields=red_validar_usuario_network_registrados_filter_fields();
+    if(count($fields)>0){
+        foreach($fields as $i=>$f){
+            if(isset($_SESSION['red_validar_usuario_network_registrados_filtro']['filter'][$f]) && !empty($_SESSION['red_validar_usuario_network_registrados_filtro']['filter'][$f])){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function red_validar_usuario_network_registrados_filter_fields(){
+    $result=array('name','mail','base_url','sareko_id');
+    return $result;
+}
+function red_validar_usuario_network_registrados_get_filter_value($field,$key){
+    return hontza_get_gestion_usuarios_filter_value($field,$key);
+}
+function red_servidor_validar_usuario_network_registrados_delete_form_submit($form, &$form_state){
+	$id='';
+        $type='';
+	if(isset($form_state['values']) && !empty($form_state['values'])){
+		$values=$form_state['values'];
+		if(isset($values['my_id']) && !empty($values['my_id'])){
+                    if(isset($values['type']) && !empty($values['type'])){
+                            $id=$values['my_id'];
+                            $type=$values['type'];
+                            $table=red_servidor_validar_usuario_get_table($type);
+                            db_query('DELETE FROM {'.$table.'} WHERE id=%d',$id);                            
+                    }                            
+		}
+	}
+	drupal_goto('red_servidor/validar_usuario_network/'.$type);	
+}
+function red_validar_usuario_network_registrados_filtro_form_submit(&$form, &$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        $name=$form_state['clicked_button']['#name'];
+        $key='red_validar_usuario_network_registrados_filtro';
+        if(strcmp($name,'limpiar')==0){
+            if(isset($_SESSION[$key]['filter']) && !empty($_SESSION[$key]['filter'])){
+                unset($_SESSION[$key]['filter']);
+            }
+        }else{
+            $_SESSION[$key]['filter']=array();
+            $fields=red_validar_usuario_network_registrados_filter_fields();
+            if(count($fields)>0){
+                foreach($fields as $i=>$f){
+                    $v=$form_state['values'][$f];
+                    if(!empty($v)){
+                        $_SESSION[$key]['filter'][$f]=$v;
+                    }
+                }
+            }            
+        }
+    } 
+}
+function red_servidor_validar_usuario_network_activar_borrar_registrados_form(){
+    $form=array();
+    $type=arg(3);
+    $form['type']=array(
+        '#type'=>'hidden',
+        '#value'=>$type,
+    );
+    $is_validar_usuario_network_activar_borrar_registrados=variable_get('is_validar_usuario_network_activar_borrar_registrados',0);
+    $form['is_validar_usuario_network_activar_borrar_registrados']=array(
+        '#type'=>'checkbox',
+        '#title'=>'Activar borrado en tablas auxiliares',
+    );
+    if($is_validar_usuario_network_activar_borrar_registrados){
+        $form['is_validar_usuario_network_activar_borrar_registrados']['#attributes']=array('checked'=>'checked');
+    }
+    $form['save_btn']=array(
+			'#type'=>'submit',
+			'#value'=>t('Save'),
+		);
+		$form['cancel_btn']=array(
+			'#value'=>l(t('Cancel'),'red_servidor/validar_usuario_network/'.$type),
+		);
+    drupal_set_title('Activar borrado en tablas auxiliares');    
+    return $form;
+}
+function red_servidor_validar_usuario_network_activar_borrar_registrados_form_submit(&$form, &$form_state){
+    $is_validar_usuario_network_activar_borrar_registrados=0;
+    $type='';
+    if(isset($form_state['values']['is_validar_usuario_network_activar_borrar_registrados']) && !empty($form_state['values']['is_validar_usuario_network_activar_borrar_registrados'])){
+        $is_validar_usuario_network_activar_borrar_registrados=1;
+    }
+    variable_set('is_validar_usuario_network_activar_borrar_registrados',$is_validar_usuario_network_activar_borrar_registrados);
+    if(isset($form_state['values']['type']) && !empty($form_state['values']['type'])){
+        $type=$form_state['values']['type'];
+    }
+    drupal_goto('red_servidor/validar_usuario_network/'.$type);
 }
