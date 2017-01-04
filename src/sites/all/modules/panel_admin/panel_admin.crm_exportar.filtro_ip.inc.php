@@ -1,6 +1,7 @@
 <?php
 function panel_admin_crm_exportar_filtro_ip_callback(){
   $output='';
+  //simulando
   return 'Desactivado';
     $headers=array();
     $headers[0]=array('field'=>'value','data'=>'Ip');

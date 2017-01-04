@@ -8,7 +8,7 @@ function panel_admin_crm_exportar_block_content(){
 	$html[]=l(t('Import csv'),'panel_admin/crm_exportar/textos/importar');
 	$html[]=l(t('Create Search'),'panel_admin/crm_exportar/create');	
 	$html[]=l(t('List of Searches'),'panel_admin/crm_exportar/clientes');
-        $html[]=l(t('Tagging & Export XML'),'crm_exportar/crear_url',array('attributes'=>array('target'=>'_blank')));
+    $html[]=l(t('Tagging & Export XML'),'crm_exportar/crear_url',array('attributes'=>array('target'=>'_blank')));
 	//$html[]=l(t('IP Filter'),'panel_admin/crm_exportar/filtro_ip');
         return implode('<BR>',$html);
 }
