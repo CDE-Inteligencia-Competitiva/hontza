@@ -621,8 +621,9 @@ WEBROOT='/var/www/html'
 WEBFOLDER='hontza'
 DBUSER_F='mysuser'
 DBROOT_F='myroot'
-TOMCAT_VERSION='7.0.69'
+TOMCAT_VERSION='7.0.69' 
 
+TOMCAT_VERSION=$(wget -qO -S -O - http://apache.rediris.es/tomcat/tomcat-7 |grep href |grep DIR |tail -1 | sed -e 's/<[^>]*>//g'|awk '{print $1}' |tr -d '/' )
 
 #set +e
 
