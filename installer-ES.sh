@@ -1,4 +1,22 @@
 #!/bin/bash
+migrar_php(){
+
+sudo apt-get purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
+
+sudo add-apt-repository ppa:ondrej/php
+sudo apt-get update
+sudo apt-get install php5.6
+sudo apt-get install php5.6-mbstring php5.6-mcrypt php5.6-mysql php5.6-xml php5.6-curl
+sudo apt-get install unzip
+
+sudo a2dismod php7.0
+sudo a2enmod php5.6
+sudo service apache2 restart
+sudo update-alternatives –set php /usr/bin/php5.6
+
+
+}
+
 download(){
     if [ -z "${GVERSION}" ]; then
         GVERSION='master'
@@ -18,8 +36,10 @@ download(){
     
      echo "..*Descargar fuente de GitHub"
     
+
     wget "${REPO}/${GVERSION}.zip"  -O "${WORKFOLDER}"/hontza.zip &> /dev/null
-    if [ ${?} -ne 0 ]; then
+    ## wget "https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/master.zip" -O "${WORKFOLDER}"/hontza.zip &> /dev/null
+     if [ ${?} -ne 0 ]; then
      echo "ERROR descargando Hontza del servidor."
      echo "Url de descarga no valida ${REPO}/${GVERSION}.zip"
      exit 1
@@ -441,7 +461,7 @@ function install_tomcat(){
     fi
  
     if [ -n "$(which apt-get 2>/dev/null)" ]; then 
-        apt-get -y -f install openjdk-7-jdk
+        apt-get -y -f install openjdk-8-jdk
     elif [ -n "$(which yum 2>/dev/null)" ]; then
         yum -y install java-1.7.0-openjdk
     else
@@ -621,7 +641,7 @@ WEBROOT='/var/www/html'
 WEBFOLDER='hontza'
 DBUSER_F='mysuser'
 DBROOT_F='myroot'
-TOMCAT_VERSION='7.0.69'
+TOMCAT_VERSION='7.0.82'
 
 
 #set +e
@@ -662,7 +682,12 @@ fi
 
 cd ${WORKFOLDER}
 
-
+echo
+echo "---------------------------------------------------------------------"
+echo "0.- Migrar del php7 a php5.6."
+echo "---------------------------------------------------------------------"
+echo
+migrar_php
 
 echo
 echo "---------------------------------------------------------------------"
