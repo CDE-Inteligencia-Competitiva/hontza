@@ -1,0 +1,36 @@
+#flot-auto-identifier-1 table {
+  width: auto;
+}
+
+#campaign-stat-container {
+  width: 28%;
+  margin: 0;
+  float: left;
+}
+
+#campaign-stat-container ul,
+#campaign-stat-container ul li,
+#click-stat-container ul,
+#click-stat-container ul li {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+#click-stat-container ul li {
+  margin-bottom: 0.5em;
+}
+
+#click-stat-container {
+  clear: both;
+  padding-top: 2em;
+}
+
+#flot-report-title {
+  float: right;
+  width: 60%;  
+}
+
+#flot-report {
+  float: right;
+}

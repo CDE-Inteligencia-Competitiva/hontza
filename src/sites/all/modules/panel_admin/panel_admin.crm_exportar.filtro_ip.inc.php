@@ -2,10 +2,11 @@
 function panel_admin_crm_exportar_filtro_ip_callback(){
   $output='';
   //simulando
-  return 'Desactivado';
+  //return 'Desactivado';
     $headers=array();
     $headers[0]=array('field'=>'value','data'=>'Ip');
-    $headers[1]=t('Actions');    
+    $headers[1]=array('field'=>'value','data'=>t('Name'));    
+    $headers[2]=t('Actions');    
    
     $filter_fields=panel_admin_crm_exportar_define_filtro_ip_filter_fields();
    	$key='panel_admin_crm_exportar_filtro_ip_filtro';
@@ -21,6 +22,7 @@ function panel_admin_crm_exportar_filtro_ip_callback(){
            if(!empty($v)){
                 switch($f){
                     case 'ip':                        
+                    case 'name':                                            
                         $where[]='crm_exportar_ip.'.$f.' LIKE "%%'.$v.'%%"';
                         break;
                     case 'account_number':    
@@ -43,6 +45,8 @@ function panel_admin_crm_exportar_filtro_ip_callback(){
         $order=$_REQUEST['order'];
         if($order=='Ip'){
             $field='ip';
+        }else if($order==t('Name')){
+            $field='name';
         }
     }
     
@@ -55,7 +59,8 @@ function panel_admin_crm_exportar_filtro_ip_callback(){
     while ($r = db_fetch_object($res)) {
       $rows[$kont]=array();
       $rows[$kont][0]=$r->ip;
-      $rows[$kont][1]=array('class'=>'td_nowrap','data'=>panel_admin_crm_exportar_filtro_ip_define_acciones($r));
+      $rows[$kont][1]=$r->name;
+      $rows[$kont][2]=array('class'=>'td_nowrap','data'=>panel_admin_crm_exportar_filtro_ip_define_acciones($r));
       $kont++;
     }
     //
@@ -80,7 +85,7 @@ function panel_admin_crm_exportar_filtro_ip_callback(){
     return panel_admin_crm_exportar_filtro_ip_header().$output;
 }
 function panel_admin_crm_exportar_define_filtro_ip_filter_fields(){
-    $result=array('ip');
+    $result=array('ip','name');
     return $result;
 }
 function panel_admin_crm_exportar_filtro_ip_get_filter_value($field,$key){
@@ -111,7 +116,11 @@ function panel_admin_crm_exportar_filtro_ip_filtro_form(){
 			'#title'=>'Ip',
 			'#default_value'=>panel_admin_crm_exportar_filtro_ip_get_filter_value('ip',$key),
 		);
-		
+	 $form['file_buscar_fs']['name']=array(
+            '#type'=>'textfield',
+            '#title'=>t('Name'),
+            '#default_value'=>panel_admin_crm_exportar_filtro_ip_get_filter_value('name',$key),
+        );	
 
     $form['file_buscar_fs']['file_buscar_fs']['my_submit']=array(
         '#type'=>'submit',
@@ -137,6 +146,7 @@ function panel_admin_crm_exportar_filtro_ip_form(){
     $action=arg(4);
     $ip='';
     $row='';
+    $name='';
     if($action=='edit'){
         $title='Edit Ip';
         $form['my_id']=array(
@@ -145,11 +155,17 @@ function panel_admin_crm_exportar_filtro_ip_form(){
         );
         $row=panel_admin_crm_exportar_filtro_ip_get_row($id);
         $ip=$row->ip;
+        $name=$row->name;
     }
     $form['ip']=array(
         '#type'=>'textfield',
         '#title'=>'Ip',
         '#default_value'=>$ip,
+    );
+    $form['my_name']=array(
+        '#type'=>'textfield',
+        '#title'=>'Name',
+        '#default_value'=>$name,
     );
     $form['save_btn']=array(
         '#type'=>'submit',
@@ -163,16 +179,20 @@ function panel_admin_crm_exportar_filtro_ip_form(){
 }
 function panel_admin_crm_exportar_filtro_ip_form_submit($form, &$form_state){
 	$id='';
+    $name='';
 	if(isset($form_state['values']) && !empty($form_state['values'])){
 		$values=$form_state['values'];
 		if(isset($values['my_id']) && !empty($values['my_id'])){
 			$id=$values['my_id'];			
 		}
 		$ip=trim($values['ip']);
-		if(empty($id)){
-			db_query('INSERT INTO {crm_exportar_ip}(ip) VALUES("%s")',$ip);
+		if(isset($values['my_name']) && !empty($values['my_name'])){
+            $name=$values['my_name'];           
+        }
+        if(empty($id)){
+			db_query('INSERT INTO {crm_exportar_ip}(ip,name) VALUES("%s","%s")',$ip,$name);
 		}else{
-			db_query('UPDATE {crm_exportar_ip} SET ip="%s" WHERE id=%d',$ip,$id);
+			db_query('UPDATE {crm_exportar_ip} SET ip="%s",name="%s" WHERE id=%d',$ip,$name,$id);
 		}
 	}
 	drupal_goto('panel_admin/crm_exportar/filtro_ip');	
@@ -206,17 +226,25 @@ function panel_admin_crm_exportar_filtro_ip_delete_form(){
     $title='Delete Ip';
     $id=arg(3);
     $ip='';
+    $name='';
     $row='';
         $form['my_id']=array(
             '#type'=>'hidden',
             '#value'=>$id,
         );
         $row=panel_admin_crm_exportar_filtro_ip_get_row($id);
-        $ip=$row->ip;    
+        $ip=$row->ip;
+        $name=$row->name;    
     $form['ip']=array(
         '#type'=>'textfield',
         '#title'=>'Ip',
         '#default_value'=>$ip,
+        '#attributes'=>array('readonly'=>'readonly'),
+    );
+    $form['name']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Name'),
+        '#default_value'=>$name,
         '#attributes'=>array('readonly'=>'readonly'),
     );
     $form['delete_btn']=array(
@@ -295,7 +323,7 @@ function panel_admin_crm_exportar_filtro_ip_activar_form(){
 }
 function panel_admin_crm_exportar_filtro_ip_activar_form_submit(&$form, &$form_state){
     $is_crm_exportar_filtro_ip_activar=0;
-    if(isset($form_state['values']['is_crm_exportar_filtro_ip_activar'])){
+    if(isset($form_state['values']['is_crm_exportar_filtro_ip_activar']) && !empty($form_state['values']['is_crm_exportar_filtro_ip_activar'])){
         $is_crm_exportar_filtro_ip_activar=1;
     }
     variable_set('is_crm_exportar_filtro_ip_activar',$is_crm_exportar_filtro_ip_activar);

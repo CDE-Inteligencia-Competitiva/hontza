@@ -885,12 +885,8 @@ class DrupalApacheSolrService implements DrupalApacheSolrServiceInterface {
       $method = 'POST';
     }
 
-    if ($method == 'GET') {      
+    if ($method == 'GET') {
       $searchUrl = $this->_constructUrl(self::SEARCH_SERVLET, array(), $queryString);
-      //intelsat-2015
-      //descomentar esto para ver la llamada url real al servidor
-      //print $searchUrl;exit();
-      //
       return $this->_sendRawGet($searchUrl);
     }
     else if ($method == 'POST') {

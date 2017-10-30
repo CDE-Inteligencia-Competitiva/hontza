@@ -166,6 +166,8 @@ function beste_form_alter(&$form,&$form_state,$form_id){
         }
         //intelsat-2015
         red_solr_inc_node_title_length_form_alter($form,$form_state, $form_id);
+        //intelsat
+    	red_despacho_source_title_url_item_noticia_node_form_alter($form,$form_state,$form_id);        
 }
 function my_get_rows_gestion_servicios($vars_in){	
 	$vars=$vars_in;
@@ -676,7 +678,9 @@ function is_vigilancia_left($is_block=0){
         }
         //intelsat-2016
         if(red_solr_inc_is_index_remaining_pantalla()){
-        	return 1;
+        	if(!red_solr_index_inc_is_before()){
+        		return 1;
+        	}
         }
         if(boletin_report_inc_is_noticia_boletines()){
         	return 1;

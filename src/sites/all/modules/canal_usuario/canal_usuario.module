@@ -78,9 +78,11 @@ function canal_usuario_view_callback(){
     $html[]='<div class="n-opciones-item">';
     $html[]='<div style="float:left;">'.l(my_get_icono_action('edit',t('Edit Channel Title')),'canal-usuarios-title/'.$uid.'/edit',array('html'=>true)).'</div>';
     $html[]='<div '.$div_style.'>'.l(my_get_icono_action('ver_noticias',t('List of News')),'canal-usuarios/'.$uid,array('html'=>true)).'</div>';    
-    $html[]='<div '.$div_style.'>'.l(my_get_icono_action('rss',t('RSS')),'canales_rss/canal-usuarios/'.$uid,array('attributes'=>array('target'=>'_blank'),'html'=>true)).'</div>';        
+    //$html[]='<div '.$div_style.'>'.l(my_get_icono_action('rss',t('RSS')),'canales_rss/canal-usuarios/'.$uid,array('attributes'=>array('target'=>'_blank'),'html'=>true)).'</div>';        
     //intelsat-2016
-    $html[]='<div '.$div_style.'>'.l(my_get_icono_action('copiar_nodo',t('Export channel')),'canales_rss_canal_usuarios/'.$uid.'/red_exportar_rss/enviar_mail',array('attributes'=>array('target'=>'_blank','class'=>'jqm-trigger-red_exportar_rss_canal_usuarios_view_enviar_mail_'.$uid),'html'=>true)).'</div>';            
+    if(red_exportar_rss_enviar_mail_canales_rss_access()){
+        $html[]='<div '.$div_style.'>'.l(my_get_icono_action('copiar_nodo',t('Export channel')),'canales_rss_canal_usuarios/'.$uid.'/red_exportar_rss/enviar_mail',array('attributes'=>array('target'=>'_blank','class'=>'jqm-trigger-red_exportar_rss_canal_usuarios_view_enviar_mail_'.$uid),'html'=>true)).'</div>';
+    }
     $html[]='<div id="exred_exportar_rss_canal_usuarios_view_enviar_mail_'.$uid.'" class="jqmWindow jqmID2000"></div>';  
     $html[]='<div '.$div_style.'>'.l(my_get_icono_action('borrar_noticias',t('Delete news of channel')),'canal_usuario/'.$uid.'/delete_noticias',array('html'=>true,'query'=>drupal_get_destination())).'</div>';
     $html[]='</div>';
@@ -264,7 +266,12 @@ function canal_usuario_get_canal_usuario_acciones($uid){
             }
             if(!empty($uid)){
                 $html[]=canal_usuario_link_ver_canal_usuario($uid);
-                $html[]=canal_usuario_link_edit_canal_usuario($uid);
+                $html[]=canal_usuario_link_edit_canal_usuario($uid);                            
+            }
+            if(module_exists('red_exportar_rss')){
+                if(red_exportar_rss_enviar_mail_canales_rss_access()){
+                    $html[]=canal_usuario_link_export_canal_usuario($uid_param);
+                }
             }
             $html[]='</div>';
             $html[]='</fieldset>';
@@ -533,4 +540,9 @@ function canal_usuario_import_canal_callback(){
     hound_noticia_feed_noticia_email_actualizar();
     drupal_goto($url);
     return '';
+}
+function canal_usuario_link_export_canal_usuario($uid){
+    $is_view_canal=0;
+    $is_canal_usuario=1;
+    return red_canal_link_export_canal($uid,$is_view_canal,$is_canal_usuario);
 }

@@ -485,11 +485,11 @@ function gestion_canales_deactivate_confirm_form_submit(&$form, &$form_state){
 }
 //intelsat-2015
 function gestion_canales_custom_access(){
-    if(hontza_canal_rss_is_visualizador_activado()){
+    //if(hontza_canal_rss_is_visualizador_activado()){
         if(red_is_administrador()){
             return TRUE;
         }
-    }
+    //}
     if(user_access('access gestion_canales')){
         return TRUE;
     }

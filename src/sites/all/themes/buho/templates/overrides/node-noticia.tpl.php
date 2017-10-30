@@ -5,6 +5,9 @@
   <?php //gemini ?>
   <?php $my_user_info=my_get_user_info($node);?>
   <?php if ($page == 0):?>
+    <?php if(red_funciones_is_vista_compacta()):?>
+      <?php include('item-vista-compacta.tpl.php');?>
+    <?php else:?>
     <div id="flagtitulo">
         <?php if(hontza_solr_funciones_is_bookmark_activado() && !(hontza_solr_search_is_usuario_lector())):?>
             <?php print hontza_solr_funciones_get_node_bookmark_checkbox_html($node);?>
@@ -137,7 +140,7 @@
           <!--      
           <?php //if(hontza_crm_is_activado()):?>          
           <div id="ffc">
-            <span class="etiqueta-gris"><?php print t('News link type');?>:</span>
+            <span class="etiqueta-gris"><?php //print t('News link type');?>:</span>
             <?php //print crm_exportar_get_news_link_type_label($node);?> 
           </div>
           <?php //endif;?>
@@ -310,7 +313,9 @@
     -->
 	<!--gemini-->	
   </div>
-  </div>		
+  </div>
+  <?php //vista compacta?>
+  <?php endif;?>		
   <!--gemini-->  
   <?php endif; ?>
  

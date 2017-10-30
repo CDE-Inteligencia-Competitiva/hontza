@@ -716,11 +716,16 @@ function get_decision_camino_html($decision_nid,$padding_hasi,$my_padding){
 function get_link_camino_html($nid,$padding_hasi,$my_padding,$bider){
     $html=array();
     $padding=$padding_hasi+$my_padding*$bider;
-    $node=node_load($nid);
+    if(is_numeric($nid)){    
+        $node=node_load($nid);
             if(isset($node->nid) && !empty($node->nid)){
                 $title=estrategia_set_title_max_len($node->title);
                 $html[]='<div style="padding-left:'.$padding.'px;">'.get_node_simbolo_img($nid).l($title,'node/'.$node->nid).'</div>';
             }
+    }else if($nid=='proyecto_add_oportunidad_sin_idea_row'){
+      $title=proyecto_get_title_without_idea();
+      $html[]='<div style="padding-left:'.$padding.'px;">'.get_node_simbolo_img($nid).$title.'</div>';
+    }                            
     return implode('',$html);
 }
 function my_show_breadcrumb_idea($padding_hasi,$my_padding){
@@ -880,6 +885,9 @@ function no_destacar_noticia_usuario_callback(){
     return implode('<BR>',$html);
 }
 function get_node_simbolo_img($nid){
+    if($nid=='proyecto_add_oportunidad_sin_idea_row'){
+      return get_idea_bombilla_img();
+    }
     $node=node_load($nid);
     //
     if(isset($node->nid) && !empty($node->nid)){

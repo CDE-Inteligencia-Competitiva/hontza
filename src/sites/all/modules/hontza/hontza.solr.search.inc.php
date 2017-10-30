@@ -912,9 +912,13 @@ function hontza_solr_search_is_vigilancia_canales_my_categorias_by_url($url){
     }
     return 0;
 }
-function hontza_solr_search_get_categorias_grupo(){
+function hontza_solr_search_get_categorias_grupo($my_grupo_in=''){
     $result=array();
-    $my_grupo=og_get_group_context();
+    if(isset($my_grupo_in->nid) && !empty($my_grupo_in->nid)){        
+        $my_grupo=$my_grupo_in;
+    }else{
+        $my_grupo=og_get_group_context();
+    }
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
         $id_categoria = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s",$my_grupo->nid));
         //Funcion del modulo taxonomy que dado un el id de una categoria devuelve todos los terminos de la misma
@@ -1853,6 +1857,7 @@ function hontza_solr_search_get_left_link_rss($row,$is_drupal_goto=0,$is_block=0
                 }                
                 //intelsat-2015
                 if($is_drupal_goto){
+                    $url_info['path']=hontza_solr_search_fix_solr_search_path($url_info['path']);
                     $url_info['query'].='&red_exportar_rss_canal_nid='.$row->nid;
                     return $url_info;
                 }
@@ -2237,4 +2242,18 @@ function hontza_solr_search_add_busqueda_avanzada_title_links_js($url_simple_sea
 }
 function hontza_solr_search_my_get_icono_action_tag(){
     return my_get_icono_action('tag',t('Tag'),'',array(),'','','',' width="16" height="16"');        
+}
+function hontza_solr_search_fix_solr_search_path($path){
+    $konp='/my_search';
+    $pos=strpos($path,$konp);
+    if($pos===FALSE){
+        return $path;
+    }else{
+        $konp2='my_solr/my_search';
+        $pos2=strpos($path,$konp2);
+        if($pos2===FALSE){
+            $path='my_solr'.$path;
+        }    
+    }
+    return $path;
 }

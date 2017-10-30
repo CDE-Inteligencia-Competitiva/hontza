@@ -27,6 +27,7 @@ require_once('red.deportes.inc.php');
 require_once('red.dashboard.inc.php');
 //require_once('red.debate.inc.php');
 require_once('red.informatica.inc.php');
+require_once('red.solr.index.inc.php');
 
 function red_perm(){
     $perm_array=array();    
@@ -221,6 +222,22 @@ function red_menu(){
       'title' => 'Remaining',
       'page callback' => 'red_solr_index_remaining_callback',
       'access callback' => 'red_solr_index_remaining_access',     
+     );
+     //intelsat
+     $items['red/atom2rss']=array(
+         'title'=>'Channel',
+         'page callback' => 'red_canal_atom2rss_callback',
+         'access callback' => TRUE,
+     );
+     $items['red/solr/index/before']=array(
+      'title' => 'Remaining',
+      'page callback' => 'red_solr_index_before_callback',
+      'access callback' => 'hontza_solr_my_access',     
+     );
+     $items['red/solr/index/before/remaining']=array(
+      'title' => 'Remaining',
+      'page callback' => 'red_solr_index_before_remaining_callback',
+      'access callback' => 'hontza_solr_my_access',     
      );
     return $items;
 }
@@ -1306,11 +1323,11 @@ function red_is_administrador(){
     if(is_super_admin()){
         return 1;
     }
-    if(hontza_canal_rss_is_visualizador_activado()){
+    //if(hontza_canal_rss_is_visualizador_activado()){
         if(isset($user->roles[ADMINISTRADOR])){
             return 1;
         }
-    }
+    //}
     return 0;
 }
 //intelsat-2015
@@ -1644,6 +1661,24 @@ function red_is_subdominio_proyecto_alerta(){
     }
     return 0;
 }
+//joseba-2017
+function red_is_metromedellin(){
+    if(hontza_is_metromedellin())
+    {
+        return 1;
+    }
+    return 0;
+}
+//joseba-2017
+function hontza_is_metromedellin(){
+    if(defined('_SAREKO_ID') && _SAREKO_ID=="INCIBE"){
+            return 1;
+    }
+
+    return 0;
+}
+
+
 //intelsat-2015
 function red_is_hontza_home_dir(){
     //intelsat-2016
@@ -1730,4 +1765,33 @@ function red_get_default_url_favicon(){
         $result=$base_url.'/sites/default/files/buho_favicon.ico';         
     }
     return $result;
+}
+//intelsat
+function red_is_visualizador_variable_activado(){
+    if(hontza_canal_rss_is_visualizador_activado()){
+        $is_visualizador=variable_get('is_visualizador',0);
+        if($is_visualizador){
+            return 1;
+        }
+    }    
+    return 0;    
+}
+//intelsat
+function red_is_user_invitado($konp,$user_roles){
+    if(!empty($user_roles)){
+        if(in_array($konp,$user_roles)){
+            $user_roles_id=array_keys($user_roles);
+            $num=count($user_roles_id);
+            if($num==2){
+                //authenticated user
+                $uid_konp=2;
+                if(in_array($uid_konp,$user_roles_id)){
+                    return 1;
+                }    
+            }else{
+                return 0;
+            }
+        }    
+    }
+    return 0;
 }

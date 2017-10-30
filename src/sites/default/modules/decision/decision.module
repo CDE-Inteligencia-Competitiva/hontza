@@ -136,7 +136,9 @@ function decision_list_callback($is_array=0) {
   }
 
   //intelsat-2016
-  if($is_array){
+  //intelsat-2017
+  //if($is_array){
+  if(is_numeric($is_array) && $is_array){  
     return $decision_array;
   }  
   

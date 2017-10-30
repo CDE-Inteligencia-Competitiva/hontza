@@ -1,0 +1,389 @@
+<?php
+require_once('canal_json.extractor.inc.php');
+function canal_json_perm() {
+  return array();
+}
+function canal_json_menu() {
+  $items=array();
+  $items['canal_json/crear']=array(
+    'title'=>'Import Json',
+    'page arguments'=>array('canal_json_crear_form'),  
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'canal_json_crear_access',
+  );
+  $items['canal_json/crear/previsualizar']=array(
+    'title'=>'Import Json',
+    //'page arguments'=>array('canal_json_crear_previsualizar_form'),  
+    //'page callback' => 'drupal_get_form',
+    'page callback' => 'canal_json_crear_previsualizar_callback',
+    'access callback' => 'canal_json_crear_access',
+  );
+  $items['canal_json/crear_csv']=array(
+    'title'=>'Import Json',
+    'page arguments'=>array('canal_json_crear_form'),  
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'canal_json_crear_access',
+  );
+  $items['canal_json/crear/previsualizar_csv']=array(
+    'title'=>'Import Json',
+    //'page arguments'=>array('canal_json_crear_previsualizar_form'),  
+    //'page callback' => 'drupal_get_form',
+    'page callback' => 'canal_json_crear_previsualizar_callback',
+    'access callback' => 'canal_json_crear_access',
+  );
+  return $items;
+}
+function canal_json_crear_form(){
+   $title=t('Url of Json');
+   $type=arg(1);
+   $url_type='json';
+   if($type=='crear_csv'){
+       $title=t('Url of Csv');
+       $url_type='csv';
+   }
+   $form['url_json']=array(
+       '#type'=>'textarea',
+       '#title'=>$title,
+       '#required'=>TRUE,
+   );
+   $separator_csv_options=canal_json_get_separator_csv_options();
+   if($url_type=='csv'){
+       $form['separator_csv']=array(
+       '#type'=>'select',
+       '#title'=>t('Separator'),    
+       '#options'=>$separator_csv_options,
+       '#required'=>TRUE,
+    );
+   }
+   $form['url_type']=array(
+       '#type'=>'hidden',
+       '#default_value'=>$url_type,
+   );
+   $form['import_btn']=array(
+       '#type'=>'submit',
+       '#value'=>t('Next'),
+   );
+   if($url_type=='csv'){
+       drupal_set_title('Import Csv');
+   }
+   return $form;
+}
+function canal_json_crear_access(){
+    if(!hontza_is_user_anonimo()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function canal_json_crear_form_submit($form, &$form_state){
+    if($form_state['values']['url_json']){
+       $url_json=trim($form_state['values']['url_json']);
+       $type='previsualizar';
+       $separator_csv='';       
+       if($form_state['values']['url_type']=='csv'){
+           $type='previsualizar_csv';
+           $separator_csv='/'.$form_state['values']['separator_csv'];
+       }       
+       $url='canal_json/crear/'.$type;       
+       drupal_goto($url.'/'.base64_encode($url_json).$separator_csv);
+    }
+}
+function canal_json_crear_previsualizar_form(&$form_state,$content_info){
+    $url_json=arg(3);
+    $separator_csv=arg(4);
+    $options=array();
+    $options['']='';
+    $my_array=array_combine($content_info['fields'],$content_info['fields']);
+    $options=array_merge($options,$my_array);
+    $form['url_json']=array(
+       '#type'=>'hidden',
+       '#value'=>$url_json,
+    );
+    $type=arg(2);
+    $url_type='json';
+    if($type=='previsualizar_csv'){
+        $url_type='csv';
+    }
+    $form['url_type']=array(
+       '#type'=>'hidden',
+       '#default_value'=>$url_type,
+    );
+    $form['separator_csv']=array(
+       '#type'=>'hidden',
+       '#default_value'=>$separator_csv,
+    );
+    $form['fields_fieldset']=array(
+        '#type'=>'fieldset',
+        '#title'=>'Associating fields',
+    );
+    $form['fields_fieldset']['title_field']=array(        
+        '#type'=>'select',
+        '#title'=>t('Title'),
+        '#options'=>$options,
+        '#required'=>TRUE,
+    );
+    $form['fields_fieldset']['link_field']=array(        
+        '#type'=>'select',
+        '#title'=>t('Link'),
+        '#options'=>$options,
+        '#required'=>TRUE,
+    );
+    $form['fields_fieldset']['description_field']=array(        
+        '#type'=>'select',
+        '#title'=>t('Description'),
+        '#options'=>$options,
+        //'#required'=>TRUE,
+    );
+     $form['fields_fieldset']['numero_linea']=array(        
+        '#type'=>'textfield',
+        '#title'=>t('From this line (included)'),
+        //'#default_value'=>0,
+        '#default_value'=>1,
+        //'#required'=>TRUE,
+    );
+    $form['send_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Next'),
+    );
+    if($url_type=='csv'){
+       drupal_set_title('Import Csv');
+    }
+    return $form;
+}    
+function canal_json_get_content_info($url,$separator_csv){    
+    $content_info=array();
+    $type=arg(2);
+        if($type=='previsualizar_csv'){
+            $result=canal_json_create_json_by_csv($url,'',$separator_csv);
+        }else{
+            //$url=urlencode($url);
+            $content=file_get_contents($url);
+            $result=json_decode($content);                
+        }
+        if(canal_json_extractor_is_activado()){
+            $result=canal_json_extractor_get_result($result);
+        }
+        if(isset($result->results)){
+            $html=array();
+            //$html[]='<fieldset>';
+            //$html[]='<div>';
+            $html[]='<table>';
+            foreach($result->results as $i=>$row){
+                    if(empty($i)){
+                        $content_info['fields']=array_keys((array) $row);
+                    }
+                    $html[]='<tr><td style="padding-top:10px;padding-bottom:10px;border: 1px solid #000000;">';
+                    $html[]='<div style="width:400px;overflow:auto;"><b>'.t('Number').'</b>:&nbsp;'.($i+1).'</div>'; 
+                    foreach($row as $field=>$value){
+                        if(is_array($value)){
+                            $my_value=$value[0];
+                        }else{
+                            $my_value=$value;
+                        }
+                        $html[]='<div class="div_canal_json_overflow"><b>'.$field.'</b>:&nbsp;'.$my_value.'</div>';                
+                    }
+                    $html[]='</td></tr>';
+            }
+            //$html[]='</div>';
+            $html[]='</table>';
+            //$html[]='</fieldset>';
+            $content_info['html']=implode('',$html);
+        }
+       
+    return $content_info;
+}
+function canal_json_crear_previsualizar_callback(){
+    $url_json=arg(3);
+    $separator_csv=arg(4);
+    $separator_csv=canal_json_get_separator_csv_value($separator_csv);
+    $url=base64_decode($url_json);
+    $content_info=canal_json_get_content_info($url,$separator_csv);
+    $output=drupal_get_form('canal_json_crear_previsualizar_form',$content_info);
+    $output.=$content_info['html'];
+    return $output;
+}
+function canal_json_crear_previsualizar_form_submit($form, &$form_state){
+    global $base_url,$language;
+    if($form_state['values']['url_json']){
+       $url_json=base64_decode($form_state['values']['url_json']);
+       $my_grupo=og_get_group_context();
+       if(!empty($my_grupo) && isset($my_grupo->nid)){
+           $grupo_link=$my_grupo->purl;
+       }
+       $json_fields=array();
+       $json_fields['title']=$form_state['values']['title_field'];
+       $json_fields['link']=$form_state['values']['link_field'];
+       $json_fields['description']=$form_state['values']['description_field'];
+       $json_fields['url_json']=$url_json;
+       $json_fields['url_type']=$form_state['values']['url_type'];
+       $json_fields['numero_linea']=$form_state['values']['numero_linea'];
+       $json_fields['separator_csv']=$form_state['values']['separator_csv'];
+       $url_json=base64_encode(json_encode($json_fields));
+       $my_lang='';
+       if($language->language!='en'){
+           $my_lang='/'.$language->language;
+       }
+       $url=url($base_url.$my_lang.'/'.$grupo_link.'/crear/canal-yql',array('query'=>'simple=1&url_json='.$url_json));       
+       drupal_goto($url);
+    }
+}
+function canal_canal_json_is_canal_json($source,&$json_fields){
+    $json_fields='';
+    $canal=node_load($source->feed_nid);
+    if(isset($canal->field_json_fields) && isset($canal->field_json_fields[0]) && isset($canal->field_json_fields[0]['value'])){
+        if(!empty($canal->field_json_fields[0]['value'])){
+            $json_fields=$canal->field_json_fields[0]['value'];
+            return 1;
+        }
+    }
+    return 0;
+}
+function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource $source,$json_fields_in){
+    $config=$source->getConfig();
+    $url=$config['FeedsHTTPFetcher']['source'];
+    $content = $batch->getRaw();
+    $json_fields=canal_json_decode_json_fields($json_fields_in);
+    if(isset($json_fields->url_type) && $json_fields->url_type=='csv'){
+        $separator_csv=",";
+        if(isset($json_fields->separator_csv) && !empty($json_fields->separator_csv)){
+            $separator_csv=canal_json_get_separator_csv_value($json_fields->separator_csv);
+        }                        
+        $content=canal_json_create_json_by_csv($url,'',$separator_csv);
+        //$content=canal_json_create_json_by_csv_string($content);
+    }else{
+        $content=json_decode($content);
+    }
+    //$batch->title = $content->name;
+    //$batch->description = '';
+    //$batch->link = $content->url;
+    //$numero_linea=0;
+    if(canal_json_extractor_is_activado()){
+        $content=canal_json_extractor_get_result($content);
+    }
+    $numero_linea=-1;
+    if(isset($json_fields->numero_linea) && !empty($json_fields->numero_linea) && is_numeric($json_fields->numero_linea)){
+        $numero_linea=$json_fields->numero_linea-1;
+    }
+    $item_array=array();
+    if(isset($content->results) && !empty($content->results)){
+        foreach($content->results as $i=>$result){
+                //if($i<=$numero_linea){
+                if($i<$numero_linea){    
+                    continue;
+                }
+                if(!empty($result)){
+                       $title='';
+                        $href='';
+                        $title=$result->{$json_fields->title};
+                        $link=$result->{$json_fields->link};
+                        $title_array=array();
+                        $link_array=array();
+                        if(is_array($title)){
+                           $title_array=$title;                            
+                        }else{
+                           $title_array[]=$title;                            
+                        }
+                        if(is_array($link)){
+                           $link_array=$link;                            
+                        }else{
+                           $link_array[]=$link;                            
+                        }
+                        foreach($title_array as $i=>$value){
+                            $link=$link_array[$i];
+                            if(!empty($value) && !empty($link)){
+                                $item=array();
+                                $item['title']=$value;
+                                $item['link']=$link;
+                                $item['guid']=$item['link'];
+                                $item['url']=$item['link'];
+                                $item['description']='';
+                                if(isset($result->{$json_fields->description}) && !empty($result->{$json_fields->description})){        
+                                    $description=$result->{$json_fields->description};
+                                    if(is_array($description)){
+                                        $description=$description[0];
+                                    }
+                                    $item['description']=$description;
+                                }
+                                //$batch->items[] =$item;
+                                $item_array[]=$item;
+                            }
+                        }    
+                }    
+        }
+        red_canal_array_reverse_item_array($item_array,$batch);
+    }
+}
+function canal_json_decode_json_fields($json_fields){
+    $result=base64_decode($json_fields);
+    $result=json_decode($result);
+    return $result;
+}
+function canal_json_is_pantalla(){
+    $param=arg(0);
+    if(!empty($param) && $param=='canal_json'){
+        return 1;
+    }
+    return 0;
+}
+function canal_json_canal_de_yql_node_form_alter(&$form,&$form_state, $form_id){
+    if(isset($form['field_json_fields'])){
+       unset($form['field_json_fields']); 
+    }
+}
+function canal_json_create_json_by_csv($url,$csv_array_in='',$separator_csv=''){
+    $result=new stdClass();
+    $result->results=array();
+    if(!empty($url)){
+        $csv_array=estrategia_get_lineas_csv($url,$separator_csv);
+    }else{
+        $csv_array=$csv_array_in;       
+    }
+    $my_kont=0; 
+    if(!empty($csv_array)){
+        foreach($csv_array as $i=>$row){
+            if(!empty($row)){
+                $result->results[$my_kont]=new stdClass();
+                foreach($row as $kont=>$value){
+                    $field='field'.$kont;
+                    $result->results[$my_kont]->{$field}=$value;
+                }
+                $my_kont++;
+            }
+        }
+    }  
+    return $result;
+}
+function canal_json_create_json_by_csv_string($content){       
+    $csv_array=array();
+    $my_array=explode("\n", $content);
+    foreach ($my_array as $i=>$linea) {
+      $row = str_getcsv($linea,",");
+      $csv_array[]=$row;              
+    }
+    return canal_json_create_json_by_csv('',$csv_array);
+}
+function canal_json_is_csv($url_json){
+    $json_fields=json_decode(base64_decode($_REQUEST['url_json']));
+    if(isset($json_fields->url_type) && !empty($json_fields->url_type)){
+        if($json_fields->url_type=='csv'){
+            return 1;
+        }
+    }
+    return 0;
+}
+function canal_json_get_separator_csv_options(){
+    $result=array();
+    $result[1]='Coma';
+    $result[2]='Tabulador';
+    $result[3]='Punto y coma';
+    return $result;
+}
+function canal_json_get_separator_csv_value($separator_csv){
+    $result=array();
+    $result[1]=",";
+    $result[2]="\t";
+    $result[3]=";";
+    if(isset($result[$separator_csv]) && !empty($result[$separator_csv])){
+        return $result[$separator_csv];
+    }
+    return '';
+}

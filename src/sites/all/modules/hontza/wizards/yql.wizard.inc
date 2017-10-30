@@ -160,8 +160,14 @@ function yql_canal_form(&$form, &$form_state){
         red_canal_add_apply_alchemy_description($form,'apply_alchemy');
   //}
   
+  //intelsat
+  red_canal_yql_wizard_add_apply_feed_saniziter_form_field($form);
+
   //intelsat-2015
   red_despacho_vigilancia_add_import_canal_duplicate_news_form_field($form);
+
+  //intelsat-2017-mirar-titulo-noticia-duplicado
+  yql_wizard_add_field_is_avoid_duplicate_titles($form);
   
   $form['numero_rss'] = array(
     '#title' => t('Number of RSS.'),
@@ -409,6 +415,11 @@ function yql_canal_form_submit(&$form, &$form_state){
     }
   }  
 
+
+  //intelsat
+  red_canal_yql_wizard_set_apply_feed_saniziter_value_on_yql_canal_form_submit($fuente,$form_state);
+
+
   $fuente->taxonomy=unset_no_tid($fuente->taxonomy);
   //
   //gemini-2013
@@ -427,7 +438,14 @@ function yql_canal_form_submit(&$form, &$form_state){
   }
   //
   //intelsat-2015
-  red_despacho_vigilancia_add_import_canal_duplicate_news_form_state_values($form_state,$fuente);  
+  red_despacho_vigilancia_add_import_canal_duplicate_news_form_state_values($form_state,$fuente);
+  
+  //intelsat-2017-mirar-titulo-noticia-duplicado
+  yql_wizard_add_import_canal_field_is_avoid_duplicate_titles_form_state_values($form_state,$fuente);
+
+  /*echo print_r($fuente,1);
+  exit();*/
+    
   $form_state['yql_obj'] = $fuente;
 
   //gemini
@@ -454,7 +472,11 @@ function yql_canal_form_submit(&$form, &$form_state){
      $fuente->field_json_fields[0]['value']=$form_state['values']['json_fields'];
      $form_state['yql_obj']->is_url_json=1;
      $fuente->field_json_fields[0]['value']=$form_state['values']['json_fields'];
-  }    
+  }
+  //intelsat
+  if(my_is_simple($form_state)){
+    yql_wizard_set_source_title_url_on_canal_form_submit($fuente,$form_state);
+  }      
   //
 }
 
@@ -475,6 +497,9 @@ function agregar_fuente_form(&$form, &$form_state){
   //obtenemos cantidad de rss
   $num_rss = $form_state['yql_obj']->numero_rss;
   
+
+
+
   $form['fuentes'] = array(
     '#title' => t('Add RSS feed'),
     '#type' => 'fieldset',
@@ -486,14 +511,24 @@ function agregar_fuente_form(&$form, &$form_state){
   //gemini-2013
   $is_hound=hontza_is_hound_by_yql_obj($form_state['yql_obj']);
   
+   //intelsat
+   $kont_weight=0;
+
   for($i=1;$i<=$num_rss;$i++){
     $form['fuentes'][$i] = array(
       '#title' => t('RSS '.$i),
       '#type' => 'textfield',
       '#description' => t('Url of RSS'),
       '#size' => 50,
-      '#maxlength'=> 500,  
-	);
+      '#maxlength'=> 500,
+      '#weight'=>$kont_weight,  
+	   );
+     //intelsat
+     if(red_despacho_is_canal_fuente_titulo_activado()){
+       $kont_weight=$kont_weight+1;
+       yql_wizard_add_source_title_url_form_field($form,$i,0,$kont_weight);
+       $kont_weight=$kont_weight+2;
+     }
 	//gemini
 	if(my_is_simple($form_state)){		
 	  $form['fuentes'][$i]['#value']=$value;          
@@ -552,15 +587,28 @@ function agregar_fuente_form(&$form, &$form_state){
 }
 
 function agregar_fuente_form_submit(&$form, &$form_state){
+
+  //intelsat
+  if(red_despacho_is_canal_fuente_titulo_activado()){
+    if(!my_is_simple($form_state)){
+      $form_state['yql_obj']->field_canal_source_title=array();
+      $form_state['yql_obj']->field_canal_source_url=array();
+    }          
+  }
   
   foreach ($form_state['values'] as $campo=>$valor){
     if (is_numeric($campo) and $valor){
-      $rss[$campo].=$valor;
+      //intelsat
+      //$rss[$campo].=$valor;
+      $rss[$campo]=$valor;
+      //intelsat
+      yql_wizard_set_source_title_url_on_agregar_fuente_form_submit($form,$form_state,$campo); 
     }
   }
   
   $form_state['yql_obj']->campos_rss= $rss;
-  $form_state['yql_obj']->field_nombrefuente_canal[0]['value'] = implode(', ',$form_state['yql_obj']->campos_rss);
+  $form_state['yql_obj']->field_nombrefuente_canal[0]['value'] = implode(', ',$form_state['yql_obj']->campos_rss);  
+  /*$form_state['yql_obj']->field_nombrefuente_canal[0]['value'] = implode(', ',yql_wizard_set_atom_to_rss_url_array($form_state['yql_obj']->campos_rss,$form_state));*/
   //gemini-2013
   if(is_import_fuente_html($form_state['yql_obj'])){
     $form_state['yql_obj']->field_nid_fuente_canal[0]['value']=$form_state['yql_obj']->field_fuentehtml_nid[0]['value'];
@@ -575,7 +623,7 @@ function agregar_fuente_form_submit(&$form, &$form_state){
   if(hontza_is_hound_text_input()){
       hound_add_canal_hound_parametros($form_state,$form_state['yql_obj']);
   }
-  //
+  // 
 }
 
 
@@ -1025,7 +1073,9 @@ function previsualizar_form(&$form, &$form_state){
           //intelsat-2015
           $output='';
           if(red_is_xml($dxml)){
-            $data = simplexml_load_string($dxml);    
+            //intelsat
+            $data = simplexml_load_string($dxml);
+            //$data=simplexml_load_string(preg_replace('/(<\?xml[^?]+?)utf-16/i', '$1utf-8', $dxml));    
             if(isset($data->results->rss)){
                 $sets = $data->results->rss;
                 $all = sizeof($sets);
@@ -1081,7 +1131,7 @@ function previsualizar_form(&$form, &$form_state){
       $form['datos']['content'] = array(
       '#type' => 'item',
       '#value' => $output,
-    );    
+    );
   }else{
      $form['datos'] = array(
           '#title' => t('Result of request'),
@@ -1093,6 +1143,7 @@ function previsualizar_form(&$form, &$form_state){
       
     //gemini-2014
     $yql_entry=yql_is_rss_entry($form_state['yql_obj'],$url);
+    //echo print_r($yql_entry,1);exit();
     if($yql_entry['ok']){
         $form_state['yql_obj']->urlsearch = $yql_entry['url'];
         $form_state['yql_obj']->field_is_atom[0]['value']=1;
@@ -1180,9 +1231,9 @@ function yql_finish(&$form_state){
   if(isset($form_state['yql_obj']->mail_from) && !empty($form_state['yql_obj']->mail_from)){
       $mail_from=$form_state['yql_obj']->mail_from;
   }
-  //
+  //  
   node_save($form_state['yql_obj']);
-  $canal = $form_state['yql_obj'];  
+  $canal = $form_state['yql_obj'];
   //intelsat-2016
   if(!empty($mail_from)){
     $compartir_documentos_from_canal_title=$canal->title;  
@@ -1208,6 +1259,8 @@ function yql_finish(&$form_state){
         hound_api_save_parametros($canal);
     }
   }
+  //intelsat
+  //yql_wizard_update_source_title_url_empty($canal);    
   //gemini
   //$form_state['redirect'] = 'node/'.$canal->nid;
   $form_state['redirect'] = 'node/'.$canal->nid.'/import';
@@ -1299,6 +1352,11 @@ function prepare_simple_or_opml(&$form,&$form_state){
                     //intelsat-2016
                     $rss1=red_copiar_get_canal_import_rss_by_arg($rss1);
                     //
+
+
+      yql_wizard_add_source_title_url_form_field($form);              
+
+
 			$form['fuentes'] = array(
 				'#title' => t('Add RSS feed'),
 				'#type' => 'fieldset',
@@ -1306,6 +1364,10 @@ function prepare_simple_or_opml(&$form,&$form_state){
 				'#attributes'=>array('id'=>'fuentes_simple'),
 				//
 			);
+
+
+
+
                         //intelsat-2016
                         if(yql_wizard_is_url_json()){
                           yql_wizard_add_url_json_form_field($form);  
@@ -1706,6 +1768,11 @@ function yql_is_rss_entry($yql_obj,$yql_url){
         $is_url_json=yql_wizar_is_url_json($yql_obj); 
         $dxml='';
         if(!$is_kimonolabs_json_url && !$is_url_json){
+            //intelsat
+            //atom con filtro sin resultados, retorna resultados
+            if(yql_wizard_is_filtro_rss($yql_obj)){
+              return $result;
+            }
             $dxml = file_get_contents($url);
         }else{
             if($is_kimonolabs_json_url){
@@ -1718,7 +1785,9 @@ function yql_is_rss_entry($yql_obj,$yql_url){
             return $result;
         }
         if(!empty($dxml)){
+            //intelsat
             $data = simplexml_load_string($dxml);
+            //$data=simplexml_load_string(preg_replace('/(<\?xml[^?]+?)utf-16/i', '$1utf-8', $dxml));
             if(isset($data->entry->content)){
                 $result['ok']=1;
                 $result['url']=$url;
@@ -1891,3 +1960,184 @@ function yql_wizard_get_field_fuente_canal_value($canal){
 function yql_wizard_is_canal_usuario_exportado_add(&$canal,$data){
     red_copiar_is_canal_usuario_exportado_add($canal,$data);
 }
+//intelsat
+function yql_wizard_add_source_title_url_form_field(&$form,$kont=0,$is_simple_in=1,$kont_weight=0){
+  if(red_despacho_is_canal_fuente_titulo_activado()){
+    if($is_simple_in){
+      $form['fuentes_web_fs']=array(
+        '#type'=>'fieldset',
+        '#title'=>t('Source'),
+      );
+      $form['fuentes_web_fs']['source_title']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Source Title'),
+      );
+      $form['fuentes_web_fs']['source_url']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Source Url'),
+      );
+    }else{
+      $kont_title=$kont;
+      $kont_title=(string) $kont_title;      
+      $form['fuentes']['field_canal_source_title'.$kont]=array(
+        '#type'=>'textfield',
+        '#title'=>t('Source Title').$kont_title,
+        '#weight'=>$kont_weight,
+      );
+      $form['fuentes']['field_canal_source_url'.$kont]=array(
+        '#type'=>'textfield',
+        '#title'=>t('Source Url').$kont_title,
+        '#weight'=>$kont_weight+1,
+      );
+    }  
+  }  
+}
+//intelsat
+function yql_wizard_set_source_title_url_on_canal_form_submit(&$fuente,$form_state){
+  if(red_despacho_is_canal_fuente_titulo_activado()){
+    if(my_is_simple($form_state)){
+      $source_title=$form_state['values']['source_title'];
+      $source_url=$form_state['values']['source_url'];
+      //if(!empty($source_title) && !empty($source_url)){
+        $fuente->field_canal_source_title=array();
+        $fuente->field_canal_source_title[0]=array();
+        $fuente->field_canal_source_url=array();
+        $fuente->field_canal_source_url[0]=array();
+        /*$values=array();      
+        $values['source_title']=$source_title;
+        $values['source_url']=$source_url;
+        $fuente->field_canal_source_url[0]['value']=serialize($values);*/
+        $fuente->field_canal_source_title[0]['value']=$source_title;
+        $fuente->field_canal_source_url[0]['value']=$source_url;
+      //}     
+    }  
+  }
+}
+//intelsat
+function yql_wizard_set_source_title_url_on_agregar_fuente_form_submit(&$form,&$form_state,$campo=0){
+  if(red_despacho_is_canal_fuente_titulo_activado()){
+    if(!my_is_simple($form_state)){
+      $field_title='field_canal_source_title'.$campo;      
+      if(!isset($form_state['yql_obj']->field_canal_source_title)){
+        $form_state['yql_obj']->field_canal_source_title=array();      
+      }      
+      $form_state['yql_obj']->field_canal_source_title[$campo-1]=array();
+      $form_state['yql_obj']->field_canal_source_title[$campo-1]['value']=yql_wizard_define_source_title_url_empty();
+      if(isset($form_state['values'][$field_title]) && !empty($form_state['values'][$field_title])){
+        $form_state['yql_obj']->field_canal_source_title[$campo-1]['value']=$form_state['values'][$field_title];      
+      }      
+      $field_url='field_canal_source_url'.$campo;      
+      if(!isset($form_state['yql_obj']->field_canal_source_url)){
+        $form_state['yql_obj']->field_canal_source_url=array();
+      }      
+      $form_state['yql_obj']->field_canal_source_url[$campo-1]=array();
+      $form_state['yql_obj']->field_canal_source_url[$campo-1]['value']=yql_wizard_define_source_title_url_empty();
+      if(isset($form_state['values'][$field_url]) && !empty($form_state['values'][$field_url])){
+        $form_state['yql_obj']->field_canal_source_url[$campo-1]['value']=$form_state['values'][$field_url];
+      }
+    }  
+  }  
+}
+//intelsat
+function yql_wizard_define_source_title_url_empty(){
+  return red_despacho_define_source_title_url_empty();
+}
+//intelsat
+function yql_wizard_update_source_title_url_empty($canal){
+  red_despacho_update_source_title_url_empty($canal);
+}
+//intelsat
+function yql_wizard_is_filtro_rss($yql_obj){
+  //atom con filtro sin resultados, retorna resultados
+  if(isset($yql_obj->filtros) && !empty($yql_obj->filtros)){
+    $filtro_fields_array=array('todos','titulo','descripcion','no_titulo','no_descripcion','contiene','no_contiene',area);
+    if(!empty($filtro_fields_array)){
+      foreach($filtro_fields_array as $i=>$field){
+        if(isset($yql_obj->filtros[$field]) && !empty($yql_obj->filtros[$field])){
+          return 1;
+        }
+      }
+    }
+  }
+  
+  return 0;          
+}
+//intelsat
+function yql_wizard_set_atom_to_rss_url_array($campos_rss_array,$form_state,$is_filtro_rss=0,$yql_obj=''){
+  global $base_url;
+  $result=$campos_rss_array;
+  //$url_atom2rss='http://feedmix.novaclic.com/atom2rss.php?source=';
+  $url_atom2rss=$base_url.'/red/atom2rss?url=';
+  if($is_filtro_rss || !my_is_simple($form_state)){
+    $result=red_canal_yql_wizard_set_feed_saniziter_rss_url_array($result,$form_state,$is_filtro_rss,$yql_obj); 
+    foreach($result as $i=>$url){
+      if(!yql_wizard_is_atom($url)){
+        continue;
+      }else{
+        $result[$i]=$url_atom2rss.urlencode($url);
+      }
+    }
+    //$result=red_canal_yql_wizard_set_feed_saniziter_rss_url_array($result,$form_state,$is_filtro_rss,$yql_obj);  
+  }
+  /*echo print_r($result,1);
+  exit();*/
+  return $result;
+}
+//intelsat
+function yql_wizard_is_atom($url){
+  /*$content=file_get_contents($url);
+  print $url;exit();
+  $pos=strpos($content,'http://www.w3.org/2005/Atom');
+      if($pos===FALSE){
+        return 0;
+      }
+  return 1;*/
+
+  $xml = @simplexml_load_file($url);
+  $root_element_name ='';
+  if(is_object($xml)){
+    $root_element_name = $xml->getName();
+  }
+
+if ($root_element_name  == 'feed') {
+    // is atom feed
+    return 1;
+} /*else if ($root_element_name  == 'rss') {
+    // is rss feed
+
+}*/
+  return 0;
+}
+//intelsat
+function yql_wizard_is_atom_alchemy($canal_node){
+  $canal_yql_parametros_row=hontza_get_canal_yql_parametros_row($canal_node->vid,$canal_node->nid);
+  $is_simple=hontza_get_canal_yql_is_simple_by_params($canal_yql_parametros_row);
+  if($is_simple){
+    return 0;
+  }
+  /*if(yql_wizard_is_atom($canal_node->field_nombrefuente_canal[0]['value'])){
+    return 1;
+  }*/
+  /*if(red_canal_feed_saniziter_is_field_apply_feed_saniziter($canal_node)){
+    return 1;
+  }*/
+  return 0;                                
+}
+//intelsat-2017-mirar-titulo-noticia-duplicado
+function yql_wizard_add_field_is_avoid_duplicate_titles(&$form){
+  if(hontza_is_avoid_duplicate_titles_activado()){
+    $form['field_is_avoid_duplicate_titles']=array('#type'=>'checkbox','#title'=>'<b>'.t('Avoid duplicate titles').'</b>');
+  }
+}
+//intelsat-2017-mirar-titulo-noticia-duplicado
+function yql_wizard_add_import_canal_field_is_avoid_duplicate_titles_form_state_values($form_state,&$fuente){
+  if(hontza_is_avoid_duplicate_titles_activado()){
+        $fuente->field_is_avoid_duplicate_titles=array();
+        $fuente->field_is_avoid_duplicate_titles[0]=array();
+        $fuente->field_is_avoid_duplicate_titles[0]['value']=0;
+        //echo print_r($form_state['values'],1);exit();
+        if(isset($form_state['values']['field_is_avoid_duplicate_titles']) && !empty($form_state['values']['field_is_avoid_duplicate_titles'])){
+            $fuente->field_is_avoid_duplicate_titles[0]['value']=1;
+        }       
+    }  
+} 

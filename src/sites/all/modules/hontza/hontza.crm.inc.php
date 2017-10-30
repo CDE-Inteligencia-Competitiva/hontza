@@ -83,3 +83,39 @@ function hontza_crm_inc_is_busqueda_solr_publico(){
     }
     return 0;
 }
+function hontza_crm_inc_get_categorias_grupo_tid_array($my_grupo_in){
+    $result=array();
+    $categorias_grupo=hontza_solr_search_get_categorias_grupo($my_grupo_in);
+    if(!empty($categorias_grupo)){
+        foreach($categorias_grupo as $i=>$term){
+            $result[]=$term->tid;
+        }
+    }
+    return $result;
+}
+function hontza_crm_inc_get_og_vocab_row($vid){
+    $res=db_query('SELECT * FROM {og_vocab} WHERE vid=%d',$vid);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
+function hontza_crm_inc_get_tipos_fuente_string_by_values($values){
+    $result=array();
+    if(isset($values['taxonomia']) && !empty($values['taxonomia'])){
+        foreach($values['taxonomia'] as $tid=>$value){
+            if(!empty($value) && $value==1){
+                $result[]=$tid;
+            }
+        }
+    }
+    return implode(',',$result);
+}
+function hontza_crm_exportar_textos_get_usuario_grupo_array($is_con_usuario=1,$is_node_load=0){
+    $result=array();
+     if(hontza_crm_is_activado()){
+        $result=crm_exportar_textos_get_usuario_grupo_array($is_con_usuario,$is_node_load);
+      }
+    return $result;          
+}

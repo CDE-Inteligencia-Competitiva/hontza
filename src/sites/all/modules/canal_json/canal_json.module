@@ -156,12 +156,18 @@ function canal_json_get_content_info($url,$separator_csv){
             $result=canal_json_create_json_by_csv($url,'',$separator_csv);
         }else{
             //$url=urlencode($url);
-            $content=file_get_contents($url);
-            $result=json_decode($content);                
+            $content=file_get_contents($url);            
+            $result=json_decode($content);
+            //intelsat-2017-json
+            $result=canal_json_fix_json_decode($result,$content);                           
         }
         if(canal_json_extractor_is_activado()){
             $result=canal_json_extractor_get_result($result);
         }
+
+        //intelsat-2017-json
+        $result=canal_json_fix_result($result);
+
         if(isset($result->results)){
             $html=array();
             //$html[]='<fieldset>';
@@ -246,12 +252,20 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
         $separator_csv=",";
         if(isset($json_fields->separator_csv) && !empty($json_fields->separator_csv)){
             $separator_csv=canal_json_get_separator_csv_value($json_fields->separator_csv);
-        }                        
-        $content=canal_json_create_json_by_csv($url,'',$separator_csv);
+        }
+        //intelsat-2017-json                        
+        //$content=canal_json_create_json_by_csv($url,'',$separator_csv);
+        $my_content=canal_json_create_json_by_csv($url,'',$separator_csv);
         //$content=canal_json_create_json_by_csv_string($content);
     }else{
-        $content=json_decode($content);
+        //intelsat-2017-json    
+        //$content=json_decode($content);
+        $my_content=json_decode($content);
     }
+
+    //intelsat-2017-json
+    $content=canal_json_fix_json_decode($my_content,$content);
+
     //$batch->title = $content->name;
     //$batch->description = '';
     //$batch->link = $content->url;
@@ -259,6 +273,10 @@ function canal_json_FeedsSyndicationParser(FeedsImportBatch &$batch, FeedsSource
     if(canal_json_extractor_is_activado()){
         $content=canal_json_extractor_get_result($content);
     }
+
+    //intelsat-2017-json
+    $content=canal_json_fix_result($content);
+
     $numero_linea=-1;
     if(isset($json_fields->numero_linea) && !empty($json_fields->numero_linea) && is_numeric($json_fields->numero_linea)){
         $numero_linea=$json_fields->numero_linea-1;
@@ -386,4 +404,37 @@ function canal_json_get_separator_csv_value($separator_csv){
         return $result[$separator_csv];
     }
     return '';
+}
+//intelsat-2017-json
+function canal_json_fix_result($result_in){
+  //echo print_r($result_in,1);exit();
+  if(isset($result_in->results)){
+    return $result_in;
+  }
+  $result=new stdClass();
+  $result->results=$result_in;
+  return $result;
+}
+//intelsat-2017-json
+function canal_json_fix_json_decode($result_in,$content){
+  if(!empty($result_in)){
+    return $result_in;
+  }
+  $result=new stdClass();  
+  $json_array=preg_split("/((\r?\n)|(\r\n?))/",$content);
+  if(!empty($json_array)){
+    foreach($json_array as $i=>$json){
+      if(!empty($json)){  
+        //print $json;exit();
+        $json_decode_value=json_decode($json);
+        /*echo print_r($json_decode_value,1);
+        exit();*/
+          if(!isset($result->results)){
+            $result->results=array();
+          }
+          $result->results[]=$json_decode_value;
+      }    
+    }
+  }
+  return $result;
 }

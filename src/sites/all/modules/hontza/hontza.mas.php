@@ -2172,6 +2172,8 @@ function my_canal_de_yql_node_form_alter(&$form,&$form_state,$form_id){
     $form['field_is_canal_opencalais']['#weight']=$form['field_apply_alchemy_yql']['#weight']-1;
     red_canal_add_apply_alchemy_description($form,'field_apply_alchemy_yql');
     red_canal_add_is_canal_opencalais_description($form,'field_is_canal_opencalais');
+    //intelsat
+    red_despacho_source_title_url_canal_de_yql_node_form_alter($form,$form_state, $form_id);
 }
 function get_valoracion_options(){
     $result=array('Very Bad','Bad','Normal','Good','Very good');

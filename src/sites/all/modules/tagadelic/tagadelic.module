@@ -130,7 +130,6 @@ function tagadelic_page_chunk($vocs) {
   //gemini
   $tags=filtrar_nube_etiquetas_del_grupo($tags,variable_get('tagadelic_page_amount', '60'));
   //
-  
   //gemini
   if(hontza_canal_rss_is_publico_activado()){
     $tags=publico_vigilancia_filtrar_etiquetas_noticias_destacadas($tags);

@@ -100,3 +100,43 @@ function crm_exportar_tags_taxonomy_get_term_by_name_vid_row($term_name,$vid) {
   $my_result=new stdClass();
   return $my_result;
 }
+function crm_exportar_tags_get_item_title($title_in,&$fuente_corchete_title){
+	$fuente_corchete_title='';
+	if(crm_exportar_is_crm_exportar_tag()){ 
+		$title=check_plain($title_in);
+		$title=trim($title);
+		$pos=strpos($title,'[');
+		if($pos===FALSE){
+			return $title_in;
+		}else{
+			if($pos==0){
+				$pos_end=strpos($title,']');
+				if($pos_end===FALSE){
+					return $title_in;
+				}else{
+					$result=substr($title,$pos_end+1);
+					$result=trim($result);
+					$fuente_corchete_title=substr($title,0,$pos_end);
+					$fuente_corchete_title=rtrim($fuente_corchete_title,']');
+					$fuente_corchete_title=ltrim($fuente_corchete_title,'[');
+					$fuente_corchete_title=trim($fuente_corchete_title);
+					return $result;
+				}
+			}
+			return $title_in;				
+		}			
+		return $result;
+	}	
+	return $title_in;	
+}
+function crm_exportar_tags_get_item_fuente_corchete_title($fuente_corchete_title){
+	$output='';
+	$output.="<sources>\n";	
+	$output.=" <source>\n";
+	$output.="  <title>".check_plain($fuente_corchete_title)."</title>\n";
+	$source_url='';
+	$output.="  <link>".check_plain($source_url)."</link>\n";
+	$output.=" </source>\n";
+	$output.="</sources>\n";
+	return $output;	
+}

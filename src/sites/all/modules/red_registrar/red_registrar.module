@@ -574,8 +574,6 @@ function red_registrar_user_profile_empresa_form_alter(&$form,&$form_state,$form
         $form[$platform_category][$category]['logo_saved']=array(
         '#value'=>red_registrar_get_logo_saved($red_registrar_empresa_post),
         );
-        //intelsat-2016
-        red_registrar_reset_no_registrado_fields($form,$form_state,$form_id,$category);
     }else{
         $profile_empresa_pais=$form[$category]['profile_empresa_pais']['#default_value'];        
         $pais_options=red_registrar_pais_inc_get_pais_options(1);
@@ -1122,18 +1120,4 @@ function red_registrar_tarea(){
         $red_registrar_is_registrado_cache=1;
     }
     variable_set('red_registrar_is_registrado_cache',$red_registrar_is_registrado_cache);
-}
-//intelsat-2016
-function red_registrar_reset_no_registrado_fields(&$form,&$form_state,$form_id,$category){
-    global $user;
-    $fields_array=array('profile_empresa','profile_empresa_ciudad','profile_empresa_sitio_web');
-    if(is_super_admin()){
-        if(!red_registrar_is_registrado()){
-            if(!empty($fields_array)){
-                foreach($fields_array as $i=>$field){
-                    $form[$category][$field]['#default_value']='';
-                }    
-            }
-        }
-    }
 }

@@ -1590,19 +1590,24 @@ function red_solr_inc_get_index_status(){
 }
 //intelsat-2016
 function red_solr_inc_get_index_status_html(){
-    $html=array();        
+    $html=array();
     $status=red_solr_inc_get_index_status();
     if(isset($status['remaining']) && !empty($status['remaining'])){
-        $html[]='<fieldset>';
-        $html[]='<legend>'.t('Index status').'</legend>';
-        $html[]='<div style="padding:5px;float:left;">';
-        $html[]='<p style="color:red;">'.t('Results may be inaccurate. There are @status_remaining news waiting to be indexed',array('@status_remaining'=>$status['remaining'])).'</p>';        
-        $html[]='</div>';
-        $html[]='<div style="padding:5px;float:left;">';
-        $html[]='<input id="index_status_btn" type="button" value="'.t('Index queue').'">';
-        $html[]='</div>';
-        $html[]='</fieldset>';
-        red_solr_inc_add_index_status_js();
+        /*if(red_solr_index_inc_is_before()){
+            $html[]=red_solr_index_remaining_callback();
+        }else{*/    
+            $html[]='<fieldset>';
+            $html[]='<legend>'.t('Index status').'</legend>';
+            $html[]='<div style="padding:5px;float:left;">';
+            /*$html[]='<p style="color:red;">'.t('Results may be inaccurate. There are @status_remaining news waiting to be indexed',array('@status_remaining'=>$status['remaining'])).'</p>';*/
+            $html[]=red_solr_index_inc_get_index_status_msg();        
+            $html[]='</div>';
+            $html[]='<div style="padding:5px;float:left;">';
+            $html[]='<input id="index_status_btn" type="button" value="'.t('Index queue').'">';
+            $html[]='</div>';
+            $html[]='</fieldset>';
+            red_solr_inc_add_index_status_js();
+        //}
     }    
     return implode('',$html);
 }
@@ -1627,10 +1632,18 @@ function red_solr_index_remaining_access(){
     return FALSE;
 }
 function red_solr_index_remaining_callback(){
-    require_once 'sites/all/modules/apachesolr/apachesolr.admin.inc';
-    $form_state=array();
-    $environment = apachesolr_environment_load($env_id);
-    return drupal_get_form('apachesolr_index_action_form_remaining_confirm',$form_state,$environment);   
+    /*if(red_solr_index_inc_is_before()){
+        //$kont=red_solr_inc_apachesolr_index_batch_index_remaining_callback();
+        $form=array();
+        $form_state=array();
+        require_once('sites/all/modules/apachesolr/apachesolr.admin.inc'); 
+        apachesolr_index_action_form_remaining_confirm_submit($form,$form_state);
+    }else{*/
+        require_once 'sites/all/modules/apachesolr/apachesolr.admin.inc';
+        $form_state=array();
+        $environment = apachesolr_environment_load($env_id);
+        return drupal_get_form('apachesolr_index_action_form_remaining_confirm',$form_state,$environment);
+    //}   
 }
 function red_solr_inc_get_query_type_term_build($response,$values_in,$facet_field){
     $result=$values_in;
@@ -1741,6 +1754,7 @@ function red_solr_inc_is_my_order(){
 }
 function red_solr_inc_get_my_limit(){
     $result=10;
+    $result=red_despacho_get_nodes_limit($result);
     return $result;
 }
 function red_solr_inc_get_my_results($result_in){
@@ -1920,12 +1934,18 @@ function red_solr_inc_get_fuente_tipo_noticia_tid(){
     return '';
 }
 function red_solr_inc_apachesolr_index_action_form_remaining_confirm_form_alter(&$form,&$form_state,$form_id){
-    if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
-        $url=drupal_get_destination();
-        $url=urldecode(ltrim($url,'destination='));
-        $url_info=parse_url($url);
-        $form['actions']['cancel']['#value']=l(t('Cancel'),$url_info['path'],array('query'=>$url_info['query']));
-    }
+    /*$param4=arg(4);
+    if(!empty($param4) && $param4=='advanced_link'){*/
+    if(red_solr_index_inc_is_before()){    
+        red_solr_index_inc_apachesolr_index_action_form_remaining_confirm_form_alter($form,$form_state,$form_id);  
+    }else{
+        if(isset($_REQUEST['destination']) && !empty($_REQUEST['destination'])){
+            $url=drupal_get_destination();
+            $url=urldecode(ltrim($url,'destination='));
+            $url_info=parse_url($url);
+            $form['actions']['cancel']['#value']=l(t('Cancel'),$url_info['path'],array('query'=>$url_info['query']));
+        }
+    }    
 }
 function red_solr_inc_add_tipo_noticia_query($form_state,&$my_array){
     if(isset($form_state['values']['tipo_noticia']) && !empty($form_state['values']['tipo_noticia'])){
@@ -2016,4 +2036,21 @@ function red_solr_inc_on_flag($nid){
                     hontza_canal_rss_solr_clear_node_index($node,$node->nid);
                 //}
             }        
+}
+function red_solr_inc_is_validator_rejected(){
+    /*if(defined('_IS_VALIDATOR_REJECTED') && _IS_VALIDATOR_REJECTED==1){
+        return 1;
+    }
+    return 0;*/
+    return 1;
+}
+function red_solr_inc_get_widget_links_bundle_content_type_element($field_alias,$element_in,$field_in){
+    $result=$element_in;
+    if(isset($result['item'])){
+        $result['item']['#value']=t('Channel news');
+    }
+    if(isset($result['noticia'])){
+        $result['noticia']['#value']=t('User news');
+    }
+    return $result;
 }

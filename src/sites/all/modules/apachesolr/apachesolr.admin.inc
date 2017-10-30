@@ -1155,12 +1155,16 @@ function apachesolr_index_batch_index_entities($env_id, $total_limit = NULL, &$c
  */
 function apachesolr_index_batch_index_finished($success, $results, $operations) {
   $message = '';
+  //intelsat
+  $message_updated='';
   // $results['count'] will not be set if Solr is unavailable.
   if (isset($results['count'])) {
     $message .= format_plural($results['count'], '1 item processed successfully. ', '@count items successfully processed. ');
   }
   if (isset($results['submitted'])) {
     $message .= format_plural($results['submitted'], '1 document successfully sent to Solr.', '@count documents successfully sent to Solr.');
+    //intelsat
+    $message_updated='<b>'.t('Index has been updated').'</b>';
   }
   if ($success) {
     $type = 'status';
@@ -1172,6 +1176,9 @@ function apachesolr_index_batch_index_finished($success, $results, $operations) 
     $type = 'error';
   }
   drupal_set_message($message, $type);
+  if(!empty($message_updated)){
+    drupal_set_message($message_updated);
+  }
 }
 
 

@@ -8,7 +8,7 @@
  * http://api.drupal.org/api/function/template_preprocess_page/6
  */
 ?>
-<?php if(!red_crear_usuario_is_custom_css()):?>
+<?php if(!red_crear_usuario_is_custom_css() || red_is_visualizador_variable_activado()):?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
   <html xmlns="http://www.w3.org/1999/xhtml" lang="<?php print $language->language; ?>" xml:lang="<?php print $language->language; ?>">
@@ -248,9 +248,13 @@
                                     </div>
                                     <h1 class="title bombilla">&nbsp;<?php print $title; ?></h1>
                                     <?php elseif(is_vigilancia()):?>
+                                    <?php if(red_solr_inc_is_index_remaining_pantalla() && red_solr_index_inc_is_before()):?>
+                                      <?php //sin imagen?>
+                                    <?php else:?>  
                                     <div style="float:left;">
                                         <?php print hontza_get_title_canal_simbolo_img();?>
                                     </div>
+                                    <?php endif;?>
                                     <h1 class="title bombilla<?php print red_copiar_get_title_imported_class();?>">&nbsp;<?php print $title; ?></h1>
                                     <?php elseif(alerta_inc_is_configuracion()):?>
                                     <div style="float:left;">
@@ -335,6 +339,12 @@
     <?php endif;?>
   </div>
   <!-- END WRAPPER -->
+  
+  <?php //if(red_despacho_is_show_comment_link()):?>
+  <?php if(red_despacho_is_close_div_new_font_wrapper()):?>
+  </div>
+  <?php endif;?> 
+
   <?php if(!hontza_is_tag_node_pantalla()):?> 
   <?php if(hontza_is_footer()):?>
   <div id="footer" class="layout-region" style="width:960px;margin: 0 auto -1em;">
@@ -362,7 +372,7 @@
       <?php //gemini ?>
       <?php //print $footer_message; ?>
       <?php //intelsat-2015?>
-      <?php //se ha comentado?>  
+      <?php //se ha comentado?>
       <?php print hontza_get_frase_powered_light();?>       
     </div>
   </div>

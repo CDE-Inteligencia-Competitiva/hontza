@@ -370,79 +370,7 @@ function idea_form(&$node, $form_state) {
   '#required' => FALSE
   );
   //
-  $form['crear_invitado_fieldset']=array(
-      '#type'=>'fieldset',
-      '#title'=>t('Create guest'),
-      '#collapsed'=>true,
-      '#collapsible'=>true,
-  );
-  $form['crear_invitado_fieldset']['account'] = array('#type' => 'fieldset',
-    '#title' => t('Account information'),
-    //'#weight' => -10,
-  );
-   $form['crear_invitado_fieldset']['account']['invitado_name'] = array('#type' => 'textfield',
-      //'#title' => t('Username'),
-      '#title' => idea_get_invidato_field_label('invitado_name'),
-      //'#default_value' => $node->invitado_name,
-      '#maxlength' => USERNAME_MAX_LENGTH,
-      '#description' => t('Spaces are allowed; punctuation is not allowed except for periods, hyphens, and underscores.'),
-      //'#required' => TRUE,
-    );
-    //
-    $form['crear_invitado_fieldset']['account']['invitado_name']['#default_value']='';
-    if(isset($node->invitado_name) && !empty($node->invitado_name)){
-        $form['crear_invitado_fieldset']['account']['invitado_name']['#default_value']=$node->invitado_name;
-    }
-    //
-    $form['crear_invitado_fieldset']['account']['invitado_mail'] = array('#type' => 'textfield',
-    //'#title' => t('E-mail address'),
-    '#title' => idea_get_invidato_field_label('invitado_mail'),    
-    //'#default_value' => $node->invitado_mail,
-    '#maxlength' => EMAIL_MAX_LENGTH,
-    '#description' => t('A valid e-mail address. All e-mails from the system will be sent to this address. The e-mail address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by e-mail.'),
-    //'#attributes'=>array('autocomplete'=>'off'),
-    //'#required' => TRUE,
-  );
-    //
-    $form['crear_invitado_fieldset']['account']['invitado_mail']['#default_value']='';    
-    if(isset($node->invitado_mail) && !empty($node->invitado_mail)){
-        $form['crear_invitado_fieldset']['account']['invitado_mail']['#default_value']=$node->invitado_mail;
-    }
-    //
-   $form['crear_invitado_fieldset']['account']['pass'] = array('#type' => 'password_confirm',
-      '#description' => t('To change the current user password, enter the new password in both fields.'),
-      '#size' => 25,
-    );
-   $form['crear_invitado_fieldset']['datos_personales'] = array('#type' => 'fieldset',
-    '#title' => t('Personal data'),
-    //'#weight' => -10,
-  );
-   $form['crear_invitado_fieldset']['datos_personales']['profile_nombre'] = array('#type' => 'textfield',
-      //'#title' => t('Name'),
-      '#title' => idea_get_invidato_field_label('profile_nombre'), 
-      '#default_value' => $node->profile_nombre,
-      //'#required' => TRUE,
-    );
-   $form['crear_invitado_fieldset']['datos_personales']['profile_apellidos'] = array('#type' => 'textfield',
-      //'#title' => t('Surname'),
-      '#title' => idea_get_invidato_field_label('profile_apellidos'),  
-      '#default_value' => $node->profile_apellidos,
-      //'#required' => TRUE,
-    );
-    $form['crear_invitado_fieldset']['empresa'] = array('#type' => 'fieldset',
-    '#title' => t('Organisation'),
-    //'#weight' => -10,
-  );
-  $form['crear_invitado_fieldset']['empresa']['profile_empresa'] = array('#type' => 'textfield',
-      '#title' => t('Organisation'),
-      '#default_value' => $node->profile_empresa,
-      //'#required' => TRUE,
-    );
-   $form['crear_invitado_fieldset']['empresa']['responsable'] = array('#type' => 'textfield',
-      '#title' => t('Email of responsible person'),
-      '#default_value' => $node->responsable,
-      //'#required' => TRUE,
-    );
+  idea_add_crear_invitado_fieldset_form_field($form);
   //
   //$subgrupo=set_subgrupo_default_value($node->subgrupo);
   $form['subgrupo'] = array(
@@ -920,8 +848,15 @@ function get_idea_oportunidad_list($idea_nid){
 	$result=array();
 	$where=array();
 	$where[]="1";
-	$where[]='o.idea_nid='.$idea_nid;
-	$sql="SELECT n.* 
+  if(is_numeric($idea_nid)){
+	 $where[]='o.idea_nid='.$idea_nid;
+  }else{
+    if($idea_nid=='proyecto_add_oportunidad_sin_idea_row'){
+      $result=proyecto_get_oportunidad_sin_idea_list();
+      return $result;
+    }
+  }	
+  $sql="SELECT n.* 
 	FROM {node} n LEFT JOIN {oportunidad} o ON (n.nid=o.nid AND n.vid=o.vid)
 	WHERE ".implode(" AND ",$where).' GROUP BY n.nid';
 	//print $sql;exit();
@@ -1071,12 +1006,18 @@ function is_user_invitado($my_user=''){
     $konp='Invitado';
     if(!empty($my_user) && isset($my_user->uid) && !empty($my_user->uid)){
         if(in_array($konp,$my_user->roles)){
+          //intelsat
+          if(red_is_user_invitado($konp,$my_user->roles)){            
             return 1;
+          }
         }
     }
     //
     if(in_array($konp,$user->roles)){
-        return 1;
+        //intelsat
+        if(red_is_user_invitado($konp,$user->roles)){ 
+          return 1;
+        }
     }
     return 0;
 }
@@ -2190,7 +2131,7 @@ function create_ideas_arbol($my_list,$is_link=1,$sel_type='',$tipo_adheridos='')
     	if(count($my_list)>0){
 		$kont=0;
 		foreach($my_list as $i=>$node){
-                        $oportunidad_list=get_idea_oportunidad_list($node->nid);
+                        $oportunidad_list=get_idea_oportunidad_list($node->nid);                        
                         //
                         if(strcmp($sel_type,'seleccionar_oportunidad')==0 && (count($oportunidad_list)<1 || !in_seleccionar_oportunidad_list($oportunidad_list,$tipo_adheridos))){
                             continue;
@@ -2407,7 +2348,8 @@ function get_title_idea_bombilla_img(){
     //$html[]='</div>';
     return implode('',$html);
 }
-function get_idea_arbol_rows($is_link=1,$sel_type='',$tipo_adheridos='',$is_solo_proyectos=0){
+//function get_idea_arbol_rows($is_link=1,$sel_type='',$tipo_adheridos='',$is_solo_proyectos=0){
+function get_idea_arbol_rows($is_link=1,$sel_type='',$tipo_adheridos='',$is_solo_proyectos=0,$is_oportunidad_sin_ideas=0){  
   global $user;
  $where=array();
   //
@@ -2487,7 +2429,15 @@ function get_idea_arbol_rows($is_link=1,$sel_type='',$tipo_adheridos='',$is_solo
         }
     }*/
     
+  if($is_oportunidad_sin_ideas){
+    $my_list=proyecto_add_oportunidad_sin_idea_row($my_list);
+  }  
+
   $rows=create_ideas_arbol($my_list,$is_link,$sel_type,$tipo_adheridos);
+  //print 'is_oportunidad_sin_ideas='.$is_oportunidad_sin_ideas;exit();
+    
+  /*echo print_r($rows,1);
+  exit();*/
   if($is_solo_proyectos){
       
     
@@ -3191,4 +3141,79 @@ function get_user_and_invitado_idea_nid_array($uid,$invitado_uid,$og_groups){
         $result[]=$row->nid;
     }
     return $result;
+}
+function idea_add_crear_invitado_fieldset_form_field(&$form){
+    $form['crear_invitado_fieldset']=array(
+      '#type'=>'fieldset',
+      '#title'=>t('Create guest'),
+      '#collapsed'=>true,
+      '#collapsible'=>true,
+  );
+  $form['crear_invitado_fieldset']['account'] = array('#type' => 'fieldset',
+    '#title' => t('Account information'),
+    //'#weight' => -10,
+  );
+   $form['crear_invitado_fieldset']['account']['invitado_name'] = array('#type' => 'textfield',
+      //'#title' => t('Username'),
+      '#title' => idea_get_invidato_field_label('invitado_name'),
+      //'#default_value' => $node->invitado_name,
+      '#maxlength' => USERNAME_MAX_LENGTH,
+      '#description' => t('Spaces are allowed; punctuation is not allowed except for periods, hyphens, and underscores.'),
+      //'#required' => TRUE,
+    );
+    //
+    $form['crear_invitado_fieldset']['account']['invitado_name']['#default_value']='';
+    if(isset($node->invitado_name) && !empty($node->invitado_name)){
+        $form['crear_invitado_fieldset']['account']['invitado_name']['#default_value']=$node->invitado_name;
+    }
+    //
+    $form['crear_invitado_fieldset']['account']['invitado_mail'] = array('#type' => 'textfield',
+    //'#title' => t('E-mail address'),
+    '#title' => idea_get_invidato_field_label('invitado_mail'),    
+    //'#default_value' => $node->invitado_mail,
+    '#maxlength' => EMAIL_MAX_LENGTH,
+    '#description' => t('A valid e-mail address. All e-mails from the system will be sent to this address. The e-mail address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by e-mail.'),
+    //'#attributes'=>array('autocomplete'=>'off'),
+    //'#required' => TRUE,
+  );
+    //
+    $form['crear_invitado_fieldset']['account']['invitado_mail']['#default_value']='';    
+    if(isset($node->invitado_mail) && !empty($node->invitado_mail)){
+        $form['crear_invitado_fieldset']['account']['invitado_mail']['#default_value']=$node->invitado_mail;
+    }
+    //
+   $form['crear_invitado_fieldset']['account']['pass'] = array('#type' => 'password_confirm',
+      '#description' => t('To change the current user password, enter the new password in both fields.'),
+      '#size' => 25,
+    );
+   $form['crear_invitado_fieldset']['datos_personales'] = array('#type' => 'fieldset',
+    '#title' => t('Personal data'),
+    //'#weight' => -10,
+  );
+   $form['crear_invitado_fieldset']['datos_personales']['profile_nombre'] = array('#type' => 'textfield',
+      //'#title' => t('Name'),
+      '#title' => idea_get_invidato_field_label('profile_nombre'), 
+      '#default_value' => $node->profile_nombre,
+      //'#required' => TRUE,
+    );
+   $form['crear_invitado_fieldset']['datos_personales']['profile_apellidos'] = array('#type' => 'textfield',
+      //'#title' => t('Surname'),
+      '#title' => idea_get_invidato_field_label('profile_apellidos'),  
+      '#default_value' => $node->profile_apellidos,
+      //'#required' => TRUE,
+    );
+    $form['crear_invitado_fieldset']['empresa'] = array('#type' => 'fieldset',
+    '#title' => t('Organisation'),
+    //'#weight' => -10,
+  );
+  $form['crear_invitado_fieldset']['empresa']['profile_empresa'] = array('#type' => 'textfield',
+      '#title' => t('Organisation'),
+      '#default_value' => $node->profile_empresa,
+      //'#required' => TRUE,
+    );
+   $form['crear_invitado_fieldset']['empresa']['responsable'] = array('#type' => 'textfield',
+      '#title' => t('Email of responsible person'),
+      '#default_value' => $node->responsable,
+      //'#required' => TRUE,
+    );
 }

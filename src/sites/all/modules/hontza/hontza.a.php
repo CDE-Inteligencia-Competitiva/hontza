@@ -419,6 +419,8 @@ function on_canal_presave(&$node){
         //intelsat-2015
         hontza_canal_rss_on_categorias_tematicas_presave($node);
         //
+        //intelsat
+        red_despacho_source_title_url_presave($node);
     }
 }
 function set_node_vid_entity_array($node,$entity_array){
@@ -636,11 +638,21 @@ function is_alchemy_by_source($source,$canal_nid='',$node_in=''){
             }
         }
     }
+    //intelsat
+    require_once('sites/all/modules/hontza/wizards/yql.wizard.inc');    
     //intelsat-2015
     if(!empty($source)){
         $is_alchemy=is_alchemy_by_fuente($source);
+        //intelsat
+        /*if(yql_wizard_is_atom_alchemy($canal_node)){
+            return 1;
+        }*/     
         return $is_alchemy;
     }
+    //intelsat
+    /*if(yql_wizard_is_atom_alchemy($canal_node)){
+        return 1;
+    }*/ 
     return 0;
 }
 //intelsat-2016
@@ -791,7 +803,8 @@ function canales_my_categorias_callback($is_rss_param=0){
             $term_name=$term->name;
         }
         //
-        $my_limit=20;
+        //$my_limit=20;
+        $my_limit=red_despacho_get_nodes_limit(20);
         //intelsat-2015
         /*$is_tipos_fuente=0;        
         if(hontza_canal_rss_is_visualizador_activado()){
@@ -986,6 +999,7 @@ function my_item_node_form_alter(&$form,&$form_state, $form_id){
         //intelsat-2016
         hontza_crm_inc_node_form_alter($form,$form_state, $form_id);
         red_copiar_item_node_form_alter($form,$form_state, $form_id);
+        red_node_item_node_form_alter($form,$form_state, $form_id);
     }
 }
 function my_canal_de_supercanal_node_form_alter(&$form,&$form_state, $form_id){
@@ -1261,7 +1275,9 @@ function get_api_fields_by_type($type){
         $result['full_text_rss']='field_apply_full_text_rss_dapper';
     }else if(in_array($type,array('canal_de_supercanal','canal_de_yql'))){
         $result['opencalais']='field_is_canal_opencalais';
-        $result['alchemy']='field_apply_alchemy_yql';        
+        $result['alchemy']='field_apply_alchemy_yql';
+        //intelsat
+        $result['feed_saniziter']='field_apply_feed_saniziter';                    
     }    
     return $result;
 }
@@ -2061,9 +2077,9 @@ function hontza_get_enlace_fuente_del_canal_view_html($node,$is_len=0){
                 }
                 //
                 $output='';
-                if($num>1){
+                /*if($num>1){
                     $output='<BR>';
-                }
+                }*/
                 $output.=implode('<BR>',$link_array);
                 return $output;
             }            

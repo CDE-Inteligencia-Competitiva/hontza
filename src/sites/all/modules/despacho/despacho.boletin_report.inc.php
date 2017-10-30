@@ -18,7 +18,7 @@ function despacho_boletin_report_add_tipos_fuente_fieldset($row,&$form){
                         $div_prefix='';
                         $div_suffix='';
                         if($kont==0){
-                            $div_prefix='<div id="id_despacho_boletin_report_tipos_fuente"><label><b>'.t('Types os Sources').'</b></label>';
+                            $div_prefix='<div id="id_despacho_boletin_report_tipos_fuente"><label><b>'.t('Types of Sources').'</b></label>';
                         }else if($kont==($num-1)){
                             $div_suffix='</div></div>';
                         }
@@ -195,7 +195,7 @@ function despacho_boletin_report_get_tipos_fuente_orden($categorias,&$term_array
     }
     return $result;
 }
-function despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row,$with_name=1){
+function despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row,$with_name=1,$br=''){
     if(isset($tipos_fuente_row->depth) && !empty($tipos_fuente_row->depth)){
         if($tipos_fuente_row->depth==1){
             //return $title;
@@ -203,11 +203,24 @@ function despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fu
         }
         return '<i name="tipos_fuente_'.$tipos_fuente_row->tid.'">'.$title.'</i>';
     }else{
-        $result=my_upper($title);
+        $style='';
+        if(red_informatica_despacho_boletin_report_is_resumen_activado()){
+            //$style=' style="text-decoration:none;color:white !important;"';
+
+            $mailchimp_color_letra_tipo_documento='white';
+                     if(isset($br->mailchimp_color_letra_tipo_documento) && !empty($br->mailchimp_color_letra_tipo_documento)){
+                        $mailchimp_color_letra_tipo_documento=$br->mailchimp_color_letra_tipo_documento;
+                     }
+
+            $style=' style="text-decoration:none;color:'.$mailchimp_color_letra_tipo_documento.' !important;font-size:14pt !important;"';
+            $result=$title;
+        }else{
+            $result=my_upper($title);
+        }
         if(!$with_name){
             return $result;
         }
-        return '<a name="tipos_fuente_'.$tipos_fuente_row->tid.'">'.$result.'</a>';
+        return '<a name="tipos_fuente_'.$tipos_fuente_row->tid.'"'.$style.'>'.$result.'</a>';
     }
 }
 function despacho_boletin_report_get_boletin_despedida($despedida){
@@ -297,8 +310,12 @@ function despacho_boletin_report_get_html_indice($categorias_orden,$tid_indice_a
                 $tipos_fuente_row->depth=$depth;
                 $title=boletin_report_get_term_name($tid);
                 $title=despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row,0);
-                //$html[]='<li>'.l($title,'aaaa').'</li>';
-                $html[]='<li><a href="#tipos_fuente_'.$tid.'">'.$title.'</a></li>';
+                //$html[]='<li>'.l($title,'prueba').'</li>';
+                /*$font_size='';
+                if(red_informatica_despacho_boletin_report_is_resumen_activado()){
+                    $font_size='font-size:14pt;';
+                }*/
+                $html[]='<li><a href="#tipos_fuente_'.$tid.'" style="text-decoration:none;">'.$title.'</a></li>';
             }
         }
         $html[]='</ul>';
@@ -348,4 +365,10 @@ function despacho_boletin_report_get_tipos_fuente_title_by_length($title,$max=60
         $result=substr($result,0,$max).' ...';
     }
     return $result;
+}
+function despacho_boletin_report_is_resumen_activado(){
+    if(defined('_IS_DESPACHO_BOLETIN_REPORT_RESUMEN') && _IS_DESPACHO_BOLETIN_REPORT_RESUMEN==1){
+        return 1;
+    }
+    return 0;
 }

@@ -2253,8 +2253,12 @@ function alerta_get_introduccion_logo_by_subdominio($is_alerta_o_boletin=0,$logo
         }else{
             $current_theme=red_movil_get_current_theme();
             //$theme_buho_settings=variable_get('theme_buho_settings','');
-            $theme_buho_settings=variable_get('theme_'.$current_theme.'_settings','');                            
-            $src=$theme_buho_settings['logo_path'];            
+            $theme_buho_settings=variable_get('theme_'.$current_theme.'_settings','');
+            //intelsat
+            $src='';
+            if(isset($theme_buho_settings['logo_path'])){
+                $src=$theme_buho_settings['logo_path'];
+            }
         }
         //intelsat-2016
         if(!@file_exists($src) || red_crear_usuario_is_sites_default_files_buho_logo($src)){

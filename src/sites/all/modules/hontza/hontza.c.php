@@ -576,15 +576,23 @@ function hontza_get_frase_powered_light(){
     $margin_bottom=20;
     //intelsat-2016
     $powered_link_color='';
+    //intelsat
+    $financed_by_powered='';
+    $div_a_ini='';
+    $div_a_end='';
     if(red_crear_usuario_is_custom_css()){
         $margin_bottom=0;
         //$powered_link_color='color:white;font-weight:bold;';
-        $powered_link_color='color:white;';
+        $powered_link_color='color:white;';        
     }else if(hontza_is_sareko_id_red() || hontza_canal_rss_is_visualizador_activado()){
-        $margin_bottom=10;    
+        $margin_bottom=10;            
+    }else if(red_despacho_is_financed_by_powered_activado()){
+        $financed_by_powered=red_despacho_get_financed_by_powered_html();
+        $div_a_ini='<div class="div_a_powereded_light">';
+        $div_a_end='</div>';
     }
     $style='clear:both;padding-top:10px;margin-bottom:'.$margin_bottom.'px;';
-    $result='<div style="'.$style.'"><a id="id_a_powereded_light" href="'.$url.'" style="font-size:12px;'.$powered_link_color.'">'.$result.'</a></div>';
+    $result='<div style="'.$style.'">'.$financed_by_powered.$div_a_ini.'<a id="id_a_powereded_light" href="'.$url.'" style="font-size:12px;'.$powered_link_color.'">'.$result.'</a>'.$div_a_end.'</div>';
     //intelsat-2015
     //if(hontza_is_sareko_id_red() && !red_is_network_sareko_id() && !red_is_servidor_network()){
     $logos=hontza_canal_rss_get_logos_apis($result);    
@@ -593,15 +601,27 @@ function hontza_get_frase_powered_light(){
     if(red_is_subdominio_proyecto_alerta()){    
         $alerta_html=red_funciones_alerta_financiado_por_html();
     }else{
-        if(hontza_canal_rss_is_visualizador_activado()){
-            $alerta_html=visualizador_get_frase_powered();
-            $alerta_html.=$logos;
-            $logos='';
+        if(red_is_metromedellin()){
+            $alerta_html=red_funciones_metromedellin_por_html();
+        }
+        else
+        {
+            if(hontza_canal_rss_is_visualizador_activado()){
+                $alerta_html=visualizador_get_frase_powered();
+                $alerta_html.=$logos;
+                $logos='';
+            }
         }
     }
     //
     //$result=$logos.$alerta_html.$result;
-    $result=$logos.$alerta_html;
+    //$result=$logos.$alerta_html;
+    if (red_is_metromedellin())
+    {
+        $result=$alerta_html.$logos;
+    }
+    else
+        $result=$logos.$alerta_html;
     return $result;
 }
 function hontza_claves_apply_module(){

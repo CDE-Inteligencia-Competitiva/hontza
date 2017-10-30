@@ -856,6 +856,7 @@ function buho_facetapi_title($variables) {
   //intelsat-2015
   $facet_title=trim($facet_title);
   //
+  $content_type_array=array('content type','tipo de contenido','type de contenu','eduki mota','tipo de conteúdo');
   if($facet_title=='canal'){
       //return t('Channel');
       $title=t('Filter by Channel');
@@ -876,8 +877,10 @@ function buho_facetapi_title($variables) {
   //intelsat-2015
   }else if($facet_title=='filename'){
       $title=t('Filter by Attachment');
+  }else if(in_array($facet_title,$content_type_array)){
+      $title=t('Filter by Origin');
   }else{
-    $title=t('Filter by @title:', array('@title' => $facet_title));
+  	$title=t('Filter by @title:', array('@title' => $facet_title));
   }
   $result=my_get_icono_action('filtrar_por',$title,'filtrar_por').'&nbsp;'.$title;
   return $result;

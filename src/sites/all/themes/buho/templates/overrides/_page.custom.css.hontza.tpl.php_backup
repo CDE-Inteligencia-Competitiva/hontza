@@ -1,0 +1,117 @@
+<?php $path_custom=red_crear_usuario_get_path_custom_css();?>
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Hontza</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--
+        <link href="sites/all/themes/buho/style.css" rel="stylesheet" type='text/css'>
+        -->
+        <link href="<?php print $path_custom;?>css/custom_hontza.css" rel="stylesheet" type='text/css'>
+        <!--
+        <link type="text/css" rel="stylesheet" media="all" href="/sites/all/themes/buho/style.css?K" />
+        -->
+        <?php print my_add_css();?>
+        <?php global $user;?>
+    </head>
+    <body>
+        <div>
+            <div class="div_custom_header">
+                <div class="div_custom_logo">
+                    <?php $logo=alerta_get_introduccion_logo_by_subdominio(0,'');?>  
+                    <img src="<?php print $logo;?>"/>
+                </div>
+                <div class="div_custom_links">
+                    <?php if(hontza_is_user_anonimo()):?>  
+                        <div class="div_custom_link">
+                          <?php print l(t('Request new password'),'user/password');?>
+                        </div>  
+                        <div class="div_custom_link">
+                          <?php print l(t('Log in'),'user');?>
+                        </div>  
+                        <div class="div_custom_link">
+                          <?php print l(t('Request new account'),'user/register');?>
+                        </div>
+                    <?php else:?>
+                        <div class="div_custom_link">
+                          <?php print l(t('Home'),'node');?>
+                        </div>
+                        <?php if(red_crear_usuario_is_show_mi_perfil_menu()):?>
+                            <?php if(!crear_usuario_is_usuario_no_grupo()):?>
+                                <div class="div_custom_link">
+                                    <?php print l(t('Questions'),'user/'.$user->uid.'/edit/Preguntas');?>
+                                </div>
+                                <div class="div_custom_link">
+                                    <?php print l(t('Other service'),'user/'.$user->uid.'/edit/Otro_servicio');?>
+                                </div>
+                                <div class="div_custom_link">
+                                    <?php print l(t('Organisation'),'user/'.$user->uid.'/edit/Empresa');?>
+                                </div>
+                                <div class="div_custom_link">
+                                    <?php print l(t('Facilitator'),'user/'.$user->uid.'/edit/Consultoria_en_gestion_de_la_informacion');?>
+                                </div>    
+                                <div class="div_custom_link">
+                                      <?php print l(t('Groups'),'user/'.$user->uid.'/edit/groups');?>
+                                </div>
+                                </div>
+                                <div class="div_custom_link">
+                                      <?php print l(t('Account'),'user/'.$user->uid.'/edit');?>
+                                </div>
+                            <?php endif;?>      
+                        <?php endif;?>                                                            
+                    <?php endif;?>
+                </div>
+            </div>
+            <?php if ($messages != ""): ?>
+                <?php print $messages; ?>
+            <?php endif; ?>
+            <div class="div_custom_container">
+                <div class="div_custom_container_left">
+                    <?php print red_crear_usuario_get_custom_css_hontza_imagen_red($path_custom);?>                    
+                </div>
+                <div class="div_custom_container_right">
+                    <?php print $content;?>
+                </div>    
+            </div>
+            
+            <?php if(hontza_is_footer()):?>
+  <div id="footer" class="layout-region" style="width:100%;margin: 0 auto -1em;">
+    <?php print hontza_canal_rss_get_logos_apis();?>      
+    <?php //intelsat-2015?>
+    <!--  
+    <div id="footer-inner">
+    -->
+    <div id="footer-inner" class="footer-inner-integrated-services" style="padding-top:20px;">  
+      <?php print $contentfooter; ?>
+      <?php //gemini ?>
+      <?php //print $footer_message; ?>
+      <?php //print 'Powered by Hontza 3.0.';?>
+      <?php print get_frase_powered('castellano');?>
+        <BR>
+      <?php print get_frase_powered('ingles');?>
+    </div>
+  </div>
+  <?php else:?>
+  
+  <div id="footer" class="layout-region" style="width:100%;margin: 0 auto -1em;background-color:#424242;">
+    <?php //print hontza_canal_rss_get_logos_apis();?>  
+    <div id="footer-inner-light">
+      <?php print $contentfooter; ?>
+      <?php //gemini ?>
+      <?php //print $footer_message; ?>
+      <?php //intelsat-2015?>
+      <?php //se ha comentado?>  
+      <?php print hontza_get_frase_powered_light();?>       
+    </div>
+  </div>
+  <?php endif;?>      
+            
+        </div>
+    </body>
+</html>

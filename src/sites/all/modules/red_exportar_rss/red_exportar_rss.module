@@ -71,20 +71,26 @@ function red_exportar_rss_get_canal_noticias($canal_nid_in=''){
 }
 function red_exportar_rss_get_item_link($node){
     $url='';
-    if(isset($node->feeds_node_item) && isset($node->feeds_node_item->guid)){
-        $url=$node->feeds_node_item->guid;
-    }
-    //
-    if(empty($url)){
-        //intelsat-2016
-        $field_red_item_web=red_fields_inc_get_field_item_web_name();
-        if(isset($node->$field_red_item_web)){
-            $row=$node->$field_red_item_web;
-            if(isset($row[0]['value'])){
-                $url=$row[0]['value'];
-            }
-        }            
-    }
+    if($node->type=='item'){
+        if(isset($node->feeds_node_item) && isset($node->feeds_node_item->guid)){
+            $url=$node->feeds_node_item->guid;
+        }
+        //
+        if(empty($url)){
+            //intelsat-2016
+            $field_red_item_web=red_fields_inc_get_field_item_web_name();
+            if(isset($node->$field_red_item_web)){
+                $row=$node->$field_red_item_web;
+                if(isset($row[0]['value'])){
+                    $url=$row[0]['value'];
+                }
+            }            
+        }
+    }else if($node->type=='noticia'){
+        $is_url=1;
+        $is_crm_exportar=1;
+        $url=hontza_noticia_usuario_web_link($node,$is_url,$is_crm_exportar);
+    }    
     return $url;
 }
 function red_exportar_rss_canal_get_xml_url_name($canal_nid){
@@ -235,6 +241,7 @@ function red_exportar_rss_cron(){
     $canales=get_all_nodes(array('canal_de_supercanal','canal_de_yql'));
     if(!empty($canales)){
         foreach($canales as $i=>$canal){
+            //drupal_set_message('red_exportar_rss canal:'.$canal->title);
             red_exportar_rss_canal_create($canal->nid);                    
         }
     }
@@ -780,7 +787,8 @@ function red_exportar_create_canal_rss_name($canal_nid){
 //intelsat-2015
 //intelsat-2016
 //function red_exportar_rss_enviar_mail_add_js($canal_nid){
-function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$is_view=0){    
+//function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$is_view=0){    
+function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$is_view=0,$type_in='',$is_return=0){    
     $my_grupo=og_get_group_context();
     $my_grupo_nid='';
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
@@ -789,6 +797,12 @@ function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$
     $destination=red_copiar_get_popup_destination();
     //intelsat-2016
     $my_base_path=hontza_canal_rss_get_base_path_help_popup();
+    $type='';
+    $canal_usuarios_name='_canal_usuarios';
+    if(!empty($type_in)){
+        $type=$type_in.'_';
+        $canal_usuarios_name='';
+    }
     if(!empty($canal_usuarios_uid)){
         $view='';
         if($is_view){
@@ -797,18 +811,22 @@ function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$
         $js="$(document).ready(function()
          {
 
-             $('#exred_exportar_rss_canal_usuarios_".$view."enviar_mail_".$canal_usuarios_uid."').jqm({ajax: '".$my_base_path."help_popup.php?nid=red_exportar_rss_enviar_mail&w=500&h=400&canal_nid=".$canal_usuarios_uid."&my_grupo_nid=".$my_grupo_nid.'&is_canal_usuarios=1'.$destination."', trigger: 'a.jqm-trigger-red_exportar_rss_canal_usuarios_".$view."enviar_mail_".$canal_usuarios_uid."',modal:true, toTop: true, overlay: 0});
+             $('#exred_exportar_rss".$canal_usuarios_name."_".$view."enviar_mail_".$type.$canal_usuarios_uid."').jqm({ajax: '".$my_base_path."help_popup.php?nid=red_exportar_rss_enviar_mail&w=500&h=400&canal_nid=".$canal_usuarios_uid."&my_grupo_nid=".$my_grupo_nid.'&is_canal_usuarios=1'.$destination."', trigger: 'a.jqm-trigger-red_exportar_rss".$canal_usuarios_name."_".$view."enviar_mail_".$type.$canal_usuarios_uid."',modal:true, toTop: true, overlay: 0});
 
          });";
     }else{
          $js="$(document).ready(function()
          {
 
-             $('#exred_exportar_rss_enviar_mail_".$canal_nid."').jqm({ajax: '".$my_base_path."help_popup.php?nid=red_exportar_rss_enviar_mail&w=500&h=400&canal_nid=".$canal_nid."&my_grupo_nid=".$my_grupo_nid.$destination."', trigger: 'a.jqm-trigger-red_exportar_rss_enviar_mail_".$canal_nid."',modal:true, toTop: true, overlay: 0});
+             $('#exred_exportar_rss_enviar_mail_".$type.$canal_nid."').jqm({ajax: '".$my_base_path."help_popup.php?nid=red_exportar_rss_enviar_mail&w=500&h=400&canal_nid=".$canal_nid."&my_grupo_nid=".$my_grupo_nid.$destination."', trigger: 'a.jqm-trigger-red_exportar_rss_enviar_mail_".$type.$canal_nid."',modal:true, toTop: true, overlay: 0});
 
          });";
     }
+    /*if($is_return){
+        return '<script type="text/javascript">'.$js.'</script>';
+    }else{*/    
      drupal_add_js($js,'inline');
+    //}
 }
 //intelsat-2015
 function red_exportar_rss_get_canal_nid($canal_nid_in){

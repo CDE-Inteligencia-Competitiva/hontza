@@ -33,11 +33,14 @@ function busqueda_rss_exportar_busqueda_rss_callback(){
     if(isset($canal_node->field_canal_busqueda_busqueda[0]['value']) && !empty($canal_node->field_canal_busqueda_busqueda[0]['value'])){
         $canal_node->node_data_field_canal_busqueda_busqueda_field_canal_busqueda_busqueda_value=$canal_node->field_canal_busqueda_busqueda[0]['value'];        
     }
-    $url_solr_search=hontza_solr_search_get_left_link_rss($canal_node,1);
+    $url_solr_search=hontza_solr_search_get_left_link_rss($canal_node,1);    
+    /*if(hontza_is_sareko_id('ROOT') && user_access('root')){
+      echo print_r($url_solr_search,1);exit();
+    }*/
     if(empty($url_solr_search)){
         $nid_array=busqueda_rss_get_busqueda_view_nid_array($canal_nid);
         busqueda_rss_node_feed($nid_array,array(),$canal_nid);
-    }else{        
+    }else{
        drupal_goto($url_solr_search['path'],$url_solr_search['query'].'&is_enviar_mail=1');
     }
     exit();
@@ -207,18 +210,21 @@ function busqueda_rss_node_feed($nids = FALSE, $channel = array(),$canal_nid_in=
       }
       //intelsat-2015
       if(!hontza_is_user_anonimo()){
-        //file_put_contents($sites_filename,$rssfeed);
-        if(hontza_canal_rss_is_publico_exportar_rss_activado($canal_nid)){
-          drupal_goto('canales_rss/'.$canal_nid.'/red_exportar_rss/enviar_mail');  
-          //$destination=red_copiar_get_popup_destination('?');  
-          //drupal_goto('canales_rss/'.$canal_nid.'/red_exportar_rss/enviar_mail'.$destination);
-          //intelsat-2015
-          exit();
-        }
+        $param1=arg(1);
+        if($param1!='simular_cron'){
+          //file_put_contents($sites_filename,$rssfeed);
+          if(hontza_canal_rss_is_publico_exportar_rss_activado($canal_nid)){
+            drupal_goto('canales_rss/'.$canal_nid.'/red_exportar_rss/enviar_mail');  
+            //$destination=red_copiar_get_popup_destination('?');  
+            //drupal_goto('canales_rss/'.$canal_nid.'/red_exportar_rss/enviar_mail'.$destination);
+            //intelsat-2015
+            exit();
+          }
 
-        if(empty($canal_nid_in) || $is_custom_exportar_busqueda_rss){
-            drupal_goto($xml_url);
-        }
+          if(empty($canal_nid_in) || $is_custom_exportar_busqueda_rss){
+              drupal_goto($xml_url);
+          }
+        }  
       }
   }else{
       drupal_set_header('Content-Type: application/rss+xml; charset=utf-8');
@@ -283,7 +289,7 @@ function busqueda_rss_exportar_busqueda_rss($canal_nid,$is_custom_exportar_busqu
     busqueda_rss_node_feed($nid_array,array(),$canal_nid,0,'',$is_custom_exportar_busqueda_rss);        
 }
 function busqueda_rss_simular_cron_callback(){
-    return 'Funcion desactivada';
+    //return 'Funcion desactivada';
     busqueda_rss_custom_cron();
     return date('Y-m-d H:i');
 }

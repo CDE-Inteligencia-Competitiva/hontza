@@ -62,6 +62,7 @@ class FeedsSimplePieParser extends FeedsParser {
    */
   public function parse(FeedsImportBatch $batch, FeedsSource $source) {
     feeds_include_library('simplepie.inc', 'simplepie');
+
     // Initialize SimplePie.
     $parser = new SimplePie();
     $parser->set_raw_data($batch->getRaw());

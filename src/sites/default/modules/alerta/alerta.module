@@ -781,7 +781,7 @@ $form['limite_resumen']=alerta_limite_resumen_form_field($row);
 $form['limite_resumen_comentario']=alerta_limite_resumen_comentario_form_field($row);
 
 //intelsat-2016
-alerta_inc_add_tipo_link_form_field($form); 
+alerta_inc_add_tipo_link_form_field($form,'',$row); 
 
 $form['alerta_canal_btn_submit']=array(
   '#type' => 'submit',
@@ -1174,7 +1174,7 @@ $form['limite_resumen']=alerta_limite_resumen_form_field($row);
 $form['limite_resumen_comentario']=alerta_limite_resumen_comentario_form_field($row);
 
 //intelsat-2016
-alerta_inc_add_tipo_link_form_field($form); 
+alerta_inc_add_tipo_link_form_field($form,'',$row); 
 
 $form['alerta_categoria_btn_submit']=array(
   '#type' => 'submit',
@@ -1202,13 +1202,20 @@ add_js_alerta_delete_btn($row);
 
 return $form;
 }
-function add_grupos_categorias_txek_fieldset($form_in,$row){
+//intelsat
+//function add_grupos_categorias_txek_fieldset($form_in,$row){
+function add_grupos_categorias_txek_fieldset($form_in,$row,$is_crm_exportar_crear_url=0){
     global $user;
     //
     $form=$form_in;
     $tid_array=explode(',',$row->categorias_string);
     //
-    $grupo_list=my_get_og_grupo_list($user->uid,1);
+    //intelsat
+    if($is_crm_exportar_crear_url){
+      $grupo_list=hontza_crm_exportar_textos_get_usuario_grupo_array(0,1);
+    }else{
+      $grupo_list=my_get_og_grupo_list($user->uid,1);
+    }
     if(count($grupo_list)>0){
         foreach($grupo_list as $i=>$row){
             $key_fs='categoria_fs_'.$row->nid;
@@ -1539,7 +1546,7 @@ $form['limite_resumen']=alerta_limite_resumen_form_field($row);
 $form['limite_resumen_comentario']=alerta_limite_resumen_comentario_form_field($row);
 
 //intelsat-2016
-alerta_inc_add_tipo_link_form_field($form);      
+alerta_inc_add_tipo_link_form_field($form,'',$row);      
 
 $form['alerta_usuario_btn_submit']=array(
   '#type' => 'submit',
@@ -1990,7 +1997,7 @@ function get_alerta_categoria_list_by_row($param,$nombre_dia,$categoria_canal_ni
                         $result[]=$row;
                     }
                 }
-                
+                //echo print_r($result,1);
                 $result=repasar_filtrado($result,$param);
             }
     }
@@ -2149,6 +2156,9 @@ function my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$hi
             //if(!red_despacho_is_activado()){
             if(!red_despacho_is_activado() || red_dashboard_is_activado()){
                 $body=alerta_add_css($body);                
+            }
+            if(hontza_is_sareko_id('ITI')){
+                $body=alerta_add_css($body); 
             }            
         }
         $mail_to=trim($mail_to_in);
@@ -2248,6 +2258,7 @@ function my_call_send_mail($mail_to,$subject,$body,$send_method,$alert_type,$is_
                     $is_html=0;
                 }
             }*/
+        //print $message['body'];exit();   
         drupal_mail_send($message,$is_html);
         //}    
     }
@@ -2301,7 +2312,7 @@ function create_boletin_mail_html($my_list_in,$current_type,&$hay_novedades_out,
         //echo print_r($my_list[0],1);exit();
         $html[]='<table class="mail_table" style="width:100%;border:0px;">';
         $th_class=red_despacho_boletin_report_get_th_categoria_title_class($tipos_fuente_row);        
-        $html[]='<tr><th colspan="2"'.$th_class.'>'.get_current_type_title($current_type,$titulo_mail,$param_alerta,$term_name,$tipos_fuente_row).'</th></tr>';
+        $html[]='<tr><th colspan="2"'.$th_class.'>'.get_current_type_title($current_type,$titulo_mail,$param_alerta,$term_name,$tipos_fuente_row,$bg).'</th></tr>';
         
 
         /*if(in_array($current_type,array('user_canal','user_autor','user_categoria'))){
@@ -2372,7 +2383,7 @@ function create_boletin_mail_html($my_list_in,$current_type,&$hay_novedades_out,
 }
 //intelsat-2015
 //function get_current_type_title($current_type,$titulo_mail,$param_alerta='',$term_name='',$tipos_fuente_row){
-function get_current_type_title($current_type,$titulo_mail,$param_alerta='',$term_name='',$tipos_fuente_row=''){    
+function get_current_type_title($current_type,$titulo_mail,$param_alerta='',$term_name='',$tipos_fuente_row='',$bg=''){    
     //$boletin_txek=array();
     $title='';
     if(strcmp($current_type,'validado')==0){
@@ -2402,7 +2413,7 @@ function get_current_type_title($current_type,$titulo_mail,$param_alerta='',$ter
     if(!empty($title)){
         //return strtoupper($boletin_txek['label']);
         if(red_despacho_is_activado()){
-            $title=red_despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row);
+            $title=red_despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row,$bg);
         }else{
             $title=my_upper($title);
         }    
@@ -2555,6 +2566,9 @@ function get_node_eskubi_aldea_link($node,$my_nid='',$bg='',$param_alerta=''){
     //intelsat-2015
     global $base_url;
     $node_title=estrategia_set_title_max_len(htmlkarakter($node->title));
+    //intelsat
+    $node_title=red_despacho_boletin_report_set_node_title_with_nid($node_title,$node,$bg);
+    //print $node_title;exit();    
     if(isset($node->nid) && !empty($node->nid)){
         $html=l($node_title,'node/'.$node->nid);
         //
@@ -2613,12 +2627,14 @@ function get_node_eskubi_aldea_link($node,$my_nid='',$bg='',$param_alerta=''){
                     }
                 }            	            	
             }
-        }
+        }        
     }
     if(in_array($node->type,array('idea','oportunidad','proyecto'))){
         $img=get_image_node_type($node->type);
         $html=$img.$html;
     }
+    //intelsat-boletin-link
+    $html=boletin_report_inc_get_boletin_item_link_type_web($node,$node_title,$html,$bg);
     return $html;
 }
 function repasar_filtrado($my_list,$param){
@@ -2817,10 +2833,10 @@ function call_alerta_categoria($row,$nombre_dia,$user_mail,$por_correo=1){
             if(count($categoria_canal_nid_list)>0){
                 /*if(user_access('root')){
                     echo print_r($categoria_canal_nid_list,1);
-                }*/    
+                }*/ 
                         $alerta_categoria_list=get_alerta_categoria_list_by_row($row,$nombre_dia,$categoria_canal_nid_list,$my_message);
                         //echo print_r($alerta_categoria_list,1);
-                        if(count($alerta_categoria_list)>0){                            
+                        if(count($alerta_categoria_list)>0){
                             $my_limite=get_alerta_my_limite($row->my_limite);
                             //$titulo_mail=t('Alerta personalizada de categoría').': '.$categoria_title;
                             //gemini-2013
@@ -3398,9 +3414,11 @@ function my_add_css($is_download=0){
     //intelsat-2015
     global $base_url;    
     $html=array();
+    //if(!hontza_is_sareko_id('ITI')){
     if(!red_despacho_boletin_report_is_my_add_css()){
         return '';
     }
+    //}
     //$hasi_url='http://'.$_SERVER['HTTP_HOST'].base_path();
     $hasi_url=$base_url.'/';
     $is_pdf=boletin_report_pdf_is_pdf();
@@ -3442,7 +3460,12 @@ function my_add_css($is_download=0){
     //intelsat-2016        
     //}else if(red_is_rojo()){
     }else if(alerta_inc_is_custom_boletin_css()){
-        $html[]='<link type="text/css" rel="stylesheet" media="all" href="'.$hasi_url.'sites/'.$sareko_id.'.hontza.es/themes/'.$sareko_id.'-buho/'.$style_name.'.css?3" />';    
+        if(defined('_BOLETIN_SAREKO_ID') && !empty(_BOLETIN_SAREKO_ID)){
+        $boletin_sareko_id=strtolower(_BOLETIN_SAREKO_ID);
+        $html[]='<link type="text/css" rel="stylesheet" media="all" href="'.$hasi_url.'sites/'.$boletin_sareko_id.'.hontza.es/themes/'.$boletin_sareko_id.'-buho/'.$style_name.'.css?3" />';  
+        }else{
+        $html[]='<link type="text/css" rel="stylesheet" media="all" href="'.$hasi_url.'sites/'.$sareko_id.'.hontza.es/themes/'.$sareko_id.'-buho/'.$style_name.'.css?3" />';
+        }    
     }else if(red_despacho_is_activado()){
         //intelsat-2015
         //$html=array();

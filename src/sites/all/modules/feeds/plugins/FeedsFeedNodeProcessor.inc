@@ -149,7 +149,9 @@ class FeedsFeedNodeProcessor extends FeedsProcessor {
   /**
    * Override setTargetElement to operate on a target item that is a node.
    */
+  //intelsat 
   public function setTargetElement($target_node, $target_element, $value) {
+  //public function setTargetElement(&$target_node, $target_element, $value) {  
     if ($target_element == 'source') {
       // Get the class of the feed node importer's fetcher and set the source
       // property. See feeds_nodeapi() how $node->feeds gets stored.

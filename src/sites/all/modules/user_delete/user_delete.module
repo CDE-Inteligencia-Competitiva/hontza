@@ -224,6 +224,9 @@ function user_delete_submit($form, &$form_state) {
     $redirect = variable_get('user_delete_redirect', 'node');
   }
 
+  //intelsat-2016
+  red_facilitator_delete_users_facilitators_network($account,'',1);
+  
   // Clear the cache for anonymous users.
   cache_clear_all();
 

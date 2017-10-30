@@ -101,9 +101,12 @@
     </tr>
     <?php else:?>
     <tr class="tr_node_view">     
-            <td class="td_label_node_view"><b><?php print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
+            <td class="td_label_node_view"><b><?php print red_despacho_get_canal_url_label();//print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
             <td class="td_value_node_view"><?php print hontza_get_enlace_fuente_del_canal_view_html($node,1);?></td>
     </tr>
+        <?php if(red_despacho_is_canal_fuente_titulo_activado()):?>
+            <?php include('canal-source-title-url-table-view.tpl.php');?>
+        <?php endif;?>    
     <?php endif;?>    
     <?php if(hontza_is_hound_canal($node->nid)):?>
             <?php if(hontza_is_hound_text_input()):?>
@@ -166,7 +169,7 @@
     </tr>
     <?php else:?>
     <tr class="tr_node_view">     
-            <td class="td_label_node_view"><b><?php print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
+            <td class="td_label_node_view"><b><?php print red_despacho_get_canal_url_label();//print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
             <td class="td_value_node_view"><?php print hontza_get_enlace_fuente_del_canal_view_html($node,1);?></td>
     </tr>
     <?php endif;?>

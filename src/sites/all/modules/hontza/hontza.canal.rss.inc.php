@@ -456,6 +456,7 @@ function hontza_canal_rss_set_channel_actions($content){
         <?php print link_import_canal($nid);?>
         <?php print link_ver_canal($nid);?>
         <?php print link_edit_canal($nid);?>
+        <?php print red_canal_link_export_canal($nid);?>
         <?php print link_validar_canal($nid);?>
         <?php print "</div>";?>
         <?php print "</fieldset>";?>
@@ -959,7 +960,11 @@ function hontza_canal_rss_solr_update_validador($row){
         $nid=$row->content_id;
         $node=node_load($nid);
         if(isset($node->nid) && !empty($node->nid)){
-            $res=db_query('UPDATE {content_type_item} SET field_item_validador_uid_uid=%d WHERE nid=%d AND vid=%d',$uid,$node->nid,$node->vid);        
+            if($node->type=='item'){
+                $res=db_query('UPDATE {content_type_item} SET field_item_validador_uid_uid=%d WHERE nid=%d AND vid=%d',$uid,$node->nid,$node->vid);
+            }else{
+                $res=db_query('UPDATE {content_type_noticia} SET field_noticia_validador_uid_uid=%d WHERE nid=%d AND vid=%d',$uid,$node->nid,$node->vid);
+            }    
         }
     }    
 }
@@ -1612,10 +1617,16 @@ function hontza_canal_rss_is_visualizador_inicio(){
 //intelsat-2015
 //intelsat-2016
 //function hontza_canal_rss_add_red_exportar_rss_enviar_mail_js($canal_nid){
-function hontza_canal_rss_add_red_exportar_rss_enviar_mail_js($canal_nid,$canal_usuarios_uid='',$is_view=0){    
+//function hontza_canal_rss_add_red_exportar_rss_enviar_mail_js($canal_nid,$canal_usuarios_uid='',$is_view=0){    
+function hontza_canal_rss_add_red_exportar_rss_enviar_mail_js($canal_nid,$canal_usuarios_uid='',$is_view=0,$type='',$is_return=0){    
+    $result='';
     if(module_exists('red_exportar_rss')){
         //intelsat-2016
-        red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid,$is_view);
+        //red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid,$is_view);
+        $result=red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid,$is_view,$type,$is_return);        
+    }
+    if($is_return){
+        return $result;
     }
 }
 //intelsat-2015

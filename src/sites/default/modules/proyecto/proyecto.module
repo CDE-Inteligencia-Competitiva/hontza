@@ -429,6 +429,8 @@ $form['invitados'] = array(
   '#required' => FALSE
   );
 
+  idea_add_crear_invitado_fieldset_form_field($form);
+
 $form['fases'] = array(
     '#type' => 'textfield',
     //'#title' => t('Phases and estimated duration of the project'),
@@ -590,6 +592,9 @@ function proyecto_validate($node, &$form) {
   }
   validate_proyecto_categorias_tematicas($node,$form);*/
   validate_proyecto_reto_al_que_responde($form);
+  /*if (!proyecto_validate_sel_oportunidad($node)) {
+    form_set_error('sel_oportunidad', t('Select opportunity is required'));
+  }*/
 }
 
 /**
@@ -1415,8 +1420,9 @@ function create_proyecto_guraso_fieldset($proyecto_nid,$oportunidad_nid,$node_op
         $sel_oportunidad_nid=$oportunidad_nid;
     }
 
-    $rows=get_idea_arbol_rows(0,'seleccionar_oportunidad',$tipo_adheridos);
-    //echo print_r($rows,1);
+    //$rows=get_idea_arbol_rows(0,'seleccionar_oportunidad',$tipo_adheridos);
+    $rows=get_idea_arbol_rows(0,'seleccionar_oportunidad',$tipo_adheridos,0,1);
+    //echo 'rows='.print_r($rows,1);exit();
     $rows=prepare_arbol_by_pro($rows,2);
     $keys=array();
     if(count($rows)>0){
@@ -1718,7 +1724,7 @@ function save_proyecto_invitados($proyecto_nid,$invitados,$node){
                 og_save_subscription($my_grupo->nid, $new_uid, array('is_active' => 1));
             }
             //
-            insert_proyecto_invitados($oportunidad_nid,$new_uid);
+            insert_proyecto_invitados($proyecto_nid,$new_uid);
         }
 }
 function my_delete_proyecto_invitados($proyecto_nid){
@@ -2253,4 +2259,56 @@ function proyecto_is_ficha_tabla(){
 //intelsat-2015
 function proyecto_get_numero_socios_table($node){
     return get_numero_socios_fieldset($node,1);
+}
+function proyecto_validate_sel_oportunidad($node){
+  $oportunidad_nid=set_estrategia_seleccionada($node);
+        //print 'oportunidad_nid='.$oportunidad_nid;exit();
+        if(empty($oportunidad_nid)){
+            return 0;
+        }
+        return 1;
+}
+function proyecto_add_oportunidad_sin_idea_row($result_in){
+  $result=$result_in;
+  $row=new stdClass();
+  $row->nid='proyecto_add_oportunidad_sin_idea_row';
+  $row->title=proyecto_get_title_without_idea();
+  $result[]=$row;
+  return $result;
+}
+function proyecto_get_oportunidad_sin_idea_list(){
+    $result=array();
+    $where=array();
+    //$where[]=$where_time;
+    //$where[]="n.uid=".$uid;
+    $where[]="n.type='oportunidad'";
+    $where[]="(oportunidad.idea_nid=0 OR oportunidad.idea_nid IS NULL)";
+    //gemini-2014
+    //intelsat-2016
+    /*$param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where,'oportunidad');
+    }else{*/
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR oportunidad.grupo_nid='.$my_grupo->nid.')';
+        }
+    //}    
+    //
+    $sql="SELECT n.* 
+    FROM {node} n 
+    LEFT JOIN {og_ancestry} og_ancestry ON n.nid=og_ancestry.nid
+    LEFT JOIN {oportunidad} ON n.vid=oportunidad.vid  
+    WHERE ".implode(" AND ",$where)." ORDER BY n.created ASC";
+    //print $sql.'<BR>';exit();
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function proyecto_get_title_without_idea(){
+  $result='Without Idea';
+  $result=my_get_icono_action('edit_remove',$result);
+  return $result;
 }

@@ -2258,7 +2258,8 @@ function is_reto_al_que_responde_pantalla(){
     //
     return 0;
 }
-function my_get_icono_action($name,$label,$type='',$variables=array(),$style_in='',$class_in='',$my_theme_in=''){
+//function my_get_icono_action($name,$label,$type='',$variables=array(),$style_in='',$class_in='',$my_theme_in='',$size=' w'){
+function my_get_icono_action($name,$label,$type='',$variables=array(),$style_in='',$class_in='',$my_theme_in='',$size=''){    
     global $base_url;
     $html=array();
     //intelsat-2015
@@ -2308,7 +2309,7 @@ function my_get_icono_action($name,$label,$type='',$variables=array(),$style_in=
         $class=$class_in;
     }
     //
-    $html[]='<img class="'.$class.'" src="'.$path.'.png" alt="'.$label.'" title="'.$label.'"'.$style.'>';
+    $html[]='<img class="'.$class.'" src="'.$path.'.png" alt="'.$label.'" title="'.$label.'"'.$style.' '.$size.'>';
     return implode('',$html);
 }
 function add_div_actions($content,$with_class=1,$class='',$type=''){

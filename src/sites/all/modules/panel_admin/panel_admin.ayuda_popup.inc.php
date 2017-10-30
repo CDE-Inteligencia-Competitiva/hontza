@@ -241,3 +241,38 @@ function panel_admin_ayuda_popup_is_filter_activated(){
             }
             return 0;
 }
+function panel_admin_ayuda_popup_get_help_popup_node_callback(){
+    $result='';
+    $nid=arg(3);
+    $my_lang=arg(4);
+    //print $nid;exit();
+    if(panel_admin_ayuda_popup_is_node_type_my_help($nid)){
+        if(empty($my_lang) || $my_lang=='en'){
+            $node=node_load($nid);
+        }else{
+            $node = node_load(array('tnid' => $nid, 'language' => $my_lang));
+            if (!(isset($node->nid) && !empty($node->nid))){
+                $node=node_load($nid);
+            }
+        }
+        
+        /*echo print_r($node,1);
+        exit();*/
+    }else{
+        $node=new stdClass();
+    }
+    $result=json_encode($node);
+    print $result;
+    exit();
+}
+function panel_admin_ayuda_popup_is_node_type_my_help($nid){
+    $where=array();
+    $where[]='node.type="my_help"';
+    $where[]='node.nid='.$nid;
+    $sql='SELECT node.nid,node.type FROM {node} WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        return 1;
+    }
+    return 0;
+}

@@ -696,7 +696,9 @@ function hontza_solr_funciones_delete_bookmark_row($nid,$vid,$uid){
 function hontza_solr_funciones_bookmarks_callback($bookmark_type=''){
     global $user;
     hontza_solr_funciones_delete_bookmark_node_temporal();
-    $my_limit=20;
+    //$my_limit=20;
+    $my_limit=red_despacho_get_nodes_limit(20);
+    //print $my_limit.'<br>';
     $rows=array();
     $my_grupo=og_get_group_context();
     if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
@@ -857,9 +859,11 @@ function hontza_solr_funciones_get_bookmark_ini($is_solr){
     if(hontza_solr_search_modificar_taxonomia_access()){
         $html[]=hontza_solr_search_get_modificar_taxonomia_link($style);        
     }
-    $html[]='<div style="'.$style.'">';
-    $html[]=l(my_get_icono_action('delete', t('Delete'),''),'hontza_solr/delete_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_delete_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
-    $html[]='</div>';
+    if(is_super_admin()){
+      $html[]='<div style="'.$style.'">';
+      $html[]=l(my_get_icono_action('delete', t('Delete'),''),'hontza_solr/delete_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_delete_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    
+      $html[]='</div>';
+    }  
     $html[]='</fieldset>';
     hontza_solr_funciones_add_bookmark_multiple_js();
     return implode('',$html);
@@ -1394,6 +1398,9 @@ function hontza_solr_funciones_node_feed($nids = FALSE, $channel = array()) {
   foreach ($nids as $nid) {
     // Load the specified node:
     $item = node_load($nid);
+    if(!(isset($item->nid) && !empty($item->nid))){
+      continue;
+    }
     $item->build_mode = NODE_BUILD_RSS;
     $item->link = url("node/$nid", array('absolute' => TRUE));
 

@@ -13,3 +13,10 @@
     <td class="td_value_node_view"><?php print my_get_source_view_api_icon($node,'full_text_rss')?></td>
 </tr>
 <?php endif;?>
+<?php //intelsat ?>
+<?php if(red_canal_is_feed_saniziter_activado()):?>
+<tr class="tr_node_view">
+    <td class="td_label_node_view"><b><?php print t('Apply Feed Saniziter');?></b>:&nbsp;</td>
+    <td class="td_value_node_view"><?php print my_get_source_view_api_icon($node,'feed_saniziter');?></td>
+</tr>
+<?php endif;?>

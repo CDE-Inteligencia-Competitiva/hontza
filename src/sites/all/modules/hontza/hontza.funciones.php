@@ -2327,7 +2327,11 @@ function my_get_busqueda_simple_content($is_publico=0,$is_destination=0){
                     $result=red_solr_get_index_action_form_remaining_confirm_destination_url($my_grupo,$query_busqueda_avanzada_solr);
                     return $result;
                 }else{
-                    $html.='&nbsp;'.l(t('Advanced'),'hontza_solr/busqueda_avanzada_solr',array('query'=>$query_busqueda_avanzada_solr));
+                    /*if(red_solr_index_inc_is_before()){
+                        $html.='&nbsp;'.l(t('Advanced'),'red/solr/index/before');
+                    }else{*/
+                        $html.='&nbsp;'.l(t('Advanced'),'hontza_solr/busqueda_avanzada_solr',array('query'=>$query_busqueda_avanzada_solr));
+                    //}    
                 }
             }else{
                 $html.='&nbsp;'.l(t('Advanced'),'hontza_solr/busqueda_avanzada');

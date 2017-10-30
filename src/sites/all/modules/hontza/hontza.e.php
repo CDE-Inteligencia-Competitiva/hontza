@@ -156,13 +156,16 @@ function hontza_yql_wizard_define_url($data_in,$filter,$yql_obj=''){
           //print $new_url;exit();
       }
   }*/
-  
   if(hontza_social_is_json_url_by_data($data,$url_json)){
     $url=$url_json;
   }else if(hontza_canal_rss_is_correo_rss($data,$url_correo,$yql_obj)){  
     //intelsat-2015
     $url=$url_correo;  
   }else{
+    //intelsat
+    require_once('sites/all/modules/hontza/wizards/yql.wizard.inc');
+    $data=yql_wizard_set_atom_to_rss_url_array($data_in,array(),1,$yql_obj);
+    //echo print_r($data,1);exit();
     $url ='http://query.yahooapis.com/v1/public/yql?q=';  
     $query = "select channel.title, channel.link, channel.item.title, channel.item.link, channel.item.description, channel.item.guid from xml where url in('".implode("', '",$data)."')";
     $post_query=" | unique(field='channel.item.title') | unique(field='channel.item.link') | unique(field='channel.item.description')";
@@ -1962,6 +1965,7 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
     if(empty($link) && empty($guid) && empty($url)){
         return $result;
     }else{
+        red_canal_fix_import_rss_item_info_url($link,$guid,$url);
         $where=array();
         $where[]='1';
         $or=array();
@@ -2019,6 +2023,14 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
                 $or[]='feeds_node_item.guid LIKE "'.$link_ini.'%%'.$link_end.'"';
             }
         }
+
+        //intelsat-2017-mirar-titulo-noticia-duplicado
+        $is_comparar_title=hontza_is_comparar_title($source,$link,$guid,$url);
+        //print 'is_comparar_title='.$is_comparar_title;exit();
+        if($is_comparar_title){
+            $or[]='n.title="%s"';
+        }
+
         //intelsat-2016
         //$where[]='('.implode(' OR ',$or).')';
         $or_url='('.implode(' OR ',$or).')';
@@ -2056,9 +2068,18 @@ function hontza_get_guid_url_item_array($elemento,$with_grupo=1,$source='',$info
         }*/
         //intelsat-2016
         if($is_solo_url){
-            $res=db_query($sql);
+            //intelsat-2017-mirar-titulo-noticia-duplicado
+            if($is_comparar_title){
+                $res=db_query($sql,$title);
+            }else{
+                $res=db_query($sql);
+            }    
         }else{
-            $res=db_query($sql,$title);
+            if($is_comparar_title){
+                $res=db_query($sql,$title,$title);
+            }else{    
+                $res=db_query($sql,$title);
+            }
         }
         while($row=db_fetch_object($res)){
             $result[]=$row;
@@ -2496,3 +2517,83 @@ function hontza_get_gestion_canales_block_content(){
   }
   return '';
 }
+//intelsat-2017-mirar-titulo-noticia-duplicado
+function hontza_is_comparar_title($source,$link,$guid,$url){
+   $result=0;
+   /*echo 'source='.print_r($source,1);
+   exit();*/
+   /*print 'link='.$link.'<BR>';
+   print 'guid='.$guid.'<BR>';
+   print 'url='.$url.'<BR>'; 
+   exit();*/
+   
+   //$result=hontza_is_comparar_title_with_url($source,$link,$guid,$url);
+   $result=hontza_is_comparar_by_is_avoid_duplicate_titles($source);
+   //print 'result='.$result;exit();
+   return $result;    
+}
+function hontza_define_comparar_title_web_url_array(){
+    $result=array();
+    $web_url_array=array('aviationweek.com');
+    $prefijo_array=array('http://','https://','http://www.','https://www.','www.');
+    if(!empty($web_url_array) && !empty($prefijo_array)){
+        foreach($web_url_array as $i=>$web_url){
+            foreach($prefijo_array as $b=>$prefijo){
+                $result[]=$prefijo.$web_url;
+            }
+        }
+    }
+    return $result;
+}
+function hontza_is_comparar_title_with_url($source,$link,$guid,$url){
+   $url_array=array();
+   $url_array[]=$link;
+   $url_array[]=$guid;
+   $url_array[]=$url;
+   /*echo print_r($url_array,1);
+   exit();*/ 
+   $web_url_array=hontza_define_comparar_title_web_url_array();
+   if(!empty($web_url_array) && !empty($url_array)){
+        /*echo print_r($web_url_array,1);
+        exit();*/
+        foreach($web_url_array as $i=>$web_url){
+            foreach ($url_array as $b => $url_value) {
+                $pos=strpos($url_value,$web_url);
+                if($pos===FALSE){
+                    continue;
+                }else if($pos==0){
+                    //print $url_value;exit();
+                    return 1;
+                }
+            }
+                
+        }
+   }
+   return 0;
+}
+//intelsat-2017-mirar-titulo-noticia-duplicado
+function hontza_define_field_is_avoid_duplicate_titles_options(){
+    $result=array();
+    $result[0]=t('Avoid duplicate titles');
+    $result[1]=t('Avoid duplicate titles');
+    return $result;
+}
+//intelsat-2017-mirar-titulo-noticia-duplicado
+function hontza_is_comparar_by_is_avoid_duplicate_titles($source){
+    $canal_node=node_load($source->feed_nid);
+    if(isset($canal_node->field_is_avoid_duplicate_titles) && isset($canal_node->field_is_avoid_duplicate_titles[0])){
+        if(isset($canal_node->field_is_avoid_duplicate_titles[0]['value']) && !empty($canal_node->field_is_avoid_duplicate_titles[0]['value'])){
+            if($canal_node->field_is_avoid_duplicate_titles[0]['value']==1){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+//intelsat-2017-mirar-titulo-noticia-duplicado
+function hontza_is_avoid_duplicate_titles_activado(){
+    if(db_table_exists('content_field_is_avoid_duplicate_titles')){
+        return 1;
+    }
+    return 0;
+}       

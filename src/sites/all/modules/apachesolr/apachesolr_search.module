@@ -984,7 +984,10 @@ function apachesolr_search_search_results($keys = NULL, $conditions_in = NULL, $
       //if(hontza_solr_is_all_results() || $is_alerta){
       if(hontza_solr_is_all_results() || $is_alerta || red_solr_inc_is_my_order()){
         $params['rows']=100000;
-      }
+      }/*else{
+        //$params['rows']=red_despacho_get_nodes_limit($params['rows']);
+        print $params['rows'];
+      }*/
       //
       if (empty($search_page['settings']['apachesolr_search_spellcheck'])) {
         // Spellcheck needs to have a string as false/true

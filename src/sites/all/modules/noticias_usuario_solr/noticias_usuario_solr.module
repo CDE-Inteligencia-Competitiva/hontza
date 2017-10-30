@@ -60,7 +60,8 @@ function noticias_usuario_solr_actualizar_validador($noticia_array){
     noticias_usuario_solr_reset_item_validador();
     //cache_clear_all();
     //
-    $flag_content_array=noticias_usuario_solr_get_flag_content_array($noticia_array);
+    $is_actualizar_validador=1;
+    $flag_content_array=noticias_usuario_solr_get_flag_content_array($noticia_array,$is_actualizar_validador);
     if(!empty($flag_content_array)){
         foreach($flag_content_array as $i=>$row){
             noticias_usuario_solr_update_validador($row);
@@ -71,11 +72,20 @@ function noticias_usuario_solr_reset_item_validador(){
     $sql='UPDATE {content_type_noticia} SET field_noticia_validador_uid_uid=NULL';
     $res=db_query($sql);
 }
-function noticias_usuario_solr_get_flag_content_array($noticia_array){
+function noticias_usuario_solr_get_flag_content_array($noticia_array,$is_actualizar_validador=0){
     $result=array();
     $where=array();
     $where[]='1';
-    $where[]='flag_content.fid=2';
+    //$where[]='flag_content.fid=2';
+    if($is_actualizar_validador){
+        if(red_solr_inc_is_validator_rejected()){
+            $where[]='(flag_content.fid=2 OR flag_content.fid=3)';
+        }else{
+            $where[]='flag_content.fid=2';
+        }
+    }else{
+        $where[]='flag_content.fid=2';
+    }
     $where[]='flag_content.content_type="node"';
     $nid_array=hontza_nid_array($noticia_array);
     if(!empty($nid_array)){

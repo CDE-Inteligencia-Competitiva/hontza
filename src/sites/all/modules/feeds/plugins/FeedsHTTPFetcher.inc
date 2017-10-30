@@ -29,6 +29,10 @@ class FeedsHTTPBatch extends FeedsImportBatch {
                 $this->url =$my_url;
             }            
         }*/
+
+        //intelsat
+        $this->url=red_canal_set_feed_saniziter_url($this->url,$feed_nid);
+
             if(hontza_is_hound_canal($feed_nid)){
                 $my_url=hontza_get_hound_url_by_nid($feed_nid);
                 if(!empty($my_url)){

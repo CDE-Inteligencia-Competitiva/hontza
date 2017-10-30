@@ -261,7 +261,7 @@
                                     <div class="item-canal-import">
                                         <?php print hontza_canal_rss_canal_import_link($node);?>
                                     </div>
-                                    <div class="item-canal-export-rss">
+                                    <div class="item-canal-export-rss" style="display:none;">
                                         <?php print hontza_canal_rss_get_canales_rss_link($node);?>
                                     </div>
                                     <div class="item-canal-borrar-noticias">

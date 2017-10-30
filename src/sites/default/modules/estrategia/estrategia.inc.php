@@ -86,12 +86,12 @@ function estrategia_import_csv($file_path,$form_state=''){
         estrategia_crear_retos_csv($lineas,$form_state);
     }
 }
-function estrategia_get_lineas_csv($file_path,$find_in=''){
+function estrategia_get_lineas_csv($file_path,$find_in='',$is_importar_crm=0){
     //$is_utf8=estrategia_importar_is_utf8($file_path);
     $lineas=array();
     //intelsat-2015
     $find=";";
-    $find=estrategia_inc_get_csv_character($file_path);
+    $find=estrategia_inc_get_csv_character($file_path,$is_importar_crm);
     //intelsat-2016
     if(!empty($find_in)){
         $find=$find_in;
@@ -1508,10 +1508,13 @@ function estrategia_inc_wiki_delete_reto_al_que_responde($nid,$vid){
     }    
 }
 //intelsat-2015
-function estrategia_inc_get_csv_character($file_path){
+function estrategia_inc_get_csv_character($file_path,$is_importar_crm=0){
     $result=";";
     $lineas=array();
     $find_array=array(";",",");
+    if($is_importar_crm){
+        $find_array=array(";","/t");
+    }
     //
     if(!empty($find_array)){
         foreach($find_array as $i=>$find){

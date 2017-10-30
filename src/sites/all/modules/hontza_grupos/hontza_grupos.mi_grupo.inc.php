@@ -1725,3 +1725,45 @@ function hontza_grupos_mi_get_grupo_by_node($node){
         return $result;
     }
 }
+function hontza_grupos_mi_grupo_taxonomy_form_alter(&$form,&$form_state, $form_id){
+    $vid=6;
+    $tid_collaborative=27;
+    $tid_closed=28;
+    $tid_public=29;
+    $result=array();
+    if($form_id=='grupo_node_form'){
+        if(isset($form['taxonomy'][$vid])){
+            foreach($form['taxonomy'][$vid]['#options'] as $i=>$option){
+                if(isset($option->option[$tid_collaborative]) && !empty($option->option[$tid_collaborative])){
+                    $form['taxonomy'][$vid]['#options'][$i]->option[$tid_collaborative]=t('Collaborative');
+                    $option_collaborative=$form['taxonomy'][$vid]['#options'][$i];
+                }else if(isset($option->option[$tid_closed]) && !empty($option->option[$tid_closed])){
+                    $form['taxonomy'][$vid]['#options'][$i]->option[$tid_closed]=t('Closed');
+                    $option_closed=$form['taxonomy'][$vid]['#options'][$i];
+                }else if(isset($option->option[$tid_public]) && !empty($option->option[$tid_public])){
+                    $form['taxonomy'][$vid]['#options'][$i]->option[$tid_public]=t('Open');
+                    $option_public=$form['taxonomy'][$vid]['#options'][$i];
+                }
+            }
+            $form['taxonomy'][$vid]['#options'][0]=$option_closed;
+            $form['taxonomy'][$vid]['#options'][1]=$option_collaborative;
+            $form['taxonomy'][$vid]['#options'][2]=$option_public;
+        }
+    }    
+}
+function hontza_grupos_mi_grupo_get_quant_where_grupo_all(&$where_grupo){
+    $result="1";
+    $grupo_nid_array=array();
+    $grupos_array=hontza_get_all_nodes(array('grupo'));
+    if(!empty($grupos_array)){
+        foreach($grupos_array as $i=>$grupo_node){
+            $grupo_nid_array[]=$grupo_node->nid;
+        }
+    }
+    if(!empty($grupo_nid_array)){
+        $result="og_uid.nid IN(".implode(",",$grupo_nid_array).")";
+        $or=quant_my_get_or_array('',$grupo_nid_array);       
+        $where_grupo="(og_ancestry.group_nid IN(".implode(",",$grupo_nid_array).") OR ".implode(" OR ",$or).")";
+    }
+    return $result;
+}

@@ -41,7 +41,8 @@ function email_html_is_activado(){
     return 0;*/
     return 1;
 }
-function email_html_add_html(&$message,$is_texto=0){
+//function email_html_add_html(&$message,$is_texto=0){
+function email_html_add_html(&$message,$is_texto=0,$is_apply_firma_style=0){        
     global $base_url;
     $html=email_html_get_plantilla_html();
     if($is_texto){
@@ -52,7 +53,8 @@ function email_html_add_html(&$message,$is_texto=0){
     $body=str_replace("\r\n", '<br>', $body);
     $body=str_replace("\n", '<br>', $body);
     $body=str_replace("\r", '<br>', $body);
-    $firma=red_copiar_get_mail_firma();                
+    //$firma=red_copiar_get_mail_firma();                
+    $firma=red_copiar_get_mail_firma($is_apply_firma_style);
     $body.=$firma;
     $body=str_replace('texto_correo',$body,$html);
     $body=$body;

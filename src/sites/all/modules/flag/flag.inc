@@ -450,7 +450,11 @@ class flag_flag {
                     hontza_canal_rss_solr_update_validador($validador_row);
                     hontza_canal_rss_solr_clear_node_index('',$content_id);
                 }else{
-                    hontza_canal_rss_solr_reset_validador($validador_row);
+                    if(red_solr_inc_is_validator_rejected()){
+                      hontza_canal_rss_solr_update_validador($validador_row);
+                    }else{
+                      hontza_canal_rss_solr_reset_validador($validador_row);
+                    }
                     hontza_canal_rss_solr_clear_node_index('',$content_id);
                 }
                 //
@@ -463,7 +467,11 @@ class flag_flag {
                 alert_notif_flag_save($content_id,$this->fid,'unflag');
                 //intelsat-2015
                 hontza_canal_rss_solr_on_flag_update_node_validate_status($content_id);
-                hontza_canal_rss_solr_reset_validador($validador_row);
+                if(red_solr_inc_is_validator_rejected()){
+                  hontza_canal_rss_solr_update_validador($validador_row);
+                }else{
+                  hontza_canal_rss_solr_reset_validador($validador_row);
+                }
                 hontza_canal_rss_solr_clear_node_index('',$content_id);
                 //
 	  }

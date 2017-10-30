@@ -3,6 +3,8 @@ function facilitador_validados_facilitadores_publicados_callback(){
     $headers=array();
     $headers[0]=t('Expert');
     $headers[1]=t('Services');
+    //intelsat-2016
+    $headers[2]=t('Created');
     //$headers[2]=t('Actions');
     //        
     $where=array();
@@ -13,7 +15,7 @@ function facilitador_validados_facilitadores_publicados_callback(){
     LEFT JOIN {users_facilitators} ON users_facilitators.uid=users.uid
     WHERE '.implode(' AND ',$where).'
     GROUP BY users.uid     
-    ORDER BY users_facilitators.id DESC';
+    ORDER BY users_facilitators.timestamp_validate DESC';
     $res=db_query($sql);        
     $rows=array();
     $kont=0;
@@ -38,6 +40,8 @@ function facilitador_validados_facilitadores_publicados_callback(){
       //$rows[$kont][1]=facilitador_get_services_html($my_user);
       $rows[$kont][1]=facilitador_get_servicios_experto_html($r->servicios_experto);
       //$rows[$kont][2]=array('data'=>facilitador_define_facilitadores_acciones($r),'style'=>'white-space:nowrap;');
+      //intelsat-2016
+      $rows[$kont][2]=date('Y-m-d',$r->timestamp_validate);
       $kont++;
     }
     //

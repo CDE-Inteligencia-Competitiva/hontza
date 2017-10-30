@@ -106,6 +106,7 @@ function hontza_admin_email_settings() {
     '#default_value' => variable_get('my_from_default_mail', 'no-reply@hontza.es'),
     '#required' => TRUE
   );
+  
   //intelsat-2015
   drupal_set_title(t('No reply email'));  
    return system_settings_form($form);

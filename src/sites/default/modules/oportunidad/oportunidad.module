@@ -385,6 +385,8 @@ $form['invitados'] = array(
   '#required' => FALSE
   );
 
+  idea_add_crear_invitado_fieldset_form_field($form);
+
 /*$form['reto_al_que_responde'] = array(
     '#type' => 'textarea',
     '#title' => t('Associated Challenge'),
@@ -440,6 +442,9 @@ function oportunidad_validate($node, &$form) {
   validate_oportunidad_categorias_tematicas($node,$form);
   */
   validate_oportunidad_reto_al_que_responde($form);
+  /*if (!oportunidad_validate_sel_idea($node)) {
+    form_set_error('sel_idea', t('Select Idea is required'));
+ }*/
 }
 
 /**
@@ -1027,7 +1032,8 @@ function get_title_oportunidad_simbolo_img(){
     //intelsat-2016
     global $base_url;
     $html=array();
-    $html[]='<img src="http://"'.$base_url.'/sites/default/files/my_images/oportunidad_title.png"/>';
+    //$html[]='<img src="http://'.$base_url.'/sites/default/files/my_images/oportunidad_title.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/oportunidad_title.png"/>';
     return implode('',$html);
 }
 function create_oportunidad_guraso_fieldset($oportunidad_nid,$idea_nid,$node_idea_nid,$tipo_adheridos){
@@ -1194,6 +1200,9 @@ function oportunidad_list_camino($node){
     if($node->type=='oportunidad'){
         $idea_nid=$node->idea_nid;
         //
+        if(empty($idea_nid)){
+              $idea_nid='proyecto_add_oportunidad_sin_idea_row';
+        }
         if(!empty($idea_nid)){
                 $html[]=get_link_camino_html($idea_nid,$padding_hasi,$my_padding,0);
                 //if($bakarra){
@@ -1207,6 +1216,9 @@ function oportunidad_list_camino($node){
         if(!empty($oportunidad_nid)){
              $oportunidad=node_load($oportunidad_nid);
              $idea_nid=$oportunidad->idea_nid;
+             if(empty($idea_nid)){
+              $idea_nid='proyecto_add_oportunidad_sin_idea_row';
+             }
              if(!empty($idea_nid)){
                 $html[]=get_link_camino_html($idea_nid,$padding_hasi,$my_padding,0);
                 $html[]=get_link_camino_html($oportunidad_nid,$padding_hasi,$my_padding,1);
@@ -1878,4 +1890,12 @@ function oportunidad_set_empty_label_stars($my_stars){
     $result=$my_stars;
     $result=str_replace(t('Rating').':','',$result);
     return $result;
+}
+function oportunidad_validate_sel_idea($node){
+        $idea_nid=set_estrategia_seleccionada($node);
+        //print 'idea_nid='.$idea_nid;exit();
+        if(empty($idea_nid)){
+            return 0;
+        }
+        return 1;
 }

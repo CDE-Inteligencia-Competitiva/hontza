@@ -274,8 +274,11 @@
                       
                                 <?php //intelsat-2015 ?>
                                 <?php if(!hontza_solr_search_is_usuario_lector()):?>
+                                <div class="item-editar" style="margin-top:2px;">
+					 				<?php print red_canal_link_export_canal($node->nid,1);?>
+                                </div>
                                 <div class="item-editar">
-					 <?php print hontza_canal_edit_link($node);?>
+					 				<?php print hontza_canal_edit_link($node);?>
                                 </div>
                                    
                                 <?php //if(is_super_admin()):?>
@@ -286,7 +289,7 @@
                                     <div class="item-canal-import">
                                         <?php print hontza_canal_rss_canal_import_link($node);?>
                                     </div>
-                                    <div class="item-canal-export-rss">
+                                    <div class="item-canal-export-rss" style="display:none;">
                                         <?php print hontza_canal_rss_get_canales_rss_link($node);?>
                                     </div>
                                     <div class="item-canal-borrar-noticias">

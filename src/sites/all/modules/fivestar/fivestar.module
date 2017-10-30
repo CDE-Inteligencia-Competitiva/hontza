@@ -704,7 +704,11 @@ function fivestar_vote($type, $cid, $tag, $value) {
   if ($type == 'node') {
     $node = node_load($cid);
     //gemini-2014
-    hontza_validar_con_accion($cid);
+    //intelsat
+    //hontza_validar_con_accion($cid);
+    $is_hound_noticia_feed_noticia_email=0;
+    $is_value=1;
+    hontza_validar_con_accion($cid,$is_hound_noticia_feed_noticia_email,$is_value,$value);
     //intelsat-2015
     hontza_solr_funciones_save_bookmark_multiple_vote($node);
     //intelsat-2016

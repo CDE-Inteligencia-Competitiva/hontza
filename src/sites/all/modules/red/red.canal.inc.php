@@ -694,3 +694,171 @@ function red_canal_get_activated_channel_options(){
     $result[1]=$label;
     return $result;
 }
+//intelsat
+function red_canal_atom2rss_callback(){
+    $url=$_REQUEST['url'];
+    $result=hontza_atom2rrs($url);
+    print $result;
+    exit();
+}
+//intelsat
+function red_canal_is_feed_saniziter_activado(){
+    if(module_exists('hontza_feed_saniziter')){
+        return hontza_feed_saniziter_is_feed_saniziter_activado();
+    }
+    return 0;
+}
+//intelsat
+function red_canal_define_apply_feed_saniziter_options(){
+    $result=array();
+    $label=t('Apply Feed Saniziter');
+    $label=t('Apply Feed Saniziter');
+    $result[0]=$label;
+    $result[1]=$label;
+    return $result;
+}
+//intelsat
+function red_canal_feed_saniziter_node_canal_form_alter(&$form,&$form_state,$form_id){
+    if(!red_canal_is_feed_saniziter_activado()){
+        if(isset($form['field_apply_feed_saniziter']) && !empty($form['field_apply_feed_saniziter'])){
+            unset($form['field_apply_feed_saniziter']);
+        }
+    }
+}
+//intelsat
+function red_canal_yql_wizard_add_apply_feed_saniziter_form_field(&$form){
+    if(red_canal_is_feed_saniziter_activado()){
+        hontza_feed_saniziter_yql_wizard_add_apply_feed_saniziter_form_field($form);
+    }    
+}
+//intelsat
+function red_canal_yql_wizard_set_apply_feed_saniziter_value_on_yql_canal_form_submit(&$fuente,$form_state){
+    if(red_canal_is_feed_saniziter_activado()){
+        hontza_feed_saniziter_yql_wizard_set_apply_feed_saniziter_value_on_yql_canal_form_submit($fuente,$form_state);
+    }    
+}
+//intelsat
+function red_canal_set_feed_saniziter_url($url,$canal_nid){
+    $result=$url;
+    if(red_canal_is_feed_saniziter_activado()){
+        $result=hontza_feed_saniziter_set_feed_saniziter_url($url,$canal_nid);
+    }    
+    return $result;
+}
+//intelsat
+function red_canal_yql_wizard_set_feed_saniziter_rss_url_array($result_in,$form_state,$is_filtro_rss,$yql_obj){
+    $result=$result_in;
+    if(red_canal_is_feed_saniziter_activado()){
+        $result=hontza_feed_saniziter_yql_wizard_set_feed_saniziter_rss_url_array($result,$form_state,$is_filtro_rss,$yql_obj);
+    }    
+    return $result;
+}
+//intelsat
+function red_canal_feed_saniziter_is_field_apply_feed_saniziter($canal_node){
+    if(red_canal_is_feed_saniziter_activado()){
+        return hontza_feed_saniziter_is_field_apply_feed_saniziter($canal_node);
+    }
+    return 0;    
+}
+function red_canal_link_export_canal($nid,$is_view_canal=0,$is_canal_usuario=0){
+    global $user,$base_url;
+    if(module_exists('red_exportar_rss')){
+            $label=t('Export channel');
+            $html=array();
+            $link='';
+            $icon=$base_url.'/'.drupal_get_path('theme','buho').'/images/icons/copiar_nodo.png';
+            $img='<img class="icono_validar_pagina" src="'.$icon.'" title="'.$label.'" alt="'.$label.'"/>'; 
+            //if(is_user_administrador_de_grupo()){
+            if(red_exportar_rss_enviar_mail_canales_rss_access()){
+                $style='';
+                if($is_view_canal){
+                    $style=' style="float:left;padding-left:0px;"';
+                }
+                $html[]= '<span class="link_import_canal"'.$style.'>';
+                $is_show=0;
+                if($is_canal_usuario){
+                    $is_show=1;
+                }else{
+                    $node=node_load($nid);                
+                    if(isset($node->nid) && !empty($node->nid)){
+                        $is_show=1;
+                    }
+                }
+                if($is_show){    
+                    $path='canales_rss';
+                    $type='top';
+                    $canal_nid=$nid;
+                    $canal_usuarios_uid='';
+                    if($is_canal_usuario){
+                        $path='canales_rss_canal_usuarios';
+                        $type='top_canal_usuario';
+                        $canal_nid='';
+                        $canal_usuarios_uid=$nid;
+                    }
+                    $url=$path.'/'.$nid.'/red_exportar_rss/enviar_mail';
+                    
+                    $class='a_validar_pagina jqm-trigger-red_exportar_rss_enviar_mail_'.$type.'_'.$nid;
+                    //$class='jqm-trigger-red_exportar_rss_enviar_mail_top_'.$nid;
+                    //$class='jqm-trigger-'.$nid;
+                    //$html[]='<div class="export_canal_popup">';
+                    $attributes=array('class'=>$class);
+                    if($is_view_canal){
+                        $attributes['style']='background-image:none !important;padding-left:0px !important;padding-top:0px !important;padding-bottom:0px !important;float:none;';
+                    }
+                    $html[]=l($img,$url,array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>$attributes));
+                    $html[]='<div id="exred_exportar_rss_enviar_mail_'.$type.'_'.$nid.'" class="jqmWindow jqmID2000"></div>'; 
+                    //$html[]='<div id="ex'.$nid.'" class="jqmWindow jqmID2000"></div>';                 
+                    //$html[]='</div>';
+                    hontza_canal_rss_add_red_exportar_rss_enviar_mail_js($canal_nid,$canal_usuarios_uid,0,$type);
+                    /*$is_return=1;
+                    $html[]=hontza_canal_rss_add_red_exportar_rss_enviar_mail_js($nid,'',0,'top',$is_return);*/
+                }else{
+                    return '';
+                }
+                $html[]= '</span>';
+            }
+            return implode('',$html);
+    }    
+    return '';    
+}
+function red_canal_fix_import_rss_item_url(&$result){
+    $my_array=array('link','guid','url');
+    if(!empty($my_array)){
+        foreach($my_array as $i=>$field){
+            if(isset($result[$field]) && !empty($result[$field])){
+                $url=$result[$field];
+                $pos=strpos($url,'"');
+                if($pos===FALSE){
+                    //
+                }else{
+                    //$url=addslashes($url);
+                    $url=str_replace('"','\'',$url);
+                    //print $url;exit();
+                }
+                $result[$field]=$url;    
+            }
+        }
+    }
+}
+function red_canal_fix_import_rss_item_info_url(&$link,&$guid,&$url){
+    $result['link']=$link;
+    $result['guid']=$guid;
+    $result['url']=$url;
+    red_canal_fix_import_rss_item_url($result);
+    //echo print_r($result,1);exit();
+    $link=$result['link'];
+    $guid=$result['guid'];
+    $url=$result['url'];
+}
+function red_canal_is_url_item_guid($guid){
+    $my_array=array('http','https');
+    foreach($my_array as $i=>$value){
+        $pos=strpos($guid,$value);
+        if($pos===FALSE){
+
+        }else{
+            return 1;
+        }
+    }
+    return 0;
+}      

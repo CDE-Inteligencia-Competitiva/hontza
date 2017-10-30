@@ -89,11 +89,20 @@
  *   $db_url = 'mysqli://username:password@localhost/databasename';
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
-$db_url['default'] = 'mysql://username:password@localhost/hontza';
+//$db_url = 'mysql://kam:686295@mysql.e-cicerone.net/eciceronenet2';
+//$db_url = 'mysql://root@localhost/eciceronenet3';
+//$db_url = 'mysql://root@localhost/eciceronenet4';
+
+//$db_url = 'mysql://root:68629527A@localhost/eciceronenet4';
+//$db_url = 'mysql://hontzacde:hontza30@localhost/hontza30';
+$db_url['default'] = 'mysql://hontza:hontzacde@localhost/hontza';
+//$db_url['my_install'] = 'mysql://remotoa:68629527A@92.243.10.49/eciceronenet3';
+$db_url = 'mysql://5sUdEsU3:hontza@localhost/hontza';
+
 
 $db_prefix = '';
 
-define('_SAREKO_ID', 'BLANCO');
+define('_SAREKO_ID','ROOT');
 define('_IS_NETWORK_HONTZA',1);
 define('_IS_SOLR',1);
 define('_IS_HOUND',1);
@@ -120,11 +129,17 @@ define('_IS_CANAL_JSON',1);
 define('_IS_FACILITADOR_WITH_USER',1);
 define('_IS_CANAL_OPENCALAIS',1);
 define('_IS_ESTRATEGIA_CONGELAR_VOTO',1);
-define('_RED_EXPORTAR_RSS_PREFIJO_SITES','default');
+//define('_RED_EXPORTAR_RSS_PREFIJO_SITES','default');
 define('_IS_SOLR_ACTUALIZAR_NOTICIAS_USUARIO',1);
 define('_IS_CANAL_DUPLICATE_NEWS',1);
 define('_IS_GRUPO_TAB_ACTIVADO',0);
 define('_IS_BOLETIN_REPORT_SHOW_ATTACHMENTS',1);
+define('_IS_CRM_EXPORTAR_TEXTO',1);
+define('_IS_CRM_EXPORTAR_TAG',1);
+define('_IS_FEED_SANIZITER',1);
+define('_IS_HOUND_FILTER',1);
+define('_IS_CRM_LIST_TYPE',1);
+define('_IS_CRM_ACTIVAR_CLIENTE',1);
 //Red fields
 define('_FIELD_RED_ITEM_WEB_NAME','field_igape_item_web');
 define('_FIELD_RED_IDIOMAS_NAME','field_igape_idiomas');

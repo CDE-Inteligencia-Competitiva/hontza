@@ -488,8 +488,15 @@ function quant_my_is_show($quant_id){
 function quant_my_set_query($quant_in){
    $quant=clone $quant_in;
    $my_grupo=og_get_group_context();
+   $where_grupo='1';
+   $where_grupo_og_uid='1';
    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
-       $or=quant_my_get_or_array($my_grupo->nid);
+    $or=quant_my_get_or_array($my_grupo->nid);       
+    $where_grupo="(og_ancestry.group_nid=".$my_grupo->nid." OR ".implode(" OR ",$or).")";
+    $where_grupo_og_uid="og_uid.nid=".$my_grupo->nid;
+   }else{
+    $where_grupo_og_uid=hontza_grupos_mi_grupo_get_quant_where_grupo_all($where_grupo);
+   } 
        if($quant->dataType=='multiple' && $quant->id=='node_creation_by_type1'){
            $sql="SELECT type, created 
            FROM {node}
@@ -502,7 +509,7 @@ function quant_my_set_query($quant_in){
            LEFT JOIN {oportunidad} ON node.vid=oportunidad.vid
            LEFT JOIN {proyecto} ON node.vid=proyecto.vid
            WHERE created >= %d 
-           AND type NOT LIKE 'grupo' AND (og_ancestry.group_nid=".$my_grupo->nid." OR ".implode(" OR ",$or).") ORDER BY created DESC";
+           AND type NOT LIKE 'grupo' AND ".$where_grupo." ORDER BY created DESC";
            $quant->query=$sql;
        }else if($quant->id=='content_creation1'){
            $sql="SELECT created 
@@ -516,7 +523,7 @@ function quant_my_set_query($quant_in){
            LEFT JOIN {oportunidad} ON node.vid=oportunidad.vid
            LEFT JOIN {proyecto} ON node.vid=proyecto.vid
            WHERE created >= %d            
-           AND type NOT LIKE 'grupo' AND (og_ancestry.group_nid=".$my_grupo->nid." OR ".implode(" OR ",$or).") ORDER BY created DESC";
+           AND type NOT LIKE 'grupo' AND ".$where_grupo." ORDER BY created DESC";
            $quant->query=$sql;
        }else if($quant->id=='comment_creation1'){
            $sql="SELECT timestamp 
@@ -530,28 +537,32 @@ function quant_my_set_query($quant_in){
            LEFT JOIN {idea} ON node.vid=idea.vid
            LEFT JOIN {oportunidad} ON node.vid=oportunidad.vid
            LEFT JOIN {proyecto} ON node.vid=proyecto.vid
-           WHERE timestamp >= %d AND (og_ancestry.group_nid=".$my_grupo->nid." OR ".implode(" OR ",$or).") ORDER BY timestamp DESC";
+           WHERE timestamp >= %d AND ".$where_grupo." ORDER BY timestamp DESC";
            $quant->query=$sql;
        }else if($quant->id=='user_creation1'){
            $sql="SELECT users.created 
             FROM {users}
             LEFT JOIN {og_uid} ON users.uid=og_uid.uid 
-            WHERE users.created >= %d AND og_uid.nid=".$my_grupo->nid." 
+            WHERE users.created >= %d AND ".$where_grupo_og_uid." 
             ORDER BY users.created DESC";
            $quant->query=$sql;
        }else if($quant->id=='number_of_visited_page_group'){
            $sql="SELECT accesslog.timestamp 
            FROM {accesslog}
            LEFT JOIN {og_uid} ON accesslog.uid=og_uid.uid 
-           WHERE accesslog.timestamp >= %d AND og_uid.nid=".$my_grupo->nid." 
+           WHERE accesslog.timestamp >= %d AND ".$where_grupo_og_uid." 
+           GROUP BY accesslog.aid 
            ORDER BY accesslog.timestamp DESC";
+           //print $sql;
            $quant->query=$sql;
        }       
-   }
+   //}
+   //print $quant->id.'<br>';
+   //print $quant->id.'='.$quant->query.'<br>';   
    return $quant;
 }
 //gemini-2014
-function quant_my_get_or_array($grupo_nid){
+function quant_my_get_or_array($grupo_nid,$grupo_nid_array=''){
     $result=array();
     //simulando
     //$result[]='1';
@@ -566,7 +577,11 @@ function quant_my_get_or_array($grupo_nid){
     'proyecto');
     if(!empty($my_array)){
         foreach($my_array as $i=>$f){
-            $result[]=$f.'.grupo_nid='.$grupo_nid;
+            if(!empty($grupo_nid_array)){
+              $result[]=$f.'.grupo_nid IN('.implode(',',$grupo_nid_array).')';
+            }else{
+              $result[]=$f.'.grupo_nid='.$grupo_nid;
+            }  
         }    
     }
     return $result;

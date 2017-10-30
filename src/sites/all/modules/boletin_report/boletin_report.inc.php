@@ -705,10 +705,17 @@ function boletin_report_boletines_link($node){
 }
 function boletin_report_set_img_src_absolutos($content_in){
     global $base_url;
+    $my_base_url=$base_url;
+    //simulando
+    //$my_base_url='http://fagorederlan.hontza.es';
     $content=$content_in;
     /*if(!user_access('root')){
         return $content;
     }*/
+    //simulando
+    /*$content=str_replace('https://fagorederlan.hontza.es/','//',$content);
+    $content=str_replace('https://fagorederlan.hontza.es/','/',$content);
+    $content=str_replace('https://fagorederlan.hontza.es/','',$content);*/
     $sep_array=array('<IMG','<img');
     foreach($sep_array as $k=>$sep){  
         //$sep='<IMG src="';
@@ -725,25 +732,28 @@ function boletin_report_set_img_src_absolutos($content_in){
                         if($pos===FALSE){
                             //
                         }else{
-                            $pos_base_url=strpos($url,$base_url);                                
-                            if($pos_base_url===FALSE){                            
-                                $url=substr($v,0,$pos);
-                                $pos_system=strpos($url,'system/files');
-                                if($pos_system===FALSE){
-                                    //
-                                }else{
-                                    $url=url($base_url.'/'.$url,array('absolute'=>TRUE));
-                                    $value=substr($my_value,0,$pos_src+strlen('src=')+1).$url.substr($v,$pos);
-                                    $my_array[$i]=$value;
-                                }
-                            }
+                            $url=substr($v,0,$pos);
+                            if(boletin_report_inc_is_url_relativo($url)){
+                                    $pos_base_url=strpos($url,$my_base_url);                                
+                                    if($pos_base_url===FALSE){                            
+                                        //$url=substr($v,0,$pos);
+                                        $pos_system=strpos($url,'system/files');
+                                        if($pos_system===FALSE){
+                                            //
+                                        }else{
+                                            $url=url($my_base_url.'/'.$url,array('absolute'=>TRUE));
+                                            $value=substr($my_value,0,$pos_src+strlen('src=')+1).$url.substr($v,$pos);
+                                            $my_array[$i]=$value;
+                                        }
+                                    }
+                            }    
                         }
                     }
                 }
             }
         }
         $content=implode($sep,$my_array);
-    }    
+    }
     return $content;
 }
 function boletin_report_get_votingapi_cache_node_average_value($nid){
@@ -1243,16 +1253,29 @@ function boletin_report_inc_title_of_bulletin_automatico_form(&$form_state,$cont
     return $form;
 }
 //intelsat-2015
-function boletin_report_inc_get_title_of_bulletin_automatico($id,$is_edit_content=0,$row_in=''){
+//function boletin_report_inc_get_title_of_bulletin_automatico($id,$is_edit_content=0,$row_in=''){
+function boletin_report_inc_get_title_of_bulletin_automatico($id,$is_edit_content=0,$row_in='',$bulletin_text_nid=''){
     if(empty($id)){
         $row=$row_in;
     }else{
         $row=boletin_report_get_row($id);
     }
     if(!$is_edit_content){
+        if(boletin_report_in_is_launch()){
+            if(!empty($bulletin_text_nid)){
+                $bulletin_text_node=node_load($bulletin_text_nid);
+                if(isset($bulletin_text_node->nid) && !empty($bulletin_text_node->nid)){
+                    if(isset($bulletin_text_node->title) && !empty($bulletin_text_node->title)){
+                        //print 'bulletin_text_nid='.$bulletin_text_nid.'<br>';
+                        //print $bulletin_text_node->title;exit();
+                        return $bulletin_text_node->title;
+                    }    
+                }
+            }
+        }
         if(isset($row->titulo_boletin) && !empty($row->titulo_boletin)){
             return $row->titulo_boletin;
-        }
+        }            
     }    
     //
     if(isset($row->titulo) && !empty($row->titulo)){
@@ -1381,6 +1404,8 @@ function boletin_report_inc_fix_https($content){
     //intelsat-2016
     if(boletin_report_inc_is_fix_imagenes_sin_http()){
         $result=str_replace('src="//','src="http://',$result);
+        //intelsat
+        $result=str_replace('src="/','src="'.$base_url.'/',$result);
     }        
     $pos=strpos($base_url,'https:');
     if($pos===FALSE){
@@ -1648,7 +1673,7 @@ function boletin_report_inc_is_show_etiquetas($br){
     return 1;
 }
 //intelsat-2016      
-function boletin_report_inc_add_tipo_link_form_field(&$form,$fieldset_name=''){
+function boletin_report_inc_add_tipo_link_form_field(&$form,$fieldset_name='',$row='',$is_show_item_link_type_web=0){
     $tipo_link=red_despacho_boletin_report_get_tipo_link_default_value($row);
     $tipo_link_form_field= array(
         '#type' => 'select',
@@ -1657,11 +1682,18 @@ function boletin_report_inc_add_tipo_link_form_field(&$form,$fieldset_name=''){
         '#default_value' =>$tipo_link,
         //'#required' => TRUE
     );
+    //intelsat-boletin-link
+    if($is_show_item_link_type_web){
+        if(boletin_report_inc_is_boletin_item_link_type_web_activado()){
+            $tipo_link_form_field['#prefix']='<div style="display:none;">';
+            $tipo_link_form_field['#suffix']='</div>';
+        }    
+    }
     if(!empty($fieldset_name)){
         $form[$fieldset_name]['tipo_link']=$tipo_link_form_field;        
     }else{
         $form['tipo_link']=$tipo_link_form_field;  
-    }
+    }    
 }
 //intelsat-2016 
 function boletin_report_inc_is_tipo_link_row($bg,$param_alerta){
@@ -1683,9 +1715,9 @@ function boletin_report_inc_is_links_to_web($bg,$param_alerta){
     if(!empty($param_alerta->tipo_link) && $param_alerta->tipo_link==2){
         return 1;        
     }
-    if(!empty($bg->tipo_link) && $bg->tipo_link==2){
+    /*if(!empty($bg->tipo_link) && $bg->tipo_link==2){
         return 1;        
-    }
+    }*/
     return 0;    
 }
 //intelsat-2016 
@@ -1719,7 +1751,9 @@ function boletin_report_inc_get_attachments_html($node){
         $icono=my_get_icono_action('ficheros_adjuntos',t('Attachments')).'&nbsp;';            
         $url_file='';
         foreach($node->files as $fid=>$row){
-            $url_file=hontza_get_url_file($row->filepath);
+            //$url_file=hontza_get_url_file($row->filepath);
+            $is_urlencode=1;
+            $url_file=hontza_get_url_file($row->filepath,$is_urlencode);
             //$url_file=str_replace('system/files','boletin_report/files',$url_file);
             $result[]='<div>'.$icono.l($row->filename,$url_file,array('attributes'=>array('target'=>'_blank','absolute'=>TRUE))).'</div>';
 
@@ -1752,4 +1786,49 @@ function boletin_report_inc_files_access(){
 function boletin_report_inc_files_callback(){
     return 'Desactivado';
     //return file_download();
+}
+//intelsat
+function boletin_report_inc_is_url_relativo($url){
+    $my_array=array('http:','https:','www.');
+    if(!empty($url)){
+        if(!empty($my_array)){
+            foreach($my_array as $i=>$value){
+                $pos=strpos($url,$value);
+                if($pos===FALSE){
+                    continue;
+                }else{
+                    if($pos==0){
+                        return 0;
+                    }
+                }
+            }
+            return 1;
+        }        
+    }
+    return 0;
+}
+//intelsat-boletin-link
+function boletin_report_inc_get_boletin_item_link_type_web($node,$node_title,$html_in,$br){
+    $html=$html_in;
+    if(boletin_report_inc_is_boletin_report_row($br)){
+        if(in_array($node->type,array('item','noticia'))){
+            if(boletin_report_inc_is_boletin_item_link_type_web_activado()){
+                $link='';
+                $url=crm_exportar_get_node_url($link,$node);
+                $html='<a href="'.$url.'">'.$node_title.'</a>';
+            }
+        }
+    }        
+    return $html;
+}
+//intelsat-boletin-link
+function boletin_report_inc_is_boletin_item_link_type_web_activado(){
+    if(hontza_crm_is_activado()){
+        if(defined('_BOLETIN_ITEM_LINK_TYPE_WEB') && _BOLETIN_ITEM_LINK_TYPE_WEB==1){    
+            //if(is_super_admin()){
+                return 1;
+            //}
+        }    
+    }
+    return 0;
 }

@@ -69,11 +69,11 @@
         <?php //if(hontza_is_sareko_id_red()):?>
             <?php //print red_get_summary_view_html($node);?>
         <?php //endif; ?>
-  			 <!-- gemini-->
+  			 <!-- gemini-->  
 			 <div id="ffc">
                                 <?php if(!hontza_canal_rss_is_show_user_image('inicio')):?>
                                 <?php if(!hontza_solr_search_is_usuario_lector()):?>                                                                
-			 	<div class="item-fecha">
+			 	<div class="item-fecha"<?php print red_despacho_get_item_fecha_style();?>>
                                     <?php print hontza_canal_rss_get_username_item($my_user_info);?>
                                     <?php //print date('d/m/Y',$node->created); ?>
                                     <?php print hontza_get_item_fecha_created($node);?>
@@ -81,21 +81,28 @@
                                 <?php endif;?>
                                 <?php else:?>
                                 <?php if(!hontza_is_user_anonimo()):?>
-                                    <div class="item-fecha">
+                                    <div class="item-fecha"<?php print red_despacho_get_item_fecha_style();?>>
                                         <?php print hontza_get_item_fecha_created($node);?>
                                     </div>
                                 <?php endif;?>
                                 <?php endif;?>
                                 <?php if(hontza_canal_rss_is_show_user_image()):?>
                                 <?php //echo print_r($node,1);exit();?>
-				<div class="item-canal">
+
+
+                                <?php if(red_despacho_is_canal_fuente_titulo_activado()):?> 
+                                  <?php include('item-source-title-url-view-items.tpl.php');?>
+                                <?php endif;?>
+
+
+				<div class="item-canal"<?php print red_despacho_get_item_canal_style();?>>              
                                 <?php //intelsat-2015 ?>    
                                 <?php if(hontza_canal_rss_is_publico_activado()):?>
                                   <span class="etiqueta-gris"><?php print t('Channel');?>: </span> <?php print publico_get_canal_link($node); ?>  
                                 <?php else:?>    
-				  <span class="etiqueta-gris"><?php print t('Channel');?>: </span> <?php print $node->field_item_canal_reference[0]['view']; ?>
-				<?php endif;?>
-                                </div>
+				                          <span class="etiqueta-gris"><?php print t('Channel');?>: </span> <?php print $node->field_item_canal_reference[0]['view']; ?>
+				                        <?php endif;?>
+        </div>
                                 <?php endif;?>
 			 </div>
   			
@@ -147,7 +154,8 @@
                          <?php //endif;?>
                          <?php endif;?>  
                          <?php //intelsat-2015 ?>                          
-                         <?php $label_categories=t('Thematic Categories');?>
+                         <?php //$label_categories=t('Thematic Categories');?>
+                         <?php $label_categories=t('Categories');?>
                          <?php if(hontza_is_user_anonimo()):?>
                              <?php $label_categories=t('Categories');?>
                          <?php endif;?>
@@ -155,7 +163,8 @@
                          <div style="margin-top:0px;float:left;" class="terms terms-inline">
                              <?php print hontza_solr_funciones_get_item_categorias_tematicas($node);?>
                          </div>
-                      </div>                          
+                      </div>
+                      <?php //include('item-source-title-url-view-items.tpl.php');?>                          
                       <?php endif;?>    
                 <?php endif;?>
                 <?php //intelsat-2016?>
@@ -284,7 +293,7 @@
          </div>   
         
           <?php //Delete item ?>
-        <div class="n-item-borrar">
+        <div class="n-item-borrar"<?php print red_node_get_item_view_style();?>>
             <?php print hontza_item_delete_link($node);?>
                   	
         </div>
@@ -472,7 +481,7 @@
         
         
                   <?php //Delete item ?>
-			<div class="n-item-borrar">
+			<div class="n-item-borrar"<?php print red_node_get_item_view_style();?>>
                             <?php print hontza_item_delete_link($node);?>
                         </div>
 		  <?php //Fin borrar item ?>
@@ -642,7 +651,7 @@
                         </div>
         
                         <?php //Delete item ?>
-			<div class="n-item-borrar">
+			<div class="n-item-borrar"<?php print red_node_get_item_view_style();?>>
                             <?php print hontza_item_delete_link($node);?>
                         </div>
         
@@ -800,10 +809,15 @@
 	
 			 <div id="ffc">
                                 <?php if(hontza_canal_rss_is_show_user_image()):?> 
-			 	<div class="item-fecha">
+			 	<div class="item-fecha"<?php print red_despacho_get_item_fecha_style();?>>
                                     <?php print date('d/m/Y',$node->created); ?>
-                                </div>                                                       
-				<div class="item-canal">
+                                </div> 
+
+         <?php if(red_despacho_is_canal_fuente_titulo_activado()):?>
+          <?php include('item-source-title-url-view.tpl.php');?>
+         <?php endif;?>                         
+
+				<div class="item-canal"<?php print red_despacho_get_item_canal_style();?>>
 				  <span class="etiqueta-gris"><?php print t('Channel');?>: </span> <?php print $node->field_item_canal_reference[0]['view']; ?>
 				</div>
                                 <?php endif;?>
@@ -852,7 +866,8 @@
                                     </div>
                                     <?php endif;?>
                                    <?php //intelsat-2015 ?> 
-                                    <?php $label_categories=t('Thematic Categories');?>
+                                    <?php //$label_categories=t('Thematic Categories');?>
+                                    <?php $label_categories=t('Categories');?>
                                     <?php if(hontza_is_user_anonimo()):?>
                                         <?php $label_categories=t('Categories');?>
                                     <?php endif;?> 
@@ -878,6 +893,10 @@
                                 <?php //include_once('red-item-fields.tpl.php');?>
                           <?php //endif;?>
                            
+                          <?php //if(red_despacho_is_canal_fuente_titulo_activado()):?>
+                            <?php //include('item-source-title-url-view.tpl.php');?>
+                          <?php //endif;?>  
+
                           <?php if(!hontza_is_user_anonimo()):?> 
                            <div class="field field-type-text field-item-visitas" style="float:left;clear:both;">
                             <div class="field-items">
@@ -1025,7 +1044,7 @@
         </div>
       
         <?php //Delete item ?>
-        <div class="n-item-borrar">
+        <div class="n-item-borrar"<?php print red_node_get_item_view_style();?>>
 	  	<?php print hontza_item_delete_link($node);?>
         </div>
         <?php else:?>    

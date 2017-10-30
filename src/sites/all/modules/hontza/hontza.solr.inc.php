@@ -639,7 +639,8 @@ function hontza_solr_actualizar_validador(){
     hontza_solr_reset_item_validador();
     //cache_clear_all();
     //
-    $flag_content_array=hontza_solr_get_flag_content_array();
+    $is_actualizar_validador=1;
+    $flag_content_array=hontza_solr_get_flag_content_array($is_actualizar_validador);
     if(!empty($flag_content_array)){
         foreach($flag_content_array as $i=>$row){
             hontza_canal_rss_solr_update_validador($row);
@@ -650,11 +651,20 @@ function hontza_solr_reset_item_validador(){
     $sql='UPDATE {content_type_item} SET field_item_validador_uid_uid=NULL';
     $res=db_query($sql);    
 }
-function hontza_solr_get_flag_content_array(){
+//function hontza_solr_get_flag_content_array(){
+function hontza_solr_get_flag_content_array($is_actualizar_validador=0){
     $result=array();
     $where=array();
     $where[]='1';
-    $where[]='flag_content.fid=2';
+    if($is_actualizar_validador){
+        if(red_solr_inc_is_validator_rejected()){
+            $where[]='(flag_content.fid=2 OR flag_content.fid=3)';
+        }else{
+            $where[]='flag_content.fid=2';
+        }
+    }else{
+        $where[]='flag_content.fid=2';
+    }
     $where[]='flag_content.content_type="node"';
     $sql='SELECT * 
     FROM {flag_content} flag_content
@@ -1567,7 +1577,9 @@ function  hontza_solr_canal_de_yql_form_alter(&$form,&$form_state, $form_id){
         }
     }
     //intelsat-2016
-    $unset_array=array('field_my_opml','field_url_html','field_is_validacion_automatica','field_is_canal_correo');
+    //intelsat
+    //$unset_array=array('field_my_opml','field_url_html','field_is_validacion_automatica','field_is_canal_correo');
+    $unset_array=array('field_my_opml','field_url_html','field_is_canal_correo');
     red_movil_unset_form_field_form_alter($form,$form_state,$form_id,$unset_array);
 }
 function hontza_solr_save_item($node,$canal_in='',$is_source_type=1,$is_category=1){

@@ -635,7 +635,7 @@ $form['metodo_fs']['hora_array'] = array(
 
 
 //intelsat-2016
-alerta_inc_add_tipo_link_form_field($form,'metodo_fs');
+alerta_inc_add_tipo_link_form_field($form,'metodo_fs',$row);
 
 $form['boleting_grupo_btn_submit']=array(
   '#type' => 'submit',

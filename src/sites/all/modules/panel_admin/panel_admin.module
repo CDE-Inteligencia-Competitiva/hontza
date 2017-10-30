@@ -18,6 +18,8 @@ require_once('panel_admin.usuarios.acceso.inc.php');
 require_once('panel_admin.dashboard.inc.php');
 require_once('panel_admin.crm_exportar.inc.php');
 require_once('panel_admin.crm_exportar.filtro_ip.inc.php');
+require_once('panel_admin.crm_exportar.listas.inc.php');
+require_once('panel_admin.crm_exportar.types.inc.php');
 function panel_admin_perm() {
   return array();
 }
@@ -471,6 +473,80 @@ function panel_admin_menu() {
     'page callback'=>'drupal_get_form',
     'access callback'=>'panel_admin_crm_exportar_admin_access',
     );
+     $items['panel_admin/crm_exportar/textos/exportar-csv']=array(
+    'title'=>'Clients',
+    'page arguments' => array(''),       
+    'page callback' => 'panel_admin_crm_exportar_textos_exportar_csv',       
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
+  );
+    //intelsat 
+    $items['panel_admin/crm_exportar/listas']=array(
+    'title' => 'Lists of Clients',
+    'page callback' => 'panel_admin_crm_exportar_listas_callback',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/listas/create']=array(
+    'title' => 'Create List',
+    'page arguments' =>array('panel_admin_crm_exportar_listas_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/listas/%/edit']=array(
+    'title' => 'Edit List',
+    'page arguments' =>array('panel_admin_crm_exportar_listas_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/listas/%/delete']=array(
+    'title' => 'Delete List',
+    'page arguments' =>array('panel_admin_crm_exportar_listas_delete_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/listas/%/ver_clientes']=array(
+    'title' => 'Clients',
+    'page callback' => 'panel_admin_crm_exportar_listas_ver_clientes_callback',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',    
+    );
+     $items['panel_admin/crm_exportar/textos/exportar-csv/%/download']=array(
+    'title'=>'Clients',
+    'page arguments' => array(''),       
+    'page callback' => 'panel_admin_crm_exportar_textos_exportar_csv_download_callback',       
+    'access callback'=>'panel_admin_crm_exportar_admin_access',
+  );
+    $items['panel_admin/ayuda_popup/get_help_popup_node']=array(
+    'title'=>'Help',
+    'page callback' => 'panel_admin_ayuda_popup_get_help_popup_node_callback',       
+    'access callback'=>TRUE,
+  );
+    $items['panel_admin/crm_exportar/types']=array(
+    'title' => 'Types Management',
+    'page callback' => 'panel_admin_crm_exportar_types_callback',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/types/create']=array(
+    'title' => 'Create Type',
+    'page arguments' =>array('panel_admin_crm_exportar_types_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/types/%/edit']=array(
+    'title' => 'Edit Type',
+    'page arguments' =>array('panel_admin_crm_exportar_types_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/types/%/delete']=array(
+    'title' => 'Delete Type',
+    'page arguments' =>array('panel_admin_crm_exportar_types_delete_form'),
+    'page callback'=>'drupal_get_form',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',        
+    );
+    $items['panel_admin/crm_exportar/textos/activar/%']=array(
+    'title' => 'Activate',
+    'page callback'=>'panel_admin_crm_exportar_textos_activar_callback',
+    'access callback'=>'panel_admin_crm_exportar_admin_access',   
+    );  
     return $items;
 }
 function panel_admin_callback(){
@@ -567,6 +643,13 @@ function panel_admin_is_panel_admin_left(){
     }
     if(panel_admin_is_user_delete()){
         return 1;
+    }
+    //intelsat-2017
+    if(panel_admin_crm_exportar_is_crear_url()){
+        if(!hontza_is_user_anonimo()){
+            return 1;
+        }
+    
     }
     return 0;
 }
@@ -1267,7 +1350,10 @@ function panel_admin_visualizador_banners_left_title(){
 }
 function panel_admin_visualizador_get_banners_block_content(){
     $html=array();
-    if(!hontza_canal_rss_is_visualizador_activado()){
+    //intelsat
+    //if(!hontza_canal_rss_is_visualizador_activado()){
+    $is_panel_admin=1;
+    if(!hontza_canal_rss_is_visualizador_activado($is_panel_admin)){        
         return '';
     }
     $html[]=l(t('Create Banner'), 'node/add/banner');
@@ -1279,7 +1365,10 @@ function panel_admin_visualizador_redes_sociales_left_title(){
 }
 function panel_admin_visualizador_get_redes_sociales_block_content(){
     $html=array();
-    if(!hontza_canal_rss_is_visualizador_activado()){
+    //intelsat
+    //if(!hontza_canal_rss_is_visualizador_activado()){
+    $is_panel_admin=1;
+    if(!hontza_canal_rss_is_visualizador_activado($is_panel_admin)){            
         return '';
     }
     $html[]=l(t('Edit Facebook link'), 'panel_admin/facebook_link_edit');
@@ -1349,7 +1438,10 @@ function panel_admin_visualizador_registered_left_title(){
 }
 function panel_admin_visualizador_get_registered_block_content(){
     $html=array();
-    if(!hontza_canal_rss_is_visualizador_activado()){
+    //intelsat
+    //if(!hontza_canal_rss_is_visualizador_activado()){
+    $is_panel_admin=1;
+    if(!hontza_canal_rss_is_visualizador_activado($is_panel_admin)){            
         return '';
     }
     $html[]=l(t('Registered Users'), 'panel_admin/registered');

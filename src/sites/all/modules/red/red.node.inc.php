@@ -98,3 +98,34 @@ function red_node_is_add_edit_help_popup(){
     return 1;*/
     return 0;
 }
+//intelsat
+function red_node_is_flag($is_value,$value){    
+        $is_flag=0;
+        if($is_value){
+            if(!empty($value) && $value>0){
+                $is_flag=1;
+            }
+        }else{
+            $is_flag=1;
+        }
+        return $is_flag;
+}
+function red_node_get_item_view_style(){
+    $result='';
+    if(!is_super_admin()){
+        $result=' style="display:none;"';
+    }
+    return $result;
+}
+function red_node_item_node_form_alter(&$form,&$form_state, $form_id){
+    if($form_id=='item_node_form'){
+        if(isset($form['buttons']['preview'])){
+            unset($form['buttons']['preview']);
+        }
+        if(!is_super_admin()){
+            if(isset($form['buttons']['delete'])){
+                unset($form['buttons']['delete']);
+            }
+        }    
+    }
+}        

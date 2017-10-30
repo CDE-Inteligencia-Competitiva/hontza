@@ -132,6 +132,12 @@ function red_despacho_on_node_save($op,&$node){
             red_despacho_vigilancia_item_post_url_save($op,$node);
         }
     }
+    /*if(red_despacho_is_canal_fuente_titulo_activado()){
+        $canal_type_array=array('canal_de_supercanal','canal_de_yql');
+        if(in_array($node->type,$canal_type_array)){
+            red_despacho_update_source_title_url_empty($node);
+        }
+    }*/    
 }
 function red_despacho_get_node_taxonomy_tid_array($node,$id_categoria_in='',$is_value=0){
     $result=array();
@@ -340,10 +346,10 @@ function red_despacho_boletin_report_por_tipos_fuente($br,&$html,$items){
         despacho_boletin_report_por_tipos_fuente($br,$html,$items);
     }
 }
-function red_despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row){
+function red_despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row,$bg=''){
     $result=$title;
     if(red_despacho_is_activado()){
-        return despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row);
+        return despacho_boletin_report_get_tipos_fuente_boletin_title($title,$tipos_fuente_row,1,$bg);
     }
     $result=my_upper($result);
     return $result;
@@ -532,7 +538,7 @@ function red_despacho_add_source_type_form_field(&$form,$form_id,$nid,$default_v
                         $div_prefix='';
                         $div_suffix='';
                         /*if($kont==0){
-                            $div_prefix='<div id="id_despacho_boletin_report_tipos_fuente"><label><b>'.t('Types os Sources').'</b></label>';
+                            $div_prefix='<div id="id_despacho_boletin_report_tipos_fuente"><label><b>'.t('Types of Sources').'</b></label>';
                         }else if($kont==($num-1)){
                             $div_suffix='</div></div>';
                         }*/
@@ -655,10 +661,12 @@ function red_despacho_get_source_type_options(){
     }
     return $result;
 }
-function red_despacho_boletin_report_get_current_content($current_content,$subject,$bulletin_text_nid){
+//intelsat-mailchimp-color
+//function red_despacho_boletin_report_get_current_content($current_content,$subject,$bulletin_text_nid){
+function red_despacho_boletin_report_get_current_content($current_content,$subject,$bulletin_text_nid,$br=''){    
     //if(red_despacho_is_activado()){
-    if(red_dashboard_is_despacho_no_dashboard()){       
-        return despacho_boletin_report_word_get_current_content($current_content,$subject,$bulletin_text_nid);
+    if(red_dashboard_is_despacho_no_dashboard()){
+        return despacho_boletin_report_word_get_current_content($current_content,$subject,$bulletin_text_nid,$br);
     }
     return $current_content;
 }
@@ -821,7 +829,10 @@ function red_despacho_unset_content_resumen_caracteres($result_in){
 }
 function red_despacho_boletin_report_access_denied(){
     if(red_despacho_is_activado()){
-        despacho_boletin_report_word_access_denied();
+        //intelsat
+        if(!red_despacho_is_boletin_report_editable()){
+            despacho_boletin_report_word_access_denied();
+        }
     }
 }
 function red_despacho_boletin_report_unset_headers($headers){
@@ -1049,4 +1060,362 @@ function red_despacho_is_item_duplicado($elemento,$source='',$canal_in='',$url_r
         //    return 1;
         //}        
     return 0;
-}     
+}
+function red_despacho_is_canal_fuente_titulo_activado(){
+    if(defined('_IS_CANAL_FUENTE_TITULO') && _IS_CANAL_FUENTE_TITULO==1){
+        return 1;
+    }
+    return 0;
+}
+function red_despacho_source_title_url_canal_de_yql_node_form_alter(&$form,&$form_state, $form_id){
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $node='';
+        if(isset($form['#node'])){
+            $node=$form['#node'];
+        }
+        if(isset($form['field_canal_source_title'])){
+            unset($form['field_canal_source_title']);
+        }
+        if(isset($form['field_canal_source_url'])){
+            unset($form['field_canal_source_url']);
+        }
+        //if(isset($node->field_canal_source_url) && !empty($node->field_canal_source_url)){
+        if(!isset($node->field_canal_source_url)){
+            $node->field_canal_source_url[0]['value']='';
+        }
+        if(!isset($node->field_canal_source_title)){
+            $node->field_canal_source_title[0]['value']='';
+        }
+        if(isset($node->field_canal_source_url)){    
+            $form['sources_fs']=array(
+                '#type'=>'fieldset',
+                '#title'=>t('Sources'),
+            );
+            $num=count($node->field_canal_source_url);
+            foreach($node->field_canal_source_url as $i=>$row){                
+                //$canal_source_url_value=unserialize($row['value']);
+                //echo print_r($canal_source_url_value,1);               
+                $kont=red_despacho_get_field_kont_form_alter($i,$num);    
+                $form['sources_fs']['field_canal_source_title'.$i]=array(
+                    '#type'=>'textfield',
+                    '#title'=>t('Source Title').$kont,
+                    '#default_value'=>red_despacho_decode_source_title_url_value($node->field_canal_source_title[$i]['value']),
+                    '#name'=>'field_canal_source_title['.$i.']',
+                );
+                $form['sources_fs']['field_canal_source_url'.$i]=array(
+                    '#type'=>'textfield',
+                    '#title'=>t('Source Url').$kont,
+                    '#default_value'=>red_despacho_decode_source_title_url_value($row['value']),
+                    '#name'=>'field_canal_source_url['.$i.']',
+                );
+            }    
+        }
+    }    
+}
+function red_despacho_source_title_url_presave(&$node){
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $node_type_array=array('canal_de_supercanal','canal_de_yql');
+        $form_id_array=array('canal_de_supercanal_node_form','canal_de_yql_node_form');            
+        if(in_array($node->type,$node_type_array)){
+            if(isset($_POST['form_id']) && !empty($_POST['form_id']) && in_array($_POST['form_id'],$form_id_array)){
+                if(isset($_POST['field_canal_source_url'])){
+                    $node->field_canal_source_title=array();
+                    $node->field_canal_source_url=array();
+                    if(!empty($_POST['field_canal_source_url'])){
+                        foreach($_POST['field_canal_source_url'] as $i=>$value){
+                            //if(!empty($value)){
+                                $node->field_canal_source_title[$i]['value']=$_POST['field_canal_source_title'][$i];
+                                $node->field_canal_source_url[$i]['value']=$_POST['field_canal_source_url'][$i];
+                            //}    
+                        }
+                    }
+                }
+            }
+        }        
+    }    
+}
+function red_despacho_on_canal_import_set_item_source_title_url(&$node,$canal_nid){
+    $canal_node=node_load($canal_nid);
+    if(isset($canal_node->field_canal_source_title)){
+        $node->field_item_source_title=$canal_node->field_canal_source_title;
+    }
+    if(isset($canal_node->field_canal_source_url)){
+        $node->field_item_source_url=$canal_node->field_canal_source_url;
+    }
+}
+function red_despacho_source_title_url_item_noticia_node_form_alter(&$form,&$form_state,$form_id){
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $form_id_array=array('item_node_form','noticia_node_form');
+        if(in_array($form_id,$form_id_array)){
+            $node='';
+            if(isset($form['#node'])){
+                $node=$form['#node'];
+            }
+            if(isset($form['field_item_source_title'])){
+                unset($form['field_item_source_title']);
+            }
+            if(isset($form['field_item_source_url'])){
+                unset($form['field_item_source_url']);
+            }
+            if(!(isset($node->nid) && !empty($node->nid))){
+                $node->field_item_source_title=array();
+                $node->field_item_source_title[0]['value']='';
+                $node->field_item_source_url=array();
+                $node->field_item_source_url[0]['value']='';
+            }
+            //if(isset($node->field_item_source_url) && !empty($node->field_item_source_url)){
+            if(!isset($node->field_item_source_url)){
+                $node->field_item_source_url[0]['value']='';
+            }
+            if(!isset($node->field_item_source_title)){
+                $node->field_item_source_title[0]['value']='';
+            }    
+            if(isset($node->field_item_source_url)){
+                $form['sources_fs']=array(
+                    '#type'=>'fieldset',
+                    '#title'=>t('Sources'),
+                );
+                foreach($node->field_item_source_url as $i=>$row){                
+                    $kont=red_despacho_get_field_kont_form_alter($i,$num);
+                    $form['sources_fs']['field_item_source_title'.$i]=array(
+                        '#type'=>'textfield',
+                        '#title'=>t('Source Title').$kont,
+                        '#default_value'=>red_despacho_decode_source_title_url_value($node->field_item_source_title[$i]['value']),
+                        '#name'=>'field_item_source_title['.$i.']',
+                    );
+                    $form['sources_fs']['field_item_source_url'.$i]=array(
+                        '#type'=>'textfield',
+                        '#title'=>t('Source Url').$kont,
+                        '#default_value'=>red_despacho_decode_source_title_url_value($row['value']),
+                        '#name'=>'field_item_source_url['.$i.']',
+                    );
+                }    
+            }
+        }    
+    }    
+}
+function red_despacho_source_title_url_item_noticia_presave(&$node){
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $node_type_array=array('item','noticia');        
+        $form_id_array=array('item_node_form','noticia_node_form');
+        if(in_array($node->type,$node_type_array)){
+            if(isset($_POST['form_id']) && !empty($_POST['form_id']) && in_array($_POST['form_id'],$form_id_array)){
+                if(isset($_POST['field_item_source_url'])){
+                    $node->field_item_source_title=array();
+                    $node->field_item_source_url=array();
+                    if(!empty($_POST['field_item_source_url'])){
+                        foreach($_POST['field_item_source_url'] as $i=>$value){
+                            //if(!empty($value)){
+                                $node->field_item_source_title[$i]['value']=$_POST['field_item_source_title'][$i];
+                                $node->field_item_source_url[$i]['value']=$_POST['field_item_source_url'][$i];
+                            //}    
+                        }
+                    }
+                }
+            }
+        }        
+    }    
+}
+function red_despacho_get_canal_url_label(){
+    $result=t('Source URL');
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $result=t('Channel URL');
+    }
+    return $result;
+}
+function red_despacho_is_boletin_report_editable_activado(){
+    if(red_despacho_is_activado()){
+        if(defined('_IS_DESPACHO_BOLETIN_REPORT_EDITABLE') && _IS_DESPACHO_BOLETIN_REPORT_EDITABLE==1){
+            return 1;
+        }
+        return 0;
+    }    
+    return 0;
+}
+function red_despacho_is_boletin_report_editable(){
+    if(red_despacho_is_boletin_report_editable_activado()){
+        return 1;
+    }
+    if(red_despacho_is_activado()){
+        return 0;
+    }    
+    return 1;
+}
+function red_despacho_update_source_title_url_empty($canal){
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        //echo print_r($canal,1);exit();
+        $source_title_url_empty=red_despacho_define_source_title_url_empty();
+        $where=array();
+        $where[]='nid='.$canal->nid;
+        $where[]='vid='.$canal->vid;
+        $where[]='field_canal_source_title_value="'.$source_title_url_empty.'"';
+        //$sql='UPDATE {content_field_canal_source_title} SET field_canal_source_title_value="" WHERE '.implode(' AND ',$where);
+        $sql='UPDATE {content_field_canal_source_title} SET field_canal_source_title_value=NULL WHERE '.implode(' AND ',$where);
+        db_query($sql);
+        $where=array();
+        $where[]='nid='.$canal->nid;
+        $where[]='vid='.$canal->vid;
+        $where[]='field_canal_source_url_value="'.$source_title_url_empty.'"';
+        //$sql='UPDATE {content_field_canal_source_url} SET field_canal_source_url_value="" WHERE '.implode(' AND ',$where);
+        $sql='UPDATE {content_field_canal_source_url} SET field_canal_source_url_value=NULL WHERE '.implode(' AND ',$where);
+        db_query($sql);
+    }
+}
+function red_despacho_define_source_title_url_empty(){
+    //$result='';
+  $result='NULL_EMPTY';
+  return $result;       
+}
+function red_despacho_decode_source_title_url_value($value,$is_link=0,$title_in=''){
+  $result=$value;
+  if(red_despacho_is_source_title_url_empty($value)){
+    $result='';
+  }
+  if($is_link){
+    if(!empty($result)){
+        $result=red_despacho_add_http($result);
+        $title=$result;
+        if(!empty($title_in)){
+            $title=$title_in;
+        }
+        $result=l($title,$result,array('absolute'=>TRUE,'attributes'=>array('target'=>'_blank')));
+    }
+  }
+  return $result;  
+}
+function red_despacho_is_source_title_url_empty($value){
+  $source_title_url_empty=red_despacho_define_source_title_url_empty();
+  if($value==$source_title_url_empty){
+    return 1;
+  }
+  return 0;  
+}
+function red_despacho_get_field_kont_form_alter($i,$num){
+   $kont='';
+    //if($i>0){
+        $kont=(string) ($i+1);
+        //$kont=' '.$kont;       
+    //}
+    if($num==1){
+        $kont='';
+    }
+    return $kont;  
+}
+function red_despacho_add_http($url_in){
+    $url=$url_in;
+    if(!empty($url)){
+        if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+            $url = "http://" . $url;
+        }
+    }    
+    return $url;    
+}
+function red_despacho_is_financed_by_powered_activado(){
+    if(defined('_IS_DESPACHO_FINANCED_BY_POWERED') && _IS_DESPACHO_FINANCED_BY_POWERED==1){
+        return 1;
+    }
+    return 0;
+}
+function red_despacho_get_financed_by_powered_html(){
+    $html=array();
+    //$html[]='<div style="float:left;clear:both;">';    
+    //$html[]='<div style="float:left;padding-left:5px;">';
+    $html[]='<div class="div_financed_by_powered">';
+    //$html[]='<p style="font-family:verdana;color: #A0A0A0;font-size: 12px;">'.t('Financed by').':</p>';
+    //$html[]='<div style="font-family:verdana;color: #A0A0A0;font-size: 12px;">'.t('Financed by').':</div>';
+    $html[]='<div class="div_financed_by">'.t('Financed by').':</div>';
+    $html[]='</div>';
+    $html[]=red_despacho_get_logo1();
+    $html[]=red_despacho_get_logo2();     
+    //$html[]='</div>';
+    return implode('',$html);
+}
+function red_despacho_get_logo1(){
+    global $base_url;
+    $html=array();
+    //$html[]='<div style="float:left;padding-left:10px;">';
+    $html[]='<div class="div_financed_by_powered_logo">';
+    $height=red_despacho_define_get_financed_by_powered_logo_height();
+    $img='<img src="'.$base_url.'/sites/'._SUBDOMINIO_SITES.'/files/'._DESPACHO_FINANCED_BY_POWERED_LOGO1.'"'.$height.'/>';
+    $html[]=l($img,_DESPACHO_FINANCED_BY_POWERED_LOGO1_URL,array('attributes'=>array('target'=>'_blank'),'absolute'=>true,'html'=>true));
+    $html[]='</div>';
+    return implode('',$html);
+}
+function red_despacho_get_logo2(){
+    global $base_url;
+    $html=array();
+    //$html[]='<div style="float:left;padding-left:10px;">';
+    $html[]='<div class="div_financed_by_powered_logo">';
+    $height=red_despacho_define_get_financed_by_powered_logo_height();
+    $img='<img src="'.$base_url.'/sites/'._SUBDOMINIO_SITES.'/files/'._DESPACHO_FINANCED_BY_POWERED_LOGO2.'"'.$height.'/>';
+    //$html[]=l($img,$base_url,array('attributes'=>array('target'=>'_blank'),'absolute'=>true,'html'=>true));
+    $html[]=$img;
+    $html[]='</div>';
+    return implode('',$html);
+}
+function red_despacho_define_get_financed_by_powered_logo_height(){
+    $result='';
+    //$result=' height="25"';
+    return $result;
+}
+function red_despacho_boletin_report_set_node_title_with_nid($node_title,$node,$bg){
+    $result=$node_title;
+    if(red_despacho_boletin_report_is_resumen_activado()){
+        $result=despacho_boletin_report_word_set_node_title_with_nid($node_title,$node,$bg);
+    }
+    return $result;
+}
+function red_despacho_boletin_report_is_resumen_activado(){
+    if(red_despacho_is_activado()){
+        return despacho_boletin_report_is_resumen_activado();
+    }
+    return 0;
+}
+function red_respacho_get_html_tag_value($string, $tagname) {
+    $pattern = "/<$tagname ?.*>(.*)<\/$tagname>/";
+    preg_match($pattern, $string, $matches);
+    return $matches[1];
+}
+function red_despacho_get_source_link($source_title,$source_url){
+    $result='';
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $result=red_despacho_decode_source_title_url_value($source_url,1,$source_title);   
+    }
+    return $result;
+}
+function red_despacho_get_item_canal_style(){
+    $result='';
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $result=' style="display:block;clear:both;width:100%;"';
+    }    
+    return $result;
+}
+function red_despacho_get_item_fecha_style(){     
+    $result='';
+    if(red_despacho_is_canal_fuente_titulo_activado()){
+        $result=' style="float:left;width:15%;"';
+    }    
+    return $result; 
+}
+function red_despacho_is_close_div_new_font_wrapper(){
+    if(red_despacho_is_show_comment_link()){
+        if(hontza_is_comment_reply()){
+            return 1;
+        }
+        $param0=arg(0);
+        if(!empty($param0) && $param0=='comment'){
+            $param1=arg(1);
+            if(!empty($param1) && $param1=='edit'){
+                return 1;
+            }    
+        }
+    }
+    return 0;
+}
+function red_despacho_get_nodes_limit($limit_in){
+    $result=$limit_in;
+    if(defined('_HONTZA_NODES_LIMIT')){
+        $result=_HONTZA_NODES_LIMIT;
+    }
+    return $result;
+}         

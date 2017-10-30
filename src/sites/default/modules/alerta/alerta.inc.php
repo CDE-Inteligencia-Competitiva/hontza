@@ -94,9 +94,11 @@ function alerta_is_alerta_show_user_photo($is_mail,$bg=''){
 }
 function alerta_add_css($body,$is_download=0,$body_id_in='',$is_print=0){
     //intelsat-2015
+    //if(!hontza_is_sareko_id('ITI')){
     if(!red_despacho_boletin_report_is_my_add_css()){
         return $body;
     }
+    //}
     $body_id='';
     if(!empty($body_id_in)){
         $body_id=' id="'.$body_id_in.'"';
@@ -798,9 +800,9 @@ function alerta_inc_getimagesize($src){
     return $result;
 }
 //intelsat-2016
-function alerta_inc_add_tipo_link_form_field(&$form,$fieldset_name=''){
+function alerta_inc_add_tipo_link_form_field(&$form,$fieldset_name='',$row=''){
     if(alerta_inc_is_tipo_link()){
-        boletin_report_inc_add_tipo_link_form_field($form,$fieldset_name);
+        boletin_report_inc_add_tipo_link_form_field($form,$fieldset_name,$row);
     }
 }
 //intelsat-2016

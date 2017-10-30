@@ -3785,7 +3785,8 @@ div.items-coments-page0 {
 /*gemini*/
 div.pager{
 	/*padding-top:85px;*/
-        padding-top:125px;
+  /*padding-top:125px;*/
+  padding-top:175px;
 }
 /*gemini*/
 li.my_separacion, div.create-separacion{

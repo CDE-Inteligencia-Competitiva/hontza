@@ -1331,7 +1331,8 @@ function hontza_define_hound_url($is_ip=0){
         }
     
     //intelsat-2015
-    $ip_hound='217.70.191.147:8080';    
+    //$ip_hound='217.70.191.147:8080';
+    $ip_hound='hound.hontza.es';    
     //intelsat-2016
     if(hound_enlazar_inc_is_activado()){
         $ip_hound=hound_enlazar_inc_get_base_url(0);
@@ -1381,6 +1382,13 @@ function hontza_is_hound_canal($nid,$canal_in=''){
         if($canal->type=='canal_de_yql'){
             if(isset($canal->field_is_hound) && isset($canal->field_is_hound[0]) && isset($canal->field_is_hound[0]['value']) && !empty($canal->field_is_hound[0]['value'])){
                 return 1;
+            }else{
+              //intelsat
+              if(module_exists('hound')){
+                if(hound_canal_field_is_hound_value($canal)){
+                  return 1;
+                }
+              }  
             }
         }
     }
@@ -1465,10 +1473,15 @@ function hontza_item_web_link($node,$is_url=0,$in_vista_compacta=0){
         $url=$node->feeds_node_item->url;
     }else if(isset($node->feeds_node_item->guid) && !empty($node->feeds_node_item->guid)){
         $url=$node->feeds_node_item->guid;
-        if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
+        if(!red_canal_is_url_item_guid($url)){
+          if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
             $url='';
+          }        
         }
+        //print 'guid='.$url;exit();
+        
     }
+    //print 'url='.$url;exit();
     //
     //intelsat-2016
     $field_item_web=red_fields_inc_get_field_item_web_name();
@@ -2335,18 +2348,30 @@ function hontza_is_private_download($picture,$is_picture=0,$with_filepath=1){
     }
     return 0;
 }
-function hontza_get_url_file($filepath){
+//function hontza_get_url_file($filepath){
+function hontza_get_url_file($filepath,$is_urlencode=0){    
     global $base_root,$base_path;
     /*$purl='';
     $my_grupo=og_get_group_context();
     if(isset($my_grupo->purl) && !empty($my_grupo->purl)){
        $purl=$my_grupo->purl;
-    }*/    
+    }*/
+    $my_filepath='';    
     if(hontza_is_private_download($filepath)){
-        $url=$base_root.$base_path.'system/files/'.basename($filepath);
+        //$url=$base_root.$base_path.'system/files/'.basename($filepath);
+        $my_filepath=basename($filepath);
+        if($is_urlencode){
+          $my_filepath=urlencode($my_filepath);
+        }
+        $url=$base_root.$base_path.'system/files/'.$my_filepath;
         //$url=$base_root.$base_path.$purl.'/system/files/'.basename($filepath);
     }else{
-        $url=$base_root.$base_path.$filepath;
+        //$url=$base_root.$base_path.$filepath;
+        $my_filepath=$filepath;
+        if($is_urlencode){
+          $my_filepath=urlencode($filepath);
+        }
+        $url=$base_root.$base_path.$my_filepath;        
         //$url=$base_root.$base_path.$purl.'/'.$filepath;
     }
     return $url;

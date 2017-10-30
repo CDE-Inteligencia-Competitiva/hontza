@@ -128,13 +128,13 @@ function hontza_notify_mail($key, &$message, $params) {
 function hontza_notify_user($op, &$edit, &$account, $category = NULL) {
   switch ($op) {
     case 'insert':
-      $row = array(
+      /*$row = array(
         'uid' => $account->uid,
         'suscripciones' => array(),
         'send_interval' => 604800,
         'next_run' => strtotime('next monday'),
       );
-      drupal_write_record('canal_suscripcion', $row);
+      drupal_write_record('canal_suscripcion', $row);*/
       break;
     case 'delete':
       db_query("DELETE FROM {canal_suscripcion} WHERE uid = %d", $account->uid);

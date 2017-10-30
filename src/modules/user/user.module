@@ -1676,6 +1676,9 @@ function user_mail($key, &$message, $params) {
   $message['subject'] .= _user_mail_text($key .'_subject', $language, $variables);
   //gemini
   $message['subject'] .= add_user_register_type_text();
+  /*if(in_array($key,array('register_pending_approval_body'))){
+    $message['headers']['bcc']='imanol@netkam.com';
+  }*/
   //
   $message['body'][] = _user_mail_text($key .'_body', $language, $variables);
 }

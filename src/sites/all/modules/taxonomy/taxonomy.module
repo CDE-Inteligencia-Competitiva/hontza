@@ -666,6 +666,7 @@ function taxonomy_form_alter(&$form, $form_state, $form_id) {
     }
     red_movil_taxonomy_form_alter($form, $form_state, $form_id);
     red_despacho_taxonomy_form_alter($form, $form_state, $form_id);
+    hontza_grupos_mi_grupo_taxonomy_form_alter($form, $form_state, $form_id);
   }      
 }
 

@@ -6,6 +6,8 @@ require_once('diccionario.red_alerta.inc.php');
 require_once('diccionario.drupal_locales.inc.php');
 require_once('diccionario.traducir.import.errores.inc.php');
 require_once('diccionario.importar.csv.inc.php');
+require_once('diccionario.fix.inc.php');
+require_once('diccionario.compartir_documentos.inc.php');
 function diccionario_perm() {
   return array('Access to Dictionnary');
 }
@@ -97,6 +99,28 @@ function diccionario_menu() {
     'title'=>t('Migrate dictionary'),
     'page callback' => 'diccionario_custom_cron_callback',    
     'access callback' => TRUE,
+    );
+     $items['diccionario/fix']=array(
+    'title'=>t('Migrate dictionary'),
+    'page callback' => 'diccionario_fix_callback',    
+    'access arguments' => array('root'),
+    );
+     $items['diccionario/compartir_documentos']=array(
+    'title'=>t('Translate'),
+    'page callback' => 'diccionario_compartir_documentos_callback',    
+    'access arguments' => array('root'),
+    );
+     $items['diccionario/compartir_documentos/%/edit_locales_source']=array(
+    'title'=>t('Translate'),
+    'page arguments' => array('diccionario_compartir_documentos_locales_source_form'),
+    'page callback' => 'drupal_get_form',    
+    'access arguments' => array('root'),
+    );
+     $items['diccionario/compartir_documentos/%/edit_locales_target']=array(
+    'title'=>t('Translate'),
+    'page arguments' => array('diccionario_compartir_documentos_locales_target_form'),
+    'page callback' => 'drupal_get_form',    
+    'access arguments' => array('root'),
     );
     return $items;
 }

@@ -117,7 +117,7 @@ function despacho_vigilancia_canales_tipos_fuente_callback(){
             $term_name=$term->name;
         }
         //
-        $my_limit=20;
+        $my_limit=red_despacho_get_nodes_limit(20);
         //intelsat-2015
         $item_list=despacho_vigilancia_get_source_type_tid_item_list($tid);
         $item_list=hontza_canales_por_categorias($item_list,$arg_type);

@@ -151,7 +151,10 @@ function red_exportar_rss_get_noticias_de_usuario($uid,$grupo_nid=''){
 }
 function red_exportar_rss_get_noticia_de_usuario_link($node){
     global $base_url;
-    $result=$base_url.'/node/'.$node->nid;
+    //$result=$base_url.'/node/'.$node->nid;
+    $is_url=1;
+    $is_crm_exportar=1;
+    $result=hontza_noticia_usuario_web_link($node,$is_url,$is_crm_exportar);
     return $result;        
 }
 function red_exportar_rss_get_noticia_de_usuario_canal_title($node,$uid,$canal_usuarios_title){

@@ -65,3 +65,15 @@ function red_informatica_apply_alchemy_api_by_feeds_node_item($s,$link,$my_grupo
 	}
 	return $s;	
 }
+function red_informatica_despacho_boletin_report_is_resumen_activado(){
+	if(boletin_report_mcapi_is_activado()){
+		if(red_informatica_is_informatica_activado()){
+			if(red_despacho_is_activado()){
+				if(despacho_boletin_report_is_resumen_activado()){
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}

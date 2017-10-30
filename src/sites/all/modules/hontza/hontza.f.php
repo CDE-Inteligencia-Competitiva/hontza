@@ -535,6 +535,9 @@ function hontza_get_pagina_de_arranque(){
                 if(!hontza_is_show_vigilancia_pendientes_tab()){
                     $pestana='/vigilancia/validados';
                 }
+                if(red_crear_usuario_is_rol_invitado()){
+                    $pestana='/ideas';   
+                }
                 $url=$base_url.$my_lang.'/'.$grupo->purl.$pestana;                
             }
         }
@@ -882,19 +885,34 @@ function hontza_is_news_google($url,$type,&$url_google){
 //gemini-2014
 //intelsat-2016
 //function hontza_validar_con_accion($nid){
-function hontza_validar_con_accion($nid,$is_hound_noticia_feed_noticia_email=0){                            
+//intelsat
+//function hontza_validar_con_accion($nid,$is_hound_noticia_feed_noticia_email=0){                            
+function hontza_validar_con_accion($nid,$is_hound_noticia_feed_noticia_email=0,$is_value=0,$value=0){    
     $leido=get_leido_interesante($nid);
     $row_temp=new stdClass();
     $row_temp->nid=$nid;
-    if(isset($leido->fcid) && !empty($leido->fcid)){        
-        hontza_delete_flag_content($row_temp);
+    if(isset($leido->fcid) && !empty($leido->fcid)){
+        //intelsat
+        //hontza_delete_flag_content($row_temp);        
+        if($is_value){
+            if(!empty($value)){
+                hontza_delete_flag_content($row_temp);
+            }
+        }else{    
+            hontza_delete_flag_content($row_temp);
+        }
         //intelsat-2016
         //$flag_result = flag('flag','leido_interesante',$row_temp->nid);
-        $flag_result = flag('flag','leido_interesante',$row_temp->nid,NULL,$is_hound_noticia_feed_noticia_email);
+        if(red_node_is_flag($is_value,$value)){
+            $flag_result = flag('flag','leido_interesante',$row_temp->nid,NULL,$is_hound_noticia_feed_noticia_email);
+        }
     }else{
         //intelsat-2016
         //$flag_result = flag('flag','leido_interesante',$row_temp->nid);
-        $flag_result = flag('flag','leido_interesante',$row_temp->nid,NULL,$is_hound_noticia_feed_noticia_email);
+        //intelsat
+        if(red_node_is_flag($is_value,$value)){
+            $flag_result = flag('flag','leido_interesante',$row_temp->nid,NULL,$is_hound_noticia_feed_noticia_email);
+        }    
     }
 }
 //gemini-2014
@@ -1731,9 +1749,14 @@ function hontza_get_item_url_cut($elemento){
     if(!empty($url)){
         $result['url']=$url;
     }
+    red_canal_fix_import_rss_item_url($result);
+    /*echo print_r($result,1);
+    exit();*/
     return $result;
 }
-function hontza_cut_url($url,$find){
+//function hontza_cut_url($url,$find){
+function hontza_cut_url($url_in,$find){    
+    $url=$url_in;           
     $pos=strpos($url,$find);
     if($pos===FALSE){
         return '';
@@ -1744,7 +1767,7 @@ function hontza_cut_url($url,$find){
         return '';
     }
     //
-    $result=substr($url,0,$pos2);    
+    $result=substr($url,0,$pos2);
     return $result;
 }
 function hontza_repase_menu_by_lang($result_in,$lang){

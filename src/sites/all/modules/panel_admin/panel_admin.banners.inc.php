@@ -52,10 +52,12 @@ function panel_admin_banners_callback(){
       $rows[$kont]=array();
       //$rows[$kont][0]=$r->node_title;
       $node_title=panel_admin_banner_get_title_resumen($r->body);
+      //intelsat
+      $node=node_load($r->nid);
       $rows[$kont][0]=$node_title;
       $rows[$kont]['node_title']=$node_title;
       $rows[$kont][1]=$r->field_pisu_value;
-      $rows[$kont][2]=array('data'=>panel_admin_banners_define_acciones($r),'class'=>'td_nowrap');
+      $rows[$kont][2]=array('data'=>panel_admin_banners_define_acciones($r,$node),'class'=>'td_nowrap');
       //intelsat-2016
       $rows[$kont]['nid']=$r->nid;
       $rows[$kont]['tnid']=$r->tnid;
@@ -85,10 +87,13 @@ function panel_admin_banners_callback(){
     //
     return $output;
 }
-function panel_admin_banners_define_acciones($r){
+function panel_admin_banners_define_acciones($r,$node){
     $html=array();
     $destination='destination=panel_admin/banners';
     $html[]=l(my_get_icono_action('edit',t('Edit')),'node/'.$r->nid.'/edit',array('query'=>$destination,'html'=>true));
+    //intelsat
+    $url_imagen=panel_admin_banners_get_url_imagen($node);
+    $html[]=l(my_get_icono_action('download_manager',t('Image')),$url_imagen,array('query'=>$destination,'html'=>true,'attributes'=>array('target'=>'_blank')));
     $html[]=l(my_get_icono_action('delete',t('Delete')),'node/'.$r->nid.'/delete',array('query'=>$destination,'html'=>true));
     //$html[]=l(my_get_icono_action('viewmag',t('View')),'node/'.$r->nid,array('query'=>$destination,'html'=>true));
     $html[]=panel_admin_banners_define_accion_activado($r,$destination);
@@ -168,4 +173,16 @@ function panel_admin_banners_unset_translates($rows_in){
         }
     }        
     return $result;        
+}
+//intelsat
+function panel_admin_banners_get_url_imagen($node){
+    global $base_url;
+    
+    $file_name=$node->field_imagen[0]['filepath'];
+    $info_path = pathinfo($file_name);
+    if(isset($info_path['basename']) && !empty($info_path['basename'])){
+        $file_name=$info_path['basename'];
+    }
+    $result=$base_url.'/system/files/'.$file_name;
+    return $result;
 }

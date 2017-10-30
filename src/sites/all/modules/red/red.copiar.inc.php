@@ -67,10 +67,12 @@ function red_copiar_email_html_is_activado(){
    }
    return 0;
 }
-function red_copiar_send_mail($mail_to,$subject,$body_in,$send_method,$alert_type,$is_mensaje_despedida=0) {
+//function red_copiar_send_mail($mail_to,$subject,$body_in,$send_method,$alert_type,$is_mensaje_despedida=0) {
+function red_copiar_send_mail($mail_to,$subject,$body_in,$send_method,$alert_type,$is_mensaje_despedida=0,$is_apply_firma_style=0) {
    $message=$body_in; 
    if(red_copiar_email_html_is_activado()){
-        $message=email_html_add_html($message,1);
+        //$message=email_html_add_html($message,1);
+        $message=email_html_add_html($message,1,$is_apply_firma_style);
         //print $message;exit();
    }
    $body=$message;
@@ -92,13 +94,19 @@ function red_copiar_get_email_message($mail,$compartir_servidor_url,$node,$docum
         $html[]='<p>Hi @mail_to,</p>';
         $html[]='<p>You are receiving this email because @userid_origen would like to share this @document_type with you.</p>';
         $html[]='<p><u>Message</u>: @message_text<p>';
-        $html[]='<p>Please click on it and then select the group where you want to import it</p>';
+        //$html[]='<p>Please click on it and then select the group where you want to import it</p>';
+        //$html[]='<p>Please click on the link and then select the group where you want to import it</p>';
+        $html[]='<p>Please click on the link and then select the group to run the importation.</p>';
         $icono_documento=red_copiar_get_icono_documento($node);
+        $icono_documento=red_copiar_set_compartir_documento_base_url($icono_documento);
         $style=' style="text-decoration:none;"';
         //$parrafo_style=' style="white-space:nowrap;"';
         $parrafo_style='';
-        $html[]='<p'.$parrafo_style.'><a href="@link">'.my_get_icono_action('copiar_nodo24','').'</a> '.$icono_documento.' <a href="@link"'.$style.'><b><span style="color:#FF5722;font-size:18px;">@node_title</span></b></a></p>';
-        $html[]='<p>Update settings: @update_settings</p>';
+        $copiar_nodo24_img=my_get_icono_action('copiar_nodo24','');
+        $copiar_nodo24_img=red_copiar_set_compartir_documento_base_url($copiar_nodo24_img);
+        $html[]='<p'.$parrafo_style.'><a href="@link">'.$copiar_nodo24_img.'</a> '.$icono_documento.' <a href="@link"'.$style.'><b><span style="color:#FF5722;font-size:18px;">@node_title</span></b></a></p>';
+        //$html[]='<p>Update settings: @update_settings</p>';        
+        $html[]='<p>Type of updating: @update_settings</p>';
         //$html[]='<p>Thank you for using Hontza Network!</p>';
         //$html[]='<p>Hontza Team</p>';
         $html[]='<p>Note: This link has a validity of 24h and it can be used only once.</p>';
@@ -175,7 +183,8 @@ function red_copiar_get_document_type($node,$document_type_in='document'){
     }else if(in_array($node->type,array('canal_de_yql','canal_de_supercanal'))){
         return t('channel');
     }else if(in_array($node->type,array('canal_busqueda'))){
-        return t('channel/saved search');    
+        //return t('channel/saved search');    
+        return t('saved search');
     }else if($node->type=='item'){
         //return t('news');
         return t('content');
@@ -183,9 +192,13 @@ function red_copiar_get_document_type($node,$document_type_in='document'){
         //return t('news');
         return t('content');
     }else if($node->type=='estrategia'){
-        return t('strategy');
+        //return t('strategy');
+        return t('challenge');
     }else if($node->type=='user'){
         return t('user');
+    }else if($node->type=='proyecto'){
+        //return t('proposal');
+        return t('project');
     }   
     return t($result);
 }
@@ -304,10 +317,14 @@ function red_copiar_is_grupo_conectado(){
     }
     return 0;
 }
-function red_copiar_get_mail_firma(){
+function red_copiar_get_mail_firma($is_apply_firma_style=0){
     $html=array();
-    $texto='<p>Thank you for using Hontza Network!</p>';
-    $texto.='<p>Hontza Team</p>';
+    $li_style='';
+    if($is_apply_firma_style){
+        $li_style=red_copiar_li_email_style();
+    }    
+    $texto='<p'.$li_style.'>Thank you for using Hontza Network!</p>';
+    $texto.='<p'.$li_style.'>Hontza Team</p>';
     $html[]=t($texto);
     return implode('',$html);
 }
@@ -475,6 +492,8 @@ function red_copiar_canal_node_form_alter(&$form,&$form_state,$form_id){
     if(isset($form['field_is_usuario_exportado'])){
         unset($form['field_is_usuario_exportado']);
     }
+    //intelsat
+    red_canal_feed_saniziter_node_canal_form_alter($form,$form_state,$form_id);
 }
 function red_copiar_get_compartir_estrategia_link($node){
     $result='';
@@ -521,4 +540,14 @@ function red_copiar_is_yql_wizard_responsable_uid_required($form_state){
         return 0;
     }*/
     return 1;
+}
+function red_copiar_li_email_style(){
+    $result=' style="color: #565656 !important;font-family: Georgia,serif !important;font-size: 16px !important;"';
+    return $result;
+}
+function red_copiar_set_compartir_documento_base_url($result_in){
+    global $base_url;
+    $result=$result_in;
+    $result=str_replace($base_url,'http://online.hontza.es',$result);
+    return $result;
 }

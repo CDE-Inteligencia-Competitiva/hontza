@@ -1654,7 +1654,9 @@ function link_validar_canal($nid,$is_solo_paginas=0,$is_a_la_par_del_menu=0){
             //$html[]=  l('&nbsp', 'node/'. $nid .'/validar_canal', array('html'=>TRUE,'query'=>drupal_get_destination()));
             $icon=$base_url.'/'.drupal_get_path('theme','buho').'/images/validar_canal.png';
             $img='<img class="icono_validar_pagina" src="'.$icon.'" title="'.$label.'" alt="'.$label.'"/>';        
-            $html[]=l($img,'node/'. $nid .'/validar_canal',array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>array('class'=>'a_validar_pagina')));
+            //intelsat
+            //se ha comentado
+            /*$html[]=l($img,'node/'. $nid .'/validar_canal',array('html'=>TRUE,'query'=>drupal_get_destination(),'attributes'=>array('class'=>'a_validar_pagina')));*/
 
         }else{
             return '';
@@ -1667,6 +1669,9 @@ function link_validar_canal($nid,$is_solo_paginas=0,$is_a_la_par_del_menu=0){
 function hontza_validar_canal_form(){
     //drupal_access_denied();
     $form=array();
+    //intelsat
+    $form['my_message']['#value']='Formulario quitado';
+    return $form;
     $nid=arg(1);
     $node=node_load($nid);
     if(isset($node->nid) && !empty($node->nid)){

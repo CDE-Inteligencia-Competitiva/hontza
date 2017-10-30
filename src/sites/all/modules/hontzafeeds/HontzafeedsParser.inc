@@ -104,6 +104,7 @@ class HontzafeedsParser extends FeedsParser {
               //
               //intelsat-2016                                                  
               //$batch->addItem($item);
+              red_canal_fix_import_rss_item_url($item);
               $item_array[]=$item;
           }
         }
@@ -164,6 +165,7 @@ class HontzafeedsParser extends FeedsParser {
               }
               //intelsat-2016                                                  
               //$batch->addItem($item);
+              red_canal_fix_import_rss_item_url($item);
               $item_array[]=$item;
           }
         //}

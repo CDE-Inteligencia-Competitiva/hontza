@@ -2937,6 +2937,8 @@ function my_show_help_icon(){
 		$result=my_help_contenidos_del_grupo();
 	}else if(strcmp(arg(0),'servicios')==0){
 		$result=my_help_servicios();
+  }else if(panel_admin_crm_exportar_is_crear_url()){  
+    $result=crm_exportar_my_help();
 	}else{
 		$result=my_help_besteak();
 	}
@@ -3602,6 +3604,8 @@ function my_hontza_presave(&$node, $op, $a3 = NULL, $a4 = NULL){
    }
    //intelsat-2015
    red_despacho_node_item_source_tid_presave($node);
+   //intelsat
+   red_despacho_source_title_url_item_noticia_presave($node);
 }
 //gemini
 function my_get_responsable_user($nid,$is_secundario=0){

@@ -27,7 +27,7 @@ class FacetapiWidgetLinks extends FacetapiWidget {
     //intelsat-2014
     $my_tree=array();
     $field_alias_array=array('itm_field_item_source_tid','itm_field_item_canal_category_ti','itm_field_item_fid','itm_field_item_validate_status'
-    ,'im_taxonomy_vid_3','im_field_item_canal_reference','im_field_item_validador_uid');
+    ,'im_taxonomy_vid_3','im_field_item_canal_reference','im_field_item_validador_uid','bundle');
     if(in_array($this->facet['field alias'],$field_alias_array)){
         if(!in_array($this->facet['field alias'],array('im_field_item_validador_uid'))){
             hontza_solr_set_item_source_label($element,$this->facet['field alias']);
@@ -51,6 +51,8 @@ class FacetapiWidgetLinks extends FacetapiWidget {
             //intelsat-2016-noticias-usuario-solr
             //$element=red_solr_inc_get_widget_links_element('itm_field_item_validate_status',$element,'itm_field_item_validate_status');
             $element=red_solr_inc_get_widget_links_element($this->facet['field alias'],$element,'itm_field_item_validate_status');
+        }else if($this->facet['field alias']=='bundle'){
+          $element=red_solr_inc_get_widget_links_bundle_content_type_element($this->facet['field alias'],$element,'bundle');
         }        
     }
     //

@@ -889,7 +889,8 @@ function red_funciones_define_user_menu_management_input_select_comprimidos(){
         $result[]='<option value="'.$url_guia_usuario.'">'.t("------------- Guides").'</option>';
         $result[]='<option value="'.$url_guia_usuario.'">'.t("For Users").'</option>';
         $result[]='<option value="'.$url_guia_administrador.'">'.t("For Admins").'</option>';
-    if($user->uid==1 || red_is_administrador()){
+    //if($user->uid==1 || red_is_administrador()){
+    if($user->uid==1){      
         //intelsat-2016
         /*$gestion_array[]='<option value="'.url('panel_admin/ayuda').'"'.$selected_gestion_faq.'>'.t('---------------- Help').'</option>';
         $label_faq=t('Faq');
@@ -898,7 +899,8 @@ function red_funciones_define_user_menu_management_input_select_comprimidos(){
     }/*else{
         $result[]='<option value="'.url('faq').'"'.$selected_ayuda.'>'.t('Help').'</option>';    
     }*/
-    if($user->uid==1 || red_is_administrador()){
+    //if($user->uid==1 || red_is_administrador(1)){
+    if($user->uid==1){    
         $label_ayuda_popup=t('Popup');
         $gestion_array[]='<option value="'.url('panel_admin/ayuda_popup').'"'.$selected_gestion_ayuda_popup.'>'.$label_ayuda_popup.'</option>';        
     }
@@ -961,12 +963,14 @@ function red_funciones_define_user_menu_management_input_select_comprimidos(){
         //$label_servicios=t('FACILITATORS');
         //intelsat-2016
         if(red_facilitador_user_access()){
-            if(hontza_canal_rss_is_facilitador_activado()){
-                $url_servicios=$servidor_central_url.'/facilitador/facilitadores';
-                $gestion_array[]='<option value="'.$url_servicios.'"'.$selected_gestion_servicios.'>'.$label_servicios.'</option>';        
-            }else{
-                $gestion_array[]='<option value="'.url('panel_admin/servicios').'"'.$selected_gestion_servicios.'>'.$label_servicios.'</option>';        
-            }
+            if(is_super_admin()){
+                if(hontza_canal_rss_is_facilitador_activado()){
+                    $url_servicios=$servidor_central_url.'/facilitador/facilitadores';
+                    $gestion_array[]='<option value="'.$url_servicios.'"'.$selected_gestion_servicios.'>'.$label_servicios.'</option>';        
+                }else{
+                    $gestion_array[]='<option value="'.url('panel_admin/servicios').'"'.$selected_gestion_servicios.'>'.$label_servicios.'</option>';        
+                }
+            }    
         }
         if(!hontza_is_sareko_id_red()){
             $label_noticias_publicas=t('Public News');
@@ -978,11 +982,15 @@ function red_funciones_define_user_menu_management_input_select_comprimidos(){
         $label_estadisticas=t('Statistics');
         $gestion_array[]='<option value="'.$url_analitycs.'"'.$selected_gestion_estadisticas.'>'.$label_estadisticas.'</option>';
         //$label_post_form=t('MESSAGES');        
-        $label_post_form=t('Forms');
-        $gestion_array[]='<option value="'.url('frases_post_formulario').'"'.$selected_gestion_post_form.'>'.$label_post_form.'</option>';        
+        if(is_super_admin()){
+            $label_post_form=t('Forms');
+            $gestion_array[]='<option value="'.url('frases_post_formulario').'"'.$selected_gestion_post_form.'>'.$label_post_form.'</option>';      
+        }
         //$label_claves=t('PASSWORDS');
-        $label_claves=t('Passwords');
-        $gestion_array[]='<option value="'.url('gestion/claves').'"'.$selected_gestion_claves.'>'.$label_claves.'</option>';
+        if(user_access('Admin Keys')){
+            $label_claves=t('Passwords');
+            $gestion_array[]='<option value="'.url('gestion/claves').'"'.$selected_gestion_claves.'>'.$label_claves.'</option>';
+        }
         //intelsat-2015
         //intelsat-2016
         //if(hontza_canal_rss_is_facilitador_activado()){
@@ -1114,6 +1122,56 @@ function red_funciones_alerta_financiado_por_html($is_link=0,$is_alerta_custom_c
     $html[]='</div>';
     return implode('',$html);
 }
+
+function red_funciones_metromedellin_por_html($is_link=0,$is_alerta_custom_css=0){    
+    global $base_url;
+    $img_src=$base_url.'/sites/default/files/my_images/metromedellin_logo.png';
+    $html=array();
+    //intelsat-2015
+    $background_color='#DADADA';
+    $margin_top='';
+    $margin_bottom='';
+    $padding_top='';
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        //$margin_top='margin-top:50px;';
+        $margin_top='margin-top:60px;';
+        $margin_bottom='margin-bottom:-25px;';
+        if(!hontza_is_user_anonimo()){
+            //$margin_top='margin-top:40px;';
+            $margin_top='margin-top:50px;';
+        }
+        if(red_is_subdominio_alerta()){
+            $padding_top='padding-top:10px;';
+            if($is_alerta_custom_css || red_movil_is_activado()){    
+                $background_color='';
+                $margin_top='';
+                $margin_bottom='';
+                $padding_top='';                    
+            }            
+        }    
+    }
+    $html[]='<div class="rt-block div_financiado_por" style="'.$margin_top.$margin_bottom.$padding_top.$background_color.'">';
+    //intelsat-2015
+    $label=t('Financed by');
+    if($is_link){
+        $label=l($label,'http://ec.europa.eu/esf/home.jsp?langId=es',array('attributes'=>array('target'=>'_blank'),'absolute'=>true));
+    }
+    $span_style='';
+    if(!hontza_canal_rss_is_visualizador_activado()){
+        $span_style=' style="font-size:12px;color:#FFFFFF;"';
+    }    
+    //$html[]='<div class="main-title module-title"><div class="module-title2"><div class="module-title3"><h2 class="title" style="visibility: visible;"><span'.$span_style.'">'.$label.'</span></h2></div></div></div>';
+    $html[]='<div class="module-content">';
+    $html[]='<div class="customtitle2">';
+    //$html[]='<p><img width="198" height="46" border="0" alt="Fondo Social Europeo" src="'.$img_src.'" title="'.t('Financed by').'" smartload="6"></p></div>';
+    $html[]='<p><img width="102" height="102" border="0" alt="Fondo Social Europeo" src="'.$img_src.'" smartload="6"></p></div>';
+    $html[]='<div class="clear"></div>';
+    $html[]='</div>';
+    $html[]='</div>';
+    return implode('',$html);
+}
+
+
 function red_funciones_get_language_menu_icono(){
     global $base_url;
     global $user;
@@ -1187,7 +1245,8 @@ function red_funciones_flag_save_validador_node($content_id, $fid,$uid_in=''){
         $uid=$uid_in;
     }
     //fid=2 validado, fid=3 rechazado
-    if($fid==2){
+    //if($fid==2){
+    if($fid==2 || $fid==3){    
         $validador_node_row=red_funciones_flag_get_validador_node_row($content_id);
         if(!(isset($validador_node_row->id) && !empty($validador_node_row->id))){            
             db_query("INSERT INTO {validador_node} (content_id, uid, timestamp) VALUES (%d, %d, %d)",$content_id, $uid, time());
@@ -2214,6 +2273,8 @@ function red_funciones_set_title_help_icon($title_in){
         $is_show_advanced_search=0;
         $html[]=hontza_solr_search_get_busqueda_avanzada_title_links($is_show_simple_search,$is_show_advanced_search);
         $html[]='<div style="float:right;padding-left:5px;">'.my_show_help_icon().'</div>';
+    }else if(panel_admin_crm_exportar_is_crear_url()){
+        $html[]=my_show_help_icon();
     }    
     $html[]='</div>';
     return implode('',$html);                            

@@ -24,6 +24,11 @@ function crear_usuario_menu() {
     'page callback' => 'crear_usuario_denegar_grupo_callback',
     'access callback'=>'crear_usuario_denegar_grupo_access',    
   );
+   $items['crear_usuario/simular_aceptar_usuario']=array(
+    'title' => 'User',
+    'page callback' => 'crear_usuario_simular_aceptar_usuario_callback',
+    'access arguments'=>array('root'),    
+  );
   return $items;
 }
 function crear_usuario_user_profile_form_alter(&$form,&$form_state,$form_id){
@@ -415,21 +420,29 @@ function crear_usuario_send_mail_added_usuario_grupo($account,$grupo_nid){
     $html[]='Le informamos que ha sido aceptado como miembro del grupo colaborativo '.$url_grupo.' de '.$hontza_network.'.<BR>';
     $html[]='La aplicación de '.$hontza_network.' aporta a cada grupo colaborativo herramientas y funcionalidades para desarrollar su objetivo de vigilancia competitiva, permitiendo:';
     $html[]='<ul>';
-    $html[]='<li>Conocer el despliegue de retos estratégicos del grupo.</li>';
-    $html[]='<li>Trabajar con fuentes de información relevantes.</li>';
-    $html[]='<li>Construir canales de información por categorías.</li>';
-    $html[]='<li>Colaborar en el filtrado y puesta en valor de los mejores resultados de información, aportando etiquetas, puntuaciones y comentarios a las noticias.</li>';
-    $html[]='<li>Participar en debates para clarificar las cuestiones clave del entorno competitivo.</li>';
-    $html[]='<li>Trabajar en equipo para generar documentos y análisis conjuntos.</li>';
-    $html[]='<li>Generar y perfeccionar ideas, oportunidades y proyectos ligados al reto competitivo para fomentar procesos de innovación abierta.</li>';
-    $html[]='<li>Consultar alertas personalizadas y boletines especializados.</li>';
+    //$li_style=' style="color: #565656 !important;font-family: Georgia,serif !important;font-size: 16px !important;"';
+    $li_style=red_copiar_li_email_style();
+    /*line-height: 25px;
+    margin-bottom: 24px;
+    margin-top: 0;*/
+    $html[]='<li'.$li_style.'>Conocer el despliegue de retos estratégicos del grupo.</li>';
+    $html[]='<li'.$li_style.'>Trabajar con fuentes de información relevantes.</li>';
+    $html[]='<li'.$li_style.'>Construir canales de información por categorías.</li>';
+    $html[]='<li'.$li_style.'>Colaborar en el filtrado y puesta en valor de los mejores resultados de información, aportando etiquetas, puntuaciones y comentarios a las noticias.</li>';
+    $html[]='<li'.$li_style.'>Participar en debates para clarificar las cuestiones clave del entorno competitivo.</li>';
+    $html[]='<li'.$li_style.'>Trabajar en equipo para generar documentos y análisis conjuntos.</li>';
+    $html[]='<li'.$li_style.'>Generar y perfeccionar ideas, oportunidades y proyectos ligados al reto competitivo para fomentar procesos de innovación abierta.</li>';
+    $html[]='<li'.$li_style.'>Consultar alertas personalizadas y boletines especializados.</li>';
     $html[]='</ul>';
     $message=implode('<BR>',$html);
     //intelsat-2016
-    red_copiar_send_mail($mail_to,$subject,$message,'mimemail','');
+    red_copiar_send_mail($mail_to,$subject,$message,'mimemail','',0,1);
 }
 function crear_usuario_is_custom_css(){
     $result=0;
+    if(panel_admin_crm_exportar_is_crear_url()){
+        return 0;
+    }    
     $is_custom_css=0;
     if(!hontza_canal_rss_is_visualizador_activado()){
         if(defined('_IS_RED_ALERTA_NET') && _IS_RED_ALERTA_NET==1){
@@ -695,7 +708,7 @@ function crear_usuario_denegar_grupo_form(){
     $form['denied_btn']=array(
         '#type'=>'submit',
         '#name'=>'denied_btn',
-        '#value'=>t('Denied'),
+        '#value'=>t('Deny'),
     );
     $form['cancel_btn']=array(
         '#value'=>l('Cancel','vigilancia/validados'),
@@ -811,4 +824,12 @@ function crear_usuario_is_in_group($user_in=''){
         }
     }
     return 0;
-}    
+}
+function crear_usuario_simular_aceptar_usuario_callback(){
+    $my_account=user_load(1);
+    $my_account->mail='probakt@gmail.com';
+    /*echo print_r($my_account,1);
+    exit();*/
+    crear_usuario_send_mail_added_usuario_grupo($my_account,140432);
+    return date('Y-m-d H:i:s');
+}

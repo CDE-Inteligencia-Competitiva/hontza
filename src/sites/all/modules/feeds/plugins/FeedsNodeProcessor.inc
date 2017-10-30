@@ -44,7 +44,6 @@ class FeedsNodeProcessor extends FeedsProcessor {
     }
     $is_alchemy=is_alchemy_by_source($source);
     
-    
     //gemini-2013
     $is_validacion_automatica=hontza_is_validacion_automatica_by_feeds_source($source);    
     $last_import_time=hontza_save_canal_last_import_time_by_feeds_source($source);
@@ -55,7 +54,6 @@ class FeedsNodeProcessor extends FeedsProcessor {
     //intelsat-2016
     $grupo_source=hontza_get_grupo_by_feed_nid($source);
     //
-    
     while ($item = $batch->shiftItem()) {      
       /*
       //intelsat-2015-kimonolabs
@@ -141,6 +139,9 @@ class FeedsNodeProcessor extends FeedsProcessor {
           if(red_despacho_is_activado()){
             red_despacho_unset_hound_id_item_title($node,$source->feed_nid);
           }
+          //intelsat
+          red_despacho_on_canal_import_set_item_source_title_url($node,$source->feed_nid);
+          //echo print_r($node,1);exit();
           node_save($node);
           //print $node->body;exit();
 
@@ -359,7 +360,9 @@ class FeedsNodeProcessor extends FeedsProcessor {
   /**
    * Override setTargetElement to operate on a target item that is a node.
    */
+  //intelsat 
   public function setTargetElement($target_node, $target_element, $value) {
+  //public function setTargetElement(&$target_node, $target_element, $value) {  
     if (in_array($target_element, array('url', 'guid'))) {
       $target_node->feeds_node_item->$target_element = $value;
     }

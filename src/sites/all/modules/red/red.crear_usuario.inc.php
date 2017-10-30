@@ -822,3 +822,18 @@ function red_crear_usuario_get_footer_div_left_empty(){
     $html[]='<div style="float:left;width:33%;">&nbsp;</div>';
     return implode('',$html);
 }
+function red_crear_usuario_is_rol_invitado(){
+    global $user;
+    $num=count($user->roles);
+    if($num==2){
+        $authenticated_user_role_id=2;
+        if(isset($user->roles[$authenticated_user_role_id]) && !empty($user->roles[$authenticated_user_role_id])){
+            foreach($user->roles as $role_id=>$role_name){
+                if($role_name=='Invitado'){
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}

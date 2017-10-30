@@ -56,7 +56,7 @@ if(in_array($vars['view']->name,array('og_fuentes_pipes','og_fuentes_calidad','o
 }else if(strcmp($vars['view']->name,'gestion_canales')==0){
 	$vars['rows']=my_get_rows_gestion_canales($vars);
 }else if(strcmp($vars['view']->name,'og_canales_dash')==0){
-	$vars['rows']=my_get_rows_canales_dash($vars);
+  $vars['rows']=my_get_rows_canales_dash($vars);
 //gemini-2014        
 }else if(strcmp($vars['view']->name,'og_area_trabajo')==0){
     $vars['rows']=hontza_set_block_og_area_trabajo($vars);

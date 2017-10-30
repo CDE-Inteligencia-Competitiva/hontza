@@ -82,6 +82,7 @@ function help_popup_filter($op, $delta = 0, $format = -1, $text = '') {
           return $text;
 
         case 'process':
+
           $matches = help_popup_get_tags($text);
      
           foreach ($matches[0] as $match) {
@@ -114,12 +115,15 @@ function help_popup_filter_tips($delta, $format, $long = FALSE) {
 //function help_popup_window($nid, $template="help", $linkobject=null, $width=0, $height=0,$is_block=0,$my_is_mouse_over=0) {
 function help_popup_window($nid_in, $template="help", $linkobject=null, $width=0, $height=0,$is_block=0,$my_is_mouse_over=0,$is_online=1) {
   global $base_url;
+
   //gemini
   global $user;
   //intelsat-2015
   global $language;
   if(!(isset($user->uid) && !empty($user->uid))){
+    if(!panel_admin_crm_exportar_is_crear_url()){
         return '';
+    }    
   }  
   $nid=$nid_in;
   $nid=get_help_popup_nid_by_lang($nid,$is_online);
