@@ -97,7 +97,6 @@
 //$db_url = 'mysql://hontzacde:hontza30@localhost/hontza30';
 $db_url['default'] = 'mysql://hontza:hontzacde@localhost/hontza';
 //$db_url['my_install'] = 'mysql://remotoa:68629527A@92.243.10.49/eciceronenet3';
-$db_url = 'mysql://5sUdEsU3:hontza@localhost/hontza';
 
 
 $db_prefix = '';
