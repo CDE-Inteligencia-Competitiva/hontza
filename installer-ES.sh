@@ -18,46 +18,46 @@ sudo update-alternatives –set php /usr/bin/php5.6
 }
 
 download(){
-##    if [ -z "${GVERSION}" ]; then
-##        GVERSION='master'
-##        wget "${LAST}"  -O ./last &> /dev/null
-##        if [ ${?} -ne 0 ]; then
-##         echo "\n ERROR buscando última versión estable."
-##        fi
-##        GVERSION="$(cat ./last | xargs )"
-##    fi
-##    
-##    if [ -f ./hontza.zip ];then
-##        rm ./hontza.zip
-##    fi
-##    if [ -d "hontza-source" ]; then
-##        rm -r hontza-source
-##    fi
-##    
-##     echo "..*Descargar fuente de GitHub"
+    if [ -z "${GVERSION}" ]; then
+        GVERSION='master'
+        wget "${LAST}"  -O ./last &> /dev/null
+        if [ ${?} -ne 0 ]; then
+         echo "\n ERROR buscando última versión estable."
+        fi
+        GVERSION="$(cat ./last | xargs )"
+    fi
+    
+    if [ -f ./hontza.zip ];then
+        rm ./hontza.zip
+    fi
+    if [ -d "hontza-source" ]; then
+        rm -r hontza-source
+    fi
+    
+     echo "..*Descargar fuente de GitHub"
     
 
-##    wget "${REPO}/${GVERSION}.zip"  -O "${WORKFOLDER}"/hontza.zip &> /dev/null
-##    ## wget "https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/master.zip" -O "${WORKFOLDER}"/hontza.zip &> /dev/null
-##     if [ ${?} -ne 0 ]; then
-##     echo "ERROR descargando Hontza del servidor."
-##     echo "Url de descarga no valida ${REPO}/${GVERSION}.zip"
-##     exit 1
-##    fi
+    wget "${REPO}/${GVERSION}.zip"  -O "${WORKFOLDER}"/hontza.zip &> /dev/null
+    ## wget "https://github.com/CDE-Inteligencia-Competitiva/hontza/archive/master.zip" -O "${WORKFOLDER}"/hontza.zip &> /dev/null
+     if [ ${?} -ne 0 ]; then
+     echo "ERROR descargando Hontza del servidor."
+     echo "Url de descarga no valida ${REPO}/${GVERSION}.zip"
+     exit 1
+    fi
+  
+    echo "..*Extraer ficheros del fichero hontza.zip"
+    unzip -qq -u hontza.zip
+    if [ ${?} -ne 0 ]; then
+     echo " ERROR!!. Error de Unzip."
+     exit 1
+    fi
     
-##    echo "..*Extraer ficheros del fichero hontza.zip"
-##    unzip -qq -u hontza.zip
-##    if [ ${?} -ne 0 ]; then
-##     echo " ERROR!!. Error de Unzip."
-##     exit 1
-##    fi
-##    
-##    if [ ! -d "./hontza-${GVERSION}" ]; then
-##        echo "Error. Ficheros inesperados"
-##        exit 1
-##    fi
-##    mv "./hontza-${GVERSION}/src" './hontza-source'
-      mv "RAIZ DONDE COPIARAS LA CARPETA QUE DESCARGES EN EL SERVIDOR (PUEDE SER /HOME)/hontza-5.6/src" './hontza-source'
+    if [ ! -d "./hontza-${GVERSION}" ]; then
+        echo "Error. Ficheros inesperados"
+        exit 1
+    fi
+    mv "./hontza-${GVERSION}/src" './hontza-source'
+    
     
 }
 
