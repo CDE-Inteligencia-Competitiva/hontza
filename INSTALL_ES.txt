@@ -1,1 +1,5 @@
 Para la correcta instalación, ejecuta el INSTALL-ES.sh y sigue los pasos que se indican. 
+
+Una vez instalado, hay que deshabilitar la opción "only_full_group_by" de mysql. Para ello, se puede utilizar el siguiente comando dentro del terminal de mysql:
+
+SET @@GLOBAL.sql_mode=''
