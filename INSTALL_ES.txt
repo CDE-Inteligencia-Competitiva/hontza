@@ -1,14 +1,14 @@
 Hontza es una Plataforma para la Inteligencia competitiva y estratégica. 
 
-Hontza se instala en cualquier entorno linux con los repositorios actualizados.
+Hontza se puede instalar en cualquier entorno linux con los repositorios actualizados.
 
-Para instalar, SOLO hay que ejecutar INSTALL-ES.sh y seguir los pasos que se indican. 
-El proceso de instalación también gestiona la descarga de los ficheros necesarios.
+Para instalar Hontza, SOLO hay que ejecutar INSTALL-ES.sh y seguir los pasos que se indican. 
+No es necesario descargar ningún fichero antes de la instalación. 
+El proceso de instalación gestiona la descarga de los ficheros necesarios.
 
-Al terminar la instalacion hay que deshabilitar la opción "only_full_group_by" de mysql. Para ello, utilizar el siguiente comando dentro del terminal de mysql:
+Al terminar la instalacion hay que deshabilitar la opción "only_full_group_by" de mysql. Para ello, hay que utilizar el siguiente comando dentro del terminal de mysql:
 
 SET @@GLOBAL.sql_mode=''
 
 Video con el proceso de instalación:
-
 https://www.dropbox.com/s/p702mt4gnxumjw1/hontza_5.6_installation.webm?dl=0
