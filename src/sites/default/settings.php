@@ -101,7 +101,7 @@ $db_url['default'] = 'mysql://hontza:hontzacde@localhost/hontza';
 
 $db_prefix = '';
 
-define('_SAREKO_ID','ROOT');
+define('_SAREKO_ID','GITHUB');
 define('_IS_NETWORK_HONTZA',1);
 define('_IS_SOLR',1);
 define('_IS_HOUND',1);
