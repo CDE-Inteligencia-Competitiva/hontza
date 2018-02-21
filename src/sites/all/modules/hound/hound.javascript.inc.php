@@ -55,10 +55,7 @@ function hound_javascript_custom_access(){
 function hound_javascript_crear_canal_callback(){
     $hound_id=arg(2);
     $javascript_type=arg(3);
-    file_get_contents('http://192.169.1.17/hound2/Query.php?channels='.$hound_id);
     hound_javascript_crear_canal($hound_id,$javascript_type);
-    //sortu berri den canala eskrapeatzeko
-    
 }
 function hound_javascript_crear_canal($hound_id,$javascript_type){
     $javascript=hound_javascript_get_javascript_js($hound_id,$javascript_type);
@@ -86,7 +83,7 @@ function hound_javascript_crear_canal($hound_id,$javascript_type){
     <body>
 <div class="container">
 <div id="header">
-		<div id="logo"><img src="http://hound.hontza.es/hound2/public/Hound.png" width="300"  /></div>
+		<div id="logo"><img src="http://hound.hontza.es/blog/public/Hound.png" width="300"  /></div>
 	</div>
 	 
 	

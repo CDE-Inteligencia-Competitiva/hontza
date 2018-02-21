@@ -67,7 +67,6 @@ function hound_enlazar_inc_define_hound_url($is_http=1){
 function hound_enlazar_inc_get_create_url(){
     global $base_url;
     $url=hound_enlazar_inc_define_hound_url();
-    
 
     $url.='/channels/crearCanal/'.hound_enlazar_inc_get_key().'?subdominio='.$base_url;
 
