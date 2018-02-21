@@ -931,7 +931,10 @@ function decision_inc_update_suma_votos($nid,$vid,$suma_votos){
 function decision_inc_get_order_by($order_by){
     $result=$order_by;
     if(estrategia_inc_is_ordenar_suma_votos()){
+        //$result=" ORDER BY n.created ASC";
         $result=" ORDER BY d.suma_votos DESC,d.peso ASC,n.created ASC";
+       
     }
+
     return $result;
 }

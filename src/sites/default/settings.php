@@ -97,11 +97,12 @@
 //$db_url = 'mysql://hontzacde:hontza30@localhost/hontza30';
 $db_url['default'] = 'mysql://hontza:hontzacde@localhost/hontza';
 //$db_url['my_install'] = 'mysql://remotoa:68629527A@92.243.10.49/eciceronenet3';
+$db_url = 'mysql://5sUdEsU3:hontza@localhost/hontza';
 
 
 $db_prefix = '';
 
-define('_SAREKO_ID','GITHUB');
+define('_SAREKO_ID','ROOT');
 define('_IS_NETWORK_HONTZA',1);
 define('_IS_SOLR',1);
 define('_IS_HOUND',1);
@@ -139,6 +140,7 @@ define('_IS_FEED_SANIZITER',1);
 define('_IS_HOUND_FILTER',1);
 define('_IS_CRM_LIST_TYPE',1);
 define('_IS_CRM_ACTIVAR_CLIENTE',1);
+define('_IS_HOUND_ENLAZAR',1);
 //Red fields
 define('_FIELD_RED_ITEM_WEB_NAME','field_igape_item_web');
 define('_FIELD_RED_IDIOMAS_NAME','field_igape_idiomas');

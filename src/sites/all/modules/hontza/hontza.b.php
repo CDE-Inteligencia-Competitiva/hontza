@@ -2211,13 +2211,13 @@ function hontza_canales_por_categorias_menu($type_in='',$tid_in='',$arg_type_in=
         //intelsat-2015
         if(!hontza_canal_rss_is_usuario_basico()){
             $url_pendientes=red_despacho_get_canales_por_categorias_url_tab($tid,$type_in,'pendientes');
-            $html[]='<li'.hontza_canales_menu_class('pendientes',$arg_type).'>'.l(t('Pending'),$url_pendientes).'</li>';
+            $html[]='<li'.hontza_canales_menu_class('pendientes',$arg_type).'>'.l(t('Pending'),$url_pendientes).' </li>';
         }    
     //}
     //intelsat-2015
     //$url_validados='canales/my_categorias/'.$tid.'/validados';    
     $url_validados=red_despacho_get_canales_por_categorias_url_tab($tid,$type_in,'validados');    
-    $html[]='<li'.hontza_canales_menu_class('validados',$arg_type).'>'.l(t('Validated'),$url_validados).'</li>';
+    $html[]='<li'.hontza_canales_menu_class('validados',$arg_type). '>'.l(t('Validated'),$url_validados).'</li>';
      //intelsat-2015
     if(red_despacho_is_show_lo_mas_valorado()){
         $html[]='<li'.hontza_canales_menu_class('lo-mas-valorado',$arg_type).'>'.l(t('Top Rated'),'canales/my_categorias/'.$tid.'/lo-mas-valorado').'</li>';

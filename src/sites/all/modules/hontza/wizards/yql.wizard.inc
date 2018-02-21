@@ -129,6 +129,7 @@ function yql_canal_form(&$form, &$form_state){
   $form['titulo'] = array(
     '#type' => 'textfield',
     '#title' => t('Name of Channel'),
+    '#description' => t('Forbidden character: &'),
     '#required' => TRUE,
     //gemini
     '#default_value' => $nombre_canal,
@@ -505,6 +506,7 @@ function agregar_fuente_form(&$form, &$form_state){
     '#type' => 'fieldset',
 	//gemini
 	'#attributes'=>array('id'=>'fuentes_simple'),
+   '#required' => TRUE,
   	//
   );
       
@@ -522,6 +524,7 @@ function agregar_fuente_form(&$form, &$form_state){
       '#size' => 50,
       '#maxlength'=> 500,
       '#weight'=>$kont_weight,  
+      '#required' => TRUE,
 	   );
      //intelsat
      if(red_despacho_is_canal_fuente_titulo_activado()){
@@ -1376,6 +1379,7 @@ function prepare_simple_or_opml(&$form,&$form_state){
 				  '#title' => t('RSS 1'),
 				  '#type' => 'textfield',
 				  '#description' => t('Url of RSS'),
+          '#required'=> TRUE,
 				  '#size' => 50,
                                   //gemini-2013
                                   '#maxlength'=>500,

@@ -101,8 +101,11 @@
     </tr>
     <?php else:?>
     <tr class="tr_node_view">     
-            <td class="td_label_node_view"><b><?php print red_despacho_get_canal_url_label();//print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
-            <td class="td_value_node_view"><?php print hontza_get_enlace_fuente_del_canal_view_html($node,1);?></td>
+        <td class="td_label_node_view"><b><?php print red_despacho_get_canal_url_label();
+            //hemen sartu behar dut kodigoa google sheetean ez azaltzeko urla
+            //
+            //print t('Source URL');//print t('Name of source').'/'.t('URL');?></b>:&nbsp;</td>
+        <td class="td_value_node_view"><?php print hontza_get_enlace_fuente_del_canal_view_html($node,1);?></td>
     </tr>
         <?php if(red_despacho_is_canal_fuente_titulo_activado()):?>
             <?php include('canal-source-title-url-table-view.tpl.php');?>

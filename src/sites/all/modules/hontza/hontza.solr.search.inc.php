@@ -234,17 +234,20 @@ function hontza_solr_search_is_popup(){
     return 0;
 }
 function hontza_solr_search_modificar_taxonomia_access(){
-    if(is_super_admin()){
+    // hemen aldaketa egin dut edozeinek alda dezan 
+
+    /*if(is_super_admin()){
         return 1;
     }        
     //intelsat-2016
     /*if(is_administrador_grupo(1)){
         return 1;
     }*/
-    if(red_crear_usuario_is_rol_administrador_creador_grupo()){
+    /*if(red_crear_usuario_is_rol_administrador_creador_grupo()){
         return 1;
     }
-    return 0;
+    return 0;*/
+    return 1;
 }
 function hontza_solr_search_get_modificar_taxonomia_link($style){
     $html=array();    

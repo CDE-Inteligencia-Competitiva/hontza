@@ -863,6 +863,10 @@ function hontza_parametros_del_canal_yql($node){
 function hontza_is_canal_params_filtro1($canal_params){
     if(!empty($canal_params)){
         if(!empty($canal_params->todos) && !empty($canal_params->todos)){
+            if(!empty($canal_params->titulo) || !empty($canal_params->description) || !empty($canal_params->no_titulo) || !empty($canal_params->no_descripcion) || !empty($canal_params->contiene) || !empty($canal_params->no_contiene) || !empty($canal_params->area))
+              {
+                drupal_set_message(t('It is only possible to use one filter per channel, filter 1 will be created'),'warning');
+              }
             return 1;
         }
     }
@@ -870,15 +874,44 @@ function hontza_is_canal_params_filtro1($canal_params){
 }
 function hontza_is_canal_params_filtro2($canal_params){
     if(!empty($canal_params)){
+        if (!empty($canal_params->titulo) && empty($canal_params->descripcion))
+        {
+          drupal_set_message(t('The filter has not been created properly because description filter is missing'),'error');
+          return 0;
+        }
+        if(empty($canal_params->titulo) && !empty($canal_params->descripcion))
+        {
+          drupal_set_message(t('The filter has not been created properly because title filter is missing'),'error');
+          return 0;
+        }
         if(!empty($canal_params->titulo) && !empty($canal_params->descripcion)){
+              if(!empty($canal_params->no_titulo) || !empty($canal_params->no_descripcion) || !empty($canal_params->contiene) || !empty($canal_params->no_contiene) || !empty($canal_params->area))
+              {
+                drupal_set_message(t('It is only possible to use one filter per channel, filter 2 will be created'),'warning');
+              }
             return 1;
+
         }
     }
     return 0;
 }
 function hontza_is_canal_params_filtro3($canal_params){
     if(!empty($canal_params)){
+        if (!empty($canal_params->no_titulo) && empty($canal_params->no_descripcion))
+        {
+          drupal_set_message(t('The filter has not been created properly because description filter is missing'),'error');
+          return 0;
+        }
+        if(empty($canal_params->no_titulo) && !empty($canal_params->no_descripcion))
+        {
+          drupal_set_message(t('The filter has not been created properly because title filter is missing'),'error');
+          return 0;
+        }
         if(!empty($canal_params->no_titulo) && !empty($canal_params->no_descripcion)){
+            if(!empty($canal_params->contiene) || !empty($canal_params->no_contiene) || !empty($canal_params->area))
+              {
+                drupal_set_message(t('It is only possible to use one filter per channel, filter 3 will be created'),'warning');
+              }
             return 1;
         }
     }
@@ -886,7 +919,21 @@ function hontza_is_canal_params_filtro3($canal_params){
 }
 function hontza_is_canal_params_filtro4($canal_params){
     if(!empty($canal_params)){
+        if(!empty($canal_params->contiene) && empty($canal_params->no_contiene))
+        {
+          drupal_set_message(t('The filter has not been created properly because some parameter is missing'),'error');
+          return 0;
+        }
+        if(empty($canal_params->contiene) && !empty($canal_params->no_contiene))
+        {
+          drupal_set_message(t('The filter has not been created properly because some parameter is missing'),'error');
+          return 0;
+        }
         if(!empty($canal_params->contiene) && !empty($canal_params->no_contiene)){
+            if(!empty($canal_params->area))
+              {
+                drupal_set_message(t('It is only possible to use one filter per channel, filter 4 will be created'),'warning');
+              }
             return 1;
         }
     }
@@ -1274,6 +1321,7 @@ function hontza_get_block_content_anadir_canal(){
             //intelsat-2016
             if(hontza_canal_json_is_activado()){
                 $result[]=l(t('Import Json'), 'canal_json/crear');
+                $result[]=l(t('Import Google Sheet'), 'canal_json/google_sheet');
                 $result[]=l(t('Import Csv'), 'canal_json/crear_csv');
             }
             if(hound_settings_access()){

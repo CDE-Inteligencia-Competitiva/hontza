@@ -169,6 +169,19 @@ function hontza_solr_busqueda_avanzada_form(){
         '#prefix'=>$prefix_right,
         '#suffix'=>$suffix_right,
     );
+
+    ///hau pregunta claveetan galdetzeko egingo dugun form-a izango da:
+
+        $form['in_the_key_question']=array(
+        '#type'=>'textfield',
+        '#title'=>t('In the key question'),
+        /*'#prefix'=>$prefix_main,
+        '#suffix'=>$suffix_main,*/
+        '#prefix'=>$prefix_right,
+        '#suffix'=>$suffix_right,
+    );
+
+    ///////////////////////////////////////////////////////////////////
     /*    
     $form['not_in_the_title']=array(
         '#type'=>'textfield',
@@ -344,6 +357,12 @@ function hontza_solr_busqueda_avanzada_form_submit($form,$form_state){
     if(!empty($in_the_description)){
         $search_array[]='(content:'.$in_the_description.')';
     }
+    //hau key questionarena egiteko:
+    $in_the_key_question=$form_state['values']['in_the_key_question'];
+    if(!empty($in_the_key_question)){
+        $search_array[]='(content:'.$in_the_key_question.')';
+    }
+    /////////////////////////////////
     $not_in_the_title=$form_state['values']['not_in_the_title'];
     if(!empty($not_in_the_title)){
         $search_array[]='(-label:'.$not_in_the_title.')';

@@ -2555,6 +2555,7 @@ font-size: 11px;
 .n-item-twitter a,
 .n-item-linkedin a,
 .n-item-copiar-nodo a,
+.n-item-categorizar a,
 .n-item-link-type-web a,
 .n-item-link-type-platform a,
 .n-item-reset-copiar-nodo a
@@ -2719,6 +2720,7 @@ font-weight:normal;
 .n-item-twitter,
 .n-item-linkedin,
 .n-item-copiar-nodo,
+.n-item-categorizar,
 .n-item-link-type-web,
 .n-item-link-type-platform,
 .n-item-reset-copiar-nodo
@@ -2869,6 +2871,12 @@ padding:10px 12px 10px 25px;
 
 .n-item-editar a {
   background-image:url(images/icons/edit.png);
+  background-repeat: no-repeat;
+  background-position: left center;
+}
+
+.n-item-categorizar a {
+  background-image:url(images/icons/modificar_taxonomia.png);
   background-repeat: no-repeat;
   background-position: left center;
 }

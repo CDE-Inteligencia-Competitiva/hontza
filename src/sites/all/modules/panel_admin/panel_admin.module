@@ -1713,6 +1713,8 @@ function panel_admin_get_usuarios_block_content(){
     //intelsat-2016-noticias-usuario
     $label_analysis_of_users=t('Analysis of Users');
     $result[]=l($label_analysis_of_users,'panel_admin/usuarios_acceso/todos');
+    //joseba
+    $result[]=l(t('Change the sender´s email'),'admin/settings/hontza');
     return implode('<br>',$result);
 }
 //intelsat-2016

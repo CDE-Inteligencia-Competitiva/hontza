@@ -152,14 +152,45 @@ function boletin_report_get_enlaces_derecha_html($node,$is_view=0,$con_fecha=0){
                         $html[]='</td>';
                     }
                     //intelsat-2016
+                    $html[]='<td>';   
                     $html[]=red_copiar_get_enlaces_stars_td();
                     $my_node->votingapi_cache_node_average_value=boletin_report_get_votingapi_cache_node_average_value($my_node->nid);
                     $html[]=my_get_stars_idea($my_node);
                     $html[]='</td>';    
-                    //print $node->content['fivestar_widget']['#value']                
-                    $html[]='<td>';
-                    $html[]=l($my_node->title,$url,array('absolute'=>TRUE,'attributes'=>array('target'=>'_blank')));
+                    //print $node->content['fivestar_widget']['#value']    
+ 
+                    $link='';//nik gehituta
+                    $bg='';//nik gehiuta
+                    /////////////////////////////////////////////////////////////////////
+                    /////////////////jakiteko ea ze link itxia den edo ez////////////////
+                    if(in_array($node->type,array('item','noticia','wiki','idea','debate'))){
+                        //hona sartu da
+                        if(boletin_report_inc_is_boletin_item_link_type_web_activado()){
+                        $link='';
+                        
+                        $url1=crm_exportar_get_node_url($link,$my_node);
+                        //$node_title=estrategia_set_title_max_len(htmlkarakter($my_node->title));
+                        //$url.=$node_title;
+                        }
+                        if ($url==$url1){
+                        $html[]='<td>';//nik gehituta 
+                        //irekita
+                        //images/icons/link_type_web.png
+                        $html[]='<img src=/hontza/sites/all/themes/buho/images/icons/link_type_web.png alt="Open">';//nik gehituta 
+                        $html[]='</td>';//nik gehituta 
+                        }else{
+                        $html[]='<td>';//nik gehituta 
+                        //itxita
+                        //images/icons/link_type_platform.png
+                        $html[]='<img src=/hontza/sites/all/themes/buho/images/icons/link_type_platform.png>';//nik gehituta 
+                        $html[]='</td>';//nik gehituta  
+                        }
+                    }  
+                    $html[]='<td>';    
+                    /////////////////////////////////////////////////////////////////////
+                    $html[]=l($my_node->title,$url1,array('absolute'=>TRUE,'attributes'=>array('target'=>'_blank')));
                     $html[]='</td>';
+                    
                     $html[]='</tr>';
                 }   
             }

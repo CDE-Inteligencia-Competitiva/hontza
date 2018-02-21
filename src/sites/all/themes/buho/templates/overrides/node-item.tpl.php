@@ -257,14 +257,17 @@
             </div>
          <?php endif;?>
         
-        <?php if(red_despacho_is_show_categorizar_link()):?>
+            <?php if(red_despacho_is_show_categorizar_link()):?>
             <div class="n-item-tipo-fuente">
                 <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
             </div>
-            <div class="n-item-categorizar">
-                <?php print red_despacho_get_categorizar_link($node);?>
-            </div>
+            <?php endif;?>
+        <?php if (red_despacho_is_instalado()):?>
+        <div class="n-item-categorizar">
+            <?php print red_despacho_get_categorizar_2_link($node);?>
+        </div>
         <?php endif;?>
+        
         
         <?php if(hontza_solr_funciones_is_bookmark_activado()):?>
         <div class="<?php print hontza_solr_funciones_bookmark_action_class($node);?>">
@@ -444,14 +447,16 @@
                     </div>
                   <?php endif;?>
         
-                  <?php if(red_despacho_is_show_categorizar_link()):?>
-                    <div class="n-item-tipo-fuente">
-                        <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
-                    </div>
-                    <div class="n-item-categorizar">
-                        <?php print red_despacho_get_categorizar_link($node);?>
-                    </div>
-                  <?php endif;?>
+            <?php if(red_despacho_is_show_categorizar_link()):?>
+            <div class="n-item-tipo-fuente">
+                <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
+            </div>
+            <?php endif;?>
+        <?php if (red_despacho_is_instalado()):?>
+        <div class="n-item-categorizar">
+            <?php print red_despacho_get_categorizar_2_link($node);?>
+        </div>
+        <?php endif;?>
         
                   <?php if(hontza_solr_funciones_is_bookmark_activado()):?>
                     <div class="<?php print hontza_solr_funciones_bookmark_action_class($node);?>">
@@ -615,14 +620,16 @@
                             </div>
                         <?php endif;?>
         
-                        <?php if(red_despacho_is_show_categorizar_link()):?>
-                            <div class="n-item-tipo-fuente">
-                                <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
-                            </div>
-                            <div class="n-item-categorizar">
-                                <?php print red_despacho_get_categorizar_link($node);?>
-                            </div>
-                        <?php endif;?>
+            <?php if(red_despacho_is_show_categorizar_link()):?>
+            <div class="n-item-tipo-fuente">
+                <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
+            </div>
+            <?php endif;?>
+        <?php if (red_despacho_is_instalado()):?>
+        <div class="n-item-categorizar">
+            <?php print red_despacho_get_categorizar_2_link($node);?>
+        </div>
+        <?php endif;?>
         
                         <?php if(hontza_solr_funciones_is_bookmark_activado()):?>
                             <div class="<?php print hontza_solr_funciones_bookmark_action_class($node);?>">
@@ -651,7 +658,7 @@
                         </div>
         
                         <?php //Delete item ?>
-			<div class="n-item-borrar"<?php print red_node_get_item_view_style();?>>
+			                 <div class="n-item-borrar"<?php print red_node_get_item_view_style();?>>
                             <?php print hontza_item_delete_link($node);?>
                         </div>
         
@@ -1009,12 +1016,14 @@
       <?php endif;?>
       
         <?php if(red_despacho_is_show_categorizar_link()):?>
-            <div class="n-item-tipo-fuente">
-                <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
-            </div>
-            <div class="n-item-categorizar">
-                <?php print red_despacho_get_categorizar_link($node);?>
-            </div>
+        <div class="n-item-tipo-fuente">
+            <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
+        </div>
+        <?php endif;?>
+        <?php if (red_despacho_is_instalado()):?>
+        <div class="n-item-categorizar">
+            <?php print red_despacho_get_categorizar_2_link($node);?>
+        </div>
         <?php endif;?>
             
         <?php if(hontza_solr_funciones_is_bookmark_activado()):?>

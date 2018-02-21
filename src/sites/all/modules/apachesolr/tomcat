@@ -1,0 +1,102 @@
+#!/bin/sh
+#
+# Startup script for Tomcat Servlet Engine
+#
+# chkconfig: 345 86 14
+# description: Tomcat Servlet Engine
+# processname: tomcat
+
+### BEGIN INIT INFO
+# Provides: tomcat
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+# Short Description: Tomcat Servlet Engine
+# Description: Tomcat Servlet Engine
+### END INIT INFO
+
+umask 002
+
+NAME=tomcat
+
+#### The following variables can be overwritten in /etc/default/$NAME
+#### See /usr/local/tomcat/bin/catalina.sh for a complete list of available variables
+#### and their definitions.
+
+TOMCAT_USER=tomcat
+CATALINA_HOME=/usr/local/$NAME
+CATALINA_BASE=$CATALINA_HOME
+CATALINA_OUT=$CATALINA_BASE/logs/catalina.out
+#CATALINA_OPTS="-Dcom.sun.management.snmp.port=9983 -Dcom.sun.management.snmp.acl.file=$CATALINA_HOME/conf/snmp.acl -Dcom.sun.management.snmp.interface=0.0.0.0"
+CATALINA_TMPDIR=$CATALINA_BASE/temp
+JAVA_HOME=/usr
+JRE_HOME=$JAVA_HOME
+JAVA_OPTS="-Djava.awt.headless=true"
+JAVA_ENDORSED_DIRS=$CATALINA_HOME/endorsed
+CATALINA_PID=$CATALINA_HOME/bin/$NAME.pid
+#LOGGING_CONFIG=
+#LOGGING_MANAGER=
+
+##### End of variables that can be overwritten in /etc/default/$NAME #####
+
+# Overwrite settings from the default file
+if [ -f "/etc/default/$NAME" ]; then
+    . /etc/default/$NAME
+fi
+
+export CATALINA_HOME CATALINA_BASE CATALINA_OUT CATALINA_OPTS CATALINA_TMPDIR JAVA_HOME JRE_HOME JAVA_OPTS JAVA_ENDORSED_DIRS CATALINA_PID LOGGING_CONFIG LOGGING_MANAGER
+
+RETVAL=0
+
+start() {
+    su -p $TOMCAT_USER -c "$CATALINA_HOME/bin/catalina.sh start"
+    RETVAL=$?
+}
+
+stop() {
+    su -p $TOMCAT_USER -c "$CATALINA_HOME/bin/catalina.sh stop 60 -force"
+    RETVAL=$?
+}
+
+status() {
+    if [ ! -z "$CATALINA_PID" ]; then
+        if [ -f "$CATALINA_PID" ]; then
+            echo "$NAME is running"
+            RETVAL=0
+            return
+        fi
+    fi
+    echo "$NAME is not running"
+    RETVAL=3
+}
+
+debug() {
+    su -p $TOMCAT_USER -c "$CATALINA_HOME/bin/catalina.sh jpda start"
+    RETVAL=$?
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  debug)
+        debug
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  status)
+        status
+        ;;
+  *)
+        echo "Usage: $0 {start|debug|stop|restart|status}"
+        exit 1
+esac
+
+exit $RETVAL
+
