@@ -257,6 +257,7 @@ addCron(){
     
     CMD='0 * * * * wget -O /dev/null http://'${VHN}'/'${WEBFOLDER}'/cron.php &> /dev/null
 15,30,45 * * * * wget http://'${VHN}'/'${WEBFOLDER}'/hontza_solr/indexar 2>&1 > /dev/null
+15,30,45 * * * * wget http://'${VHN}'/'${WEBFOLDER}'/cron_google_sheet.php 2>&1 > /dev/null
 #5,35,50 * * * * lynx -dump http://'${VHN}'/'${WEBFOLDER}'/red/solr/apachesolr_index_batch_index_remaining 2>&1 > /dev/null' 
 
     cat <(crontab -l|grep -v "cron.php\|indexar\|apachesolr" ) <(echo "${CMD}") | crontab -
@@ -626,13 +627,13 @@ DELETE FROM '${DB}'.variable WHERE variable.name = "red_registrar_is_registrado_
 
 function activar_demonio_solr(){
 	echo "activar demonio de solr"
-	cp /hontza-source/sites/all/modules/apachesolr/tomcat /etc/init.d/. 
+	cp "${WORKFOLDER}"/hontza-source/sites/all/modules/apachesolr/tomcat /etc/init.d/. 
 	/etc/init.d/tomcat restart
 }
 
 function mysql_conf(){
 echo "cambiar configuración de mysql para desactivar only full group by"
-cp /hontza-source/db/mysql.cnf /etc/mysql/conf.d/mysql.cnf
+cp "${WORKFOLDER}"/hontza-source/db/mysql.cnf /etc/mysql/conf.d/mysql.cnf
 service mysql restart
 
 }
@@ -655,7 +656,7 @@ WEBROOT='/var/www/html'
 WEBFOLDER='hontza'
 DBUSER_F='mysuser'
 DBROOT_F='myroot'
-TOMCAT_VERSION='7.0.85'
+TOMCAT_VERSION='7.0.82'
 
 
 #set +e
