@@ -11,10 +11,6 @@ function hound_enlazar_inc_hound_key_save($form_state){
             variable_set('hound_key',$form_state['values']['hound_key']);
         }
     }
-   //joseba
-    $hound_key=$form_state['values']['hound_key'];
-    return $hound_key;
-    //joseba
 }
 function hound_enlazar_inc_add_create_edit_form_field(&$form){
     if(hound_enlazar_inc_is_activado()){
@@ -42,12 +38,10 @@ function hound_enlazar_inc_add_create_js(){
     $url=hound_enlazar_inc_get_create_url();
     $js='var hound_enlazar_url="'.$url.'";
         $(document).ready(function(){
-
-            $("#edit-hound1-create-btn").click(function(){
+        $("#edit-hound1-create-btn").click(function(){
             window.open(hound_enlazar_url);
             return false;
-        });  
-
+        });            
     });';        
     drupal_add_js($js,'inline');
 }
@@ -56,9 +50,7 @@ function hound_enlazar_inc_get_base_url($is_http=1){
     return $url;
 }
 function hound_enlazar_inc_define_hound_url($is_http=1){
-    //$url='hound.hontza.es/blog/public';
-    $url='hound.hontza.es/hound2/public';
-    //channels/getRSS/559/c4ca4238a0b923820dcc509a6f75849b
+    $url='hound.hontza.es/blog/public';
     if($is_http){
         $url='http://'.$url;
     }
@@ -67,14 +59,11 @@ function hound_enlazar_inc_define_hound_url($is_http=1){
 function hound_enlazar_inc_get_create_url(){
     global $base_url;
     $url=hound_enlazar_inc_define_hound_url();
-
     $url.='/channels/crearCanal/'.hound_enlazar_inc_get_key().'?subdominio='.$base_url;
-
     return $url;
 }
 function hound_enlazar_inc_get_key(){
-    //joseba
-    $hound_key=db_result(db_query('SELECT key_empresa FROM {joseba_prueba}'));
+    $hound_key=variable_get('hound_key','');
     return $hound_key;
 }
 function hound_enlazar_inc_add_edit_js($canal){
@@ -287,19 +276,7 @@ function hound_enlazar_inc_set_hound_url_from_time($url_in,$last_import_time){
                 //$url=urlencode($url);
                 $info_url=parse_url($url);
                 parse_str($info_url['query'],$info);
-                 /*if(user_access('root') && hontza_is_sareko_id('PROBA')){
-                    drupal_set_message(print_r($info_url,1));
-                 }*/
-                 $port='';
-                 if(isset($info_url['port'])){
-                    if(!empty($info_url['port']) && $info_url['port']!=80){
-                        $port=':'.$info_url['port'];
-                    }
-                 }   
-                //$url=$info_url['scheme'].'://'.$info_url['host'].$port.'/'.$info_url['path'].'?'.hound_urlencode_query($info_url['query']);
-                $url=$info_url['scheme'].'://'.$info_url['host'].$port.$info_url['path'].'?'.hound_urlencode_query($info_url['query']);
-                //intelsat
-                $url=rtrim($url,'?');
+                $url=$info_url['scheme'].'://'.$info_url['host'].'/'.$info_url['path'].'?'.hound_urlencode_query($info_url['query']);
                 //print urldecode($url);exit();
             }
         }

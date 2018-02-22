@@ -229,9 +229,7 @@ function hound_load_result_html($result_in,$hound_id,$content){
             if(hound_enlazar_inc_is_activado()){
                 $html[]='<tr style="display:none;">';
             }
-            $is_value_empty=hound_parametro_row_is_empty($key,$row);
-            //if($is_empty){
-            if($is_empty || $is_value_empty){    
+            if($is_empty){
                 $html[]='<div style="padding:10px;display:none;">';
             }else{
                 //intelsat-2016
@@ -318,9 +316,7 @@ function hound_load_result_html($result_in,$hound_id,$content){
                 }                
             }else{
                 foreach($row as $name=>$value){
-                    $is_value_empty=hound_parametro_is_empty($key,$name,$value);
-                    //if($is_empty){
-                    if($is_empty || $is_value_empty){   
+                    if($is_empty){
                        $html[]='<div style="padding:10px;display:none;">';
                     }else{    
                        $html[]='<div style="padding:10px;">';
@@ -477,47 +473,23 @@ function hound_get_canal_hound_field($canal_hound_row,$field){
 }
 function hound_editing_form_alter(&$form,&$form_state,$form_id,$nid){
         $canal_hound_row='';
-        $hound_title_lineas='';
-        $is_hound_title_lineas=0;
-        $num_rows=5;
         if(hontza_is_hound_text_input()){
             $canal_hound_row=hound_get_canal_hound_parametros_row($nid);
             $hound_title=hound_get_canal_hound_field($canal_hound_row,'hound_title');
-            $hound_title_lineas=hound_get_hound_title_lineas($hound_title,$num_rows);
-            $is_hound_title_lineas=1;
         }else{
             $hound_title=hontza_get_hound_title_by_nid($nid);
-            //$is_lineas=1;
-            //$hound_title_lineas=hound_get_title_by_nid($nid,0,$is_lineas);
         }
         $form['field_nombrefuente_canal'][0]['#prefix']='<div style="display:none;">';
         $form['field_nombrefuente_canal'][0]['#suffix']='</div>';
         $form['feeds']['#prefix']='<div style="display:none;">';
         $form['feeds']['#suffix']='</div>';
-        /*$form['hound_title_readonly'] = array(
+        $form['hound_title_readonly'] = array(
                 '#title' => t('Hound'),
                 '#type' => 'textfield',
                 '#default_value'=>$hound_title,
                 '#attributes'=>array('readonly'=>'readonly'),
                 '#maxlength'=>1024,
-            );*/
-        $form['hound_title_readonly'] = array(
-                '#title' => t('Hound'),
-                '#type' => 'textarea',
-                '#default_value'=>$hound_title,
-                '#attributes'=>array('readonly'=>'readonly'),
-            );
-        if($is_hound_title_lineas){
-          $form['hound_title_readonly']['#prefix']='<div style="display:none">';
-          $form['hound_title_readonly']['#suffix']='</div>';          
-          $form['hound_title_lineas_readonly'] = array(
-                  '#title' => t('Hound'),
-                  '#type' => 'textarea',
-                  '#default_value'=>$hound_title_lineas,
-                  '#attributes'=>array('readonly'=>'readonly'),
-                  '#rows'=>$num_rows,
-              );
-        }                        
+            );            
         if(hontza_is_hound_text_input()){
             $hound_id_editing=hound_get_canal_hound_field($canal_hound_row,'hound_id');
             if(hound_is_modo_autocomplete()){
@@ -574,7 +546,6 @@ function hound_editing_form_alter(&$form,&$form_state,$form_id,$nid){
 }
 function hound_define_editing_parametros_html($canal_hound_row){
     $html=array();
-    $is_empty=0;
     //intelsat-2016
     if(hound_enlazar_inc_is_activado()){
         $html[]=hound_enlazar_inc_define_editing_parametros_html($canal_hound_row);
@@ -584,9 +555,7 @@ function hound_define_editing_parametros_html($canal_hound_row){
         if(!empty($parametros)){
             foreach($parametros as $key=>$row){
                 foreach($row as $name=>$value){
-                    $is_empty=hound_parametro_is_empty($key,$name,$value);
-                    //if($canal_hound_row->is_empty){
-                    if($canal_hound_row->is_empty || $is_empty){    
+                    if($canal_hound_row->is_empty){
                         $html[]='<div style="padding:10px;display:none;">';
                     }else{
                         $html[]='<div style="padding:10px;">';
@@ -721,9 +690,7 @@ function hound_editing_load_result_html($result_in,$hound_id,&$hound_title,$cont
                     $row->hound_search='';
                 }
                 foreach($row as $name=>$value){
-                    $is_value_empty=hound_parametro_is_empty($key,$name,$value);
-                    //if($is_empty){
-                    if($is_empty || $is_value_empty){    
+                    if($is_empty){
                         $html[]='<div style="padding:10px;display:none;">';
                     }else{    
                         $html[]='<div style="padding:10px;">';
@@ -793,22 +760,13 @@ function hound_api_save_parametros($canal){
     //intelsat-2016
     if(!hound_enlazar_inc_is_activado()){
         $canal_hound_parametros=hound_get_canal_hound_parametros_row($canal->nid);
-        //intelsat
-        if(hontza_is_hound_canal('',$canal)){
-          if(!$canal_hound_parametros->is_empty){
-              //http://192.168.110.211/hound/index.php/channels/setChannel/id/H8159/hound_search/{.....json array bat......}
-              $hound_base_url=hound_base_url();
-              $url=$hound_base_url.'/index.php/channels/setChannel/id/'.urlencode($canal_hound_parametros->hound_id).'/hound_search'.hound_define_api_params($canal_hound_parametros);
-              //print $url;exit();
-              $content=file_get_contents($url);
-              //print $content;exit();
-              /*if(hontza_is_sareko_id('RADAR')){
-                print $url.'<br>';
-                print $content;
-                exit();
-              }*/
-          }
-        }      
+        if(!$canal_hound_parametros->is_empty){
+            //http://192.168.110.211/hound/index.php/channels/setChannel/id/H8159/hound_search/{.....json array bat......}
+            $hound_base_url=hound_base_url();
+            $url=$hound_base_url.'/index.php/channels/setChannel/id/'.urlencode($canal_hound_parametros->hound_id).'/hound_search'.hound_define_api_params($canal_hound_parametros);
+            $content=file_get_contents($url);
+            //print $content;exit();
+        }
     }
 }
 function hound_define_api_params($canal_hound_parametros){
@@ -826,18 +784,13 @@ function hound_define_api_params($canal_hound_parametros){
 }
 //intelsat-2016
 //function hound_get_title_by_nid($nid){
-//function hound_get_title_by_nid($nid,$is_br=0){
-function hound_get_title_by_nid($nid,$is_br=0,$is_lineas=0){    
+function hound_get_title_by_nid($nid,$is_br=0){
     $canal_hound_parametros=hound_get_canal_hound_parametros_row($nid);
     if(isset($canal_hound_parametros->hound_title)){
         if($is_br){
             $result=$canal_hound_parametros->hound_title;
             $result=explode(',',$result);
             return implode('<br>',$result);
-        }else if($is_lineas){
-            $result=$canal_hound_parametros->hound_title;
-            $result=explode(',',$result);
-            return implode("\n",$result);
         }else{
             return $canal_hound_parametros->hound_title;     
         }    
@@ -1091,11 +1044,9 @@ function hound_api_get_num_fuentes($api_channel){
 }
 function hound_get_hound_title_by_request_parametros($api_channel){
    $result=array();
-   if(!empty($api_channel)){
-     foreach($api_channel as $key=>$my_array){
-         $result[]=$key;
-     }
-   }  
+   foreach($api_channel as $key=>$my_array){
+       $result[]=$key;
+   }
    return implode(',',$result);
 }
 function hound_get_title_by_hound_id($hound_id){
@@ -1366,32 +1317,11 @@ function hound_set_ip_url($url){
     $ip_hound_array=array('80.32.72.239:8000','192.168.110.211');
         if(!empty($ip_hound_array)){
             foreach($ip_hound_array as $i=>$value){
-              
                 $hound_tmp='http://'.$value.'/hound/index.php';
-
-                  /*if(user_access('root') && hontza_is_sareko_id('PROBA')){
-                   drupal_set_message('result aurretik='.$result);         
-                   drupal_set_message('hound_tmp='.$hound_tmp);
-                   drupal_set_message('hound_url='.$hound_url); 
-                   //exit();
-                  }*/
-
                 $result=str_replace($hound_tmp,$hound_url,$result);
                 //print 'result='.$result;exit();
-
-                 /*if(user_access('root') && hontza_is_sareko_id('PROBA')){
-                   drupal_set_message('result='.$result);
-                   //exit();
-                  }*/
-
-
             }
         }
-        /*if(user_access('root') && hontza_is_sareko_id('PROBA')){
-           exit();
-        }*/
-        //intelsat
-        //$result=rtrim($result,'?');
     return $result;
 }
 //intelsat-2016
@@ -1532,50 +1462,4 @@ function hound_is_show_filtros_rss($is_hound,$nid){
         return 0;
     }
     return 1;
-}
-//intelsat
-function hound_canal_field_is_hound_value($canal){
-     $row=hontza_get_content_type_canal_de_yql($canal->nid,$canal->vid);
-     if(isset($row->field_is_hound_value) && !empty($row->field_is_hound_value)){
-        if($row->field_is_hound_value==1){
-          return 1;
-        }
-     }
-     return 0;
-}
-function hound_parametro_is_empty($key,$name,$value){
-   $result=trim($value);
-   if(empty($result)){
-    return 1;
-   }
-   return 0;
-}
-function hound_tr_node_view_style($key,$name,$value){
-   $result='';
-   if(hound_parametro_is_empty($key,$name,$value)){
-    $result=' style="display:none;"';
-   }
-   return $result;
-}
-function hound_get_hound_title_lineas($hound_title,&$num_rows){
-  $min_num_rows=5;
-  $my_array=explode(',',$hound_title);
-  $num_rows=count($my_array);
-  if($num_rows<$min_num_rows){
-    $num_rows=$min_num_rows;
-  }
-  $result=implode("\n",$my_array);
-  return $result;
-}
-function hound_parametro_row_is_empty($key,$row){
-  if(!empty($row)){
-    foreach($row as $name=>$value){
-        //echo print_r($row,1);
-        if(hound_parametro_is_empty($key,$name,$value)){
-          return 1;
-        }  
-    }
-    return 0;
-  }
-  return 1;
-}
+}    
