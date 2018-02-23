@@ -1,0 +1,175 @@
+MANUAL DE DESARROLLADOR
+=======================
+
+NOTA PARA DESARROLLADORES
+=========================
+El desarrollo interno de Hontza 2.0 se realizará desde github
+https://github.com/investic/hontzados 
+En la medida de nuestras posibilidades se incorporarán esos cambios a otros repositorios como los gestionados por la SPRI
+Una vez publicada la Distribución también abriremos el repositorio en github
+
+Dristribución Hontza 2.0 para la vigilancia competitiva
+=======================================================
+
+Hontza 2.0 es una distribución de Drupal específica para soportar las funciones de Vigilancia Tecnológica e Inteligencia Competitiva.
+
+El escenario en el que se sitúa Hontza 2.0 es el de un grupo de usuarios especializados (coordinados por el administrador del grupo) que tienen unos objetivos o retos concretos, sobre los que deben vigilar, aprender y reaccionar lo más rápidamente posible y de un modo eficaz.
+
+Para poder captar las informaciones externas del modo más fácil posible se ha integrado Drupal con los servicios Dapper y Yahoo Pipes o YQL. De este modo, con un poco de práctica, cualquier persona (sin ser un programador) puede convertir la mayor parte de las páginas web y de los resultados obtenidos de bases de datos en el formato RSS. Entonces ya se pueden integrar en los contenidos del grupo.
+
+Los grupos son de carácter colaborativo. Todas las informaciones que se captan tienen asociadas las funciones típicas de la web 2.0 (validar, puntuar, etiquetar, comentar) y además se puede enlazar cada noticia con el foro o con la wiki del grupo.
+
+Los usuarios de los grupos pueden crear y gestionar las fuentes de información de mayor interés y los canales de información que más se ajustan a sus objetivos.
+
+Disponen de una clasificación para las fuentes de información y también pueden crear y gestionar el léxico más adecuado para clasificar los canales de información. Por otro lado, pueden editar a voluntad las etiquetas que se van a emplear para cualificar a las informaciones.
+
+Hontza también dispone de un sistema de alertas para recibir por correo las informaciones personalizadas de mayor interés.
+
+
+Instalación
+===========
+
+Mirar el fichero INSTALL.txt (en Ingles recomendable)
+Mirar el fichero INSTALL_HONTZA.txt (castellano)
+
+Distribución de drupal
+======================
+
+Para la instalación y puesta en marcha de Hontza 2.0 hemos hecho uso de Drupal como base de desarrollo. La solución usada es lo que la comunidad de drupal denomina Distribución de drupal.
+
+Una distribución de drupal es la unión de estos elementos:
+
+*	Drupal core
+*	Modulos contribuidos
+* 	Modulos creados por Investic
+*	Features
+*	Perfil de instalación
+*	Theme
+
+Mediante estos elementos se de la opción de un sistema de instalación, así como una preconfiguración de los modulos y unos Features (sistema de paquetes de drupal) que con un proceso amigable da como resultado un drupal con un proposito concreto, en este caso una herramienta de trabajo en grupo para la Vigilancia competitiva. Hacemos una relación de los elementos que componen la distribución HONTZA.
+
+Drupal core
+-----------
+
+Drupal core es la base fundamental de esta distribución, es una copia exacta de la versión oficial de drupal.org. Drupal es un Cms/Framework también se podría decir que es un gestor de contenidos como producto finalizado con las herramientas para poder desarrollar sobre el mismo. En hontza Drupal se usa como base, para la gestión de usuario, creación de contenidos, gestión de roles etc.
+
+Módulos Contribuidos
+--------------------
+
+Drupal tiene una comunidad amplia de desarrolladores que se encarga de ampliar las funcionalidades que vienen el core. La ampliación de estas funcionalidades se hace uso de los Módulos. Drupal core incorpora un gestor de modulo que facilita la activación de los mismos. En estos momentos la comunidad de Drupal tiene mas de 7000 módulos. 
+
+Esta es la relación de módulos usados en HONTZA 2.0
+
+*	Misc stand-alone, required by others 
+	*	token, devel, flag, flag_actions, imce, pathauto, install_profile_api, jquery_ui, job_scheduler, diff
+*	Ctools, panels
+    *	ctools, page_manager
+*	Other
+    *	comment_upload, faq, purl, quant
+*	Taxonomy
+    *	community_tags, tagadelic
+*	User interface
+    *	wysiwyg, imce_wysiwyg
+*	Date
+    *	date_api
+*	Imagecache
+	*	imageapi, imageapi_gd, imagecache, imagecache_ui
+*	Cck
+    *	content, content_copy, fieldgroup, filefield, imagefield, link, number
+    *	optionwidgets, text, nodereference, userreference, content_taxonomy
+    *	content_taxonomy_autocomplete, content_taxonomy_options
+*	OG
+    *	og, og_access, og_views, og_vocab
+*	Spaces
+    *	spaces, spaces_customtext, spaces_og, spaces_taxonomy, spaces_ui, spaces_user, spaces_dashboard
+*	Views
+    *	views, views_export, views_ui, tagadelic_views, views_bulk_operations, views_or
+*	Feeds
+    *	feeds, feeds_ui
+*	Context
+    *	context,context_ui, context_layouts
+*	Requries ctools
+    *	strongarm
+*	Distribution management
+    *	features
+    *	node_export 
+Para mas información acerca de estos módulos visite Drupal.org o drupalmodules.org
+
+Módulos Creados por Investic
+----------------------------
+
+Drupal permite crear desarrollos a medida mediante modulos de la misma manera que lo hace la comunidad con los modulo contribuidos. Para el desarrollo de hontza hemos creado una serie de modulo propios, bien porque las funcionalidades necesarias no estaban en los modulos contribuidos o bien por modificar las funcionalidades de otros modulos. Todo el desarrollo a sido testeado en repetidas ocasiones, pero estos desarrollos son susceptibles de mejora, sobre todo en documentación mejora de los standares de drupal, y en algunos casos optimización. En futuras versiones iremos incorporando estas mejoras.
+
+Listado de modulos creados por investic:
+
+
+*	Hontza El modulo Hontza 2.0 es el modulo central, se encarga de varios aspectos
+	*	Modificación de formularios
+	* 	Asistentes para la creación de fuentes y canales, para ello se hace uso de ctools
+	*	Bloques de administración gestionados por bloques
+	*	Envio de correos personalizados
+	*	Ampliación del modulo estadísticas (modulo quants)
+	*	Gestiones varias
+	
+	
+*	Hontza_grupos Añade un vocabulario a cada grupo en su creación
+	*	Una de las funcionalidad pedida es la categorización de los canales encargados de los items. Estos canales tienen que estar categorizados por el sistema de taxonomias de Drupal. El modulo Hontza 2.0 crea un vocabulario con los permisos adecuados cada vez que sea crea un grupo.
+	
+*	Hontzafeeds Modulo que hereda del modulo feeds. 
+	*	Este modulo crea un nuevo parser que permite integrar feeds con yql. 
+*	Hontza_viewsfield Modulo que crea un campo personalizado para views 
+	*El campo creado es de tipo raw, permitiendo un control propio en este campo, este modulo se basa en uno contribuidos llamado customfields
+*	hontza_notify Sistema de notificación para los canesles
+	*	Un sitema simple de notifiación por correo para los canales, cada usuario puede darse de alta en un canal y una vez por semana recivira un correo con los items validados. 
+
+Features
+--------
+
+Features es el forma de empaquetar las funcionalidad o conjunto de elementos en drupal, es un modulo de reciente creación y que rompe con la problematica de tener tanto el conteniendo como las configuraciones en la bbdd. En hontza se han creado un conjunto amplio de Features incluidos en el directorio hontza_features y que cada uno de ellos son llamados con las iniciales hz_ Se hace una relación de los distintos features.
+
+*	hz_core
+*	hz_area_debate
+*	hz_area_trabajo
+*	hz_fuentes
+*	hz_publica
+*	hz_vigilancia
+*	hz_gestion
+*	hz_home_og
+
+La estructura de contenidos así como el orden lo da el modulo context, en general cada uno de estos "paquetes" tiene uno u otro context asociados, así como sus tipos de contenidos, views, permisos y variables de sistemas gestionadas por strongarm
+
+
+Perfil de instalación
+---------------------
+
+Drupal provee de un sistema para la creación de perfiles de instalación, estos perfiles son instrucciones que se van ejecutando conforme avanza la instalación, en el caso de Hontza 2.0 las fases son estas
+
+*	Configuración de la bbdd
+*	Instalación de modulos
+*	Instalación de modulos investic
+*	Instalación de Features
+* 	Configuración básica (nombre de sitio, nombre usuario, corre etc)
+*	Menu, principal
+*	Categorias
+*	Flags
+*	Otros
+
+Configuración básica de Hontza
+==============================
+
+Hontza provee de un panel de gestión que permite acceder a todas sus funcionalidad, desde /gestion (ejem http://sitioejemplo.com/gestion) se administra y preparar la herramienta para su propósito. 
+Una vez realizada la instalación mediante el perfil de instalación, un de los pasos es la creación del usuario "administrado" este usuario tiene todos los permisos, no solo los necesarios para la gestión de hontza como herramienta, también la gestión del Drupal. Hacer un uso indebido de este usuario, puede hacer que la aplicación funcione incorrectamente. 
+Nuestra recomendación es desde panel de gestión crear un usuario nuevo y asociarlo al rol administrador. Este rol tiene los permisos adecuados para poder trabajar con Hontza 2.0 sin tener ningún riesgo de "romper" o desconfigurar nada.
+
+
+Primero pasos con Hontza 2.0
+============================
+
+Para los primero pasos, se puede hacer uso de la ayuda que es accesible desde la instalación recién creada en la dirección /ayuda (ejem http://sitioejemplo.com/ayuda) 
+
+
+
+  
+
+
+

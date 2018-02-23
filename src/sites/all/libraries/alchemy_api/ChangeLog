@@ -1,0 +1,12 @@
+CHANGELOG
+
+0.8 - Added author extraction & targeted sentiment support.
+0.7 - Added relations extraction support.
+0.6 - Added sentiment analysis support.
+0.5 - Added GetRankedConcepts API calls, parameter object.
+0.4.2b - Minor fixes, CURL module updates, example updates.
+0.4.2 - Added GET support for URL calls, added parameter classes.
+0.4 - Added GetRankedKeyword API calls, added TextGetCategory API call.
+0.3 - Added JSON support, added ConstraintQuery call, general improvements.
+0.2 - Added setApiKey() call, setApiHost() call, updated API endpoint.
+0.1 - Initial Release

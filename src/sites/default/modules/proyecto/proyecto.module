@@ -1,0 +1,2314 @@
+<?php
+
+/**
+ * @file
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in proyecto_schema().
+ */
+
+/**
+ * @defgroup proyecto Example: Node
+ * @ingroup examples
+ * @{
+ * Creating a new content type in a module. (drupal 6)
+ *
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in proyecto_schema().
+ *
+ * This example is part of the Examples for Developers Project which you can download
+ * and experiment with here: http://drupal.org/project/examples
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function proyecto_menu() {
+  $items['proyectos/%'] = array(
+    'title' => 'Project',
+    'page callback' => 'proyecto_list_callback',
+    'access arguments' => array('Ver proyecto_list'),
+    'page arguments' => array(1),
+  );
+  $items['criterios_de_evaluacion'] = array(
+    'title' => 'Weighting Criteria',
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('criterios_de_evaluacion_form'),
+    //'type' => MENU_CALLBACK,
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver criterios_de_evaluacion'),
+  );
+  /* $items['my_proyecto_denied'] = array(
+    'title' => 'Project',
+    'page callback' => 'my_proyecto_denied_callback',
+    'access arguments' => TRUE,
+  );*/
+  
+  
+  
+  return $items;
+}
+
+/**
+ * Explain how the module demonstrates a new node type.proyecto.test
+ */
+function proyecto_list_callback() {
+  global $user;
+  idea_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  //
+  $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="proyecto"'; 
+  //
+  $search=my_get_request_value('search');
+  if(!empty($search)){
+    $where[]='(n.title LIKE "%%'.$search.'%%" OR nr.body LIKE "%%'.$search.'%%")';
+  }
+  //
+  $my_grupo=og_get_group_context();
+  $grupo_seleccionado=0;
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]='p.grupo_nid='.$my_grupo->nid;
+        $grupo_seleccionado=1;
+  }
+  //
+  if(is_user_invitado()){
+    $where[]='pi.uid='.$user->uid;
+  }else{
+    if($user->uid!=1){
+        $where[]='(p.is_todo_subgrupo=1 OR pe.uid='.$user->uid.')';
+    }
+  }
+  //
+  $oportunidad_nid=my_get_proyecto_oportunidad_nid();
+  //print 'oportunidad_nid(list)='.$oportunidad_nid.'<BR>';
+  if(!empty($oportunidad_nid) && $oportunidad_nid!='todas'){
+  	$where[]='p.oportunidad_nid='.$oportunidad_nid;
+  }
+  if(is_idea() && in_array(arg(1),array('borrador','aprobados','no_aprobados'))){
+    $my_param=arg(1);
+    if(strcmp($my_param,'borrador')==0){
+        $where[]='p.estado_del_proyecto_id=1';
+    }else if(strcmp($my_param,'aprobados')==0){
+        $where[]='p.estado_del_proyecto_id=2';
+    }else if(strcmp($my_param,'no_aprobados')==0){
+        $where[]='p.estado_del_proyecto_id IN(3,4)';
+    }
+  }
+  //
+  $sql='SELECT n.nid, n.sticky, n.created 
+  FROM {node} n
+  LEFT JOIN {proyecto} p ON n.nid=p.nid
+  LEFT JOIN {proyecto_invitados} pi ON p.nid=pi.proyecto_nid
+  LEFT JOIN {proyecto_personas} pe ON p.nid=pe.proyecto_nid
+  LEFT JOIN {node_revisions} nr ON (n.nid=nr.nid AND n.vid=nr.vid)
+  WHERE '.implode(' AND ',$where).'
+  GROUP BY n.nid 
+  ORDER BY n.sticky DESC, n.created DESC';
+
+  //$result = pager_query(db_rewrite_sql($sql), variable_get('default_nodes_main', 10));
+
+
+  $my_limit=variable_get('default_nodes_main', 10);
+
+  $result = db_query($sql);
+
+  $output = '';
+  $output = create_menu_ideas();
+  $num_rows = FALSE;
+ // $rows=array();
+  $my_list=array();
+  $kont=0;
+  while ($node = db_fetch_object($result)) {
+    //$output .= node_view(node_load($node->nid), 1);
+	/*$my_node=node_load($node->nid);
+	$rows[]=array($my_node->nid,$my_node->title);*/
+    $my_node=node_load($node->nid);
+    //gemini-2013
+    $my_list[$kont]=new stdClass();
+    $my_list[$kont]->view=node_view($my_node, 1);
+    $my_list[$kont]->puntuacion_total=$my_node->puntuacion_total;
+    $kont++;
+    $num_rows = TRUE;
+  }
+  if(!$grupo_seleccionado){
+      $num_rows = FALSE;
+      $my_list=array();
+  }
+ 
+
+  if(is_idea('borrador') || is_idea('aprobados') || is_idea('no_aprobados')){
+    $my_list=array_ordenatu($my_list,'puntuacion_total','desc',1);
+  }
+  
+  $my_list=my_set_estrategia_pager($my_list,$my_limit);
+  $output.=get_mas_valoradas_output_html($my_list);
+
+  if ($num_rows) {
+    /*$feed_url = url('proyecto_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
+    /*
+	$headers=array('nid','title');
+	$output .= theme('table',$headers,$rows);
+	*/
+	$output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+ 
+    $output.= '<div id="first-time">' .t('There are no projects'). '</div>';
+  }
+  //drupal_set_title(t('Listado de Proyectos'));
+  $my_title=get_lista_proyectos_title();
+  drupal_set_title($my_title);
+  //
+  return $output;
+}
+/**
+ * Implementation of hook_node_info().
+ *
+ * This is a required node hook. This function describes the nodes provided by
+ * this module.
+ *
+ * The required attributes are:
+ * - "name" provides a human readable name for the node,
+ * - "module" tells Drupal how the module's functions map to hooks (i.e. if the
+ *   module is proyecto_foo then proyecto_foo_insert will be called
+ *   when inserting the node).
+ * - "description" provides a brief description of the node type, which is
+ *   shown when a user accesses the "Create content" page for that node type.
+ *
+ * The other optional, attributes:
+ * - "has_title" boolean that indicates whether or not this node type has a
+ *   title field.
+ * - "title_label": the label for the title field of this content type.
+ * - "has_body": boolean that indicates whether or not this node type has a
+ *   body field.
+ * - "body_label": the label for the body field of this content type.
+ * - "min_word_count": the minimum number of words for the body field to be
+ *   considered valid for this content type.
+ *
+ * The key in this example, "example_node_type_1", is the "machine name" of the
+ * node type and is stored in {node}.type. The node's type value cannot be
+ * changed through the admin interface.
+ *
+ */
+function proyecto_node_info() {
+  return array(
+    'proyecto' => array(
+      'name' => t('Project'),
+      'module' => 'proyecto',
+      'description' => t("An example node type with a few fields."),
+      'has_title' => TRUE,
+      'title_label' => t('Title of project'),
+      'has_body' => TRUE,
+      'body_label' => t('Full Text'),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_access().
+ *
+ * Node modules may implement node_access() to determine the operations
+ * users may perform on nodes. This example uses a very common access pattern.
+ */
+function proyecto_access($op, $node, $account) {
+  
+  if ($op == 'create') {
+    return user_access('create proyecto', $account);
+  }
+
+  if ($op == 'update') {
+    if (user_access('edit any proyecto', $account) || (user_access('edit own proyecto', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'delete') {
+    if (user_access('delete any proyecto', $account) || (user_access('delete own proyecto', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Since we are limiting the ability to create new nodes to certain users,
+ * we need to define what those permissions are here. We also define a permission
+ * to allow users to edit the nodes they created.
+ */
+function proyecto_perm() {
+  return array(
+    'create proyecto',
+    'delete own proyecto',
+    'delete any proyecto',
+    'edit own proyecto',
+    'edit any proyecto',
+    'Ver proyecto_list',
+    'Ver criterios_de_evaluacion',
+  );
+}
+
+/**
+ * Implementation of hook_form().
+ *
+ * Now it's time to describe the form for collecting the information
+ * specific to this node type. This hook requires us to return an array with
+ * a sub array containing information for each element in the form.
+ */
+function proyecto_form(&$node, $form_state) {
+  //gemini-2014  
+  if(isset($node->nid) && !empty($node->nid)){
+      drupal_set_title(estrategia_set_title_max_len($node->title));
+  }   
+  idea_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  //gemini
+  $oportunidad_nid=my_get_proyecto_oportunidad_nid();
+  if(!es_oportunidad_promocionada($oportunidad_nid,$node)){
+      /*$my_url=$_SERVER['HTTP_HOST'].base_path().url('oportunidades/no_promocionada');
+      $my_url=str_replace('//','/',$my_url);
+      header('Location: http://'.$my_url);*/
+      drupal_goto('oportunidades/no_promocionada');
+  }
+  // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+       //gemini-2014  
+      '#maxlength'=>175,    
+    );
+  }
+
+   $form['estado_del_proyecto_id']=array(
+  '#type' => 'select',
+  '#title' => t('Project Status'),
+  '#default_value' => $node->estado_del_proyecto_id,
+  '#options'=>get_estado_del_proyecto_options(),
+  '#required' => FALSE,
+  '#weight' => -5
+);
+
+  if ($type->has_body) {
+    // In Drupal 6, we use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+  
+  $form['categorias_tematicas_fieldset']=create_categorias_tematicas_fieldset('',1,$node->nid,'proyecto');
+
+  //intelsat-2016
+  $is_required=1;
+  $form['reto_al_que_responde_id']=array(
+    //'#title' => t('Associated Challenge'),
+    //intelsat-2016  
+    '#prefix'=>'<div class="form-item-required">',
+    '#suffix'=>'</div>',  
+    '#value'=>get_reto_al_que_responde_html($is_required),
+ );
+
+  $form['oportunidad_guraso_fieldset']=create_proyecto_guraso_fieldset($node->nid,$oportunidad_nid,$node->oportunidad_nid,'proyecto_form');
+
+
+  $form['evaluacion_de_ideas']=array(
+	 '#type' => 'fieldset',
+	 '#title' => t('Rating'),
+);
+
+$form['evaluacion_de_ideas']['eval_accesibilidad']=array(
+  '#type' => 'select',
+  '#title' => t('Technology Accessibility'),
+  '#default_value' => $node->eval_accesibilidad,
+  '#options'=>my_get_evaluacion_options('','eval_accesibilidad'),
+  '#required' => FALSE
+);
+
+$form['evaluacion_de_ideas']['eval_riesgo_complejidad']=array(
+  '#type' => 'select',
+  '#title' => t('Complexity/Risk'),
+  '#default_value' => $node->eval_riesgo_complejidad,
+  '#options'=>my_get_evaluacion_options('','eval_riesgo_complejidad'),
+  '#required' => FALSE
+);
+
+
+
+$form['evaluacion_de_ideas']['eval_inversiones']=array(
+  '#type' => 'select',
+  '#title' => t('Investments Level'),
+  '#default_value' => $node->eval_inversiones,
+  '#options'=>my_get_evaluacion_options('','eval_inversiones'),
+  '#required' => FALSE
+);
+
+
+
+$form['evaluacion_de_ideas']['eval_potencial_mercado']=array(
+  '#type' => 'select',
+  '#title' => t('Market Potential'),
+  '#default_value' => $node->eval_potencial_mercado,
+  '#options'=>my_get_evaluacion_options('','eval_potencial_mercado'),
+  '#required' => FALSE
+);
+
+
+
+$form['evaluacion_de_ideas']['eval_impacto_negocio']=array(
+  '#type' => 'select',
+  '#title' => t('Strategic Impact'),
+  '#default_value' => $node->eval_impacto_negocio,
+  '#options'=>my_get_evaluacion_options('','eval_impacto_negocio'),
+  '#required' => FALSE
+);
+
+$form['evaluacion_de_ideas']['eval_rapidez_de_ejecucion']=array(
+  '#type' => 'select',
+  '#title' => t('Execution Delay'),
+  '#default_value' => $node->eval_rapidez_de_ejecucion,
+  '#options'=>my_get_evaluacion_options('','eval_rapidez_de_ejecucion'),
+  '#required' => FALSE
+);
+
+  // Now we define the form elements specific to our node type.
+  $form['acronimo'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Acronym'),
+    '#default_value' => $node->acronimo,
+    '#size' => 10,
+    '#maxlength' => 10
+  );
+  
+  $form['personas'] = array(
+  '#type' => 'select',
+  '#title' => t('Subgroup'),
+  '#default_value' => set_proyecto_default_value_subgrupo($node,'personas'),
+  '#options'=>my_get_proyecto_personas_options(),
+  '#multiple'=>TRUE,
+  '#size'=>10,
+  '#required' => FALSE
+);
+
+$form['invitados'] = array(
+  '#type' => 'select',
+  '#title' => t('Guests'),
+  '#default_value' => set_proyecto_default_value_subgrupo($node,'invitados'),
+  '#options'=>my_get_idea_invitados_options(),
+  '#multiple'=>TRUE,
+  '#size'=>10,
+  '#required' => FALSE
+  );
+
+  idea_add_crear_invitado_fieldset_form_field($form);
+
+$form['fases'] = array(
+    '#type' => 'textfield',
+    //'#title' => t('Phases and estimated duration of the project'),
+    '#title' => t('Phases'),
+    '#default_value' => $node->fases,
+  );
+
+$form['duracion_estimada'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Estimated duration of project'),
+    '#default_value' => $node->duracion_estimada,
+  );
+  
+$form['experiencia_disponible'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Knowledge available'),
+    '#default_value' => $node->experiencia_disponible,
+  );
+  
+$form['experiencia_necesaria'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Knowledge necessary'),
+    '#default_value' => $node->experiencia_necesaria,
+  );
+  
+
+/*$form['tipo_tid'] = array(
+  '#type' => 'select',
+  '#title' => t('Type'),
+  '#default_value' => $node->tipo_tid,
+  '#options'=>my_get_proyecto_tipo_options(),
+  '#required' => FALSE
+);*/
+
+/*$form['numero_socios'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of partners required'),
+    '#default_value' => $node->numero_socios,
+  );*/
+
+$form['tipo_socio_numero']=create_fieldset_tipo_socio_numero($node->nid);
+  
+$form['socios_involucrados'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Partners involved'),
+    '#default_value' => $node->socios_involucrados,
+  );
+  
+$form['socios_contactados'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Partners contacted'),
+    '#default_value' => $node->socios_contactados,
+  );
+  
+$form['socios_potenciales'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Potential partners'),
+    '#default_value' => $node->socios_potenciales,
+  );        
+
+/*$form['tipo2_tid'] = array(
+  '#type' => 'select',
+  '#title' => t('Type2'),
+  '#default_value' => $node->tipo2_tid,
+  '#options'=>my_get_proyecto_tipo2_options(),
+  '#required' => FALSE
+);*/
+
+/*$form['numero_validadores'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of validators'),
+    '#default_value' => $node->numero_validadores,
+  );*/
+  //
+
+
+
+
+
+/*$form['otros_parametros']=array(
+	 '#type' => 'fieldset',
+	 '#title' => t('Otros parametros para evaluar ideas'),
+);
+
+$form['otros_parametros']['eval_alineacion_con_objetivos']=array(
+  '#type' => 'select',
+  '#title' => t('Alignment to goals'),
+  '#default_value' => $node->eval_alineacion_con_objetivos,
+  '#options'=>my_get_evaluacion_options(),
+  '#required' => FALSE
+);
+
+$form['otros_parametros']['eval_impacto_alcance_negocio']=array(
+  '#type' => 'select',
+  '#title' => t('Impact in the business'),
+  '#default_value' => $node->eval_impacto_alcance_negocio,
+  '#options'=>my_get_evaluacion_options(),
+  '#required' => FALSE
+);
+
+$form['otros_parametros']['eval_presupuesto_complejidad']=array(
+  '#type' => 'select',
+  '#title' => t('Level - Budget'),
+  '#default_value' => $node->eval_presupuesto_complejidad,
+  '#options'=>my_get_evaluacion_options(),
+  '#required' => FALSE
+);*/
+
+//$form['otros_parametros']['eval_rapidez_de_ejecucion']=array(
+
+
+
+  /*
+  $form['reto_al_que_responde'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Associated Challenge'),
+    //'#default_value' => $node->reto_al_que_responde
+    '#default_value' => set_heredar_oportunidad_default_value($node,$oportunidad_nid,'reto_al_que_responde'),
+  );*/
+  
+
+
+  $form['plazo_del_reto'] = array(
+    '#type' => 'date',
+    '#title' => t('Control Date'),
+    //'#default_value' => $node->plazo_del_reto
+    '#default_value' => set_heredar_oportunidad_default_value($node,$oportunidad_nid,'plazo_del_reto'),
+  );
+
+ 
+
+
+
+    if(isset($node->nid) && !empty($node->nid)){
+    //
+    }else{
+        drupal_set_title(t('Add Project'));
+    }
+    //
+
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_validate().
+ *
+ * Our "quantity" field requires a number to be entered. This hook lets
+ * us ensure that the user entered an appropriate value before we try
+ * inserting anything into the database.
+ *
+ * Errors should be signaled with form_set_error().
+ */
+function proyecto_validate($node, &$form) {
+  //intelsat-2016
+  //se ha comentado esto    
+  /*if (!validate_sel_oportunidad($node)) {
+    form_set_error('sel_oportunidad', t('Select opportunity is required'));
+  }
+  validate_proyecto_categorias_tematicas($node,$form);*/
+  validate_proyecto_reto_al_que_responde($form);
+  /*if (!proyecto_validate_sel_oportunidad($node)) {
+    form_set_error('sel_oportunidad', t('Select opportunity is required'));
+  }*/
+}
+
+/**
+ * Implementation of hook_insert().
+ *
+ * As a new node is being inserted into the database, we need to do our own
+ * database inserts.
+ */
+function proyecto_insert($node) {
+  global $user;
+  //  
+  $fecha=mktime();
+  $origen_uid=$user->uid;
+  $grupo_nid=0;
+  $my_grupo=og_get_group_context(); 
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$grupo_nid=$my_grupo->nid; 
+  }
+  //
+  $responde_array=$_REQUEST['estrategia'];
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      $responde_values=explode('_',$responde_keys[0]);
+      //echo print_r($responde_values,1);exit();
+      $responde_estrategia_nid=get_responde_value($responde_values,0);
+      $responde_despliegue_nid=get_responde_value($responde_values,1);
+      $responde_decision_nid=get_responde_value($responde_values,2);
+      $responde_informacion_nid=get_responde_value($responde_values,3);
+  }
+  //
+  $plazo_del_reto=my_mktime($node->plazo_del_reto);
+  $oportunidad_nid=set_oportunidad_seleccionada($node);
+  $sql=sprintf("INSERT INTO {proyecto} 
+  (vid, nid, fecha, origen_uid,grupo_nid,oportunidad_nid,acronimo,fases,experiencia_disponible,experiencia_necesaria,
+  tipo_tid,numero_socios,socios_involucrados,socios_contactados,socios_potenciales,tipo2_tid,numero_validadores,
+  eval_accesibilidad,eval_riesgo_complejidad,eval_inversiones,eval_potencial_mercado,eval_impacto_negocio,eval_alineacion_con_objetivos,
+  eval_impacto_alcance_negocio,eval_presupuesto_complejidad,eval_rapidez_de_ejecucion,reto_al_que_responde,plazo_del_reto,
+  estado_del_proyecto_id,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid,duracion_estimada)
+  VALUES (%d, %d, %d, %d, %d, %d, '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', %d, '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d,'%s')",
+  $node->vid, $node->nid, $fecha, $origen_uid,$grupo_nid,$oportunidad_nid,$node->acronimo,$node->fases,$node->experiencia_disponible,$node->experiencia_necesaria,
+  $node->tipo_tid,$node->numero_socios,$node->socios_involucrados,$node->socios_contactados,$node->socios_potenciales,$node->tipo2_tid, $node->numero_validadores,
+  $node->eval_accesibilidad,$node->eval_riesgo_complejidad,$node->eval_inversiones,$node->eval_potencial_mercado,$node->eval_impacto_negocio,$node->eval_alineacion_con_objetivos,
+  $node->eval_impacto_alcance_negocio,$node->eval_presupuesto_complejidad,$node->eval_rapidez_de_ejecucion,$node->reto_al_que_responde,$plazo_del_reto,$node->estado_del_proyecto_id,
+  $responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid,$node->duracion_estimada);
+  //
+  db_query($sql);
+  $proyecto_nid=$node->nid;
+  save_proyecto_invitados($proyecto_nid,$node->invitados,$node);
+  save_proyecto_personas($proyecto_nid,$node->personas);
+  save_proyecto_categorias_tematicas($proyecto_nid,$node);
+  save_proyecto_responde_array($proyecto_nid,$responde_array);
+  save_tipo_socio_numero($proyecto_nid,$node);
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ */
+function proyecto_update($node) {  
+  $plazo_del_reto=my_mktime($node->plazo_del_reto);
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    proyecto_insert($node);
+  }
+  else {
+    $oportunidad_nid=set_oportunidad_seleccionada($node);
+     //
+      $responde_array=$_REQUEST['estrategia'];
+      $responde_estrategia_nid=0;
+      $responde_despliegue_nid=0;
+      $responde_decision_nid=0;
+      $responde_informacion_nid=0;
+      if(count($responde_array)>0){
+          $responde_keys=array_keys($responde_array);
+          $responde_values=explode('_',$responde_keys[0]);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+      }
+      //
+    $sql=sprintf("UPDATE {proyecto} SET acronimo = '%s',fases= '%s',
+	experiencia_disponible= '%s',experiencia_necesaria= '%s',tipo_tid= %d,numero_socios= '%s',socios_involucrados= '%s',socios_contactados= '%s',socios_potenciales= '%s', 
+	tipo2_tid= %d, numero_validadores= '%s',eval_accesibilidad= %d,eval_riesgo_complejidad= %d,eval_inversiones= %d,eval_potencial_mercado= %d,eval_impacto_negocio= %d,eval_alineacion_con_objetivos= %d,
+    eval_impacto_alcance_negocio= %d,eval_presupuesto_complejidad= %d,eval_rapidez_de_ejecucion= %d, reto_al_que_responde = '%s',plazo_del_reto = %d,estado_del_proyecto_id = %d,
+    oportunidad_nid = %d,responde_estrategia_nid=%d,responde_despliegue_nid=%d,responde_decision_nid=%d,responde_informacion_nid=%d,duracion_estimada='%s'
+   	WHERE vid = %d", $node->acronimo,$node->fases,$node->experiencia_disponible,$node->experiencia_necesaria,
+    $node->tipo_tid,$node->numero_socios,$node->socios_involucrados,$node->socios_contactados,$node->socios_potenciales,$node->tipo2_tid, $node->numero_validadores,
+    $node->eval_accesibilidad,$node->eval_riesgo_complejidad,$node->eval_inversiones,$node->eval_potencial_mercado,$node->eval_impacto_negocio,$node->eval_alineacion_con_objetivos,
+    $node->eval_impacto_alcance_negocio,$node->eval_presupuesto_complejidad,$node->eval_rapidez_de_ejecucion,$node->reto_al_que_responde, $plazo_del_reto,$node->estado_del_proyecto_id,
+    $oportunidad_nid,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid,$node->duracion_estimada,$node->vid);
+	db_query($sql);    
+	$proyecto_nid=$node->nid;
+    save_proyecto_invitados($proyecto_nid,$node->invitados,$node);
+    save_proyecto_personas($proyecto_nid,$node->personas);
+    save_proyecto_categorias_tematicas($proyecto_nid,$node);
+    save_proyecto_responde_array($proyecto_nid,$responde_array);
+    save_tipo_socio_numero($proyecto_nid,$node);
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * When a node revision is deleted, we need to remove the corresponding record
+ * from our table. The only way to handle revision deletion is by implementing
+ * hook_nodeapi().
+ */
+function proyecto_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {proyecto} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ *
+ * When a node is deleted, we need to remove all related records from our table.
+ */
+function proyecto_delete($node) {
+  // Notice that we're matching all revision, by using the node's nid.
+  $proyecto_nid=$node->nid;
+  db_query('DELETE FROM {proyecto} WHERE nid = %d', $node->nid);
+  my_delete_proyecto_invitados($proyecto_nid);
+  my_delete_proyecto_personas($proyecto_nid);
+  delete_proyecto_responde_array($proyecto_nid);
+  delete_tipo_socio_numero($proyecto_nid);
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Now that we've defined how to manage the node data in the database, we
+ * need to tell Drupal how to get the node back out. This hook is called
+ * every time a node is loaded, and allows us to do some loading of our own.
+ */
+function proyecto_load($node) {
+  $sql=sprintf('SELECT p.nid as proyecto_nid,p.vid as proyecto_vid,p.fecha, p.origen_uid,p.grupo_nid,p.oportunidad_nid,p.acronimo,p.fases,p.experiencia_disponible,p.experiencia_necesaria,
+  p.tipo_tid,p.numero_socios,p.socios_involucrados,p.socios_contactados,p.socios_potenciales,p.tipo2_tid,p.numero_validadores,
+  p.eval_accesibilidad,p.eval_riesgo_complejidad,p.eval_inversiones,p.eval_potencial_mercado,p.eval_impacto_negocio,p.eval_alineacion_con_objetivos,
+  p.eval_impacto_alcance_negocio,p.eval_presupuesto_complejidad,p.eval_rapidez_de_ejecucion,p.reto_al_que_responde,p.plazo_del_reto,p.estado_del_proyecto_id,p.duracion_estimada,
+  p.responde_estrategia_nid,p.responde_despliegue_nid,p.responde_decision_nid,p.responde_informacion_nid,p.is_todo_subgrupo
+  FROM {proyecto} p 
+  WHERE vid = %d', $node->vid);  
+  $additions = db_fetch_object(db_query($sql));
+  
+  if(isset($additions->proyecto_nid) && !empty($additions->proyecto_nid)){
+        $info2=get_proyecto_invitados_uid_array($additions->proyecto_nid);
+	$additions->invitados=$info2['invitados'];
+	$additions->invitados_list=$info2['invitados_list'];
+        //print $additions->proyecto_nid;exit();
+        //
+  	$info=get_proyecto_personas_uid_array($additions->proyecto_nid);
+        //echo print_r($info,1);exit();
+	$additions->personas=$info['personas'];
+	$additions->personas_list=$info['personas_list'];
+        $additions->categorias_tematicas=get_proyecto_categorias_tematicas_array($additions->proyecto_nid);
+	$additions->categorias_tematicas_html=get_categorias_tematicas_html($additions->categorias_tematicas);
+	$additions->tipo_name=get_proyecto_term_name($additions->tipo_tid);
+	$additions->tipo2_name=get_proyecto_term_name($additions->tipo2_tid);
+        $additions->plazo_del_reto=set_date_array($additions->plazo_del_reto);
+        $additions->estado_del_proyecto_label=get_estado_del_proyecto_field('label',$additions->estado_del_proyecto_id);
+        $additions->puntuacion_total=calcular_proyecto_puntuacion_total($additions);
+        //print $additions->puntuacion_total.'<BR>';
+  }
+  
+  return $additions;
+}
+
+/**
+ * Implementation of hook_view().
+ *
+ * This is a typical implementation that simply runs the node text through
+ * the output filters.
+ */
+function proyecto_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+  $node->content['myfield'] = array(
+    '#value' => theme('proyecto_order_info', $node),
+    '#weight' => 1,
+  );
+
+  return $node;
+}
+
+/**
+ * Implementation of hook_theme().
+ *
+ * This lets us tell Drupal about our theme functions and their arguments.
+ */
+function proyecto_theme() {
+  return array(
+    'proyecto_order_info' => array(
+      'arguments' => array('node'),
+    ),
+  );
+}
+
+/**
+ * A custom theme function.
+ *
+ * By using this function to format our node-specific information, themes
+ * can override this presentation if they wish. We also wrap the default
+ * presentation in a CSS class that is prefixed by the module name. This
+ * way, style sheets can modify the output without requiring theme code.
+ */
+function theme_proyecto_order_info($node) {
+  $output = '<div class="proyecto_order_info">';
+  $output .= t('The order is for %quantity %color items.', array('%quantity' => check_plain($node->quantity), '%color' => check_plain($node->color)));
+  $output .= '</div>';
+  return $output;
+}
+
+/**
+ * @} End of "defgroup proyecto".
+ */
+ 
+ //gemini
+function proyecto_block($op = 'list', $delta = 0, $edit = array()) {
+ 	switch ($op) {
+    	case 'list':
+ 			$blocks[300]['info'] = t('Projects');
+                        //$blocks[1100]['info'] = t('Búsqueda Simple de Proyectos');
+                        $blocks[1100]['info'] = t('Project Simple Search');
+			return $blocks;
+			break;
+		case 'view':
+			$block=my_proyecto_view_block($delta);
+   			return $block;
+		default:
+			break;
+	}
+}
+
+//gemini
+function my_proyecto_view_block($delta){
+	$block=array();
+	switch($delta){
+		case 300:
+                        if(user_access('Ver proyecto_list')){
+                            //intelsat-2015
+                            $title=t('Projects');
+                            $icono=get_proyecto_simbolo_img(1,$title,'proyecto_left');
+                            $block['subject'] = $icono.$title;
+                            //
+                            $block['content'] = get_gestionar_proyectos_content();
+                        }
+			break;
+                case 1100:
+                        if(user_access('Ver proyecto_list')){
+                            //$block['subject'] = t('Búsqueda Simple Proy.');
+                            $block['subject'] = t('Project Simple Search');
+                            $block['content'] = get_busqueda_simple_proyectos_content();
+                        }
+			break;
+		default:
+			break;	 
+ 	}
+    return $block;
+}
+//gemini
+function get_gestionar_proyectos_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+	$oportunidad_nid=my_get_proyecto_oportunidad_nid();
+        if(empty($oportunidad_nid)){
+            $oportunidad_nid='todas';
+        }
+	$result=array();
+	if(!hontza_solr_search_is_usuario_lector()){
+            //intelsat-2015
+            $title=t('Add Project');
+            $icono=my_get_icono_action('add_left',$title).'&nbsp;';
+            //
+            $result[]=$icono.l(t('Add Project'),'node/add/proyecto/'.$oportunidad_nid);
+        }
+        $result[]=l(t('List of Projects'),'proyectos/'.$oportunidad_nid);
+        //$result[]=l(t('Weighting criteria'),'criterios_de_evaluacion');
+	return implode('<BR>',$result);
+}
+//gemini
+function my_get_proyecto_oportunidad_nid(){
+	$oportunidad_nid='';
+	if(strcmp(arg(0),'proyectos')==0){
+		return arg(1);
+	}	
+	if(strcmp(arg(0),'node')==0){
+		if(strcmp(arg(1),'add')==0 && strcmp(arg(2),'proyecto')==0 && is_numeric(arg(3))){
+			return arg(3);
+		}else{ 
+			if(is_ficha_node('proyecto')){
+				$node=my_get_node();
+				if(!empty($node) && isset($node->nid) && !empty($node->nid)){
+					return $node->oportunidad_nid;
+				}
+			}	
+		}
+	}
+	return $oportunidad_nid;
+}
+//gemini
+function my_get_proyecto_personas_options(){
+	return my_get_oportunidad_personas_options();
+}
+//gemini
+function my_get_proyecto_tipo_options(){
+        //AVISO::::el orden no es alfabetico es el que lo tiene puesto a mano con la estrella de mover terms
+	$result=array();
+	$vid=11;
+	$v=my_vocabulary_load('Tipo Proyecto');
+	if(!empty($v) && isset($v->vid) && !empty($v->vid)){
+		$vid=$v->vid;
+	}
+	//print $vid;exit();
+	$tree=taxonomy_get_tree($vid);
+	if(count($tree)>0){	
+		foreach($tree as $i=>$row){
+			$result[$row->tid]=my_set_t_proyecto_options($row->name);
+		}
+	}
+	/*echo print_r($result,1);
+	exit();*/	
+	return $result;
+}
+//gemini
+function my_get_proyecto_tipo2_options(){
+	$result=array();
+	$vid=12;
+	$v=my_vocabulary_load('Tipo2 Proyecto');
+	if(!empty($v) && isset($v->vid) && !empty($v->vid)){
+		$vid=$v->vid;
+		//print $vid;exit();
+	}	
+	$tree=taxonomy_get_tree($vid);
+	if(count($tree)>0){	
+		foreach($tree as $i=>$row){
+			$result[$row->tid]=$row->name;
+		}
+	}
+	/*echo print_r($result,1);
+	exit();*/	
+	return $result;
+}
+//gemini
+function proyecto_form_alter(&$form, &$form_state, $form_id) {
+	if(strcmp($form_id,'proyecto_node_form')==0){
+            unset($form['taxonomy']);
+            $form['title']['#title']=t('Title of project');
+            $form['body_field']['body']['#title']=t('Details');
+            $form['field_imagen_o_logo'][0]['#title']=t('Image or logo');
+            //intelsat-2016
+            red_copiar_proyecto_node_form_alter($form,$form_state,$form_id);
+        }
+}
+//gemini
+function my_get_evaluacion_options($with_zero=0,$my_type=''){
+	$result=array();
+        if($with_zero){
+            $result[0]=0;
+        }
+	$num=5;
+        if(empty($my_type)){
+            for($i=1;$i<=$num;$i++){
+                    $result[$i]=$i;
+            }
+        }else{
+            //intelsat-2016
+            estrategia_inc_add_evaluacion_disabled_option($my_type,$result);
+            switch($my_type){
+                case 'eval_accesibilidad':
+                    $result[1]='1='.t('Key Technology is owned by a competitor');
+                    $result[2]='2='.t('Key Technology is difficult to access');
+                    $result[3]='3='.t('Key Technology is accessible');
+                    $result[4]='4='.t('Key Technology is very accessible');
+                    $result[5]='5='.t('Key Technology is very cheap or free');
+                    break;
+                case 'eval_riesgo_complejidad':
+                    $result[1]='1='.t('The project has many possibilities to fail');
+                    $result[2]='2='.t('The project is quite complex');
+                    $result[3]='3='.t('The risk of the project is normal');
+                    $result[4]='4='.t('The project is easy to do');
+                    $result[5]='5='.t('The project has no risk');
+                    break;
+                case 'eval_inversiones':
+                    $result[1]='1='.t('The project requires a high investment');
+                    $result[2]='2='.t('The project requires a considerable investment');
+                    $result[3]='3='.t('The project requires a normal investment');
+                    $result[4]='4='.t('The project requires a little investment');
+                    $result[5]='5='.t('The project requires a minimum investment');
+                    break;
+                case 'eval_potencial_mercado':
+                    $result[1]='1='.t('The project does not open any niche market');
+                    $result[2]='2='.t('The project could open a niche market');
+                    $result[3]='3='.t('The project is going to open a niche market');
+                    $result[4]='4='.t('The project is going to open some niche markets');
+                    $result[5]='5='.t('The project is going to open many niche market');
+                    break;
+                case 'eval_impacto_negocio':
+                    $result[1]='1='.t('The project does not reinforce our strategy');
+                    $result[2]='2='.t('The project reinforces a little to our strategy');
+                    $result[3]='3='.t('The project reinforces our strategy');
+                    $result[4]='4='.t('The project reinforces a lot our strategy');
+                    $result[5]='5='.t('The project is fully aligned with our strategy');
+                    break;
+                case 'eval_rapidez_de_ejecucion':
+                    $result[1]='1='.t('Very long execution delay');
+                    $result[2]='2='.t('Long execution delay');
+                    $result[3]='3='.t('Normal execution delay');
+                    $result[4]='4='.t('Short execution delay');
+                    $result[5]='5='.t('Very short execution delay');
+                   break;
+                case 'pond_accesibilidad':
+                case 'pond_riesgo_complejidad':
+                case 'pond_inversiones':
+                case 'pond_potencial_mercado':
+                case 'pond_impacto_negocio':
+                case 'pond_rapidez_de_ejecucion':
+                    $result[1]='1='.t('Very low relative importance');
+                    $result[2]='2='.t('Low relative importance');
+                    $result[3]='3='.t('Average relative importance');
+                    $result[4]='4='.t('High relative importance');
+                    $result[5]='5='.t('Very high relative importance');
+                    break;
+                case 'valor_reto':
+                    $result[1]='1='.t('The most important challenge');
+                    $result[2]='2='.t('Very important challenge');
+                    $result[3]='3='.t('Important challenge');
+                    $result[4]='4='.t('Secondary challenge');
+                    $result[5]='5='.t('Marginal challenge');
+                    break;
+                case 'importancia_reto':
+                    $result[1]='1='.t('Very low');
+                    $result[2]='2='.t('Low');
+                    $result[3]='3='.t('Normal');
+                    $result[4]='4='.t('High');
+                    $result[5]='5='.t('Very high');                    
+                    break;
+                case 'facilidad_reto':
+                    $result[1]='1='.t('Very difficult');
+                    $result[2]='2='.t('Difficult');
+                    $result[3]='3='.t('Normal');
+                    $result[4]='4='.t('Easy');
+                    $result[5]='5='.t('Very easy');
+                    break;
+                case 'importancia_despliegue':
+                    $result[1]='1='.t('Marginal Subchallenge');
+                    $result[2]='2='.t('Secondary Subchallenge');
+                    $result[3]='3='.t('Important Subchallenge');
+                    $result[4]='4='.t('Very important Subchallenge');
+                    $result[5]='5='.t('The most important Subchallenge');
+                    break;
+                case 'valor_decision':
+                    $result[1]='1='.t('Marginal decision');
+                    $result[2]='2='.t('Secondary decision');
+                    $result[3]='3='.t('Important decision');
+                    $result[4]='4='.t('Very important decision');
+                    //$result[5]='5='.t('The most important decision to achieve the challenge or subchallenge');
+                    $result[5]='5='.t('The most important decision');
+                    break;
+                case 'importancia':
+                    $result[1]='1='.t('Marginal Key Question');
+                    $result[2]='2='.t('Secondary Key Question');
+                    $result[3]='3='.t('Important Key Question');
+                    $result[4]='4='.t('Very important Key Question');
+                    $result[5]='5='.t('The most important Key Question');
+                    break;
+                case 'accesibilidad':
+                    $result[1]='1='.t('Information very difficult to get');
+                    $result[2]='2='.t('Not very accessible information');
+                    $result[3]='3='.t('Available information');
+                    $result[4]='4='.t('Easily accessible information');
+                    $result[5]='5='.t('Free disseminated information');
+                    break;
+                case 'evaluar_doc':
+                    $result[1]='1='.t('No value');
+                    $result[2]='2='.t('Little value');
+                    $result[3]='3='.t('Normal value');
+                    $result[4]='4='.t('High value');
+                    $result[5]='5='.t('Very high value');
+                    break;
+                case 'eval_oportunidad':
+                    $result[1]='1='.t('Marginal business opportunity');
+                    $result[2]='2='.t('Small business opportunity');
+                    $result[3]='3='.t('Good business opportunity');
+                    $result[4]='4='.t('Pretty good business opportunity');
+                    $result[5]='5='.t('Great Business Opportunity');
+                    //echo print_r($result,1);
+                    break;
+                default:
+                    break;
+            }
+        }
+        //$result=proyecto_reverse_eval_options($result,$my_type);
+	return $result;
+}
+//gemini
+function save_proyecto_personas($proyecto_nid,$personas){
+        global $user;
+        //
+        $is_todo_subgrupo=1;
+	my_delete_proyecto_personas($proyecto_nid);
+	if(count($personas)>0){
+		foreach($personas as $i=>$uid){
+                    insert_proyecto_personas($proyecto_nid,$uid);
+		}
+                $is_todo_subgrupo=0;
+                if(!in_array($user->uid,$personas)){
+                    insert_proyecto_personas($proyecto_nid,$user->uid);
+                }
+	}
+        update_proyecto_is_todo_subgrupo($proyecto_nid,$is_todo_subgrupo);
+}
+//gemini
+function my_delete_proyecto_personas($proyecto_nid){
+    //gemini-2013
+    if(!empty($proyecto_nid)){
+    //
+	$sql='DELETE FROM {proyecto_personas} WHERE proyecto_nid='.$proyecto_nid;
+	db_query($sql);
+    }
+}
+//gemini
+function insert_proyecto_personas($proyecto_nid,$uid){
+	$sql='INSERT proyecto_personas(proyecto_nid,uid) VALUES('.$proyecto_nid.','.$uid.')';
+	db_query($sql);
+}
+//gemini
+function get_proyecto_personas_uid_array($proyecto_nid){
+	$personas=array();
+	$personas_list=array();
+	$my_list=get_proyecto_personas_list($proyecto_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$personas[]=$row->uid;
+			$personas_list[]=$row;
+		}		
+	}
+	$info['personas']=$personas;
+	$info['personas_list']=$personas_list;
+	return $info;
+}
+//gemini
+function get_proyecto_personas_list($proyecto_nid='',$uid=''){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	if(!empty($proyecto_nid)){
+		$where[]="p.proyecto_nid=".$proyecto_nid;
+	}
+	if(!empty($uid)){
+		$where[]="p.uid=".$uid;
+	}
+	//
+	$sql="SELECT p.*,u.name as username FROM {proyecto_personas} p LEFT JOIN {users} u ON p.uid=u.uid WHERE ".implode(" AND ",$where)." ORDER BY u.name ASC";
+	//
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function add_js_proyecto(){
+	if(is_proyecto()){
+		my_add_active_trail_js('id_a_idea');		
+	}
+        if(is_proyecto_left()){
+            add_busqueda_simple_proyecto_js();
+        }
+}
+//gemini
+function is_proyecto($param_proyectos=''){
+	if(strcmp(arg(0),'proyecto')==0){
+		return 1;
+	}
+	if(strcmp(arg(0),'proyectos')==0){
+            if(empty($param_proyectos)){
+                return 1;
+            }else if(strcmp(arg(1),$param_proyectos)==0){
+                return 1;
+            }
+	}
+        if(strcmp(arg(0),'criterios_de_evaluacion')==0){
+            //return 1;
+            //AVISO::::ahora va en panel de gestión por eso es zero
+            return 0;
+	}
+	if(is_ficha_node('proyecto')){
+		return 1;
+	}
+	return 0;
+}
+//gemini
+function is_proyecto_left(){
+	if(is_proyecto()){
+		return 1;
+	}
+	$node=my_get_node();
+	//echo print_r($node,1);exit();
+	if(!empty($node) && isset($node->nid) && !empty($node->nid) && strcmp(arg(2),'edit')==0){
+		//if(in_array($node->type,array('item'))){
+		if(strcmp($node->type,'proyecto')==0){			
+			return 1;
+		}
+	}
+	
+	if(is_ficha_node_left('proyecto','proyecto')){
+		return 1;
+	}			
+	return 0;
+}
+//gemini
+function my_class_primera_proyecto($node,$page){
+	if(empty($page) && is_node_primera_ayuda($node,array('proyecto'))){
+		return ' my_primera_noticia';
+	}
+	return '';
+}
+//gemini
+function my_help_primera_proyecto($node){
+	if(is_node_primera_ayuda($node,array('proyecto'))){
+		if(is_add_primera_proyecto(0,'proyecto')){
+			$my_is_mouse_over=1;
+			//$my_is_mouse_over=0;
+			//return help_popup_window(13179, 'help',my_get_help_link_object(),0,0,2,$my_is_mouse_over);
+			return help_popup_window('', 'help',my_get_help_link_object(),0,0,3,$my_is_mouse_over);
+		}
+	}	
+	return '';
+}
+//gemini
+function get_proyecto_term_name($tid){
+	$term=taxonomy_get_term($tid);
+	//echo print_r($term,1);
+	if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+		return $term->name;
+	}
+}
+//gemini
+function my_create_stars_view($v,$is_fuente_table=1,$field='',$is_fuente_view=0){
+        if($is_fuente_table==2){
+            return get_eval_label($v,$field);
+        }
+	//AVISO::::para ver las estrellas en proyecto/view comentar el if y el return
+        if(!$is_fuente_table && !$is_fuente_view){
+		return $v;
+	}
+        //gemini-2013
+	$style=' style="text-align:center;"';
+        if($is_fuente_view){
+            $style=' style="text-align:center;float:left;"';
+        }
+        //
+	$result='<div class="fivestar-widget-static fivestar-widget-static-vote fivestar-widget-static-5 clear-block"'.$style.'>';
+	//$result.='<table style="border:0px;width:51px;"><tr>';
+	if($is_fuente_table){
+		$result.='<div style="width:51px;">';
+	}else{
+		$result.='<div>';
+	}
+	for($i=0;$i<5;$i++){
+		$on='off';
+		if($i<$v){
+			$on='on';
+		}
+		//$result.='<td style="border-bottom:0px;padding:0px;border-right: 0px;width:17px;height:15px;">';
+		//
+		//$img='<img src="/hontza3/sites/all/themes/buho/images/star.gif" style="background-repeat:no-repeat;"/>';		
+		if($on=='on'){
+			if($i>0){
+				$even='even';
+				if(($i%2)==1){
+					$even='odd';
+				}
+				if($i==3 && $is_fuente_table){
+					$result.='<div class="star star-1 star-odd star-'.$even.'" style="clear:both;">';										
+				}else{		
+					$result.='<div class="star star-1 star-odd star-'.$even.'">';
+				}
+				$result.='<span class="'.$on.'"></span>';
+				//$result.=$img;		
+			}else{				
+				$result.='<div class="star star-1 star-odd star-first">';
+				//$result.='<span class="'.$on.'">'.$v.'</span>';
+				$result.='<span class="'.$on.'"></span>';
+				//$result.=$img;	
+			}			
+			$result.='</div>';		
+		}//else{
+			//$result.='&nbsp;';
+		//}				
+		//$result.='</td>';
+		//if($i==2){
+		//	$result.='</tr><tr>';
+		//}	
+	}
+	//$result.='</tr></table>';
+	$result.='</div>';
+	$result.='</div>';
+	return $result;
+}
+//gemini
+function set_heredar_oportunidad_default_value($node,$oportunidad_nid,$field){
+    /*if(!isset($node->nid) || empty($node->nid)){
+        $oportunidad=node_load($oportunidad_nid);
+        return $oportunidad->$field;
+    }*/
+    return $node->$field;
+}
+//gemini
+function get_estado_del_proyecto_options(){
+    $result=array();
+    $my_list=get_estado_del_proyecto_array();
+    if(count($my_list)>0){
+        foreach($my_list as $i=>$row){
+            $result[$row['value']]=t($row['label']);
+        }
+    }
+    return $result;
+}
+//gemini
+function get_estado_del_proyecto_array(){
+    $result=array();
+    $result[]=array('name'=>'Borrador','label'=>'Draft','value'=>1);
+    $result[]=array('name'=>'Aprobado','label'=>'Approved','value'=>2);
+    $result[]=array('name'=>'No Aprobado','label'=>'Not Approved','value'=>3);
+    return $result;
+}
+//gemini
+function get_estado_del_proyecto_field($field,$estado_del_proyecto_id){
+    $row=get_estado_del_proyecto_row($estado_del_proyecto_id);
+    //echo print_r($row,1);exit();
+    if(!empty($row)){
+        return t($row[$field]);
+    }
+    return '';
+}
+//gemini
+function get_estado_del_proyecto_row($estado_del_proyecto_id){
+    $result=array();
+    $my_list=get_estado_del_proyecto_array();
+    if(count($my_list)>0){
+        foreach($my_list as $i=>$row){
+            if($row['value']==$estado_del_proyecto_id){
+                return $row;
+            }
+        }
+    }
+    return $result;
+}
+//gemini
+function is_add_primera_proyecto($my_kont,$type){
+    return is_add_primera_ayuda($my_kont, $type);
+}
+function get_estado_del_proyecto_by_field($param){
+    $my_array=get_estado_del_proyecto_array();
+    if(count($my_array)>0){
+        foreach($my_array as $i=>$row){
+            if($row[$param['field']]==$param['value']){
+                return $row;
+            }
+        }
+    }
+    $result=array();
+    return $result;
+}
+function get_proyecto_simbolo_img($is_taula_header=0,$title_in='',$file_name_in=''){
+    //intelsat-2016
+    global $base_url;
+    $html=array();
+    //intelsat-2015
+    if(empty($title_in)){
+         $title=t('Project');   
+    }else{
+         $title=$title_in;
+    }
+    if(empty($file_name_in)){
+        $file_name='proyecto';
+    }else{
+        $file_name=$file_name_in;
+    }
+    //
+    //gemini-2014
+    $style=idea_get_simbolo_style($is_taula_header);
+    //
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/'.$file_name.'.png" alt="'.$title.'" title="'.$title.'"/>';
+    if(!$is_taula_header){
+        $html[]='&nbsp;';
+    }
+    return implode('',$html);
+}
+function get_title_proyecto_simbolo_img(){
+    //intelsat-2016
+    global $base_url;
+    $html=array();
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/proyecto_title.png"/>';
+    return implode('',$html);
+}
+function create_proyecto_guraso_fieldset($proyecto_nid,$oportunidad_nid,$node_oportunidad_nid,$tipo_adheridos){
+    $result=array(
+    '#type'=>'fieldset',
+    '#title'=>t('Select opportunity'),
+    //'#description'=>$description
+    );
+
+    $sel_oportunidad_nid=$node_oportunidad_nid;
+
+    if(empty($proyecto_nid)){
+        $sel_oportunidad_nid=$oportunidad_nid;
+    }
+
+    //$rows=get_idea_arbol_rows(0,'seleccionar_oportunidad',$tipo_adheridos);
+    $rows=get_idea_arbol_rows(0,'seleccionar_oportunidad',$tipo_adheridos,0,1);
+    //echo 'rows='.print_r($rows,1);exit();
+    $rows=prepare_arbol_by_pro($rows,2);
+    $keys=array();
+    if(count($rows)>0){
+        foreach($rows as $i=>$r){
+             $pro=$r[2];
+            if($pro==2){
+                $keys[]=$r[3];
+                //echo print_r($r,1);
+
+            //print $pro.'<BR>';
+              $result[$r[3]] = array(
+                '#required' => TRUE,
+                '#type' => 'checkbox',
+                '#prefix' => '<div class=taxo'. ($pro-1) .'>',
+                '#suffix' => '</div>',
+                '#title' => $r[0]
+              );
+              if(!empty($sel_oportunidad_nid) && $r[3]==$sel_oportunidad_nid){
+                     $result[$r[3]]['#attributes']=array('checked' => 'checked');
+              }
+            }else{
+              //$result['my_idea_'.$r[3]]['#value']='<div class=taxo'. ($pro-1) .'>'.get_idea_bombilla_img().$r[0].'</div>';
+              $result['my_idea_'.$r[3]]['#value']='<div class=taxo'. ($pro-1) .'>'.$r[0].'</div>';
+            }
+        }
+    }
+
+    $keys=array_keys($result);
+    $keys=get_numeric_values($keys);
+    add_js_txek_sel_idea($keys);
+
+    return $result;
+}
+function set_oportunidad_seleccionada($node){
+    /*$oportunidad_nid=$node->oportunidad_nid;
+    if(!empty($oportunidad_nid) && $oportunidad_nid!='todas'){
+        return $oportunidad_nid;
+    }*/
+    //
+    foreach($node as $f=>$v){
+        if(is_numeric($f) && !empty($v)){
+            return $f;
+        }
+    }
+    return 0;
+}
+function validate_sel_oportunidad($node){
+    /*if(isset($node->nid) && !empty($node->nid)){
+        return 1;
+    }else{*/
+        $oportunidad_nid=set_oportunidad_seleccionada($node);
+        if(empty($oportunidad_nid)){
+            return 0;
+        }
+        return 1;
+    //}
+}
+function calcular_proyecto_puntuacion_total($p){
+    //P1 * A + P2 * R + P3 * I + P4 * M + P5 * N + P6 * V
+    $a=$p->eval_accesibilidad;
+    $r=$p->eval_riesgo_complejidad;
+    $i=$p->eval_inversiones;
+    $m=$p->eval_potencial_mercado;
+    $n=$p->eval_impacto_negocio;
+    $v=$p->eval_rapidez_de_ejecucion;
+    //
+    $ce=create_criterios_de_evaluacion($p);
+    //
+    $p1=$ce->pond_accesibilidad;
+    $p2=$ce->pond_riesgo_complejidad;
+    $p3=$ce->pond_inversiones;
+    $p4=$ce->pond_potencial_mercado;
+    $p5=$ce->pond_impacto_negocio;
+    $p6=$ce->pond_rapidez_de_ejecucion;
+    //
+    $result=$p1*$a + $p2 * $r + $p3 * $i + $p4 * $m + $p5 * $n + $p6 * $v;
+    return $result;
+}
+function get_eval_label($v,$field){
+    if($field=='valor_reto'){
+        return $v;
+    }
+    $result='';
+    $options=my_get_evaluacion_options('',$field);
+    //echo print_r($options,1);
+    //return $field;
+    if(isset($options[$v]) && !empty($options[$v])){
+        //$result=str_replace($v.'=','',$options[$v]);
+        //return $options[$v];
+        return '&nbsp;'.$options[$v];
+    }
+    return $result;
+}
+function criterios_de_evaluacion_form(){
+  global $user;
+  idea_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  $grupo_nid='';
+  $my_grupo=og_get_group_context();
+  if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+    $grupo_nid=$my_grupo->nid;
+  }
+  //
+  //intelsat-2015
+  //if(is_administrador_grupo() || isset($user->roles[ADMINISTRADOR_DE_GRUPO])){
+  if(is_administrador_grupo() || isset($user->roles[ADMINISTRADOR_DE_GRUPO]) || isset($user->roles[ADMINISTRADOR])){  
+    if(!empty($grupo_nid)){
+        //
+    }else{
+        $form['my_access_denied']['#value']=my_grupo_sin_seleccionar_action();
+        return $form;
+    }
+  }else{
+      /*drupal_goto('my_proyecto_denied');
+      return array();*/
+      $form['my_access_denied']['#value']=my_denied_action();
+      return $form;
+  }
+
+  //$row=get_criterios_de_evaluacion();
+  $row=create_criterios_de_evaluacion();
+  drupal_set_title(t('Weighting Criteria'));
+  $form['pond_accesibilidad']=array(
+  '#type' => 'select',
+  '#title' => t('Technology Accessibility'),
+  '#default_value' => $row->pond_accesibilidad,
+  '#options'=>my_get_evaluacion_options('','pond_accesibilidad'),
+  '#required' => TRUE
+);
+
+$form['pond_riesgo_complejidad']=array(
+  '#type' => 'select',
+  '#title' => t('Complexity/Risk'),
+  '#default_value' => $row->pond_riesgo_complejidad,
+  '#options'=>my_get_evaluacion_options('','pond_riesgo_complejidad'),
+  '#required' => TRUE
+);
+
+$form['pond_inversiones']=array(
+  '#type' => 'select',
+  '#title' => t('Investments Level'),
+  '#default_value' => $row->pond_inversiones,
+  '#options'=>my_get_evaluacion_options('','pond_inversiones'),
+  '#required' => TRUE
+);
+
+$form['pond_potencial_mercado']=array(
+  '#type' => 'select',
+  '#title' => t('Market Potential'),
+  '#default_value' => $row->pond_potencial_mercado,
+  '#options'=>my_get_evaluacion_options('','pond_potencial_mercado'),
+  '#required' => TRUE
+);
+
+$form['pond_impacto_negocio']=array(
+  '#type' => 'select',
+  '#title' => t('Strategic Impact'),
+  '#default_value' => $row->pond_impacto_negocio,
+  '#options'=>my_get_evaluacion_options('','pond_impacto_negocio'),
+  '#required' => TRUE
+);
+
+$form['pond_rapidez_de_ejecucion']=array(
+  '#type' => 'select',
+  '#title' => t('Execution Delay'),
+  '#default_value' => $row->pond_rapidez_de_ejecucion,
+  '#options'=>my_get_evaluacion_options('','pond_rapidez_de_ejecucion'),
+  '#required' => TRUE
+);
+
+  $form['my_pond_submit']=array(
+  '#type' => 'submit',
+  '#value' => t('Save'),
+);
+
+  //$form['#validate'][] = 'my_hontza_admin_settings_validate';
+  //return system_settings_form($form);
+  return $form;
+}
+function get_criterios_de_evaluacion($p=''){
+    $result=array();
+    //
+    $my_grupo=og_get_group_context();
+    $where=array();
+    $where[]="1";
+    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+  	$where[]="(ce.group_nid = ".$my_grupo->nid.")";
+    }else{
+        if(isset($p->grupo_nid) && !empty($p->grupo_nid)){
+            $where[]="(ce.group_nid = ".$p->grupo_nid.")"; 
+        }
+    }
+    //
+    $sql="SELECT * FROM {criterios_de_evaluacion} ce WHERE ".implode(" AND ",$where);
+    
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    //
+    $result=(object) $result;
+    return $result;
+}
+function criterios_de_evaluacion_form_submit(&$form, &$form_state) {
+    $pond_accesibilidad =$form_state['values']['pond_accesibilidad'];
+    $pond_riesgo_complejidad =$form_state['values']['pond_riesgo_complejidad'];
+    $pond_inversiones =$form_state['values']['pond_inversiones'];
+    $pond_potencial_mercado =$form_state['values']['pond_potencial_mercado'];
+    $pond_impacto_negocio =$form_state['values']['pond_impacto_negocio'];
+    $pond_rapidez_de_ejecucion =$form_state['values']['pond_rapidez_de_ejecucion'];
+    $my_grupo=og_get_group_context();
+    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $group_nid=$my_grupo->nid;
+        $row=get_criterios_de_evaluacion();
+         if(!empty($row) && isset($row->id) && !empty($row->id)){
+             $sql=sprintf("UPDATE criterios_de_evaluacion SET group_nid=%d,pond_accesibilidad=%d,pond_riesgo_complejidad=%d,pond_inversiones=%d,pond_potencial_mercado=%d,pond_impacto_negocio=%d,pond_rapidez_de_ejecucion=%d WHERE id=%d",$group_nid,
+$pond_accesibilidad,
+$pond_riesgo_complejidad,
+$pond_inversiones,
+$pond_potencial_mercado,
+$pond_impacto_negocio,
+$pond_rapidez_de_ejecucion,$row->id);
+         }else{
+             $sql=sprintf("INSERT INTO criterios_de_evaluacion(group_nid,
+pond_accesibilidad,
+pond_riesgo_complejidad,
+pond_inversiones,
+pond_potencial_mercado,
+pond_impacto_negocio,
+pond_rapidez_de_ejecucion) VALUES (%d,%d,%d,%d,%d,%d,%d)",$group_nid,
+$pond_accesibilidad,
+$pond_riesgo_complejidad,
+$pond_inversiones,
+$pond_potencial_mercado,
+$pond_impacto_negocio,
+$pond_rapidez_de_ejecucion);
+         }
+         db_query($sql);
+         drupal_set_message(t('Weighting criteria saved'));
+    }
+    //gemini-2014
+    drupal_goto('proyectos/todas');
+}
+function create_criterios_de_evaluacion($p=''){
+    $ce=get_criterios_de_evaluacion($p);   
+    if(!empty($ce) && isset($ce->id) && !empty($ce->id)){
+        return $ce;
+    }
+    //
+    /*$ce->pond_accesibilidad=0;
+    $ce->pond_riesgo_complejidad=0;
+    $ce->pond_inversiones=0;
+    $ce->pond_potencial_mercado=0;
+    $ce->pond_impacto_negocio=0;
+    $ce->pond_rapidez_de_ejecucion=0;*/
+    $ce->pond_accesibilidad=3;
+    $ce->pond_riesgo_complejidad=3;
+    $ce->pond_inversiones=3;
+    $ce->pond_potencial_mercado=3;
+    $ce->pond_impacto_negocio=3;
+    $ce->pond_rapidez_de_ejecucion=3;
+    return $ce;
+}
+function get_lista_proyectos_title(){
+    $result='List of Projects';
+    if(is_idea('borrador')){
+        //$result.='-Borradores';
+        $result='Draft Projects';
+    }else if(is_idea('aprobados')){
+        //$result.='-Aprobados';
+        $result='Approved Projects';
+    }else if(is_idea('no_aprobados')){
+        //$result.='-Not Approved';
+        $result='Not Approved Projects';
+    }else{
+        //$result.='-Last';
+        $result='Latest Projects';
+    }
+    return t($result);
+}
+function get_proyecto_subgrupo_string_list($node){
+    $result=array_ordenatu($node->personas_list,'username',0,'desc');
+    $html=my_array_field_values($result,'username');
+    return implode(",",$html);
+}
+//gemini
+function save_proyecto_invitados($proyecto_nid,$invitados,$node){
+	my_delete_proyecto_invitados($proyecto_nid);
+	if(count($invitados)>0){
+            foreach($invitados as $i=>$uid){
+                insert_proyecto_invitados($proyecto_nid,$uid);
+            }
+	}
+        $new_uid=save_new_invitado($node);
+        if(!empty($new_uid)){
+            $my_grupo=og_get_group_context();
+            if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                og_save_subscription($my_grupo->nid, $new_uid, array('is_active' => 1));
+            }
+            //
+            insert_proyecto_invitados($proyecto_nid,$new_uid);
+        }
+}
+function my_delete_proyecto_invitados($proyecto_nid){
+    //gemini-2013
+    if(!empty($proyecto_nid)){
+    //
+        $sql='DELETE FROM {proyecto_invitados} WHERE proyecto_nid='.$proyecto_nid;
+        db_query($sql);
+    }
+}
+function insert_proyecto_invitados($proyecto_nid,$uid){
+    $sql='INSERT proyecto_invitados(proyecto_nid,uid) VALUES('.$proyecto_nid.','.$uid.')';
+    db_query($sql);
+}
+function get_proyecto_invitados_uid_array($proyecto_nid){
+	$invitados=array();
+	$invitados_list=array();
+	$my_list=get_proyecto_invitados_list($proyecto_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$invitados[]=$row->uid;
+			$invitados_list[]=$row;
+		}
+	}
+	$info['invitados']=$invitados;
+	$info['invitados_list']=$invitados_list;
+	return $info;
+}
+function get_proyecto_invitados_list($proyecto_nid='',$uid=''){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	if(!empty($proyecto_nid)){
+		$where[]="pi.proyecto_nid=".$proyecto_nid;
+	}
+	if(!empty($uid)){
+		$where[]="pi.uid=".$uid;
+	}
+	//
+	$sql="SELECT pi.*,u.name as username FROM {proyecto_invitados} pi LEFT JOIN {users} u ON pi.uid=u.uid WHERE ".implode(" AND ",$where)." ORDER BY u.name ASC";
+	//
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+function es_categoria_tematica_del_proyecto($proyecto_nid,$tid){
+    $my_array=get_proyecto_categorias_tematicas_array($proyecto_nid,$tid);
+    if(count($my_array)>0){
+        return 1;
+    }
+    return 0;
+}
+function get_proyecto_categorias_tematicas_array($proyecto_nid,$tid=''){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    $where[]="pc.proyecto_nid=".$proyecto_nid;
+    if(!empty($tid)){
+        $where[]="pc.tid=".$tid;
+    }
+    $sql="SELECT *,td.name
+    FROM {proyecto_categorias_tematicas} pc
+    LEFT JOIN {term_data} td ON pc.tid=td.tid
+    WHERE ".implode(" AND ",$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    //print $sql;
+    return $result;
+}
+//gemini
+function save_proyecto_categorias_tematicas($proyecto_nid,$node){
+    $aurrizkia='categoria_tematica_proyecto_';
+    delete_proyecto_categorias_tematicas($proyecto_nid);
+    $is_categoria_indefinida=1;
+    foreach($node as $field=>$value){
+       if(is_proyecto_categoria_tematica_field($aurrizkia,$field)){
+           $f=str_replace($aurrizkia,'',$field);
+           $term=taxonomy_get_term($f);
+           if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+               //print 'tid='.$term->tid.'<BR>';
+               if(!empty($value)){
+                    $is_categoria_indefinida=0;
+                    insert_proyecto_categorias_tematicas($proyecto_nid,$term->tid);
+               }
+           }
+       }
+    }
+    if($is_categoria_indefinida){
+         $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+         if(!empty($indefinida_tid)){
+            insert_proyecto_categorias_tematicas($proyecto_nid,$indefinida_tid);
+         }
+    }
+}
+function delete_proyecto_categorias_tematicas($proyecto_nid){
+    //gemini-2013
+    if(!empty($proyecto_nid)){
+    //
+        $sql='DELETE FROM proyecto_categorias_tematicas WHERE proyecto_nid='.$proyecto_nid;
+        db_query($sql);
+    }
+}
+function is_proyecto_categoria_tematica_field($aurrizkia,$field){
+    return is_oportunidad_categoria_tematica_field($aurrizkia,$field);
+}
+function insert_proyecto_categorias_tematicas($proyecto_nid,$tid){
+    $sql='INSERT INTO proyecto_categorias_tematicas(proyecto_nid,tid) VALUES('.$proyecto_nid.','.$tid.')';
+    db_query($sql);
+}
+function get_proyecto_categorias_tematicas_string_list($node){
+    return get_oportunidad_categorias_tematicas_string_list($node);
+}
+function save_proyecto_responde_array($proyecto_nid,$responde_array){
+  delete_proyecto_responde_array($proyecto_nid);
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      foreach($responde_keys as $i=>$v){
+          $responde_values=explode('_',$responde_keys[$i]);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+          $sql=sprintf("INSERT INTO proyecto_responde_array(proyecto_nid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES(%d,%d,%d,%d,%d)",$proyecto_nid,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid);
+          db_query($sql);
+      }
+  }
+}
+function delete_proyecto_responde_array($proyecto_nid){
+  //gemini-2013
+  if(!empty($proyecto_nid)){
+  //
+      $sql="DELETE FROM proyecto_responde_array WHERE proyecto_nid=".$proyecto_nid;
+      db_query($sql);
+  }
+}
+function create_fieldset_tipo_socio_numero($nid){
+    $result=array();
+    $tipo_socio_list=my_get_proyecto_tipo_options();
+    //echo print_r($tipo_socio_list,1);
+    $result['fs']=array();
+    $result['fs']['#type']='fieldset';
+    $result['fs']['#title']=t('Number of members');
+    //
+    if(count($tipo_socio_list)>0){
+        foreach($tipo_socio_list as $tid=>$label){
+             $v=0;
+             $row=get_tipo_socio_numero($tid,$nid);
+             if(isset($row->id) && !empty($row->id)){
+                $v=$row->numero;
+             }
+             $result['fs']['tipo_socio_numero_'.$tid] = array(
+              '#type' => 'textfield',
+              //'#title' => t('Número de socios de '.$label),
+              '#title' => t($label),
+              '#default_value' => $v,
+            );
+        }
+    }
+    return $result;
+}
+function save_tipo_socio_numero($proyecto_nid,$node){
+    delete_tipo_socio_numero($proyecto_nid);
+    $tipo_socio_list=my_get_proyecto_tipo_options();
+    if(count($tipo_socio_list)>0){
+        foreach($tipo_socio_list as $tid=>$label){
+            $f='tipo_socio_numero_'.$tid;
+            if(isset($node->$f)){
+                $v=0;
+                if(!empty($node->$f) && is_numeric($node->$f)){
+                    $v=$node->$f;
+                }
+                $sql='INSERT INTO tipo_socio_numero(numero,tid,proyecto_nid) VALUES ('.$v.','.$tid.','.$proyecto_nid.')';
+                //
+                db_query($sql);
+            }
+        }
+    }    
+}
+function delete_tipo_socio_numero($proyecto_nid){
+    //gemini-2013
+    if(!empty($proyecto_nid)){
+    //
+        $sql='DELETE FROM tipo_socio_numero WHERE proyecto_nid='.$proyecto_nid;
+        db_query($sql);
+    }
+}
+function get_tipo_socio_numero($tid,$nid){
+   if(!empty($nid)){
+    $where=array();
+        //
+        $where[]='ts.tid='.$tid;
+        $where[]='ts.proyecto_nid='.$nid;
+        //
+        $sql='SELECT ts.* FROM {tipo_socio_numero} ts WHERE '.implode(' AND ',$where);
+        //
+        $res=db_query($sql);
+        while($row=db_fetch_object($res)){
+            return $row;
+        }
+   }
+    //
+    $my_result=array();
+    $my_result=(object) $my_result;
+    return $my_result;
+}
+function get_numero_socios_fieldset($node,$is_table=0){
+    $html=array();
+    //intelsat-2015
+    if(!$is_table){
+    //    
+        $html[]='<fieldset class="proyecto_view_fieldset">';
+        $html[]='<legend>'.t('Number of members').'</legend>';
+    }
+    $tipo_socio_list=my_get_proyecto_tipo_options();
+    $kont=0;
+     if(count($tipo_socio_list)>0){
+        foreach($tipo_socio_list as $tid=>$label){
+             $v=0;
+             $row=get_tipo_socio_numero($tid,$node->nid);
+             if(isset($row->id) && !empty($row->id)){
+                $v=$row->numero;
+             }
+             if(empty($v)){
+                 continue;
+             }else{
+                 $kont++;
+             }
+            //intelsat-2015
+            if($is_table){
+                $html[]='<tr class="tr_node_view">';
+                $html[]='<td class="td_label_node_view"><b>'.t($label).'</b>:&nbsp;</td>';
+                $html[]='<td class="td_value_node_view">'.$v.'</td>';
+                $html[]='</tr>';               
+            }else{
+            //    
+                $html[]='<div class="fieldset-wrapper">';
+                $html[]='<div class="field field-type-text field-field-proyecto-eval_accesibilidad div_eval">';
+                $html[]='<div class="field-items">';
+                $html[]='<div class="field-item odd">';
+                $html[]='<div class="field-label-inline-first" style="float:left;">'.t($label).':</div>';
+                $html[]='<div>&nbsp;'.$v.'</div></div></div></div>';
+            }    
+        }
+     }
+     if($kont>0){
+        //intelsat-2015
+        if(!$is_table){
+        //  
+            $html[]='</fieldset>';
+        }    
+        return implode('',$html);
+     }else{
+         return '';
+     }
+}
+function my_help_proyecto(){
+    $param=arg(1);
+    //
+    if(strcmp(arg(0),'node')==0 && strcmp(arg(1),'add')==0 && strcmp(arg(2),'proyecto')==0){
+        return help_popup_window(15331, 'help',my_get_help_link_object());
+    }else if(strcmp(arg(0),'proyectos')==0 && (empty($param) || strcmp(arg(1),'todas')==0) || is_numeric($param)){
+        return help_popup_window(15332, 'help',my_get_help_link_object());
+    }else if(strcmp(arg(0),'criterios_de_evaluacion')==0){
+        return help_popup_window(15333, 'help',my_get_help_link_object());
+    }
+    //
+    return '';
+}
+function get_busqueda_simple_proyectos_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+    $value='';
+	$value=my_get_request_value('search');
+	//
+        $html='<input type="text" id="busqueda_simple_proyecto_txt" name="busqueda_simple_proyecto_txt" value="'.$value.'"/>';
+	$html.='<BR><input type="button" id="busqueda_simple_proyecto_btn" name="busqueda_simple_proyecto_btn" value="'.t('Search').'"/>';
+	$html.='&nbsp;<input type="button" id="limpiar_proyecto_btn" name="limpiar_proyecto_btn" value="'.t('Clean').'"/>';
+        //$html.='&nbsp;'.l('Advanced','busqueda');
+	//$html.='&nbsp;'.l('Advanced','busqueda',array('query'=>'is_avanzada=1'));
+	return $html;
+}
+function add_busqueda_simple_proyecto_js(){
+        $my_url=url('proyectos');
+        if(is_proyecto('todas')){
+            $my_url=url('proyectos/todas');
+        }
+	$js='
+			var url_busqueda_simple_proyecto="'.$my_url.'";
+			$(document).ready(function()
+			{
+			 	$("#busqueda_simple_proyecto_btn").click(function(){
+                                       var v=$("#busqueda_simple_proyecto_txt").attr("value");
+					location.href=url_busqueda_simple_proyecto+"?search="+v;
+				});
+                                $("#limpiar_proyecto_btn").click(function(){
+                                       location.href=url_busqueda_simple_proyecto;
+				});
+			});';
+
+			drupal_add_js($js,'inline');
+}
+/*function my_proyecto_denied_callback(){
+    return my_denied_action();
+}*/
+function my_denied_action(){
+    drupal_set_title(t('Access denied'));
+    return t('You are not authorized to access this page').'.';
+}
+function validate_proyecto_reto_al_que_responde(&$form){
+    return validate_idea_reto_al_que_responde($form);
+}
+function validate_proyecto_categorias_tematicas($node,&$form){
+    $aurrizkia='categoria_tematica_proyecto_';    
+    $selected_categoria=0;
+    foreach($node as $field=>$value){
+       if(is_proyecto_categoria_tematica_field($aurrizkia,$field)){
+           $f=str_replace($aurrizkia,'',$field);
+           $term=taxonomy_get_term($f);
+           if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+               //print 'tid='.$term->tid.'<BR>';
+               if(!empty($value)){
+                $selected_categoria=1;
+               }
+           }
+       }
+    }
+    if(!$selected_categoria){
+        form_set_error('proyecto_categorias_tematicas_fs',t('Thematic Categories is a required field'));
+    }
+}
+function in_seleccionar_oportunidad($oportunidad_nid, $tipo_adheridos){    
+    if(strcmp($tipo_adheridos,'proyecto_form')==0){        
+        $node=node_load($oportunidad_nid);       
+        $link=link_add_proyecto($node);
+        if(!empty($link)){
+            //print $link.'<BR>';
+            return 1;
+        }
+        return 0;
+    }
+    return 1;
+}
+function in_seleccionar_oportunidad_list($oportunidad_list, $tipo_adheridos){
+    if(count($oportunidad_list)>0){
+        foreach($oportunidad_list as $i=>$oportunidad){
+            //print 'nid='.$oportunidad->nid.'<BR>';
+            if(in_seleccionar_oportunidad($oportunidad->nid, $tipo_adheridos)){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function set_proyecto_default_value_subgrupo(&$node,$field='personas'){
+    /*
+    //AVISO::::por ahora los invitados no se heredan
+    if($field=='invitados'){
+        return $node->$field;
+    }*/    
+    if(isset($node->nid) && !empty($node->nid)){
+        //echo print_r($node,1);
+        if($node->is_todo_subgrupo && $field!='invitados'){
+            $result=array();
+            return $result;
+        }else{
+            return $node->$field;
+        }
+    }else{
+        $oportunidad_nid=my_get_proyecto_oportunidad_nid();
+        if(!empty($oportunidad_nid)){
+            $oportunidad=node_load($oportunidad_nid);
+            if(isset($oportunidad->nid) && !empty($oportunidad->nid)){
+                //echo print_r($oportunidad,1);exit();
+                return $oportunidad->$field;
+            }
+        }
+    }
+    //
+    return $node->$field;
+}
+function update_proyecto_is_todo_subgrupo($proyecto_nid,$is_todo_subgrupo){
+    $sql="UPDATE proyecto SET is_todo_subgrupo=".$is_todo_subgrupo." WHERE nid=".$proyecto_nid;
+    db_query($sql);
+}
+function get_user_and_invitado_proyecto_nid_array($uid,$invitado_uid,$og_groups){
+    $where=array();
+    $where[]='1';
+    $og_nid_array=array();
+    if(!empty($og_groups)){
+        $og_nid_array=array_keys($og_groups);
+    }
+    //
+    if(count($og_nid_array)>0){
+        $where[]='(s.uid='.$uid.' OR (p.is_todo_subgrupo=1 AND p.grupo_nid IN('.implode(',',$og_nid_array).')))';
+    }else{
+        $where[]='s.uid='.$uid;
+    }
+    //
+    $where[]='pi.uid='.$invitado_uid;
+    //
+    $sql='SELECT p.nid
+    FROM {proyecto} p
+    LEFT JOIN {proyecto_personas} s ON p.nid=s.proyecto_nid
+    LEFT JOIN {proyecto_invitados} pi ON p.nid=pi.proyecto_nid
+    WHERE '.implode(' AND ',$where).'
+    GROUP BY p.nid';
+    //print $sql;exit();
+    //
+    $result=array();
+    //
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row->nid;
+    }
+    return $result;
+}
+function my_set_t_proyecto_options($my_name){
+    $result=$my_name;
+    if($my_name=='Asociaciones'){
+        $result=t('Associations');
+    }else if($my_name=='Centros Tecnologicos'){
+        $result=t('Technological centers');
+    }else if($my_name=='Universidades'){
+        $result=t('Universities');
+    }else if($my_name=='Clientes'){
+        $result=t('Customers');
+    }else if($my_name=='Proveedores'){
+        $result=t('Suppliers');
+    }else if($my_name=='Otras empresas'){
+        $result=t('Other organisations');
+    }
+    return $result;
+}
+function proyecto_reverse_eval_options($result_in,$my_type){
+    if(!empty($my_type)){
+        $proyecto_reverse_eval_fields=proyecto_define_reverse_eval_fields();
+        if(in_array($my_type,$proyecto_reverse_eval_fields)){
+            $values=array_reverse(array_values($result_in));
+            $result=array_combine(range(1,5),$values);
+            if(!empty($result)){
+                foreach($result as $key=>$v){
+                    $my_array=explode('=',$v);
+                    if(count($my_array)==2){
+                        $result[$key]=$key.'='.$my_array[1];
+                    }
+                }
+                //echo print_r($result,1);
+            }
+            return $result;
+        }
+    }
+    return $result_in;
+}
+function proyecto_define_reverse_eval_fields(){
+    $result=array('valor_reto','importancia_reto','facilidad_reto','importancia_despliegue','valor_decision','importancia','accesibilidad');    
+    return $result;
+}
+function proyecto_node_delete_confirm_form_alter(&$form,&$form_state,$form_id){
+    $form['#redirect']='proyectos/todas';
+}
+function proyecto_get_status_color($proyecto){
+    return estrategia_get_status_color($proyecto,'plazo_del_reto');
+}
+function proyecto_delete_link($node){
+    return hontza_item_delete_link($node);    
+}
+function proyecto_comment_link($node){
+    return hontza_item_comment_link($node);
+}
+function proyecto_edit_link($node){
+    return hontza_item_edit_link($node);
+}
+//gemini-2014
+function proyecto_get_num_proyectos_creados($uid,$where_time){
+    $result=array();
+    $where=array();
+    $where[]=$where_time;
+    $where[]="n.uid=".$uid;
+    $where[]="n.type='proyecto'";
+    //gemini-2014
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where,'proyecto');
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR proyecto.grupo_nid='.$my_grupo->nid.')';
+        }
+    }    
+    //
+    $sql="SELECT n.* 
+    FROM {node} n 
+    LEFT JOIN {og_ancestry} og_ancestry ON n.nid=og_ancestry.nid
+    LEFT JOIN {proyecto} ON n.vid=proyecto.vid  
+    WHERE ".implode(" AND ",$where)." ORDER BY n.created ASC";
+    //print $sql.'<BR>';
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+//intelsat-2015
+function proyecto_is_ideas_proyectos(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='ideas'){
+        $param1=arg(1);
+        if(!empty($param1) && in_array($param1,array('borrador','aprobados','no_aprobados'))){
+            return 1;
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function proyecto_is_ficha_tabla(){
+    return hontza_canal_rss_is_fuente_ficha_tabla();
+}
+//intelsat-2015
+function proyecto_get_numero_socios_table($node){
+    return get_numero_socios_fieldset($node,1);
+}
+function proyecto_validate_sel_oportunidad($node){
+  $oportunidad_nid=set_estrategia_seleccionada($node);
+        //print 'oportunidad_nid='.$oportunidad_nid;exit();
+        if(empty($oportunidad_nid)){
+            return 0;
+        }
+        return 1;
+}
+function proyecto_add_oportunidad_sin_idea_row($result_in){
+  $result=$result_in;
+  $row=new stdClass();
+  $row->nid='proyecto_add_oportunidad_sin_idea_row';
+  $row->title=proyecto_get_title_without_idea();
+  $result[]=$row;
+  return $result;
+}
+function proyecto_get_oportunidad_sin_idea_list(){
+    $result=array();
+    $where=array();
+    //$where[]=$where_time;
+    //$where[]="n.uid=".$uid;
+    $where[]="n.type='oportunidad'";
+    $where[]="(oportunidad.idea_nid=0 OR oportunidad.idea_nid IS NULL)";
+    //gemini-2014
+    //intelsat-2016
+    /*$param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where,'oportunidad');
+    }else{*/
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR oportunidad.grupo_nid='.$my_grupo->nid.')';
+        }
+    //}    
+    //
+    $sql="SELECT n.* 
+    FROM {node} n 
+    LEFT JOIN {og_ancestry} og_ancestry ON n.nid=og_ancestry.nid
+    LEFT JOIN {oportunidad} ON n.vid=oportunidad.vid  
+    WHERE ".implode(" AND ",$where)." ORDER BY n.created ASC";
+    //print $sql.'<BR>';exit();
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function proyecto_get_title_without_idea(){
+  $result='Without Idea';
+  $result=my_get_icono_action('edit_remove',$result);
+  return $result;
+}

@@ -1,0 +1,621 @@
+<?php
+require_once('publico.vigilancia.inc.php');
+require_once('publico.alerta.inc.php');
+require_once('publico.fix.inc.php');
+require_once('publico.register.inc.php');
+require_once('publico.panel_admin.inc.php');
+function publico_perm() {
+  return array();
+}
+function publico_menu() {
+    $items=array();
+    $items['publico/vigilancia/%/view'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_vigilancia_view_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+    $items['publico/vigilancia/ultimos'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_vigilancia_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+     $items['publico/alerta_user/inicio'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_alerta_user_inicio_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+     $items['publico/alerta_user/mis_boletines_grupo'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_alerta_user_mis_boletines_grupo_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+      $items['publico/vigilancia/validados'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_vigilancia_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+       $items['publico/vigilancia/lo-mas-valorado'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_vigilancia_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+        $items['publico/vigilancia/lo-mas-comentado'] = array(
+    'title' => 'View',
+    'page callback' => 'publico_vigilancia_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+        $items['publico/canales/categorias/%/categoria_exportar_rss'] = array(
+     'title' => 'Latest news',
+    'page callback' => 'publico_vigilancia_canales_categorias_categoria_exportar_rss_callback',
+    'access callback'=>'publico_custom_access',    
+  );               
+        $items['publico/canales/categorias/%'] = array(
+     'title' => 'Latest news',
+    'page callback' => 'publico_vigilancia_canales_categorias_callback',
+    'access callback'=>'publico_custom_access',    
+  );       
+        $items['publico/canales/tipos_fuente/%'] = array(
+     'title' => 'Latest news',
+    'page callback' => 'publico_vigilancia_canales_tipos_fuente_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+        $items['publico/vigilancia/busqueda'] = array(
+    'title' => 'Search',
+    'page callback' => 'publico_vigilancia_busqueda_callback',
+    'access callback'=>'publico_anonimo_access',    
+  );
+         /*$items['publico_boletin_grupo/%/my_web']=array(
+        'title' => 'Alert',
+        'page callback' => 'publico_alerta_boletin_grupo_my_web_callback',
+        'access callback'=>'publico_anonimo_access', 
+    );*/
+         /*$items['publico_boletin_grupo/%/historico']=array(
+         'title' => 'Alert',
+        'page callback' => 'publico_alerta_boletin_grupo_historico_callback',
+        'access callback'=>'publico_anonimo_access', 
+    );*/    
+          $items['publico/user/register']=array(
+         'title' => 'Register',
+        'page callback' => 'publico_register_user_register_callback',
+        'access callback'=>'publico_anonimo_access', 
+    );        
+           $items['publico/fix_tipos_fuente']=array(
+         'title' => 'Register',
+        'page callback' => 'publico_fix_tipos_fuente_callback',
+        'access arguments'=>array('root'), 
+    );
+           $items['publico_boletin_report/%/previsualizacion_boletin']=array(
+            'title' => 'Register',
+            'page callback' => 'publico_alerta_boletin_report_previsualizacion_boletin_callback',
+            'access callback'=>'publico_anonimo_access',    
+    );
+           $items['publico_boletin_report/%/subscribir']=array(
+            'title' => 'Register',
+            'page callback' => 'publico_alerta_boletin_report_subscribir_callback',
+            'access callback'=>'publico_anonimo_access',    
+    );
+           $items['publico/validar_email/%']=array(
+            'title' => 'Validate email',
+            'page callback' => 'publico_validar_email_callback',
+            'access callback'=>'publico_anonimo_access',
+    );
+    $items['publico/vigilancia/send/%']=array(
+            'title' => 'Send email',
+            'page callback' => 'publico_vigilancia_send_callback',
+            'access callback'=>'publico_anonimo_access',
+    );
+    $items['publico/vigilancia/busqueda_avanzada'] = array(
+    'title' => 'Advanced search',
+    'page callback' => 'publico_vigilancia_busqueda_avanzada_callback',
+    'access callback'=>'publico_anonimo_access',    
+  );
+    $items['publico/vigilancia/is_busqueda/taxonomy/autocomplete'] = array(
+    'title' => 'Advanced search',
+    'page callback' => 'publico_vigilancia_is_busqueda_taxonomy_autocomplete_callback',
+    'access callback'=>'publico_anonimo_access',    
+  );
+    $items['publico/canales/tags/%'] = array(
+     'title' => 'Latest news',
+    'page callback' => 'publico_vigilancia_canales_tags_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+    $items['publico_tagadelic/chunk/%'] = array(
+     'title' => 'Latest news',
+    'page callback' => 'publico_vigilancia_publico_tagadelic_chunk_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+    $items['publico/rss_general'] = array(
+     'title' => 'Latest news',
+    'page callback' => 'publico_vigilancia_rss_general_callback',
+    'access callback'=>'publico_custom_access',    
+  );
+    $items['publico_comment/reply/%']=array(
+    'title' => 'Comment',
+    'page callback' => 'publico_comment_reply_callback',
+    'access callback'=>'publico_custom_access',    
+    );
+    $items['publico_comment/validate_email_reply/%']=array(
+    'title' => 'Comment',
+    'page callback' => 'publico_comment_validate_email_reply_callback',
+    'access callback'=>'publico_custom_access',    
+    );
+    $items['publico_boletin_report/%/historico']=array(
+        'title'=>'Archive os Series',
+        'page callback'=>'publico_alerta_boletin_report_historico_callback',
+        'access callback'=>'publico_anonimo_access',
+    );
+    $items['publico_boletin_report/%/download_html/%']=array(
+        'title'=>'Download html',
+        'page callback'=>'publico_alerta_boletin_report_download_html_callback',
+        'access callback'=>'publico_anonimo_access',
+    );
+    $items['publico_boletin_report/%/forward_validate_email/%']=array(
+        'title'=>'Forward Bulletin',
+        'page callback'=>'publico_alerta_boletin_report_forward_validate_email_callback',
+        'access callback'=>'publico_anonimo_access',
+    );
+    $items['publico_boletin_report/%/forward/%']=array(
+        'title'=>'Forward Bulletin',
+        'page callback'=>'publico_alerta_boletin_report_forward_callback',
+        'access callback'=>'publico_anonimo_access',
+    );
+    $items['publico_boletin_report/%/download_html_validate_email/%']=array(
+        'title'=>'Download html',
+        'page callback'=>'publico_alerta_boletin_report_download_html_validate_email_callback',
+        'access callback'=>'publico_anonimo_access',
+    );
+  return $items;  
+}
+function publico_custom_access(){
+    $nid=arg(2);
+    if(empty($nid) || !is_numeric($nid)){
+        $nid=arg(1);
+    }
+    $node=node_load($nid);
+    //if(hontza_is_user_anonimo()){
+        if(publico_is_node_grupo_public($node)){
+            if(publico_is_publico_activado()){
+                return TRUE;
+            }    
+        }
+        if(publico_is_pantalla_publico()){
+            if(publico_is_publico_activado()){
+                return TRUE;
+            }    
+        }
+        return FALSE;
+    //}    
+}
+function publico_is_publico_activado(){
+    $sareko_id_array=array('VISUALIZADOR','OBSERVATORIO');
+    if(!empty($sareko_id_array)){
+        foreach($sareko_id_array as $i=>$sareko_id){
+            if(hontza_is_sareko_id($sareko_id)){
+                return 1;
+            }
+        }
+    }
+    if(defined('_IS_PUBLICO_MODULE') && _IS_PUBLICO_MODULE==1){
+        return 1;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        return 1;
+    }
+    return 0;
+}
+function publico_get_node_url($result_in,$node,$is_absolute=0,$is_publico=0){
+    global $base_url;
+    $result=$result_in;
+    if(publico_is_pantalla_publico() || $is_publico){
+        $result='node/'.$node->nid;
+        //if(hontza_is_user_anonimo()){
+            $result='publico/vigilancia/'.$node->nid.'/view';
+            if(hontza_canal_rss_is_visualizador_activado()){
+                $result=visualizador_get_node_url($result);
+            }
+        //}    
+    }
+    if($is_absolute){
+        $grupo_path=visualizador_create_grupo_base_path();
+        $result=url($base_url.'/'.$grupo_path.'/'.$result,array('absolute'=>true));
+    }
+    return $result;
+}
+function publico_is_pantalla_publico($konp='',$konp2=''){
+    $param0=arg(0);    
+    if(!empty($param0) && $param0=='publico_comment'){
+        return 1;
+    }
+    if($konp=='publico_comment'){
+        return 0;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(empty($konp)){
+            if(visualizador_is_pantalla('inicio')){
+                return 1;
+            }else if(visualizador_is_pantalla('project')){
+                return 1;
+            }
+        }
+    }
+    if(!empty($param0) && $param0=='publico'){
+        if(empty($konp)){
+            return 1;
+        }else{
+            $param1=arg(1);
+            if($param1=='canales'){
+                $param1='vigilancia';
+            }
+            if(!empty($param1) && $param1==$konp){
+                if(empty($konp2)){
+                    return 1;
+                }else{
+                    $param2=arg(2);
+                    if(!empty($param2) && $param2==$konp2){
+                        return 1;
+                    }
+                }    
+            }
+        }    
+    }
+    if(!empty($param0) && $param0=='publico_tagadelic'){
+        return 1;
+    }
+    return 0;
+}
+function publico_is_node_grupo_public($node){
+    if(isset($node->og_groups) && !empty($node->og_groups)){
+        $grupo_nid_array=array_keys($node->og_groups);
+        //$grupo_node=node_load($node->nid);
+        $grupo_node=new stdClass();
+        if(isset($grupo_nid_array[0]) && !empty($grupo_nid_array[0])){
+            $grupo_node=node_load($grupo_nid_array[0]);
+        }
+        if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+            if(isset($grupo_node->og_public) && !empty($grupo_node->og_public) && $grupo_node->og_public==1){
+                return 1;
+            }
+            if(isset($grupo_node->og_private) && empty($grupo_node->og_private)){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function publico_is_usuario_lector(){
+    if(publico_is_pantalla_publico()){
+        return 1;
+    }
+    return 0;
+}
+function publico_get_canal_link($node){
+    if(isset($node->field_item_canal_reference[0]['view']) && !empty($node->field_item_canal_reference[0]['view'])){
+        return $node->field_item_canal_reference[0]['view'];
+    }
+    $canal=node_load($node->field_item_canal_reference[0]['nid']);
+    return $canal->title;
+}
+function publico_is_show_top(){
+    if(hontza_is_user_anonimo()){
+        return 1;
+    }
+    return 0;
+}
+function publico_repase_organic_group_access(){
+    if(publico_is_vigilancia_node_view() || publico_vigilancia_is_send()){
+        return 1;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        if(is_node_add('noticia')){
+            return 1;
+        }
+    }
+    return 0;
+}
+function publico_get_menu_info_css($top_item_activado=1){
+    $info=array();
+    $info['style_publico']='';
+    $info['style_li']='';
+    //if(hontza_is_user_anonimo()){
+    //if(publico_alerta_is_publico()){
+        $style_publico='background-image:none;';
+        /*$visualizador_menu_color=variable_get('visualizador_menu_color','#2E5753');
+        if(!$top_item_activado){
+            $style_publico.='{background-color:'.$visualizador_menu_color.';color:white;}{:hover {background-color: red}}'; 
+        }else {
+            $style_publico.='color:'.$visualizador_menu_color.';';
+        }*/
+        $style_li=' style="background-image:none;padding-left:0px;"';
+    //}
+    $info['style_publico']=$style_publico;
+    $info['style_li']=$style_li;
+    return $info;
+}
+function publico_is_alerta_user(){
+    $result=0;
+    if(publico_is_pantalla_publico('alerta_user')){
+        $result=1;
+    }
+    if(publico_alerta_is_pantalla_alerta()){
+        $result=1;
+    }
+    return $result;
+}
+function publico_get_menutop_selected(){
+    $result='none';
+    if(visualizador_is_pantalla('inicio')){
+        $result='visualizador/inicio';
+    }else if(publico_is_alerta_user()){
+        $result='publico/alerta_user/mis_boletines_grupo';
+    }else if(publico_is_registrese()){
+        /*$result='user/register';
+        if(!hontza_is_user_anonimo()){*/
+            $result='publico/user/register';
+        //}
+    }else if(publico_is_proyecto()){
+        $result='visualizador/project';
+    }
+    return $result;
+}
+function publico_is_registrese(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='user'){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='register'){
+            return 1;
+        }
+    }
+    if(publico_is_pantalla_publico('user','register')){
+        return 1;
+    }
+    return 0;
+}
+function publico_get_item_canal_categorias(&$kont,&$popup_array,&$html,$node,$is_ficha_completa,$result_tid_array){
+    global $base_url;
+    //if(hontza_is_user_anonimo() && $kont==0){
+    if(hontza_is_user_anonimo()){
+        $grupo_path=visualizador_create_grupo_base_path();
+        if(isset($node->feeds_node_item) && isset($node->feeds_node_item->feed_nid)){
+            $canal=node_load($node->feeds_node_item->feed_nid);
+            $og_groups=array_values($canal->og_groups);
+            $grupo_nid=$og_groups[0];
+            $id_categoria = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s",$grupo_nid));
+            $is_see_more=0;
+            $max=2;
+            if(isset($canal->taxonomy) && !empty($canal->taxonomy)){
+                foreach($canal->taxonomy as $i=>$term){
+                    if(!$is_ficha_completa){
+                        if($kont>=$max){
+                            $is_see_more=1;                                        
+                        }
+                    }
+                    if($term->vid==$id_categoria){
+                        $tid=$term->tid;
+                        //intelsat-2015
+                        if(in_array($tid,$result_tid_array)){
+                           continue; 
+                        }
+                        $term_name=taxonomy_get_term_name_by_idioma($tid);
+                        if(!empty($term_name)){
+                            //$pro=profundidad($tid);
+                            $popup_array[]=$term_name;
+                            $kont++;
+                            if(!$is_see_more){
+                                /*$url='canales/my_categorias/'.$tid.'/ultimas';
+                                $url=hontza_solr_search_get_categorias_tematicas_filtrado_solr_url($tid,$url,$query);
+                                if(empty($query)){
+                                    $html[]='<li>'.l($term_name,$url).'</li>';
+                                }else{
+                                    $html[]='<li>'.l($term_name,$url,array('query'=>$query)).'</li>';
+                                }*/
+                                $url=$base_url.'/'.$grupo_path.'/publico/canales/categorias/'.$tid.'/ultimas';
+                                $html[]='<li>'.l($term_name,$url,array('absolute'=>true)).'</li>';
+                            }                                       
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+function publico_is_proyecto(){
+    if(visualizador_is_pantalla('project')){
+        return 1;
+    }
+    return 0;
+}
+function publico_unset_form_fields(&$form,$form_id){
+    if($form_id=='noticia_node_form'){
+        $unset_array=array('reto_al_que_responde_id','my_cat_','field_quien','field_donde','field_cuando','field_fiabilidad','field_enlace_noticia');
+        if(!empty($unset_array)){    
+            foreach($unset_array as $i=>$unset_field){
+                if(isset($form[$unset_field])){
+                    unset($form[$unset_field]);
+                }
+            }
+        }
+        $resume_field_array=array('format','teaser_include');
+        if(!empty($resume_field_array)){
+            foreach($resume_field_array as $i=>$resume_field){
+                if(isset($form['body_field']) && isset($form['body_field'][$resume_field])){
+                    if($resume_field=='teaser_include'){
+                        $form['body_field'][$resume_field]['#prefix']='<div class="teaser-checkbox" style="display:none;">';
+                    }else{    
+                        $form['body_field'][$resume_field]['#attributes']=array('style'=>'display:none;');
+                    }    
+                }
+            }    
+        }
+        if(isset($form['buttons']['preview'])){
+            unset($form['buttons']['preview']);
+        }
+    }    
+}
+function publico_spaces_og_form_alter(&$form,$form_id){
+    if($form_id=='noticia_node_form'){
+        if(hontza_is_user_anonimo()){    
+            if(isset($form['spaces'])){
+                unset($form['spaces']);
+            }
+        }    
+    }
+}
+function publico_get_is_pathauto_perform_alias(){
+    if(is_node_add('noticia')){
+        if(hontza_is_user_anonimo()){
+            return 0;         
+        }
+    }
+    if(is_node_add('visualizador-contacto')){
+        return 0;
+    }
+    $my_node=my_get_node();
+    if(isset($my_node->nid) && !empty($my_node->nid)){
+        if(in_array($my_node->type,array('visualizador_contacto'))){
+            return 0;
+        }
+    }    
+    return 1;
+}
+function publico_taxonomy_form_alter(&$form,$form_id){
+    if($form_id=='noticia_node_form'){
+        if(hontza_is_user_anonimo()){    
+            if(isset($form['taxonomy'])){
+                unset($form['taxonomy']);
+            }
+        }    
+    }
+}
+function publico_validar_email_callback(){
+    return drupal_get_form('publico_register_validar_email_form');
+}
+function publico_get_content_resumen($result_in){
+    $result=$result_in;
+    //print $result;exit();
+    return $result;
+}
+function publico_add_page_info(&$vars){
+    if(publico_is_vigilancia_node_view()){
+        $nid=arg(2);
+        $node=node_load($nid);
+        /*$vars['publico_title']=addslashes($node->title);
+        $publico_description=strip_tags($node->teaser);
+        $publico_description=addslashes($publico_description);*/
+        $vars['publico_title']=$node->title;
+        $publico_description=strip_tags($node->teaser);
+        $vars['publico_description']=$publico_description;       
+    }
+}
+function publico_term_path($r){
+    $url='';
+    if(publico_is_pantalla_publico('vigilancia')){
+        $url='publico/canales/tags/'.$r->tid.'/ultimos';
+    }
+    return $url;
+}
+function publico_get_url_more_tags($vid){
+    $url='publico_tagadelic/chunk/'.$vid;
+    return $url;
+}
+function publico_is_file_publico($filepath){
+    $result=0;
+    /*$res=db_query('SELECT node.* 
+    FROM {node}
+    LEFT JOIN {content_type_banner} ON node.vid=content_type_banner.vid
+    LEFT JOIN {files} ON content_type_banner.field_imagen_fid=files.fid
+    WHERE files.filename="%s"',$filepath);*/
+    $res=db_query('SELECT node.* 
+    FROM {node}
+    LEFT JOIN {content_type_banner} ON node.vid=content_type_banner.vid
+    LEFT JOIN {files} ON content_type_banner.field_imagen_fid=files.fid
+    WHERE files.filepath="%s"',$filepath);
+    while($r=db_fetch_object($res)){
+        $result=1;
+        return $result;
+    }
+    return $result;
+}
+function publico_comment_reply_callback(){
+    require_once('sites/all/modules/comment/comment.pages.inc');
+    $node=node_load(arg(2));
+    return comment_reply($node);
+}
+function publico_comment_validate_email_reply_callback(){
+    return drupal_get_form('publico_register_comment_validate_email_reply_form');
+}
+function publico_is_validate_email_reply(){
+    $result=0;
+    if(publico_is_pantalla_publico('publico_comment')){
+        $param=arg(1);
+        if(!empty($param) && $param=='validate_email_reply'){
+            $result=1;
+        }
+    }
+    return $result;
+}
+function publico_get_favicon($settings){
+    $result='/system/files/'.basename($settings['favicon']);
+    return $result;
+}
+function publico_is_publico_vigilancia_ultimos_menu_row($row){
+    $pos=strpos($row['href'],'publico/vigilancia/ultimos');
+    if($pos===FALSE){
+        return 0;
+    }
+    return 1;
+}
+function publico_copyright_edit_html(){
+    return drupal_get_form('publico_copyright_edit_form');
+}
+function publico_copyright_edit_form(){
+    $form=array();
+    $form['text']=array(
+        '#type'=>'textfield',
+        '#default_value'=>variable_get('copyright_text','&copy; 2015 Alerta Project. All rights reserved'),
+        '#title'=>t('Copyright text'),
+        '#required'=>true,
+    );
+    $form['save_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Save'),
+    );
+    $url_cancel='panel_admin';
+    $form['cancel_btn']['#value']=l(t('Cancel'),$url_cancel);
+    return $form;
+}
+function publico_copyright_edit_form_submit($form,&$form_state){
+   drupal_set_message(t('Copyright saved'));
+   if(isset($form_state['values']['text']) && !empty($form_state['values']['text'])){
+       variable_set('copyright_text',$form_state['values']['text']);
+   }
+}
+function publico_is_file_contact($my_path){
+   $res=db_query($sql=sprintf('
+   SELECT node.* 
+   FROM {node} node 
+   LEFT JOIN {upload} upload ON node.vid=upload.vid 
+   LEFT JOIN {files} files ON upload.fid=files.fid
+   WHERE files.filepath="%s"
+   ',$my_path));
+   //print $sql;
+   while($r=db_fetch_object($res)){
+       return 1;
+   }
+   return 0; 
+}
+function publico_get_node_banner($node_row){
+    $node=hontza_node_load_by_lang($node_row->nid);
+    if(isset($node->nid) && !empty($node->nid)){
+        return $node;
+    }
+    return $node_row;
+}
+function publico_anonimo_access(){
+    if(visualizador_is_red_alerta()){
+        return TRUE;
+    }
+    if(hontza_canal_rss_is_visualizador_activado()){
+        return TRUE;
+    }
+    return FALSE;
+}

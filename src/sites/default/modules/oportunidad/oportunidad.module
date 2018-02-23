@@ -1,0 +1,1901 @@
+<?php
+
+/**
+ * @file
+ * This is an example outlining how a module can be used to define a new
+ * node type
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)f
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in oportunidad_schema().
+ */
+
+/**
+ * @defgroup oportunidad Example: Node
+ * @ingroup examples
+ * @{
+ * Creating a new content type in a module. (drupal 6)
+ *
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in oportunidad_schema().
+ *
+ * This example is part of the Examples for Developers Project which you can download
+ * and experiment with here: http://drupal.org/project/examples
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function oportunidad_menu() {
+  $items['oportunidades/%'] = array(
+    'title' => t('List of Opportunities'),
+    'page callback' => 'oportunidad_list_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver oportunidad_list'),
+    'page arguments' => array(1),
+  );
+  $items['oportunidades/adherirse/%'] = array(
+    'title' => t('Support the opportunity'),
+    'page callback' => 'oportunidades_adherirse_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver oportunidad_adherirse'),
+  );
+  $items['oportunidades/no_adherirse/%'] = array(
+    'title' => t('Not supporting the Opportunity'),
+    'page callback' => 'oportunidades_no_adherirse_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver oportunidad_no_adherirse'),
+  );
+  $items['oportunidades/no_promocionada'] = array(
+    'title' => t('Opportunity not promoted'),
+    'page callback' => 'oportunidades_no_promocionada_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver oportunidad_no_promocionada'),
+  );
+  $items['oportunidades/adherirse_ajax'] = array(
+    'title' => t('Support the opportunity'),
+    'page callback' => 'oportunidades_adherirse_ajax_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver oportunidad_adherirse'),
+  );  
+  return $items;
+}
+
+/**
+ * Explain how the module demonstrates a new node type.idea.test
+ */
+function oportunidad_list_callback() {  
+  global $user;
+  idea_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  //
+  $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="oportunidad"'; 
+  //
+  $search=my_get_request_value('search');
+  if(!empty($search)){
+    $where[]='(n.title LIKE "%%'.$search.'%%" OR nr.body LIKE "%%'.$search.'%%")';
+  }
+  //
+  $my_grupo=og_get_group_context();
+  $grupo_seleccionado=0;
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]='o.grupo_nid='.$my_grupo->nid;
+        $grupo_seleccionado=1;
+  }
+  //
+  if(is_user_invitado()){
+    $where[]='oi.uid='.$user->uid;
+  }else{
+    if($user->uid!=1){
+        $where[]='(o.is_todo_subgrupo=1 OR p.uid='.$user->uid.')';
+    }
+  }
+  //
+  $idea_nid=my_get_oportunidad_idea_nid();
+  //print 'idea_nid(list)='.$idea_nid.'<BR>';
+  if(!empty($idea_nid) && $idea_nid!='todas'){
+  	$where[]='o.idea_nid='.$idea_nid;
+  } 
+  //
+  $sql='SELECT n.nid, n.sticky, n.created 
+  FROM {node} n
+  LEFT JOIN {oportunidad} o ON n.nid=o.nid
+  LEFT JOIN {oportunidad_invitados} oi ON o.nid=oi.oportunidad_nid
+  LEFT JOIN {oportunidad_personas} p ON o.nid=p.oportunidad_nid
+  LEFT JOIN {node_revisions} nr ON (n.nid=nr.nid AND n.vid=nr.vid)
+  WHERE '.implode(' AND ',$where).'
+  GROUP BY n.nid 
+  ORDER BY n.sticky DESC, n.created DESC';
+  //print $sql;
+  //$result = pager_query(db_rewrite_sql($sql), variable_get('default_nodes_main', 10));
+
+  $my_limit=variable_get('default_nodes_main', 10);
+
+  $result = db_query($sql);
+
+  $output = '';
+  $output = create_menu_ideas();
+  $num_rows = FALSE;
+  $my_list=array();
+  $kont=0;
+  while ($node = db_fetch_object($result)) {
+    //$output .= node_view(node_load($node->nid), 1);
+    //gemini-2013
+    $my_list[$kont]=new stdClass();  
+    $my_list[$kont]->view=node_view(node_load($node->nid), 1);
+    $votos_list=get_idea_votos_list($node->nid);
+    $my_list[$kont]->suma_votos=get_suma_votos($votos_list);
+    $kont++;
+    $num_rows = TRUE;
+  }
+  if(!$grupo_seleccionado){
+        $num_rows = FALSE;
+        $my_list=array();
+  }
+  if(is_oportunidad('mas_valoradas') || is_idea('oportunidades_mas_valoradas')){
+     $my_list=array_ordenatu($my_list,'suma_votos','desc',1);
+
+  }
+
+  $my_list=my_set_estrategia_pager($my_list,$my_limit);    
+  $output.=get_mas_valoradas_output_html($my_list);
+  //
+  if ($num_rows) {
+    /*$feed_url = url('oportunidad_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
+    $output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+ 
+    $output.= '<div id="first-time">' .t('There are no opportunities'). '</div>';
+  }
+  //drupal_set_title(t('Listado de Oportunidades-Últimas'));
+  $my_title=get_lista_oportunidad_title();
+  drupal_set_title($my_title);
+
+  return $output;
+}
+/**
+ * Implementation of hook_node_info().
+ *
+ * This is a required node hook. This function describes the nodes provided by
+ * this module.
+ *
+ * The required attributes are:
+ * - "name" provides a human readable name for the node,
+ * - "module" tells Drupal how the module's functions map to hooks (i.e. if the
+ *   module is oportunidad_foo then oportunidad_foo_insert will be called
+ *   when inserting the node).
+ * - "description" provides a brief description of the node type, which is
+ *   shown when a user accesses the "Create content" page for that node type.
+ *
+ * The other optional, attributes:
+ * - "has_title" boolean that indicates whether or not this node type has a
+ *   title field.
+ * - "title_label": the label for the title field of this content type.
+ * - "has_body": boolean that indicates whether or not this node type has a
+ *   body field.
+ * - "body_label": the label for the body field of this content type.
+ * - "min_word_count": the minimum number of words for the body field to be
+ *   considered valid for this content type.
+ *
+ * The key in this example, "example_node_type_1", is the "machine name" of the
+ * node type and is stored in {node}.type. The node's type value cannot be
+ * changed through the admin interface.
+ *
+ */
+function oportunidad_node_info() {
+  return array(
+    'oportunidad' => array(
+      'name' => t('Opportunity'),
+      'module' => 'oportunidad',
+      'description' => t("An example node type with a few fields."),
+      'has_title' => TRUE,
+      'title_label' => t('Title of opportunity'),
+      'has_body' => TRUE,
+      'body_label' => t('Full Text'),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_access().
+ *
+ * Node modules may implement node_access() to determine the operations
+ * users may perform on nodes. This example uses a very common access pattern.
+ */
+function oportunidad_access($op, $node, $account) {
+  if ($op == 'create') {
+    return user_access('create oportunidad', $account);
+  }
+
+  if ($op == 'update') {
+    if (user_access('edit any oportunidad', $account) || (user_access('edit own oportunidad', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'delete') {
+    if (user_access('delete any oportunidad', $account) || (user_access('delete own oportunidad', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Since we are limiting the ability to create new nodes to certain users,
+ * we need to define what those permissions are here. We also define a permission
+ * to allow users to edit the nodes they created.
+ */
+function oportunidad_perm() {
+  return array(
+    'create oportunidad',
+    'delete own oportunidad',
+    'delete any oportunidad',
+    'edit own oportunidad',
+    'edit any oportunidad',
+    'Ver oportunidad_list',
+    'Ver oportunidad_adherirse',
+    'Ver oportunidad_no_adherirse',
+    'Ver oportunidad_no_promocionada'
+  );
+}
+
+/**
+ * Implementation of hook_form().
+ *
+ * Now it's time to describe the form for collecting the information
+ * specific to this node type. This hook requires us to return an array with
+ * a sub array containing information for each element in the form.
+ */
+function oportunidad_form(&$node, $form_state) {
+  //gemini-2014  
+  if(isset($node->nid) && !empty($node->nid)){
+      drupal_set_title(estrategia_set_title_max_len($node->title));
+  }   
+  //gemini
+  //$idea_nid=arg(3);
+  idea_active_tabs_access();
+   //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  //
+  $idea_nid=my_get_oportunidad_idea_nid();
+  //print 'idea_nid(form)='.$idea_nid.'<BR>';
+  /*if(!empty($idea_nid) && $idea_nid!='todas'){
+    $form['idea_nid'] = array('#type' => 'hidden', '#value' => $idea_nid);
+  }*/
+
+  if(!es_idea_promocionada($idea_nid,$node)){
+      /*$my_url=$_SERVER['HTTP_HOST'].base_path().url('ideas/no_promocionada');
+      $my_url=str_replace('//','/',$my_url);
+      header('Location: http://'.$my_url);*/
+      drupal_goto('ideas/no_promocionada');
+  }
+
+
+  // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  $type = node_get_types('type', $node);
+
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+       //gemini-2014  
+      '#maxlength'=>175,    
+    );
+  }
+
+  if ($type->has_body) {
+    // In Drupal 6, we use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+
+  
+
+  $form['idea_guraso_fieldset']=create_oportunidad_guraso_fieldset($node->nid,$idea_nid,$node->idea_nid,'oportunidad_form');
+
+  $form['beneficios_riesgos'] = array(
+  '#type' => 'textarea',
+  '#title' => t('Benefits'),
+  '#default_value' => $node->beneficios_riesgos,
+  '#required' => FALSE
+);
+
+$form['evaluacion_fieldset']=array(
+	 '#type' => 'fieldset',
+	 '#title' => t('Rating'),
+  );
+
+  /*$form['evaluacion_fieldset']['eval_amenaza']=array(
+  '#type' => 'select',
+  '#title' => t('Evaluación de la amenaza'),
+  '#default_value' => $node->eval_amenaza,
+  '#options'=>my_get_evaluacion_options(),
+  '#required' => FALSE
+  );*/
+
+$form['evaluacion_fieldset']['eval_oportunidad']=array(
+  '#type' => 'select',
+  '#title' => t('Evaluation of the opportunity'),
+  '#default_value' => $node->eval_oportunidad,
+  '#options'=>my_get_evaluacion_options('','eval_oportunidad'),
+  '#required' => FALSE
+  );
+
+$form['parte_del_negocio'] = array(
+  '#type' => 'textarea',
+  '#title' => t('Application to Bussiness'),
+  '#default_value' => $node->parte_del_negocio,
+  '#required' => FALSE
+);
+
+/*
+$form['oportunidad_type_id'] = array(
+  '#type' => 'select',
+  '#title' => t('Type'),
+  '#default_value' => $node->oportunidad_type_id,
+  '#options'=>my_get_oportunidad_types_options(),
+  '#required' => FALSE
+);*/
+
+$form['personas'] = array(
+  '#type' => 'select',
+  '#title' => t('Subgroup'),
+  '#default_value' => set_oportunidad_default_value_subgrupo($node),
+  '#options'=>my_get_oportunidad_personas_options(),
+  '#multiple'=>TRUE,
+  '#size'=>10,
+  '#required' => FALSE
+);
+
+$form['invitados'] = array(
+  '#type' => 'select',
+  '#title' => t('Guests'),
+  '#default_value' => set_oportunidad_default_value_subgrupo($node,'invitados'),
+  '#options'=>my_get_idea_invitados_options(),
+  '#multiple'=>TRUE,
+  '#size'=>10,
+  '#required' => FALSE
+  );
+
+  idea_add_crear_invitado_fieldset_form_field($form);
+
+/*$form['reto_al_que_responde'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Associated Challenge'),
+    //'#default_value' => $node->reto_al_que_responde
+    '#default_value' => set_heredar_idea_default_value($node,$idea_nid,'reto_al_que_responde'),
+  );*/
+
+  //intelsat-2016
+  $is_required=1;
+  $form['reto_al_que_responde_id']=array(
+    //'#title' => t('Associated Challenge'),
+    //intelsat-2016  
+    '#prefix'=>'<div class="form-item-required">',
+    '#suffix'=>'</div>',  
+    '#value'=>get_reto_al_que_responde_html($is_required),
+ );
+
+  $form['plazo_del_reto'] = array(
+    '#type' => 'date',
+    '#title' => t('Control Date'),
+    //'#default_value' => $node->plazo_del_reto
+    '#default_value' => set_heredar_idea_default_value($node,$idea_nid,'plazo_del_reto'),
+  );
+
+  $form['categorias_tematicas_fieldset']=create_categorias_tematicas_fieldset('',1,$node->nid,'oportunidad');
+
+    if(isset($node->nid) && !empty($node->nid)){
+    //
+    }else{
+        drupal_set_title(t('Add Opportunity'));
+    }
+    //
+  
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_validate().
+ *
+ * Our "quantity" field requires a number to be entered. This hook lets
+ * us ensure that the user entered an appropriate value before we try
+ * inserting anything into the database.
+ *
+ * Errors should be signaled with form_set_error().
+ */
+function oportunidad_validate($node, &$form) {
+  //intelsat-2016
+  //se ha comentado esto  
+  /*if (!validate_sel_idea($node)) {
+    form_set_error('sel_idea', t('Select idea is required'));
+  }
+  validate_oportunidad_categorias_tematicas($node,$form);
+  */
+  validate_oportunidad_reto_al_que_responde($form);
+  /*if (!oportunidad_validate_sel_idea($node)) {
+    form_set_error('sel_idea', t('Select Idea is required'));
+ }*/
+}
+
+/**
+ * Implementation of hook_insert().
+ *
+ * As a new node is being inserted into the database, we need to do our own
+ * database inserts.
+ */
+function oportunidad_insert($node) {  
+  //gemini
+  global $user;
+  $fecha=mktime();
+  $origen_uid=$user->uid;
+  $grupo_nid=0;
+  $my_grupo=og_get_group_context(); 
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$grupo_nid=$my_grupo->nid; 
+  }
+  //
+  $responde_array=$_REQUEST['estrategia'];
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      $responde_values=explode('_',$responde_keys[0]);
+      //echo print_r($responde_values,1);exit();
+      $responde_estrategia_nid=get_responde_value($responde_values,0);
+      $responde_despliegue_nid=get_responde_value($responde_values,1);
+      $responde_decision_nid=get_responde_value($responde_values,2);
+      $responde_informacion_nid=get_responde_value($responde_values,3);
+  }
+  //
+  $plazo_del_reto=my_mktime($node->plazo_del_reto);
+  $idea_nid=set_idea_seleccionada($node);
+  //$sql=sprintf("INSERT INTO {oportunidad} (vid, nid, fecha, beneficios_riesgos,parte_del_negocio,origen_uid,grupo_nid,oportunidad_type_id,idea_nid) VALUES (%d, %d, %d, '%s', '%s', %d, %d, %d, %d)", $node->vid, $node->nid, $fecha, $node->beneficios_riesgos, $node->parte_del_negocio,$origen_uid,$grupo_nid,$node->oportunidad_type_id,$node->idea_nid);
+  $sql=sprintf("INSERT INTO {oportunidad} (vid, nid, fecha, beneficios_riesgos,parte_del_negocio,origen_uid,grupo_nid,idea_nid,reto_al_que_responde,plazo_del_reto,eval_amenaza,eval_oportunidad,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES (%d, %d, %d, '%s', '%s', %d, %d, %d, '%s', %d, %d, %d, %d, %d, %d, %d)", $node->vid, $node->nid, $fecha, $node->beneficios_riesgos, $node->parte_del_negocio,$origen_uid,$grupo_nid,$idea_nid,$node->reto_al_que_responde,$plazo_del_reto,$node->eval_amenaza,$node->eval_oportunidad,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid);
+  
+  db_query($sql);
+  $oportunidad_nid=$node->nid;
+  save_oportunidad_invitados($oportunidad_nid,$node->invitados,$node);
+  save_oportunidad_personas($oportunidad_nid,$node->personas);
+  save_oportunidad_categorias_tematicas($oportunidad_nid,$node);
+  save_oportunidad_responde_array($oportunidad_nid,$responde_array);
+  //
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ */
+function oportunidad_update($node) {
+  $plazo_del_reto=my_mktime($node->plazo_del_reto);
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    oportunidad_insert($node);
+  }
+  else {  	
+    //db_query("UPDATE {oportunidad} SET beneficios_riesgos = '%s', parte_del_negocio = '%s', oportunidad_type_id = %d WHERE vid = %d", $node->beneficios_riesgos, $node->parte_del_negocio,$node->oportunidad_type_id,$node->vid);
+    $idea_nid=set_idea_seleccionada($node);
+    //
+      $responde_array=$_REQUEST['estrategia'];
+      $responde_estrategia_nid=0;
+      $responde_despliegue_nid=0;
+      $responde_decision_nid=0;
+      $responde_informacion_nid=0;
+      if(count($responde_array)>0){
+          $responde_keys=array_keys($responde_array);
+          $responde_values=explode('_',$responde_keys[0]);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+      }
+    //
+    db_query("UPDATE {oportunidad} SET beneficios_riesgos = '%s', parte_del_negocio = '%s', reto_al_que_responde = '%s',plazo_del_reto = %d,eval_amenaza = %d, eval_oportunidad = %d, idea_nid = %d,responde_estrategia_nid=%d,responde_despliegue_nid=%d,responde_decision_nid=%d,responde_informacion_nid=%d WHERE vid = %d",  $node->beneficios_riesgos, $node->parte_del_negocio,$node->reto_al_que_responde, $plazo_del_reto,$node->eval_amenaza,$node->eval_oportunidad,$idea_nid,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid,$node->vid);
+    $oportunidad_nid=$node->nid;
+    save_oportunidad_invitados($oportunidad_nid,$node->invitados,$node);
+    save_oportunidad_personas($oportunidad_nid,$node->personas);
+    save_oportunidad_categorias_tematicas($oportunidad_nid,$node);
+    save_oportunidad_responde_array($oportunidad_nid,$responde_array);
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * When a node revision is deleted, we need to remove the corresponding record
+ * from our table. The only way to handle revision deletion is by implementing
+ * hook_nodeapi().
+ */
+function oportunidad_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {oportunidad} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ *
+ * When a node is deleted, we need to remove all related records from our table.
+ */
+function oportunidad_delete($node) {
+  // Notice that we're matching all revision, by using the node's nid.
+  $oportunidad_nid=$node->nid;
+  db_query('DELETE FROM {oportunidad} WHERE nid = %d', $node->nid);
+  my_delete_oportunidad_invitados($oportunidad_nid);
+  my_delete_oportunidad_personas($oportunidad_nid);
+  delete_proyecto_list($oportunidad_nid);
+  delete_oportunidad_responde_array($oportunidad_nid);
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Now that we've defined how to manage the node data in the database, we
+ * need to tell Drupal how to get the node back out. This hook is called
+ * every time a node is loaded, and allows us to do some loading of our own.
+ */
+function oportunidad_load($node) {
+  //$sql='SELECT o.nid as oportunidad_nid,o.vid as oportunidad_vid,o.fecha, o.beneficios_riesgos,o.parte_del_negocio,o.origen_uid,o.grupo_nid,o.oportunidad_type_id,o.idea_nid FROM {oportunidad} o WHERE vid = %d', $node->vid)
+  $sql=sprintf('SELECT o.nid as oportunidad_nid,o.vid as oportunidad_vid,o.fecha, o.beneficios_riesgos,o.parte_del_negocio,o.origen_uid,o.grupo_nid,o.idea_nid,o.reto_al_que_responde,o.plazo_del_reto,o.eval_amenaza,o.eval_oportunidad,
+  o.responde_estrategia_nid,o.responde_despliegue_nid,o.responde_decision_nid,o.responde_informacion_nid,o.is_todo_subgrupo
+  FROM {oportunidad} o WHERE vid = %d', $node->vid);
+  $additions = db_fetch_object(db_query($sql));
+  if(isset($additions->oportunidad_nid) && !empty($additions->oportunidad_nid)){
+        $info3=get_oportunidad_adheridas_uid_array($additions->oportunidad_nid);
+	$additions->adheridas=$info3['adheridas'];
+	$additions->adheridas_list=$info3['adheridas_list'];
+        //
+        $info2=get_oportunidad_invitados_uid_array($additions->oportunidad_nid);
+	$additions->invitados=$info2['invitados'];
+	$additions->invitados_list=$info2['invitados_list'];
+        //
+  	$info=get_personas_uid_array($additions->oportunidad_nid);
+	$additions->personas=$info['personas'];
+	$additions->personas_list=$info['personas_list'];
+        $additions->categorias_tematicas=get_oportunidad_categorias_tematicas_array($additions->oportunidad_nid);
+	$additions->categorias_tematicas_html=get_categorias_tematicas_html($additions->categorias_tematicas);
+        //$additions->oportunidad_type_name=get_oportunidad_type_name($additions->oportunidad_type_id);
+        $additions->plazo_del_reto=set_date_array($additions->plazo_del_reto);
+        //$additions->puntuacion_total=calcular_oportunidad_puntuacion_total($additions);
+        $additions->es_mi_oportunidad=get_es_mi_oportunidad($node,$additions);
+        $additions->my_stars=get_mi_oportunidad_html($additions->oportunidad_nid);
+        //print 'oportunidad_nid='.$additions->oportunidad_nid.'<BR>';
+        $votos_list=get_idea_votos_list($additions->oportunidad_nid);
+        //echo print_r($votos_list,1);
+        $additions->suma_votos=get_suma_votos($votos_list);
+        //$additions->suma_votos=9999;
+        //print 'suma-votos='.$additions->suma_votos.'<BR>';
+  }
+  return $additions;
+}
+
+/**
+ * Implementation of hook_view().
+ *
+ * This is a typical implementation that simply runs the node text through
+ * the output filters.
+ */
+function oportunidad_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+  $node->content['myfield'] = array(
+    '#value' => theme('oportunidad_order_info', $node),
+    '#weight' => 1,
+  );
+
+  return $node;
+}
+
+/**
+ * Implementation of hook_theme().
+ *
+ * This lets us tell Drupal about our theme functions and their arguments.
+ */
+function oportunidad_theme() {
+  return array(
+    'oportunidad_order_info' => array(
+      'arguments' => array('node'),
+    ),
+  );
+}
+
+/**
+ * A custom theme function.
+ *
+ * By using this function to format our node-specific information, themes
+ * can override this presentation if they wish. We also wrap the default
+ * presentation in a CSS class that is prefixed by the module name. This
+ * way, style sheets can modify the output without requiring theme code.
+ */
+function theme_oportunidad_order_info($node) {
+  $output = '<div class="oportunidad_order_info">';
+  $output .= t('The order is for %quantity %color items.', array('%quantity' => check_plain($node->quantity), '%color' => check_plain($node->color)));
+  $output .= '</div>';
+  return $output;
+}
+
+/**
+ * @} End of "defgroup oportunidad".
+ */
+ 
+//gemini
+function oportunidad_block($op = 'list', $delta = 0, $edit = array()) {
+ 	switch ($op) {
+    	case 'list':
+ 			$blocks[200]['info'] = t('Opportunities');
+                        $blocks[1000]['info'] = t('Simple Search of Opportunities');
+			return $blocks;
+			break;
+		case 'view':
+			$block=my_oportunidad_view_block($delta);
+   			return $block;
+		default:
+			break;
+	}
+}
+//gemini
+function my_oportunidad_view_block($delta){
+	$block=array();
+	switch($delta){
+		case 200:
+			if(user_access('Ver oportunidad_list')){
+                            //intelsat-2015
+                            $title=t('Opportunities');                            
+                            $icono=get_oportunidad_simbolo_img(1,$title);
+                            $block['subject'] = $icono.$title;
+                            //
+                            $block['content'] = get_gestionar_oportunidades_content();
+                        }
+			break;
+                case 1000:
+			if(user_access('Ver oportunidad_list')){
+                            $block['subject'] = t('Simple Search of Opportunities');
+                            $block['content'] = get_busqueda_simple_oportunidades_content();
+                        }
+			break;
+		default:
+			break;	 
+ 	}
+    return $block;
+}
+//gemini
+function get_gestionar_oportunidades_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+    //
+	$idea_nid=my_get_oportunidad_idea_nid();
+        if(empty($idea_nid)){
+            $idea_nid='todas';
+        }
+	$result=array();
+        //intelsat-2015
+        if(!hontza_solr_search_is_usuario_lector()){
+            //intelsat-2015
+            $title=t('Add Opportunity');
+            $icono=my_get_icono_action('add_left',$title).'&nbsp;';
+            //
+            $result[]=$icono.l(t('Add Opportunity'),'node/add/oportunidad/'.$idea_nid);
+        }
+        $result[]=l(t('List of Opportunities'),'oportunidades/'.$idea_nid);
+	return implode('<BR>',$result);
+}
+//gemini
+function is_oportunidad_left(){
+	if(is_oportunidad()){
+		return 1;
+	}
+	$node=my_get_node();
+	//echo print_r($node,1);exit();
+	if(!empty($node) && isset($node->nid) && !empty($node->nid) && strcmp(arg(2),'edit')==0){
+		//if(in_array($node->type,array('item'))){
+		if(strcmp($node->type,'oportunidad')==0){			
+			return 1;
+		}
+	}
+	if(is_ficha_node_left('oportunidad','oportunidad')){
+		return 1;
+	}				
+	return 0;
+}
+//gemini
+function is_oportunidad($param_oportunidades=''){
+	if(strcmp(arg(0),'oportunidad')==0){
+		return 1;
+	}
+	if(strcmp(arg(0),'oportunidades')==0){
+            if(empty($param_oportunidades)){
+                return 1;
+            }else if(strcmp(arg(1),$param_oportunidades)==0){
+                return 1;
+            }
+	}
+	if(is_ficha_node('oportunidad')){
+		return 1;
+	}	
+	return 0;
+}
+//gemini
+function my_get_oportunidad_idea_nid(){
+	$idea_nid='';
+	if(strcmp(arg(0),'oportunidades')==0){
+		return arg(1);
+	}	
+	if(strcmp(arg(0),'node')==0){
+		if(strcmp(arg(1),'add')==0 && strcmp(arg(2),'oportunidad')==0 && is_numeric(arg(3))){
+			return arg(3);
+		}else{ 
+			if(is_ficha_node('oportunidad')){
+				$node=my_get_node();
+				if(!empty($node) && isset($node->nid) && !empty($node->nid)){
+					return $node->idea_nid;
+				}
+			}	
+		}
+	}
+	return $idea_nid;
+}
+//gemini
+function my_get_oportunidad_types_options(){
+	$result=array();
+	/*$sql='SELECT ot.* FROM {oportunidad_type} ot WHERE 1 ORDER BY ot.id ASC';
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[$row->id]=t($row->label);
+	}*/
+	$result[1]=t('Opportunity');
+	$result[2]=t('Amenaza');
+	return $result;
+}
+//gemini
+function my_get_oportunidad_personas_options(){
+	$result=array();
+	$user_list=my_get_og_grupo_user_list();
+	if(count($user_list)>0){
+		foreach($user_list as $i=>$u){
+                    if(is_user_invitado()){
+                        if(is_invitado_de_mi_subgrupo($u->uid)){
+                            $result[$u->uid]=$u->name;
+                        }
+                    }else{
+			$result[$u->uid]=$u->name;
+                    }
+		}
+	}
+	//echo print_r($result,1);
+	return $result;
+}
+//gemini
+function my_get_og_grupo_user_list($grupo_nid='',$is_invitado=0,$empresa_nombre=''){
+	global $user;	
+	$my_result=array();	
+	$where=array();
+	$where[]='1';
+        //gemini-2014
+        $where[]='u.status=1';
+	$where[]='og_uid.is_active=1';
+        $where[]='pv.fid=1';
+        $where[]='pv2.fid=2';
+        $where[]='pv_empresa.fid=3';
+	if(empty($grupo_nid)){           
+            $my_grupo=og_get_group_context();
+            if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                $where[]='(og_uid.nid = '.$my_grupo->nid.')';
+            }else{
+                if(!panel_admin_usuarios_acceso_is_estadisticas()){
+                    //AVISO::::para que cuando el grupo esté sin seleccionar devuelva una lista vacía
+                    $where[]='(og_uid.nid = '.get_grupo_sin_seleccionar_nid().')';
+                }    
+            }
+	}else{
+		$where[]='(og_uid.nid = '.$grupo_nid.')'; 
+	}
+        if(!$is_invitado){
+            $where[]='((NOT r.name="Invitado") OR (r.name IS NULL))';
+        }
+        //
+        if(!empty($empresa_nombre)){
+            //intelsat-2015
+            //$where[]='BINARY pv_empresa.value = BINARY "'.$empresa_nombre.'"';
+            $where[]='pv_empresa.value ="'.$empresa_nombre.'"';
+        }
+        //
+		$sql='SELECT u.*,pv.value as nombre,pv2.value as apellidos
+                FROM {users} u
+                LEFT JOIN {og_uid} og_uid ON u.uid=og_uid.uid
+                LEFT JOIN {users_roles} ur ON u.uid=ur.uid
+                LEFT JOIN {role} r ON r.rid=ur.rid
+                LEFT JOIN {profile_values} pv ON u.uid=pv.uid
+                LEFT JOIN {profile_values} pv2 ON u.uid=pv2.uid
+                LEFT JOIN {profile_values} pv_empresa ON u.uid=pv_empresa.uid
+                WHERE '.implode(' AND ',$where).'
+                GROUP BY u.uid 
+                ORDER BY u.name ASC';
+
+        /*$sql='SELECT u.* FROM {users} u
+                LEFT JOIN {og_uid} og_uid ON u.uid=og_uid.uid
+                WHERE '.implode(' AND ',$where).' ORDER BY u.name ASC';*/
+
+		//print $sql;
+		$result = db_query($sql);
+	 
+		  while ($row = db_fetch_object($result)) {		
+			$my_result[]=$row;
+		  }
+        //gemini-2014          
+        $my_result=hontza_unset_usuarios_caducados($my_result);          
+                  
+	return $my_result;
+}
+//gemini
+function save_oportunidad_personas($oportunidad_nid,$personas){
+	global $user;
+        //
+        $is_todo_subgrupo=1;
+        my_delete_oportunidad_personas($oportunidad_nid);
+	if(count($personas)>0){
+		foreach($personas as $i=>$uid){
+                    insert_oportunidad_personas($oportunidad_nid,$uid);
+		}
+                $is_todo_subgrupo=0;
+                if(!in_array($user->uid,$personas)){
+                    insert_oportunidad_personas($oportunidad_nid,$user->uid);
+                }
+	}
+        update_oportunidad_is_todo_subgrupo($oportunidad_nid,$is_todo_subgrupo);
+}
+//gemini
+function my_delete_oportunidad_personas($oportunidad_nid){
+	$sql='DELETE FROM {oportunidad_personas} WHERE oportunidad_nid='.$oportunidad_nid;
+	db_query($sql);
+}
+//gemini
+function insert_oportunidad_personas($oportunidad_nid,$uid){
+	$sql='INSERT oportunidad_personas(oportunidad_nid,uid) VALUES('.$oportunidad_nid.','.$uid.')';
+	db_query($sql);
+}
+//gemini
+function get_personas_uid_array($oportunidad_nid){
+	$personas=array();
+	$personas_list=array();
+	$my_list=get_oportunidad_personas_list($oportunidad_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$personas[]=$row->uid;
+			$personas_list[]=$row;
+		}		
+	}
+	$info['personas']=$personas;
+	$info['personas_list']=$personas_list;
+	return $info;
+}
+//gemini
+function get_oportunidad_personas_list($oportunidad_nid='',$uid=''){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	if(!empty($oportunidad_nid)){
+		$where[]="op.oportunidad_nid=".$oportunidad_nid;
+	}
+	if(!empty($uid)){
+		$where[]="op.uid=".$uid;
+	}
+	//
+	$sql="SELECT op.*,u.name as username FROM {oportunidad_personas} op LEFT JOIN {users} u ON op.uid=u.uid WHERE ".implode(" AND ",$where)." ORDER BY u.name ASC";
+	//
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function my_class_primera_oportunidad($node,$page){
+	if(empty($page) && is_node_primera_ayuda($node,array('oportunidad'))){
+		return ' my_primera_noticia';
+	}
+	return '';
+}
+//gemini
+function my_help_primera_oportunidad($node){
+	if(is_node_primera_ayuda($node,array('oportunidad'))){
+		if(is_add_primera_oportunidad(0,'oportunidad')){
+			$my_is_mouse_over=1;
+			//$my_is_mouse_over=0;
+			//return help_popup_window(13179, 'help',my_get_help_link_object(),0,0,2,$my_is_mouse_over);
+			return help_popup_window('', 'help',my_get_help_link_object(),0,0,3,$my_is_mouse_over);
+		}
+	}	
+	return '';
+}
+//gemini
+function add_js_oportunidad(){
+	if(is_oportunidad()){
+		my_add_active_trail_js('id_a_idea');		
+	}
+        if(is_oportunidad_left()){
+            add_busqueda_simple_oportunidad_js();
+        }
+}
+//gemini
+function get_oportunidad_type_name($type_id){
+	if(!empty($type_id)){
+		$options=my_get_oportunidad_types_options();
+		if(isset($options[$type_id])){
+			return $options[$type_id];
+		}
+	}	
+	return '';
+}
+//gemini
+function delete_proyecto_list($oportunidad_nid){
+	$proyecto_list=get_oportunidad_proyecto_list($oportunidad_nid);
+	if(count($proyecto_list)>0){
+		foreach($proyecto_list as $i=>$row){
+			$node=node_load($row->nid);
+			proyecto_delete($node);
+			//print $node->nid.'<BR>';
+			node_delete($node->nid);
+		}
+	}
+}
+//gemini
+function get_oportunidad_proyecto_list($oportunidad_nid){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	$where[]='p.oportunidad_nid='.$oportunidad_nid;
+	$sql="SELECT n.* 
+	FROM {node} n LEFT JOIN {proyecto} p ON n.nid=p.nid
+	WHERE ".implode(" AND ",$where)." GROUP BY n.nid";
+	//print $sql;exit();
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function set_heredar_idea_default_value($node,$idea_nid,$field){
+    /*if(!isset($node->nid) || empty($node->nid)){
+        $idea=node_load($idea_nid);
+        return $idea->$field;
+    }*/
+    return $node->$field;
+}
+//gemini
+function is_add_primera_oportunidad($my_kont,$type){
+    return is_add_primera_ayuda($my_kont, $type);
+}
+function get_oportunidad_simbolo_img($is_taula_header=0,$title_in=''){
+    //intelsat-2016
+    global $base_url;
+    $html=array();
+    //intelsat-2015
+    if(empty($title_in)){
+        $title=t('Opportunity');
+    }else{
+        $title=$title_in;
+    }
+    //
+    //gemini-2014
+    $style=idea_get_simbolo_style($is_taula_header);
+    //
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/oportunidad.png"/>';
+    //gemini-2014
+    if(!$is_taula_header){
+        $html[]='&nbsp;';
+    }
+    return implode('',$html);
+}
+function get_title_oportunidad_simbolo_img(){
+    //intelsat-2016
+    global $base_url;
+    $html=array();
+    //$html[]='<img src="http://'.$base_url.'/sites/default/files/my_images/oportunidad_title.png"/>';
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/oportunidad_title.png"/>';
+    return implode('',$html);
+}
+function create_oportunidad_guraso_fieldset($oportunidad_nid,$idea_nid,$node_idea_nid,$tipo_adheridos){
+    $result=array(
+    '#type'=>'fieldset',
+    '#title'=>t('Select idea'),
+    //'#description'=>$description
+    );
+
+    $sel_idea_nid=$node_idea_nid;
+
+    if(empty($oportunidad_nid)){
+        $sel_idea_nid=$idea_nid;
+    }
+
+    $rows=get_idea_arbol_rows(0,'',$tipo_adheridos);
+    $rows=prepare_arbol_by_pro($rows,1);
+
+    if(count($rows)>0){
+        foreach($rows as $i=>$r){
+            //echo print_r($r,1);
+            $pro=$r[2];
+            //print $pro.'<BR>';
+              $result[$r[3]] = array(
+                '#required' => TRUE,
+                '#type' => 'checkbox',
+                '#prefix' => '<div class=taxo'. ($pro-1) .'>',
+                '#suffix' => '</div>',
+                '#title' => $r[0]
+              );
+              if(!empty($sel_idea_nid) && $r[3]==$sel_idea_nid){
+                     $result[$r[3]]['#attributes']=array('checked' => 'checked');
+              }
+        }
+    }
+
+    $keys=array_keys($result);
+    $keys=get_numeric_values($keys);
+    add_js_txek_sel_idea($keys);
+
+    return $result;
+}
+function prepare_arbol_by_pro($rows,$pro){
+    $result=array();
+    if(count($rows)>0){
+        foreach($rows as $i=>$r){
+            //if($r[3]<=$pro){
+            if($r[2]<=$pro){
+                $result[]=$r;
+            }
+        }
+    }
+    return $result;
+}
+function set_idea_seleccionada($node){
+    /*if($op=='insert'){
+        $idea_nid=$node->idea_nid;
+        if(!empty($idea_nid) && $idea_nid!='todas'){
+            return $idea_nid;
+        }
+    }*/
+    //
+    foreach($node as $f=>$v){
+        if(is_numeric($f) && !empty($v)){
+            return $f;
+        }
+    }
+    return 0;
+}
+function get_numeric_values($my_array){
+    $result=array();
+    if(count($my_array)>0){
+        foreach($my_array as $i=>$v){
+            if(is_numeric($v)){
+                $result[]=$v;
+            }
+        }
+    }
+    return $result;
+}
+function add_js_txek_sel_idea($keys){
+    if(count($keys)>0){
+        $idea_keys=implode('","',$keys);
+        $js='
+                var idea_keys=new Array("'.$idea_keys.'");
+                                $(document).ready(function()
+                                {
+                                    oportunidad_idea_txek();
+                                    //
+                                    function oportunidad_idea_txek(){
+                                      var i;
+                                      var v="";
+                                      var my_key="";
+                                      for(i in idea_keys){
+                                        v=idea_keys[i];
+                                        my_key="edit-"+v;
+                                        //alert(my_key);
+                                        $("#"+my_key).change(function(){
+                                            var is_txek=$(this).attr("checked");
+                                            //alert("is_txek="+is_txek);
+                                            if(is_txek){
+                                                set_beste_oportunidad_idea_txek($(this).attr("id"),false);
+                                            }
+                                        });
+                                      }
+                                      //
+                                      function set_beste_oportunidad_idea_txek(my_key,modua){
+                                            var konp=my_key.replace("edit-","");
+                                            for(i in idea_keys){
+                                                v=idea_keys[i];
+                                                if(v!=konp){
+                                                    my_key="edit-"+v;
+                                                    $("#"+my_key).attr("checked",modua);
+                                                }
+                                            }
+                                      }
+                                    }
+                                    //
+
+                                });';
+
+            drupal_add_js($js,'inline');
+    }
+}
+function validate_sel_idea($node){
+    /*if(isset($node->nid) && !empty($node->nid)){
+        return 1;
+    }else{*/
+        $idea_nid=set_idea_seleccionada($node);
+        if(empty($idea_nid)){
+            return 0;
+        }
+        return 1;
+    //}
+}
+function calcular_oportunidad_puntuacion_total($o){
+    $result=0;
+    //print 'oportunidad_nid='.$o->oportunidad_nid;
+    $proyecto_list=get_oportunidad_proyecto_list($o->oportunidad_nid);
+    if(count($proyecto_list)>0){
+        foreach($proyecto_list as $i=>$row){
+            $node=node_load($row->nid);
+            //print 'ahora='.$node->puntuacion_total.'<br>';
+            if(isset($node->nid) && !empty($node->nid)){
+                $result+=$node->puntuacion_total;
+            }
+        }
+    }
+    //print 'pt='.$result.'<BR>';
+    return $result;
+}
+function get_oportunidad_subgrupo_string_list($node){   
+    $result=array_ordenatu($node->personas_list,'username',0,'desc');
+    $html=my_array_field_values($result,'username');
+    return implode(", ",$html);
+}
+function oportunidad_list_camino($node){
+    $html=array();
+    $padding_hasi=15;
+    $my_padding='50';
+    $html[]='<fieldset id="my_camino">';
+    $html[]='<legend class="my_camino_legend">'.t('Proposals').'</legend>';
+    $html[]='<div>';
+    if($node->type=='oportunidad'){
+        $idea_nid=$node->idea_nid;
+        //
+        if(empty($idea_nid)){
+              $idea_nid='proyecto_add_oportunidad_sin_idea_row';
+        }
+        if(!empty($idea_nid)){
+                $html[]=get_link_camino_html($idea_nid,$padding_hasi,$my_padding,0);
+                //if($bakarra){
+                $html[]=get_link_camino_html($node->nid,$padding_hasi,$my_padding,1);
+                //}
+
+        }
+    }else if($node->type=='proyecto'){
+        $oportunidad_nid=$node->oportunidad_nid;
+        //
+        if(!empty($oportunidad_nid)){
+             $oportunidad=node_load($oportunidad_nid);
+             $idea_nid=$oportunidad->idea_nid;
+             if(empty($idea_nid)){
+              $idea_nid='proyecto_add_oportunidad_sin_idea_row';
+             }
+             if(!empty($idea_nid)){
+                $html[]=get_link_camino_html($idea_nid,$padding_hasi,$my_padding,0);
+                $html[]=get_link_camino_html($oportunidad_nid,$padding_hasi,$my_padding,1);
+                //if($bakarra){
+                $html[]=get_link_camino_html($node->nid,$padding_hasi,$my_padding,2);
+                //}
+             }
+        }
+    }
+    $html[]='</div>';
+    $html[]='</fieldset>';
+    return implode('',$html);
+}
+//gemini
+function get_es_mi_oportunidad($node,$additions){
+    global $user;
+    if($user->uid==$additions->origen_uid){
+        return 1;
+    }
+    return 0;
+}
+//gemini
+function my_get_stars_oportunidad($oportunidad){
+    return my_get_stars_idea($oportunidad);
+}
+//gemini
+function get_mi_oportunidad_html($idea_nid){
+    //return fivestar_static('node', $idea_nid, NULL, 'idea');
+    return traducir_average(fivestar_static('node', $idea_nid, NULL, 'oportunidad'));
+}
+//gemini
+function es_categoria_tematica_de_la_oportunidad($oportunidad_nid,$tid){
+    $my_array=get_oportunidad_categorias_tematicas_array($oportunidad_nid,$tid);
+    if(count($my_array)>0){
+        return 1;
+    }
+    return 0;
+}
+//gemini
+function get_oportunidad_categorias_tematicas_array($oportunidad_nid,$tid=''){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    $where[]="oc.oportunidad_nid=".$oportunidad_nid;
+    if(!empty($tid)){
+        $where[]="oc.tid=".$tid;
+    }
+    $sql="SELECT *,td.name
+    FROM {oportunidad_categorias_tematicas} oc
+    LEFT JOIN {term_data} td ON oc.tid=td.tid
+    WHERE ".implode(" AND ",$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+//gemini
+function save_oportunidad_categorias_tematicas($oportunidad_nid,$node){
+    $aurrizkia='categoria_tematica_oportunidad_';
+    delete_oportunidad_categorias_tematicas($oportunidad_nid);
+    $is_categoria_indefinida=1;
+    foreach($node as $field=>$value){
+       if(is_oportunidad_categoria_tematica_field($aurrizkia,$field)){
+           $f=str_replace($aurrizkia,'',$field);
+           $term=taxonomy_get_term($f);
+           if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+               //print 'tid='.$term->tid.'<BR>';
+               if(!empty($value)){
+                    $is_categoria_indefinida=0;
+                    insert_oportunidad_categorias_tematicas($oportunidad_nid,$term->tid);
+               }
+           }
+       }
+    }
+    if($is_categoria_indefinida){
+         $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+         if(!empty($indefinida_tid)){
+            insert_oportunidad_categorias_tematicas($oportunidad_nid,$indefinida_tid);
+         }
+    }
+}
+function delete_oportunidad_categorias_tematicas($oportunidad_nid){
+    $sql='DELETE FROM oportunidad_categorias_tematicas WHERE oportunidad_nid='.$oportunidad_nid;
+    db_query($sql);
+}
+function is_oportunidad_categoria_tematica_field($aurrizkia,$field){
+    $result=str_replace($aurrizkia, '', $field);
+    if(strcmp($result,$field)==0){
+        return 0;
+    }
+    return 1;
+}
+function insert_oportunidad_categorias_tematicas($oportunidad_nid,$tid){
+    $sql='INSERT INTO oportunidad_categorias_tematicas(oportunidad_nid,tid) VALUES('.$oportunidad_nid.','.$tid.')';
+    db_query($sql);
+}
+function get_oportunidad_categorias_tematicas_string_list($node){
+    $html=array();
+    if(count($node->categorias_tematicas)>0) {
+        foreach($node->categorias_tematicas as $i=>$row){
+            $html[]=$row->name;
+        }
+    }
+    return implode('&nbsp',$html);
+    //return implode(',',$html);
+}
+//gemini
+function save_oportunidad_invitados($oportunidad_nid,$invitados,$node){
+	my_delete_oportunidad_invitados($oportunidad_nid);
+	if(count($invitados)>0){
+            foreach($invitados as $i=>$uid){
+                insert_oportunidad_invitados($oportunidad_nid,$uid);
+            }
+	}
+        $new_uid=save_new_invitado($node);
+        if(!empty($new_uid)){
+            $my_grupo=og_get_group_context();
+            if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                og_save_subscription($my_grupo->nid, $new_uid, array('is_active' => 1));
+            }
+            //
+            insert_oportunidad_invitados($oportunidad_nid,$new_uid);
+        }
+}
+function my_delete_oportunidad_invitados($oportunidad_nid){
+    $sql='DELETE FROM {oportunidad_invitados} WHERE oportunidad_nid='.$oportunidad_nid;
+    db_query($sql);
+}
+function insert_oportunidad_invitados($oportunidad_nid,$uid){
+    $sql='INSERT oportunidad_invitados(oportunidad_nid,uid) VALUES('.$oportunidad_nid.','.$uid.')';
+    db_query($sql);
+}
+function get_oportunidad_invitados_uid_array($oportunidad_nid){
+	$invitados=array();
+	$invitados_list=array();
+	$my_list=get_oportunidad_invitados_list($oportunidad_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$invitados[]=$row->uid;
+			$invitados_list[]=$row;
+		}
+	}
+	$info['invitados']=$invitados;
+	$info['invitados_list']=$invitados_list;
+	return $info;
+}
+function get_oportunidad_invitados_list($oportunidad_nid='',$uid=''){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	if(!empty($oportunidad_nid)){
+		$where[]="oi.oportunidad_nid=".$oportunidad_nid;
+	}
+	if(!empty($uid)){
+		$where[]="oi.uid=".$uid;
+	}
+	//
+	$sql="SELECT oi.*,u.name as username FROM {oportunidad_invitados} oi LEFT JOIN {users} u ON oi.uid=u.uid WHERE ".implode(" AND ",$where)." ORDER BY u.name ASC";
+	//
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+function save_oportunidad_responde_array($oportunidad_nid,$responde_array){
+  delete_oportunidad_responde_array($oportunidad_nid);
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      foreach($responde_keys as $i=>$v){
+          $responde_values=explode('_',$responde_keys[$i]);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+          $sql=sprintf("INSERT INTO oportunidad_responde_array(oportunidad_nid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES(%d,%d,%d,%d,%d)",$oportunidad_nid,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid);
+          db_query($sql);
+      }
+  }
+}
+function delete_oportunidad_responde_array($oportunidad_nid){
+  $sql="DELETE FROM oportunidad_responde_array WHERE oportunidad_nid=".$oportunidad_nid;
+  db_query($sql);
+}
+function my_help_oportunidad(){
+    $param=arg(1);
+    //
+    if(strcmp(arg(0),'node')==0 && strcmp(arg(1),'add')==0 && strcmp(arg(2),'oportunidad')==0){
+        return help_popup_window(15329, 'help',my_get_help_link_object());
+    }else if(strcmp(arg(0),'oportunidades')==0 && (empty($param) || strcmp(arg(1),'todas')==0) || is_numeric($param)){
+        //return help_popup_window(15330, 'help',my_get_help_link_object());
+        return help_oportunidad_list();
+    }
+    //
+    return '';
+}
+function help_oportunidad_list(){
+    return help_popup_window(15330, 'help',my_get_help_link_object());
+}
+function get_lista_oportunidad_title(){
+    $result='Latest Opportunities';
+    if(is_idea('oportunidades_mas_valoradas')){
+        //$result.='-Top Rated';
+        $result='Top Rated Opportunities';
+    }/*else{
+        $result.='-Last';
+    }*/
+    return t($result);
+}
+function link_add_proyecto($node,$aurrizkia_in=''){
+    $min=get_min_promocionar_oportunidad();
+    //print 'min='.$min.'<BR>';
+    $num=count($node->adheridas_list);
+    //print 'num='.$num.'<BR>';
+    //if($num>=$min){
+        //l(t('Add Opportunity'),'node/add/oportunidad/'.$node->nid);
+        $html=array();
+        $aurrizkia='';
+        if(!empty($aurrizkia_in)){
+            $aurrizkia=$aurrizkia_in.'-';
+        }
+        $label='';
+        $attributes=array('title'=>t('Add Project'),'alt'=>t('Add Project'),'id'=>'id_add_proyecto_'.$node->nid);    
+        if($num<$min){
+            $attributes['style']='display:none;';
+        }  
+        $html[]='<div class="'.$aurrizkia.'item-proyectos">';
+        //$html[]=l(t('Add Project'),'node/add/proyecto/'.$node->nid,array('query'=>drupal_get_destination()));
+        //$html[]=l(t('Add Project'),'node/add/proyecto/'.$node->nid,array('query'=>drupal_get_destination()));
+        $html[]=l($label,'node/add/proyecto/'.$node->nid,array('query'=>drupal_get_destination(),'attributes'=>$attributes));                
+        $html[]='</div>';
+        return implode('',$html);
+    //}
+    return '';
+}
+function get_min_promocionar_oportunidad(){
+    //gemini-2014
+    $row=idea_create_criterios_de_ponderacion();
+    if(isset($row->promocionar_oportunidad_min) && !empty($row->promocionar_oportunidad_min)){
+        return $row->promocionar_oportunidad_min;
+    }
+    return 3;
+}
+function link_adherirse_oportunidad($node,$aurrizkia_in=''){
+    global $user;
+    if(isset($node->nid) && !empty($node->nid) && $node->uid!=$user->uid){
+        $html=array();
+        $aurrizkia='';
+        if(!empty($aurrizkia_in)){
+            $aurrizkia=$aurrizkia_in.'-';
+        }
+        $label='';        
+        if(estoy_adherido_oportunidad($node->nid,$user->uid)){
+            $html[]='<div class="'.$aurrizkia.'item-no-adherir">';
+            //$html[]=l(t('Not Support'),'oportunidades/no_adherirse/'.$node->nid,array('query'=>drupal_get_destination()));
+            $url='oportunidades/no_adherirse/'.$node->nid;
+            $attributes=array('title'=>t('Not Support'),'alt'=>t('Not Support'));
+        }else{
+            $html[]='<div class="'.$aurrizkia.'item-adherir">';
+            //$html[]=l(t('Support'),'oportunidades/adherirse/'.$node->nid,array('query'=>drupal_get_destination()));
+            $url='oportunidades/adherirse/'.$node->nid;
+            $attributes=array('title'=>t('Support'),'alt'=>t('Support'));
+        }
+        //gemini-2014
+        $attributes['id']='id_a_adherirse_'.$node->nid.'_'.$user->uid;
+        $html[]=l($label,$url,array('query'=>drupal_get_destination(),'attributes'=>$attributes));
+        $html[]='</div>';
+        //gemini-2014
+        oportunidad_add_adherirse_ajax($attributes['id'],$aurrizkia,$node->nid);
+        return implode('',$html);
+    }
+    return '';
+}
+function estoy_adherido_oportunidad($nid,$uid){
+    $my_list=get_oportunidad_adheridas_array($nid,$uid);
+    if(count($my_list)>0){
+        return 1;
+    }
+    return 0;
+}
+function get_oportunidad_adheridas_array($nid,$uid=''){
+    $where=array();
+    $where[]='1';
+    $where[]='oa.oportunidad_nid='.$nid;
+    if(!empty($uid)){
+        $where[]='oa.uid='.$uid;
+    }
+    $sql='SELECT oa.*,u.name as username FROM {oportunidad_adheridas} oa LEFT JOIN {users} u ON oa.uid=u.uid WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function oportunidades_adherirse_callback(){
+    global $user;
+    idea_active_tabs_access();
+    //
+    $html=array();
+    //
+    $oportunidad_nid=arg(2);
+    //    
+    save_oportunidad_adherida($oportunidad_nid,$user->uid);
+    $html[]=t('You have supported the opportunity');
+    $destination=drupal_get_destination();
+    $destination=str_replace('destination=','',$destination);
+    $destination=urldecode($destination);
+    $html[]=l(t('Return'),$destination,array('attributes' => array('class'=>'back_left')));
+    return implode('<BR>',$html);
+}
+function oportunidades_no_adherirse_callback(){
+    global $user;
+    idea_active_tabs_access();
+    //
+    $idea_nid=arg(2);
+    //print 'idea_nid='.$idea_nid.'<BR>';
+    save_oportunidad_no_adherida($idea_nid,$user->uid);
+    $html[]=t('You have not supported the opportunity');
+    $destination=drupal_get_destination();
+    $destination=str_replace('destination=','',$destination);
+    $destination=urldecode($destination);
+    $html[]=l(t('Return'),$destination,array('attributes' => array('class'=>'back_left')));
+    return implode('<BR>',$html);
+}
+function save_oportunidad_adherida($oportunidad_nid,$uid){
+    delete_oportunidad_adherida($oportunidad_nid,$uid);
+    insert_oportunidad_adherida($oportunidad_nid,$uid);
+}
+function save_oportunidad_no_adherida($oportunidad_nid,$uid){
+    delete_oportunidad_adherida($oportunidad_nid,$uid);
+}
+function delete_oportunidad_adherida($oportunidad_nid,$uid){
+    $sql='DELETE FROM oportunidad_adheridas WHERE oportunidad_nid='.$oportunidad_nid.' AND uid='.$uid;
+    db_query($sql);
+}
+function insert_oportunidad_adherida($oportunidad_nid,$uid){
+    $sql='INSERT INTO oportunidad_adheridas(oportunidad_nid,uid) VALUES('.$oportunidad_nid.','.$uid.')';
+    db_query($sql);
+}
+function get_oportunidad_adheridas_string_list($node){
+    //echo print_r($node->adheridas_list,1);exit();
+    /*$result=array_ordenatu($node->adheridas_list,'username',0,'asc');
+    $html=my_array_field_values($result,'username');
+    return implode(",",$html);*/
+    return get_idea_adheridas_string_list($node);
+}
+function get_oportunidad_adheridas_uid_array($oportunidad_nid){
+	$invitados=array();
+	$invitados_list=array();
+	$my_list=get_oportunidad_adheridas_array($oportunidad_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$adheridas[]=$row->uid;
+			$adheridas_list[]=$row;
+		}
+	}
+	$info['adheridas']=$adheridas;
+	$info['adheridas_list']=$adheridas_list;
+	return $info;
+}
+function es_oportunidad_promocionada($oportunidad_nid,$proyecto_node){
+    if(isset($proyecto_node->nid) && !empty($proyecto_node->nid)){
+        return 1;
+    }else{
+        if(!empty($oportunidad_nid) && $oportunidad_nid!='todas'){
+            $node=node_load($oportunidad_nid);
+            $num=count($node->adheridas_list);
+            //print 'num='.$num.'<BR>';
+            $min=get_min_promocionar_oportunidad();
+            //print 'min='.$min.'<BR>';
+             if($num>=$min){
+                return 1;
+             }else{
+                return 0;
+             }
+        }
+    }
+    return 1;
+}
+function oportunidades_no_promocionada_callback(){
+    idea_active_tabs_access();
+    return t('Projects can not be added because the opportunity has insufficient support');
+}
+function get_busqueda_simple_oportunidades_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+    //
+        $value='';
+	$value=my_get_request_value('search');
+	//
+        $html='<input type="text" id="busqueda_simple_oportunidad_txt" name="busqueda_simple_oportunidad_txt" value="'.$value.'"/>';
+	$html.='<BR><input type="button" id="busqueda_simple_oportunidad_btn" name="busqueda_simple_oportunidad_btn" value="'.t('Search').'"/>';
+	$html.='&nbsp;<input type="button" id="limpiar_oportunidad_btn" name="limpiar_oportunidad_btn" value="'.t('Clean').'"/>';
+        //$html.='&nbsp;'.l('Advanced','busqueda');
+	//$html.='&nbsp;'.l('Advanced','busqueda',array('query'=>'is_avanzada=1'));
+	return $html;
+}
+function add_busqueda_simple_oportunidad_js(){
+        $my_url=url('oportunidades');
+        if(is_oportunidad('todas')){
+            $my_url=url('oportunidades/todas');
+        }
+	$js='
+			var url_busqueda_simple_oportunidad="'.$my_url.'";
+			$(document).ready(function()
+			{
+			 	$("#busqueda_simple_oportunidad_btn").click(function(){
+                                       var v=$("#busqueda_simple_oportunidad_txt").attr("value");
+					location.href=url_busqueda_simple_oportunidad+"?search="+v;
+				});
+                                $("#limpiar_oportunidad_btn").click(function(){
+                                       location.href=url_busqueda_simple_oportunidad;
+				});
+			});';
+
+			drupal_add_js($js,'inline');
+}
+function validate_oportunidad_categorias_tematicas($node,&$form){
+    $aurrizkia='categoria_tematica_oportunidad_';
+    $selected_categoria=0;
+    foreach($node as $field=>$value){
+       if(is_oportunidad_categoria_tematica_field($aurrizkia,$field)){
+           $f=str_replace($aurrizkia,'',$field);
+           $term=taxonomy_get_term($f);
+           if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+               //print 'tid='.$term->tid.'<BR>';
+               if(!empty($value)){
+                   $selected_categoria=1;
+               }
+           }
+       }
+    }
+    if(!$selected_categoria){
+        form_set_error('oportunidad_categorias_tematicas_fs',t('Thematic Categories is a required field'));
+    }
+}
+function validate_oportunidad_reto_al_que_responde(&$form){
+    return validate_idea_reto_al_que_responde($form);
+}
+function set_oportunidad_default_value_subgrupo(&$node,$field='subgrupo'){
+    /*
+    //AVISO::::por ahora los invitados no se heredan
+    if($field=='invitados'){
+        return $node->$field;
+    }*/
+    if(isset($node->nid) && !empty($node->nid)){        
+        if($node->is_todo_subgrupo){
+            if($field=='subgrupo'){
+                $result=array();
+                return $result;
+            }else{
+                return $node->$field;
+            }
+        }else{
+            if($field=='subgrupo'){
+                return $node->personas;
+            }else{
+                return $node->$field;
+            }
+        }
+    }else{
+        $idea_nid=my_get_oportunidad_idea_nid();
+        if(!empty($idea_nid)){
+            $idea=node_load($idea_nid);
+            if(isset($idea->nid) && !empty($idea->nid)){
+                return $idea->$field;
+            }
+        }
+    }
+    //
+    if($field=='subgrupo'){
+        return $node->personas;
+    }else{
+        return $node->$field;
+    }
+}
+function update_oportunidad_is_todo_subgrupo($oportunidad_nid,$is_todo_subgrupo){
+    $sql="UPDATE oportunidad SET is_todo_subgrupo=".$is_todo_subgrupo." WHERE nid=".$oportunidad_nid;
+    db_query($sql);
+}
+function get_user_and_invitado_oportunidad_nid_array($uid,$invitado_uid,$og_groups){
+    $where=array();
+    $where[]='1';
+    $og_nid_array=array();
+    if(!empty($og_groups)){
+        $og_nid_array=array_keys($og_groups);
+    }
+    //
+    if(count($og_nid_array)>0){
+        $where[]='(s.uid='.$uid.' OR (o.is_todo_subgrupo=1 AND o.grupo_nid IN('.implode(',',$og_nid_array).')))';
+    }else{
+        $where[]='s.uid='.$uid;
+    }
+    //
+    $where[]='oi.uid='.$invitado_uid;
+    //
+    $sql='SELECT o.nid
+    FROM {oportunidad} o
+    LEFT JOIN {oportunidad_personas} s ON o.nid=s.oportunidad_nid
+    LEFT JOIN {oportunidad_invitados} oi ON o.nid=oi.oportunidad_nid
+    WHERE '.implode(' AND ',$where).'
+    GROUP BY o.nid';
+    //print $sql;exit();
+    //
+    $result=array();
+    //
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row->nid;
+    }
+    return $result;
+}
+//gemini
+function oportunidad_form_alter(&$form, &$form_state, $form_id) {
+    if(strcmp($form_id,'oportunidad_node_form')==0){
+        $form['title']['#title']=t('Title of opportunity');
+        $form['body_field']['body']['#title']=t('Details');
+    }
+}
+function oportunidad_node_delete_confirm_form_alter(&$form,&$form_state,$form_id){
+    $form['#redirect']='oportunidades/todas';
+}
+function oportunidad_get_status_color($oportunidad){
+    return estrategia_get_status_color($oportunidad,'plazo_del_reto');
+}
+function oportunidad_delete_link($node){
+    return hontza_item_delete_link($node);    
+}
+function oportunidad_comment_link($node){
+    return hontza_item_comment_link($node);
+}
+function oportunidad_edit_link($node){
+    return hontza_item_edit_link($node);
+}
+function oportunidad_add_adherirse_ajax($id_a,$aurrizkia,$oportunidad_nid){
+   global $base_url;
+   $purl='';
+   $my_grupo=og_get_group_context(); 
+   if(isset($my_grupo->purl) && !empty($my_grupo->purl)){
+       $purl=$my_grupo->purl;
+   }
+   $js='$(document).ready(function()
+   {
+                
+            function call_oportunidad_adherirse_ajax_'.$id_a.'(id_a){
+                var my_array=id_a.split("_");
+                var oportunidad_nid=my_array[3];
+                var uid=my_array[4];
+                jQuery.ajax({
+				type: "POST",
+                                url: "'.$base_url.'/'.$purl.'/oportunidades/adherirse_ajax?my_time="+new Date().getTime(),
+				dataType:"json",
+                                data:{oportunidad_nid:oportunidad_nid,uid:uid,aurrizkia:"'.$aurrizkia.'"},
+				success: function(my_result){
+                                    set_oportunidad_adherir_item_ajax_on_success_'.$id_a.'(my_result,oportunidad_nid);
+                                    $("#id_oportunidad_supported_by_'.$oportunidad_nid.'").text(my_result.supported_by);    
+				}
+			});
+            }
+            function set_oportunidad_adherir_item_ajax_on_success_'.$id_a.'(my_result,oportunidad_nid){
+                var my_parent=$("#'.$id_a.'").parent();
+                var my_class=my_parent.attr("class");
+                my_parent.attr("class",set_oportunidad_adherir_item_class_ajax_'.$id_a.'(my_class));
+                my_parent.html(my_result.a);
+            }
+            function set_oportunidad_adherir_item_class_ajax_'.$id_a.'(my_class,oportunidad_nid){                
+                if(my_class=="n-item-adherir"){
+                    $("#id_add_proyecto_'.$oportunidad_nid.'").css("display","");
+                    return "n-item-no-adherir";
+                }
+                if(my_class=="n-item-no-adherir"){
+                    $("#id_add_proyecto_'.$oportunidad_nid.'").css("display","none");
+                    return "n-item-adherir";
+                }
+                if(my_class=="item-adherir"){
+                    $("#id_add_proyecto_'.$oportunidad_nid.'").css("display","");
+                    return "item-no-adherir";
+                }
+                if(my_class=="item-no-adherir"){
+                    $("#id_add_proyecto_'.$oportunidad_nid.'").css("display","none");
+                    return "item-adherir";
+                }    
+            }
+                $("#'.$id_a.'").click(function(){
+                    call_oportunidad_adherirse_ajax_'.$id_a.'($(this).attr("id"));
+                    return false;    
+                });
+    });';
+    drupal_add_js($js,'inline');    
+}
+function oportunidades_adherirse_ajax_callback(){
+    $oportunidad_nid=$_POST['oportunidad_nid'];
+    $uid=$_POST['uid'];
+    $my_array=get_oportunidad_adheridas_array($oportunidad_nid,$uid);
+    if(empty($my_array)){
+        save_oportunidad_adherida($oportunidad_nid,$uid);
+        $my_class='item-no-adherir';
+    }else{
+        save_oportunidad_no_adherida($oportunidad_nid,$uid);
+        $my_class='item-adherir';
+    }
+    $result=array();
+    $result['ok']=1;
+    $result['my_class']=$_POST['aurrizkia'].$my_class;
+    $node=node_load($oportunidad_nid);
+    $result['supported_by']=get_oportunidad_adheridas_string_list($node);
+    print json_encode($result);
+    exit();
+}
+//gemini-2014
+function oportunidad_get_num_oportunidades_creadas($uid,$where_time){
+    $result=array();
+    $where=array();
+    $where[]=$where_time;
+    $where[]="n.uid=".$uid;
+    $where[]="n.type='oportunidad'";
+    //gemini-2014
+    //intelsat-2016
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='panel_admin'){
+        panel_admin_usuarios_acceso_add_where_grupo_nid_array($where,'oportunidad');
+    }else{
+        $my_grupo=og_get_group_context();
+        if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_ancestry.group_nid='.$my_grupo->nid.' OR oportunidad.grupo_nid='.$my_grupo->nid.')';
+        }
+    }    
+    //
+    $sql="SELECT n.* 
+    FROM {node} n 
+    LEFT JOIN {og_ancestry} og_ancestry ON n.nid=og_ancestry.nid
+    LEFT JOIN {oportunidad} ON n.vid=oportunidad.vid  
+    WHERE ".implode(" AND ",$where)." ORDER BY n.created ASC";
+    //print $sql.'<BR>';
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+//intelsat-2015
+function oportunidad_is_ideas_oportunidades(){
+    $param0=arg(0);
+    if(!empty($param0) && $param0=='ideas'){
+        $param1=arg(1);
+        if(!empty($param1) && in_array($param1,array('oportunidades','oportunidades_mas_valoradas'))){
+            return 1;
+        }
+    }
+    return 0;
+}
+//intelsat-2015
+function oportunidad_is_ficha_tabla(){
+    return hontza_canal_rss_is_fuente_ficha_tabla();
+}
+//intelsat-2015
+function oportunidad_set_empty_label_stars($my_stars){
+    $result=$my_stars;
+    $result=str_replace(t('Rating').':','',$result);
+    return $result;
+}
+function oportunidad_validate_sel_idea($node){
+        $idea_nid=set_estrategia_seleccionada($node);
+        //print 'idea_nid='.$idea_nid;exit();
+        if(empty($idea_nid)){
+            return 0;
+        }
+        return 1;
+}

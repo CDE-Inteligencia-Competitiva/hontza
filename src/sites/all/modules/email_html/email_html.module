@@ -1,0 +1,87 @@
+<?php
+function email_html_perm() {
+  return array();
+}
+function email_html_menu() {
+    $items=array();
+    $items['email_html/simular'] = array(
+    'title' => 'Mail',
+    'page callback' => 'email_html_simular_callback',
+    'access arguments'=>array('root'),    
+  );    
+    return $items;
+}
+function email_html_simular_callback(){
+    return 'Funcion desactivada';
+    $html=email_html_get_plantilla_html();
+}
+function email_html_get_plantilla_html(){
+    global $base_url;
+    $url='http://online.hontza.es/sites/default/files/plantilla_mail/plantilla_mail.html';
+    $is_default=1;
+    //if(hontza_is_sareko_id('GESTION_CLAVES')){
+    if(red_is_claves_activado()){    
+        $url='http://online.hontza.es/sites/default/files/plantilla_mail/plantilla_mail_claves.html';
+        $is_default=0;
+    }else if(email_html_is_custom_plantilla_html($custom_name)){
+        $url='http://online.hontza.es/sites/default/files/plantilla_mail/plantilla_mail_'.$custom_name.'.html';
+        $is_default=0;
+    }
+    $message=file_get_contents($url);
+    if($is_default){
+        $url_login='"http://solr.hontza.es/user"';
+        $message=str_replace($url_login,'"'.$base_url.'/user'.'"',$message);
+    }
+    return $message;
+}
+function email_html_is_activado(){
+    /*if(defined('_IS_EMAIL_HTML') && _IS_EMAIL_HTML==1){
+        return 1;
+    }
+    return 0;*/
+    return 1;
+}
+//function email_html_add_html(&$message,$is_texto=0){
+function email_html_add_html(&$message,$is_texto=0,$is_apply_firma_style=0){        
+    global $base_url;
+    $html=email_html_get_plantilla_html();
+    if($is_texto){
+        $body=$message;
+    }else{
+        $body=$message['body'];
+    }
+    $body=str_replace("\r\n", '<br>', $body);
+    $body=str_replace("\n", '<br>', $body);
+    $body=str_replace("\r", '<br>', $body);
+    //$firma=red_copiar_get_mail_firma();                
+    $firma=red_copiar_get_mail_firma($is_apply_firma_style);
+    $body.=$firma;
+    $body=str_replace('texto_correo',$body,$html);
+    $body=$body;
+    if(email_is_online_plantilla()){
+        $user_login='<a href="http://solr.hontza.es/user" target="_blank">Login</a>';
+        $current_login='<a href="'.$base_url.'/user" target="_blank">Login</a>';
+        $body=str_replace($user_login,$current_login,$body);
+    }
+    if($is_texto){
+        return $body;
+    }
+    $message['body']=$body;
+    //print $message['body'];exit();
+    $message['headers']['MIME-Version']='1.0';
+    $content_type='text/html;charset=utf-8';
+    $message['headers']['Content-Type']=$content_type;    
+}
+function email_is_online_plantilla(){
+    if(defined('_IS_EMAIL_ONLINE_PLANTILLA') && _IS_EMAIL_ONLINE_PLANTILLA!=1){
+        return 0;
+    }
+    return 1;    
+}
+function email_html_is_custom_plantilla_html(&$custom_name){
+    if(defined('_IS_EMAIL_HTML_CUSTOM_PLANTILLA_NAME') && _IS_EMAIL_HTML_CUSTOM_PLANTILLA_NAME==1){
+        $custom_name=strtolower(_SAREKO_ID);
+        return 1;
+    }
+    return 0;
+}

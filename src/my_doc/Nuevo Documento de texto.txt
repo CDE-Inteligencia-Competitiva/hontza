@@ -1,0 +1,25 @@
+http://92.243.10.49/hontza3/
+
+- hasta ahora hemos eliminado algunos bugs.
+
+- en esos bugs algunos no los hemos solucionado, por las siguientes dudas:
+
+1- Reparar procesos que finalizan dejando al usuario fuera del menú de grupo.
+
+Si nos puedes especificar cuales son algunos de esos procesos.
+
+2- Reparar la función "Canal filtro RSS".
+
+No he podido ver que es lo que falla.
+
+3- El administrador de grupo no tiene suficientes privilegios para ciertas funciones.
+
+Por un lado cual es el administrador de grupo, los usuarios que tienen el rol "Creador de grupo"?
+
+Habría que especificar cuales son esas funciones que faltan.
+
+4- Identificar correctamente al usuario que comienza una discusión.
+
+- Todos los demás bugs estarían corregidos.
+
+- De todos modos cero que tenemos una reunión la próxima semana, si quieres hablamos entonces sobre esto.

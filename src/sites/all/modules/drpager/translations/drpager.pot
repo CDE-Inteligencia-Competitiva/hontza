@@ -1,0 +1,157 @@
+# $Id: drpager.pot,v 1.4 2010/03/16 22:05:44 mattyoung Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  drpager.admin.inc,v 1.10 2009/07/17 06:23:34 mattyoung
+#  drpager.module,v 1.16 2009/11/02 19:31:15 mattyoung
+#  drpager.info,v 1.3 2009/09/19 21:55:08 mattyoung
+#  drpager.install,v 1.8 2009/07/18 03:14:27 mattyoung
+#  drpager-min.js: n/a
+#  drpager.js,v 1.6 2009/07/28 22:25:51 mattyoung
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2010-03-16 14:45-0700\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: drpager.admin.inc:18
+msgid "The 'pager' theme hook is currently overriden with '%function' from '%path'. Selecting \"Override pager with drpager\" below will override it."
+msgstr ""
+
+#: drpager.admin.inc:26
+msgid "Override pager with drpager"
+msgstr ""
+
+#: drpager.admin.inc:32
+msgid "Adaptive value"
+msgstr ""
+
+#: drpager.admin.inc:33
+msgid "Switch to drpager only if more than the number of pages specified here. Set to '0' to unconditionally use Minimax pager. Enter -1 to use full pager with page number text input box."
+msgstr ""
+
+#: drpager.admin.inc:40
+msgid "Use short link labels"
+msgstr ""
+
+#: drpager.admin.inc:41
+msgid "Default uses '«', '‹', '›' and '»' instead of '« first', '‹ previous', 'next ›' and 'last »'"
+msgstr ""
+
+#: drpager.admin.inc:48
+msgid "The 'views_mini_pager' theme hook is currently overriden with '%function' from '%path'. Selecting \"Override views_mini_pager with drpager\" below will override it."
+msgstr ""
+
+#: drpager.admin.inc:56
+msgid "Override views_mini_pager with drpager"
+msgstr ""
+
+#: drpager.admin.inc:71
+msgid "Adaptive value must be an integer."
+msgstr ""
+
+#: drpager.module:15
+msgid "Add theme hook 'drpager' to format pager with text field."
+msgstr ""
+
+#: drpager.module:16
+msgid "Can be configured to replaced the built-in 'pager' and Views' 'views_mini_pager' theme hook at the administration settings page"
+msgstr ""
+
+#: drpager.module:82;101;169
+msgid "«"
+msgstr ""
+
+#: drpager.module:83;102;170
+msgid "‹"
+msgstr ""
+
+#: drpager.module:84;103;171
+msgid "›"
+msgstr ""
+
+#: drpager.module:85;104;172
+msgid "»"
+msgstr ""
+
+#: drpager.module:120;203
+msgid "« first"
+msgstr ""
+
+#: drpager.module:121;204
+msgid "‹ previous"
+msgstr ""
+
+#: drpager.module:122;205
+msgid "next ›"
+msgstr ""
+
+#: drpager.module:123;206
+msgid "last »"
+msgstr ""
+
+#: drpager.module:311
+msgid "Set page number to go to then press enter"
+msgstr ""
+
+#: drpager.module:313
+msgid "!page <span>of %total</span>"
+msgstr ""
+
+#: drpager.module:346
+msgid "Drpager will override pager."
+msgstr ""
+
+#: drpager.module:350
+msgid "Drpager will override views_mini_pager."
+msgstr ""
+
+#: drpager.module:24 drpager.info:0
+msgid "Minimax pager"
+msgstr ""
+
+#: drpager.module:25
+msgid "Settings for the drpager module"
+msgstr ""
+
+#: drpager.module:0
+msgid "drpager"
+msgstr ""
+
+#: (duplicate) drpager.install:11 
+msgid "The drpager module is installed. Visit <a href=\"@url\">module help</a> for instruction."
+msgstr ""
+
+#: drpager.info:0
+msgid "Theme pager with text field input for direct random access to any page"
+msgstr ""
+
+#: drpager.info:0
+msgid "User interface"
+msgstr ""
+
+#: drpager-min.js:0 drpager.js:0
+msgid "Go to first page"
+msgstr ""
+
+#: drpager-min.js:0 drpager.js:0
+msgid "Go to previous page"
+msgstr ""
+
+#: drpager-min.js:0 drpager.js:0
+msgid "Go to next page"
+msgstr ""
+
+#: drpager-min.js:0 drpager.js:0
+msgid "Go to last page"
+msgstr ""
+

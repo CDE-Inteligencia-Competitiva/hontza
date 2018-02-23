@@ -1,0 +1,34 @@
+name = Fluid Baseline Grid
+description = Fully responsive grid theme based on Fluid Baseline Grid by Josh Hopkins.
+version = VERSION
+core = 6.x
+engine = phptemplate
+stylesheets[all][] = css/style.css
+stylesheets[print][] = print.css
+
+
+regions[header_top] = Header Top
+regions[header] = Header
+regions[highlighted] = Highlighted
+regions[branding] = Branding
+regions[tryptych_top1] = Tryptych Top Col 1
+regions[tryptych_top2] = Tryptych Top Col 2
+regions[tryptych_top3] = Tryptych Top Col 3
+regions[highlighted_2] = Highlighted 2
+regions[branding2] = Branding 2
+regions[content_top] = Content Top
+regions[help] = Help
+regions[content] = Content
+regions[left] = Sidebar First
+regions[right] = Sidebar Second
+regions[content_bottom] = Content Bottom
+regions[tryptych_bottom1] = Tryptych Bottom Col 1
+regions[tryptych_bottom2] = Tryptych Bottom Col 2
+regions[tryptych_bottom3] = Tryptych Bottom Col 3
+regions[footer] = Footer
+; Information added by drupal.org packaging script on 2012-08-21
+version = "6.x-2.2"
+core = "6.x"
+project = "fbg"
+datestamp = "1345591921"
+

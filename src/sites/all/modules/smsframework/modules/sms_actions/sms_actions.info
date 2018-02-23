@@ -1,0 +1,13 @@
+; $Id: sms_actions.info,v 1.1.2.2 2008/08/21 13:34:57 diggersf Exp $
+name = "SMS Actions"
+description = "Provides an action for sending outgoing messages and the ability to define custom triggers for incoming messages."
+package = SMS Framework
+dependencies[] = sms
+dependencies[] = trigger
+core = 6.x
+; Information added by drupal.org packaging script on 2009-03-10
+version = "6.x-1.0"
+core = "6.x"
+project = "smsframework"
+datestamp = "1236718943"
+

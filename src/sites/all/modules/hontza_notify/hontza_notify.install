@@ -1,0 +1,59 @@
+<?php
+
+
+function hontza_notify_schema() {
+  $schema['canal_suscripcion'] = array(
+    'description' => 'The base table for subscriptions',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'suscripciones' => array(
+        'description' => 'Un array serializado con los nid a los que está suscrito.',
+        'type' => 'text',
+        'serialize' => TRUE,
+      ),
+      'send_interval' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'next_run' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('uid'),
+  );
+  return $schema;
+}
+
+function hontza_notify_install() {
+  drupal_install_schema('hontza_notify');
+  hontza_notify_add_data();
+}
+
+function hontza_notify_uninstall() {
+  drupal_uninstall_schema('hontza_notify');
+}
+
+function hontza_notify_update_1000() {
+  $ret = array();
+  $spec = array(
+    'description' => 'Un array serializado con los nid a los que está suscrito.',
+    'type' => 'text',
+    'serialize' => TRUE,
+  );
+  db_drop_primary_key($ret, 'canal_suscripcion');
+  db_change_field($ret, 'canal_suscripcion', 'nid', 'suscripciones', $spec);
+  db_add_primary_key($ret, 'canal_suscripcion', array('uid'));
+  return $ret;
+}
+
+function hontza_notify_add_data() {
+  $result = db_query("SELECT uid FROM {users}");
+  while ($uid = db_fetch_object($result)) {
+    $user = user_load($uid);
+    db_query("INSERT INTO {canal_suscripcion} (uid, suscripciones, send_interval, next_run) VALUES (%d, '%s', %d, %d)", $uid->uid, serialize(array()), 604800, strtotime('next monday'));
+  }
+}

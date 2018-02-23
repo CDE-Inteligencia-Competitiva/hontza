@@ -1,0 +1,72 @@
+name = Buho
+description = Sky is a center aligned, fixed or fluid theme that supports either all sidebar combinations (left, right, both, none)
+core = 6.x
+engine = phptemplate
+
+; REGIONS
+; -----------------------------------------------------------------------------
+regions[left] = Left sidebar
+regions[right] = Right sidebar
+regions[homecenter] = Home Centro
+regions[homeleft] = Home left
+regions[homeright] = Home right
+regions[menuuser] = Menu usuario
+regions[menutop] = Menu top
+regions[nombredelgrupo] = Nombre del grupo
+regions[busquedagrupo] = Busqueda de grupo
+regions[contenttop] = Content top
+regions[contentbottom] = Content bottom
+regions[contentfooter] = Content footer
+
+
+; Layout: Columnas
+;------------------------------------------------------------------------------
+layouts[columns][name] = "3 Columnas"
+layouts[columns][description] = "Una anillo para gobernarlos a todos."
+layouts[columns][stylesheet] = "hontza-3-columns.css"
+layouts[columns][template] = "layout-columns"
+layouts[columns][regions][] = "homeleft"
+layouts[columns][regions][] = "homeright"
+layouts[columns][regions][] = "homecenter"
+layouts[columns][regions][] = "menuuser"
+layouts[columns][regions][] = "menutop"
+layouts[columns][regions][] = "busquedagrupo"
+layouts[columns][regions][] = "nombredelgrupo"
+
+
+; STYLESHEETS
+; -----------------------------------------------------------------------------
+stylesheets[all][] = css/layout.css
+stylesheets[all][] = style.css
+stylesheets[all][] = system-menus.css
+
+; SCRIPTS
+; -----------------------------------------------------------------------------
+scripts[] = scripts/hoverIntent.js
+scripts[] = scripts/superfish.js
+scripts[] = scripts/buho.js
+
+; THEME SETTINGS
+; -----------------------------------------------------------------------------
+settings[buho_background] = ''
+settings[buho_background_header] = ''
+settings[buho_breadcrumbs] = 0
+settings[buho_breadcrumbs_sep] = &raquo;
+settings[buho_links] = ''
+settings[buho_links_active] = ''
+settings[buho_links_hover] =  ''
+settings[buho_links_visited] = ''
+settings[buho_font] = lucida
+settings[buho_font_headings] = lucida
+settings[buho_font_size] = 12px
+settings[buho_header_height] = 100px
+settings[buho_layout] = fixed_960
+settings[buho_custom_layout] = ''
+settings[buho_nav_alignment] = center
+settings[buho_sub_navigation_width] = 15em
+; Information added by drupal.org packaging script on 2010-01-25
+version = "6.x-3.10"
+core = "6.x"
+project = "buho"
+datestamp = "1264385706"
+

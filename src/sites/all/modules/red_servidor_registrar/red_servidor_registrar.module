@@ -1,0 +1,463 @@
+<?php
+require_once('red_servidor_registrar.grupo.inc.php');
+function red_servidor_registrar_perm() {
+  return array();
+}
+function red_servidor_registrar_menu() {
+  $items=array();
+  $items['red_servidor_registrar/save_registrar_red']=array(
+    'title'=>'Registration',
+    'page callback' => 'red_servidor_registrar_save_registrar_red_callback',
+    'access callback' =>TRUE,
+  );  
+  $items['red_servidor_registrar/registrados']=array(
+    'title'=>'Registration',
+    'page callback' => 'red_servidor_registrar_registrados_callback',
+    'access callback' =>'red_servidor_registrar_registrados_access',
+  );
+  $items['red_servidor_registrar/%/registrado_file']=array(
+    'title'=>'Registration',
+    'page callback' => 'red_servidor_registrar_registrado_file_callback',
+    'access callback' =>'red_servidor_registrar_registrados_access',
+  );
+  $items['red_servidor_registrar/registrado_uniq_id']=array(
+    'title'=>'Registration',
+    'page callback' => 'red_servidor_registrar_registrado_uniq_id_callback',
+    'access callback' =>TRUE,
+  );
+  $items['red_servidor_registrar/registrados_grupos']=array(
+    'title'=>'Groups',
+    'page callback' => 'red_servidor_registrar_grupo_registrados_grupos_callback',
+    'access callback' =>'red_servidor_registrar_registrados_access',
+  );
+  $items['red_servidor_registrar/registrados_grupo/%/view']=array(
+    'title'=>'Group',
+    'page callback' => 'red_servidor_registrar_grupo_registrados_grupo_view_callback',
+    'access callback' =>'red_servidor_registrar_registrados_access',
+  );
+  return $items;
+}
+function red_servidor_registrar_save_registrar_red_callback(){  
+  $result=array();
+  $post=unserialize(red_compartir_grupo_decrypt_text($_POST['post']));
+  $node=red_servidor_registrar_save_registrar_red($post);
+  //echo print_r($post,1);exit();
+  if($post['url_local'] && !empty($post['url_local'])){
+      red_servidor_registrar_send_node_local_postapi($node,$post['url_local'].'_post');  
+      drupal_goto($post['url_local']);
+      exit();
+      $result['ok']='ok';  
+  }
+  print serialize($result);
+  exit();
+}
+function red_servidor_registrar_save_registrar_red($post,$files){
+    $node=red_servidor_registrar_get_red_servidor_registrar_node_row($post['uniq_id']);
+    if(!isset($node->nid) || empty($node->nid)){
+        $node = new stdClass(); 
+        $node->title='['.time().'] '.$post['organizacion'];
+        $node->type='red_servidor_registrar'; 
+        $node->promote = 0; 
+        $node->sticky = 0;
+        //$node->format = 2; 
+        $node->status=1;
+        $node->uid=1;
+    }
+    $node->field_registrar_name_admin[0]['value']=$post['nombre_admin'];
+    $node->field_registrar_mail_admin[0]['value']=$post['persona_contacto'];
+    //red_servidor_registrar_add_post_idiomas($node,$post);
+    $node->field_registrar_organisation[0]['value']=$post['organizacion'];
+    $node->field_registrar_country[0]['value']=$post['pais'];
+    $node->field_registrar_website[0]['value']=$post['sitio_web'];
+    $node->field_registrar_name_platform[0]['value']=$post['nombre_plataforma'];
+    $node->field_registrar_url_platform[0]['value']=$post['url_plataforma'];
+    red_servidor_registrar_taxonomy_save_term_array($post);
+    red_servidor_registrar_add_taxonomy_tags($node,$post);
+    red_servidor_registrar_taxonomy_save_term_array($post,'en');
+    red_servidor_registrar_add_taxonomy_tags($node,$post,'en');
+    //$hex=red_servidor_registrar_uniq_id();
+    //$node->field_registrar_uniq_id[0]['value']=$hex;
+    $node->field_registrar_base_root_local[0]['value']=$post['base_root_local'];
+    $node->field_registrar_base_url_local[0]['value']=$post['base_url_local'];
+    $node->field_registrar_empresa_tamano[0]['value']=$post['profile_empresa_tamano'];
+    $node->field_registrar_empresa_ciudad[0]['value']=$post['profile_empresa_ciudad'];
+    $node->field_registrar_remote_addr[0]['value']=$_SERVER['REMOTE_ADDR'];
+    node_save($node);
+    //$hex.='_'.$node->nid;
+    $hex=$post['uniq_id'];
+    $node->field_registrar_uniq_id[0]['value']=$hex;
+    red_servidor_registrar_update_field_registrar_uniq_id_value($node->nid,$node->vid,$hex);
+    red_servidor_registrar_logo_save($node,$post);
+    hontza_solr_search_clear_cache_content($node);
+    return $node;
+}
+function red_servidor_registrar_add_post_idiomas(&$node,$post){
+    $node->field_registrar_languages=array();
+    if(isset($post['idiomas']) && !empty($post['idiomas'])){
+        foreach($post['idiomas'] as $i=>$value){
+            $node->field_registrar_languages[$i]['value']=$value;
+        }
+    }
+}
+/*function red_servidor_registrar_uniq_id(){
+    $bytes=openssl_random_pseudo_bytes(32,$cstrong);
+    $hex   = bin2hex($bytes);
+    return $hex;
+}*/
+function  red_servidor_registrar_update_field_registrar_uniq_id_value($nid,$vid,$hex){
+    db_query('UPDATE {content_type_red_servidor_registrar} SET field_registrar_uniq_id_value="%s" WHERE nid=%d AND vid=%d',$hex,$nid,$vid);
+}
+function red_servidor_registrar_taxonomy_save_term_array($post,$lang=''){
+    $field=red_registrar_get_tags_field($lang);
+    /*if(isset($post['tags']) && !empty($post['tags'])){
+        $tags=explode(',',$post['tags']);*/
+    if(isset($post[$field]) && !empty($post[$field])){
+        $tags=explode(',',$post[$field]);
+        if(!empty($tags)){
+            $vid=red_servidor_registrar_tags_get_vid($lang);
+            foreach($tags as $i=>$value){
+                $term_name=trim($value);
+                //$term=taxonomy_get_term_by_name($term_name,'tags_network_registration');
+                $term=red_solr_inc_taxonomy_get_term_by_name_vid_row($term_name,$vid);      
+                if(isset($term->tid) && !empty($term->tid)){
+                    continue;
+                }else{
+                    red_servidor_registrar_taxonomy_save_term($term_name,$lang);
+                }
+            }
+        }
+    }
+}
+function red_servidor_registrar_taxonomy_save_term($term_name,$lang){
+    if(!empty($term_name)){
+        $term = array(
+         'vid' => red_servidor_registrar_tags_get_vid($lang),
+         'name' => $term_name,      
+       );
+       taxonomy_save_term($term);
+    }
+}
+function red_servidor_registrar_add_taxonomy_tags(&$node,$post,$lang=''){
+  $field=red_registrar_get_tags_field($lang);
+  /*if(isset($post['tags']) && !empty($post['tags'])){
+    $tags=explode(',',$post['tags']);*/
+  if(isset($post[$field]) && !empty($post[$field])){  
+    $tags=explode(',',$post[$field]);   
+      if(!empty($tags)){
+        $vid=red_servidor_registrar_tags_get_vid($lang);
+        if(!isset($node->taxonomy)){
+            $node->taxonomy=array();
+        }    
+            foreach($tags as $i=>$value){
+                $term_name=trim($value);
+                //$term=taxonomy_get_term_by_name($term_name,'tags_network_registration');
+                $term=red_solr_inc_taxonomy_get_term_by_name_vid_row($term_name,$vid);
+                if(isset($term->tid) && !empty($term->tid)){
+                    $node->taxonomy[$term->tid]=$term;
+                    $node->taxonomy[$term->tid]->vid=$vid;
+                }
+            }
+        
+    }
+  }  
+}
+function red_servidor_registrar_tags_get_vid($lang=''){
+  /*$result=26;
+  return $result;*/
+  return red_registrar_tags_get_vid($lang);  
+}
+function red_servidor_registrar_logo_save($node,$post){
+    //$uploads_dir = '/home/network.hontza.es_files/red_servidor_registrar';
+    $uploads_dir=red_servidor_registrar_get_uploads_dir();
+    /*foreach ($_FILES['files']['error'] as $key => $error) {
+        if ($error == UPLOAD_ERR_OK) {
+            $tmp_name = $_FILES['files']['tmp_name'][$key];
+            $file_name = $_FILES['files']['name'][$key];
+            $path_info= pathinfo($file_name);
+            $file_name=$uploads_dir.'/'.$node->nid.'.'.$path_info['extension'];
+            move_uploaded_file($tmp_name,$file_name);
+            red_servidor_registrar_update_field_registrar_logo_url_value($node->nid,$node->vid,$file_name);
+        }
+    }*/
+    if(isset($post['files']) && isset($post['files']['file']) && !empty($post['files']['file'])){
+        $content=base64_decode($post['files']['file']);
+        $file_name=$uploads_dir.'/'.$node->nid.'.'.$post['files']['extension'];
+        file_put_contents($file_name, $content);
+        red_servidor_registrar_update_field_registrar_logo_url_value($node->nid,$node->vid,$file_name);
+    }
+}
+function red_servidor_registrar_update_field_registrar_logo_url_value($nid,$vid,$file_name){
+    db_query('UPDATE {content_type_red_servidor_registrar} SET field_registrar_logo_url_value="%s" WHERE nid=%d AND vid=%d',$file_name,$nid,$vid);
+}
+function red_servidor_registrar_add_registrados_central_server_link(&$result){
+    if(is_super_admin()){
+        $result[]='<option value="'.url('red_servidor_registrar/registrados').'">'.t('Registration').'</option>';
+    }
+}
+function red_servidor_registrar_registrados_access(){
+    if(is_super_admin()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function red_servidor_registrar_registrados_callback(){
+    $output='';
+    $headers=array();
+    $headers[0]=t('Logo');         
+    $headers[1]=array('data'=>t('Name of admin'),'field'=>'name_admin');
+    $headers[2]=array('data'=>t('Email of admin'),'field'=>'mail_admin');
+    $headers[3]=array('data'=>t('Organisation'),'field'=>'organizacion');
+    $headers[4]=t('Actions');				    
+    
+    $my_limit=40;
+    
+    //$sort='asc';
+    //$field='node_title';
+    $sort='desc';
+    $field='node_created';
+    if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
+        $sort=$_REQUEST['sort'];
+    }
+    
+    $where=array();
+    $where[]='1';
+    $where[]='node.type IN ("red_servidor_registrar")';
+    
+    $sql='SELECT node.title AS node_title,node.created AS node_created  
+    ,content_type_red_servidor_registrar.* 
+    FROM {node}  
+    LEFT JOIN {content_type_red_servidor_registrar} ON node.vid=content_type_red_servidor_registrar.vid 
+    WHERE '.implode(' AND ',$where).'
+    GROUP BY node.nid 
+    ORDER BY '.$field.' '.$sort;
+    //print $sql;
+    $rows=array();
+    $res=db_query($sql);
+    $kont=0;
+    $faktore=red_registrar_get_logo_faktore();
+    while($r=db_fetch_object($res)){
+        $row=array();
+        $row[0]=red_servidor_registrar_get_logo_html($r,$faktore);
+        $row[1]=$r->field_registrar_name_admin_value;
+        $row[2]=$r->field_registrar_mail_admin_value;
+        $row[3]=$r->field_registrar_organisation_value;
+        $row[4]=red_servidor_registrar_define_acciones($r->nid);
+        $rows[]=$row;
+    }
+    $rows=my_set_estrategia_pager($rows, $my_limit);
+    if (count($rows)>0) {
+      $output .= theme('table',$headers,$rows,array('class'=>'table_gestion_canales'));
+      $output .= theme('pager', NULL, $my_limit);    
+    }
+    else {
+      $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+    }
+    drupal_set_title(t('Registration'));
+    $output=red_servidor_registrar_registrados_define_header().$output;
+    return $output;
+}
+function red_servidor_registrar_registrado_file_callback(){
+  $nid=arg(1);
+  $node=node_load($nid); 
+  $filepath=$node->field_registrar_logo_url[0]['value'];  
+  $my_path=file_create_path($filepath);
+  if (file_exists($my_path)) {
+    $headers = module_invoke_all('file_download', $filepath);
+    if(!red_servidor_registrar_registrados_access()){
+        if (in_array(-1, $headers)) {
+          return drupal_access_denied();
+        }
+    }    
+    if (count($headers)) {
+      file_transfer($filepath, $headers);
+    }
+  }
+  return drupal_not_found();
+}
+function red_servidor_registrar_get_uploads_dir(){
+  $result='/home/network.hontza.es_files/red_servidor_registrar';
+  return $result;
+}
+function red_servidor_registrar_define_acciones($nid){
+    $html=array();
+    $title_view=t('View');
+    $html[]=l(my_get_icono_action('viewmag',$title_view),'node/'.$nid,array('absolute'=>true,'html'=>true,'query'=>drupal_get_destination(),'attributes'=>array('title'=>$title_view,'alt'=>$title_view)));    
+    return implode('&nbsp;',$html);
+}
+function red_servidor_registrar_get_languages_view_html($node){
+    $html=array();
+    if(isset($node->field_registrar_languages) && !empty($node->field_registrar_languages)){
+        foreach($node->field_registrar_languages as $i=>$row){
+            $html[]=$row['view'];
+        }
+    }
+    return implode('<br>',$html);
+}
+function red_servidor_registrar_get_country_view_html($node,$country=''){
+    if(isset($node->field_registrar_country[0]['value'])){
+        $value=$node->field_registrar_country[0]['value'];
+    }else{
+        $value=$country;
+    }
+    $result=red_registrar_pais_inc_get_pais_options();
+    if(isset($result[$value]) && !empty($result[$value])){
+        return $result[$value];
+    }
+    return '';        
+}
+function red_servidor_registrar_get_website_link($node,$type=''){
+    /*$value='';
+    if(empty($type)){
+        $value=$node->field_registrar_website[0]['value'];
+    }else if($type=='url_platform'){
+        $value=$node->field_registrar_url_platform[0]['value'];
+    }else if($type=='base_root_local'){
+        $value=$node->field_registrar_base_root_local[0]['value'];
+    }else if($type=='base_url_local'){
+        $value=$node->field_registrar_base_url_local[0]['value'];
+    }
+    $value=red_servidor_registrar_add_http($value);
+    if(!empty($value)){
+        return l($value,$value,array('absolute'=>TRUE,'attributes'=>array('target'=>'_blank')));
+    }
+    return '';*/
+    return red_registrar_get_website_link($node,$type);
+}
+function red_servidor_registrar_add_http($url) {
+    /*if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+        $url = "http://" . $url;
+    }
+    return $url;*/
+    return red_registrar_add_http($url);
+}
+function red_servidor_registrar_get_tags_html($node,$lang=''){
+    /*$html=array();
+    $vid=red_servidor_registrar_tags_get_vid();
+    if(isset($node->taxonomy) && !empty($node->taxonomy)){
+        foreach($node->taxonomy as $i=>$term){
+            if($term->vid==$vid){
+                $html[]=$term->name;
+            }
+        }
+    }
+    //sort($html);
+    return implode(' , ',$html);*/
+    return red_registrar_get_tags_html($node,'',$lang);
+}
+function red_servidor_registrar_get_logo_html($row,$faktore=50){
+    if(red_servidor_registrar_exist_logo_field($row)){    
+        $logo_url=url('red_servidor_registrar/'.$row->nid.'/registrado_file');
+        return '<img src="'.$logo_url.'" width="'.$faktore.'">'; 
+    }
+    return '';       
+}
+function red_servidor_registrar_send_node_local_postapi($node,$url){
+    $post=base64_encode(serialize($node));
+    $post=red_compartir_grupo_encrypt_text($post);
+    $postdata=array();
+    $postdata['node']=$post;
+    $curl = curl_init();
+    curl_setopt($curl,CURLOPT_RETURNTRANSFER,TRUE);
+    curl_setopt($curl,CURLOPT_URL,$url);
+    curl_setopt($curl,CURLOPT_POST,1);
+    curl_setopt($curl,CURLOPT_POSTFIELDS,http_build_query($postdata));
+    $data=curl_exec($curl);    
+    $result=unserialize(trim($data));
+    curl_close($curl);    
+    /*echo print_r($result,1);
+    exit();*/
+    if(isset($result['ok']) && !empty($result['ok']) && $result['ok']=='ok'){
+        return 'ok';
+    }
+    return '';
+}
+function red_servidor_registrar_registrado_uniq_id_callback(){
+    $result=array();
+    $result['ok']='nok';
+    if(isset($_POST['uniq_id'])){
+        $uniq_id=red_compartir_grupo_decrypt_text($_POST['uniq_id']);
+        if(red_servidor_registrar_is_registrado($uniq_id)){
+            $result['ok']='ok';
+        }    
+    }
+    print serialize($result);
+    exit();
+}
+function red_servidor_registrar_is_registrado($uniq_id){
+    $red_servidor_registrar_array=red_servidor_registrar_get_red_servidor_registrar_array($uniq_id);
+    if(!empty($uniq_id)){    
+        if(count($red_servidor_registrar_array)>0){
+            return 1;
+        }
+    }    
+    return 0;
+}
+function red_servidor_registrar_get_red_servidor_registrar_array($uniq_id=''){
+    $result=array();
+    $where=array();
+    $where[]='1';
+    if(!empty($uniq_id)){
+        $where[]='content_type_red_servidor_registrar.field_registrar_uniq_id_value="'.$uniq_id.'"';
+    }
+    $sql='SELECT node.title AS node_title 
+    ,content_type_red_servidor_registrar.* 
+    FROM {node}  
+    LEFT JOIN {content_type_red_servidor_registrar} ON node.vid=content_type_red_servidor_registrar.vid 
+    WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function red_servidor_registrar_exist_logo_field($row){
+    if(isset($row->field_registrar_logo_url[0]['value']) && !empty($row->field_registrar_logo_url[0]['value'])){
+        return 1;
+    }
+    if(isset($row->field_registrar_logo_url_value) && !empty($row->field_registrar_logo_url_value)){
+        return 1;
+    }
+    return 0;
+}
+function red_servidor_registrar_get_red_servidor_registrar_node_row($uniq_id){
+    $red_servidor_registrar_array=red_servidor_registrar_get_red_servidor_registrar_array($uniq_id);
+    if(count($red_servidor_registrar_array)>0){
+        $row=$red_servidor_registrar_array[0];
+        $node=node_load($row->nid);
+        return $node;
+    }
+    $my_result=new stdClass();
+    return $my_result;
+}
+function red_servidor_registrar_registrados_define_header(){
+    $html=array();
+    $html[]=red_servidor_registrar_registrados_navegar_menu();
+    //$html[]=red_servidor_registrar_fuentes_filtro();
+    return implode('',$html);
+}
+function red_servidor_registrar_registrados_navegar_menu($node='',$with_edit=0){    
+    global $user;
+    $html=array();
+    $html[]='<div class="tab-wrapper clearfix primary-only">';
+    $html[]='<div id="tabs-primary" class="tabs primary">';
+    $html[]='<ul>';
+    $html[]='<li class="red_publica_menu_li'.red_servidor_registrar_registrados_get_menu_class_active('red_servidor_registrar/registrados').'"'.'>'.l(t('Registration'),'red_servidor_registrar/registrados').'</li>';
+    $html[]='<li class="red_publica_menu_li'.red_servidor_registrar_registrados_get_menu_class_active('red_servidor_registrar/registrados_grupos').'"'.'>'.l(t('Groups'),'red_servidor_registrar/registrados_grupos').'</li>';
+    $html[]='<li class="red_publica_menu_li'.red_servidor_registrar_registrados_get_menu_class_active('red_servidor/validar_usuario_network/registrados').'"'.'>'.l(t('Users'),'red_servidor/validar_usuario_network/registrados').'</li>';
+    $html[]='<li class="red_publica_menu_li'.red_servidor_registrar_registrados_get_menu_class_active('red_servidor/validar_usuario_network/registrados_todos').'"'.'>'.l(t('All Users'),'red_servidor/validar_usuario_network/registrados_todos').'</li>';
+    
+    /*if(isset($user->uid) && !empty($user->uid) && $with_edit){
+        if($user->uid==$node->uid || is_super_admin()){
+            $html[]='<li class="red_publica_menu_li'.red_servidor_registrar_registrados_get_menu_class_active('ninguna').'"'.'>'.l(t('Edit'),'node/'.$node->nid.'/edit').'</li>';
+        }    
+    }*/
+    $html[]='</ul>';
+    $html[]='</div>';
+    $html[]='</div>';
+    //
+    $output=implode('',$html);
+    return $output;
+}
+function red_servidor_registrar_registrados_get_menu_class_active($konp){
+    return red_publica_get_menu_class_active($konp);
+}

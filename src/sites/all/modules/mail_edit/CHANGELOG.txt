@@ -1,0 +1,25 @@
+
+CHANGELOG for Mail Editor for Drupal 6
+
+
+mail_edit 6.x-1.x-dev:
+
+
+mail_edit 6.x-1.2 (2012-05-27):
+  Bug fix:
+    - Fix hook names in the comments (no functional changes).
+    - Fix the missing user templates (failed to include the .inc files).
+
+
+mail_edit 6.x-1.1 (2011-08-28):
+  Enhancements:
+    - More clean-up (no functional change).
+    - Further tune the template list.
+    - #1238416 by Pasqualle, salvis: Implement nicely-formatted and filterable template list.
+    - Move admin code to mail_edit.admin.inc to reduce the footprint (no functional change).
+    - More clean-up (no functional change).
+    - #916560 by jaydub, salvis: Coding standards cleanup.
+
+mail_edit 6.x-1.0 (2011-08-24):
+  (no changes since 2010-12-28)
+

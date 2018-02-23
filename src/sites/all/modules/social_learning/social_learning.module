@@ -1,0 +1,576 @@
+<?php
+require_once('social_learning.topics.inc.php');
+require_once('social_learning.mentions.inc.php');
+require_once('social_learning.profiles.inc.php');
+require_once('social_learning.collections.inc.php');
+require_once('social_learning.simular.inc.php');
+require_once('social_learning.feeds.inc.php');
+require_once('social_learning.items.inc.php');
+require_once('social_learning.step.inc.php');
+require_once('social_learning.files.inc.php');
+function social_learning_menu() {
+    $items=array(); 
+    $items['social_learning/api/resources'] = array(
+        'title' => 'Resources',
+        'page callback'=>'social_learning_api_resources_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/api/resources/%'] = array(
+        'title' => 'Resource',
+        'page callback'=>'social_learning_api_resources_view_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/api/topics'] = array(
+        'title' => 'Topics',
+        'page callback'=>'social_learning_topics_api_topics_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/api/topics/%'] = array(
+        'title' => 'Relevances',
+        'page callback'=>'social_learning_topics_api_topics_relevances_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/api/mentions'] = array(
+        'title' => 'Mentions',
+        'page callback'=>'social_learning_mentions_api_mentions_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/api/profiles'] = array(
+        'title' => 'Profiles',
+        'page callback'=>'social_learning_profiles_api_profiles_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/api/mentions/%'] = array(
+        'title' => 'Mention',
+        'page callback'=>'social_learning_mentions_api_mentions_view_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/collections'] = array(
+        'title' => 'Collections',
+        'page callback'=>'social_learning_collections_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );    
+    $items['social_learning/download_collection_items/%'] = array(
+        'title' => 'Collection',
+        'page callback'=>'social_learning_collections_download_collection_items_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_collection/%'] = array(
+        'title' => 'Upload Collection',
+        'page callback'=>'social_learning_collections_upload_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/results_download_collection_items/%']=array(
+        'title' => 'Results',
+        'page callback'=>'social_learning_collections_results_download_collection_items_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );    
+    $items['social_learning/upload_rating_items/%']=array(
+        'title' => 'Upload ratings',
+        'page callback'=>'social_learning_collections_upload_rating_items_callback',    
+        'access callback' => 'social_learning_my_admin_grupo_access_callback',
+    );
+    $items['social_learning/create_rss/%']=array(
+        'title' => 'Create RSS',
+        'page callback'=>'social_learning_collections_create_rss_callback',
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_item_rating/%']=array(
+        'title' => 'Upload Rating',
+        'page callback'=>'social_learning_collections_upload_item_rating_callback',
+        'access callback' => 'social_learning_my_admin_grupo_access_callback',
+    );
+    $items['social_learning/results_download_collection_items_order_by_date/%']=array(
+        'title' => 'Results',
+        'page callback'=>'social_learning_collections_results_download_collection_items_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/results_download_collection_items_order_by_score_average']=array(
+        'title' => 'Results',
+        'page callback'=>'social_learning_collections_results_download_collection_items_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/results_download_collection_items_order_by_votes']=array(
+        'title' => 'Results',
+        'page callback'=>'social_learning_collections_results_download_collection_items_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/delete_collection/%'] = array(
+        'title' => 'Collection',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_collections_delete_collection_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/simular_delete'] = array(
+        'title' => 'Delete',
+        'page callback'=>'social_learning_simular_delete_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/simular_collection_create_rss/%'] = array(
+        'title' => 'RSS',
+        'page callback'=>'social_learning_simular_collection_create_rss_callback',
+        'access callback' => TRUE,
+    );
+    $items['social_learning/resources_collection/%']=array( 
+        'title' => 'Resources',
+        'page callback'=>'social_learning_collections_resources_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_collection_resource/%']=array(
+        'title' => 'Upload Resource',
+        'page callback'=>'social_learning_collections_upload_collection_resource_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/delete_collection_resource/%']=array(
+        'title' => 'Resource',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_collections_delete_collection_resource_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/simular_collections_download_all_collection_items']=array(
+        'title' => 'Download',
+        'page callback'=>'social_learning_simular_collections_upload_collection_resource_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/simular_collection_filtro_temporal/%']=array( 
+        'title' => 'Create RSS',
+        'page callback'=>'social_learning_simular_collection_filtro_temporal_callback',
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/simular_results_collection_filtro_temporal']=array( 
+        'title' => 'Create RSS',
+        'page callback'=>'social_learning_simular_results_collection_filtro_temporal_callback',
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/collection_filtro_temporal']=array( 
+        'title' => 'Create RSS',
+        'page callback'=>'social_learning_collections_collection_filtro_temporal_callback',
+        'access callback' => 'social_learning_my_access_callback',
+    );
+     $items['social_learning/collection_temporal_view/%']=array( 
+        'title' => 'Create RSS',
+        'page callback'=>'social_learning_collections_collection_temporal_view_callback',
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/resources_nodes_collection/%']=array( 
+        'title' => 'Resources',
+        'page callback'=>'social_learning_collections_resources_nodes_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/collections_nodes'] = array(
+        'title' => 'Collections',
+        'page callback'=>'social_learning_collections_nodes_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/simular_topics_upload_topic_postapi']=array(
+        'title' => 'Download',
+        'page callback'=>'social_learning_simular_topics_upload_topic_postapi_callback',    
+        'access callback' => 'social_learning_my_admin_access_callback',
+    );
+    $items['social_learning/topics_collection/%']=array( 
+        'title' => 'Resources',
+        'page callback'=>'social_learning_topics_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_collection_topic/%']=array(
+        'title' => 'Upload Topic',
+        'page callback'=>'social_learning_topics_upload_collection_topic_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/delete_collection_topic/%']=array(
+        'title' => 'Topic',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_topics_delete_collection_topic_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );    
+    $items['social_learning/topics_nodes_collection']=array( 
+        'title' => 'Resources',
+        'page callback'=>'social_learning_topics_nodes_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/feeds_collection/%']=array( 
+        'title' => 'Resource Containers',
+        'page callback'=>'social_learning_feeds_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_collection_feed/%']=array(
+        'title' => 'Upload Resource Container',
+        'page callback'=>'social_learning_feeds_upload_collection_feed_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/delete_collection_feed/%']=array(
+        'title' => 'Resource Container',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_feeds_delete_collection_feed_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/feeds_nodes_collection']=array( 
+        'title' => 'Resource Containers',
+        'page callback'=>'social_learning_feeds_nodes_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/feeds_nodes_collection']=array( 
+        'title' => 'Resource Containers',
+        'page callback'=>'social_learning_feeds_nodes_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_collection_step']=array(
+        'title' => 'Upload Collection',
+        'page callback'=>'social_learning_step_upload_collection_step_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/topics_step/%']=array(
+        'title' => 'Topics',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_step_topics_step_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/resources_step/%']=array(
+        'title' => 'Resources',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_step_resources_step_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/feeds_step/%']=array(
+        'title' => 'Resource Containers',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_step_feeds_step_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/files_collection/%']=array( 
+        'title' => 'Files',
+        'page callback'=>'social_learning_files_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/upload_collection_file/%']=array(
+        'title' => 'Upload Topic',
+        'page callback'=>'social_learning_files_upload_collection_file_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/files_step/%']=array(
+        'title' => 'Files',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_step_files_step_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/delete_collection_file/%']=array(
+        'title' => 'File',
+        'page callback'=>'drupal_get_form',
+        'page arguments'=>array('social_learning_files_delete_collection_file_form'),
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    $items['social_learning/files_nodes_collection']=array( 
+        'title' => 'Resources',
+        'page callback'=>'social_learning_files_nodes_collection_callback',    
+        'access callback' => 'social_learning_my_access_callback',
+    );
+    //
+    return $items;
+}
+function social_learning_api_resources_callback(){
+    $output='';
+    $output.=social_learning_create_menu();
+    $headers=array();
+    $headers[]=array('data'=>t('id'),'field'=>'id');
+    $headers[]=array('data'=>t('Title'),'field'=>'title');
+    $headers[]=array('data'=>t('Interest'),'field'=>'interest');
+    $headers[]='';
+    //
+    $resources_array=social_learning_get_resources_array();
+    $my_limit=20;
+    //
+    $sort='desc';
+    $field='id';
+    $is_numeric=1;
+    if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
+        $sort=$_REQUEST['sort'];
+    }
+    if(isset($_REQUEST['order']) && !empty($_REQUEST['order'])){
+        $order=$_REQUEST['order'];
+        if($order==t('id')){
+            $field='id';
+        }else if($order==t('Title')){
+            $field='title';
+            $is_numeric=0;
+        }else if($order==t('Interest')){
+            $field='interest';
+        }        
+    }
+    //
+    $rows=array();
+    $num_rows = FALSE;
+    if(!empty($resources_array)){
+        foreach($resources_array as $i=>$r){
+            if(!empty($r->title)){
+                $id=social_learning_get_resource_id_by_url($r->resource);
+                $row[0]=$id;
+                $row[1]=$r->title;
+                $row[2]=$r->interest;
+                $row[3]=social_learning_api_resources_define_acciones($id);
+                $row['id']=$id;
+                $row['title']=$r->title;
+                $row['interest']=$r->interest;
+                $rows[]=$row;
+                $num_rows = TRUE;
+            }    
+        }
+    }
+    //
+    $rows=array_ordenatu($rows,$field,$sort,$is_numeric);
+    $rows=hontza_unset_array($rows,array('id','title','interest')); 
+    $rows=my_set_estrategia_pager($rows, $my_limit);
+    //
+    if ($num_rows) {
+        $output .= theme('table',$headers,$rows);
+        $output .= theme('pager', NULL, $my_limit);
+    }
+    else {
+      $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+    }
+    //
+    return $output;
+}
+function social_learning_my_access_callback(){
+    global $user;
+    if(!hontza_social_is_grupo_semantico_social()){
+        return FALSE;
+    }
+    /*if(user_access('root')){
+        return TRUE;
+    }*/
+    if(isset($user->uid) && !empty($user->uid)){
+        return TRUE;
+    }
+    return FALSE;
+}
+function social_learning_get_resources_array(){
+    $url=hontza_social_define_url('api/resources');
+    $content=file_get_contents($url);
+    $result=json_decode($content);
+    return $result;
+}
+function social_learning_get_resource_id_by_url($resource){
+    $url=hontza_social_define_url('api/resources');
+    $result=str_replace($url,'',$resource);
+    $result=trim($result,'/');
+    return $result;
+}
+function social_learning_api_resources_define_acciones($id){
+    $html=array();
+    $html[]=l(t('Resource'),'social_learning/api/resources/'.$id);
+    return implode('&nbsp;',$html);
+}
+function social_learning_api_resources_view_callback(){
+    $html=array();
+    $id=arg(3);
+    $row=social_learning_get_resources_row($id);
+    /*echo print_r($row,1);
+    exit();*/
+    //
+    $style='style="float:left;clear:both;padding-bottom:5px;"';
+    //
+    $html[]=social_learning_create_menu();
+    $html[]='<div '.$style.'>';
+    $html[]='<label style="float:left;">';
+    $html[]='<b>'.t('Title').':&nbsp;</b>';
+    $html[]='</label>';
+    $html[]='<div style="float:left;">'.$row->title.'</div>';
+    $html[]='</div>';
+    //
+    $html[]='<div '.$style.'>';
+    $html[]='<label style="float:left;">';
+    $html[]='<b>'.t('Url').':&nbsp;</b>';
+    $html[]='</label>';
+    $html[]='<div style="float:left;">'.l($row->url,$row->url,array('absolute'=>TRUE,'attributes'=>array('target'=>'_blank'))).'</div>';
+    $html[]='</div>';
+    //
+    $html[]='<div '.$style.'>';
+    $html[]='<label style="float:left;">';
+    $html[]='<b>'.t('Description').':&nbsp;</b>';
+    $html[]='</label>';
+    $html[]='<div style="float:left;">'.$row->description.'</div>';
+    $html[]='</div>';
+    //
+    $html[]='<div '.$style.'>';
+    $html[]='<label style="float:left;">';
+    $html[]='<b>'.t('Interest').':&nbsp;</b>';
+    $html[]='</label>';
+    $html[]='<div style="float:left;">'.$row->interest.'</div>';
+    $html[]='</div>';
+    //
+    $html[]='<div '.$style.'>';
+    $html[]='<label style="float:left;">';
+    $html[]='<b>'.t('Topics').':&nbsp;</b>';
+    $html[]='</label>';
+    $html[]='<div style="float:left;">'.social_learning_get_resource_topics_html($row).'</div>';
+    $html[]='</div>';
+    //
+    $html[]='<div '.$style.'>';
+    $html[]='<label style="float:left;">';
+    $html[]='<b>'.t('Mentions').':&nbsp;</b>';
+    $html[]='</label>';
+    $html[]='<div style="float:left;">'.social_learning_get_resource_mentions_html($row).'</div>';
+    $html[]='</div>';
+    //
+    $html[]='<div '.$style.'>';
+    $html[]=l(t('Return'),'social_learning/api/resources');
+    $html[]='</div>';
+    return implode('',$html);
+}
+function social_learning_get_resources_row($id){
+     $url=hontza_social_define_url('api/resources/'.$id);
+     $content=file_get_contents($url);
+     $result=json_decode($content);     
+     return $result;
+}
+function social_learning_get_resource_topics_html($row){
+    $html=array();
+    if(isset($row->topics) && !empty($row->topics)){
+        $html[]='<table>';
+        $html[]='<tr>';
+        $html[]='<th>'.t('Topic id').'</th>';        
+        $html[]='<th>'.t('Topic').'</th>';
+        $html[]='<th>'.t('Score').'</th>';
+        $html[]='</tr>';
+        foreach($row->topics as $i=>$topic){
+            $topic_id=social_learning_get_topic_id_by_url($topic->topic);
+            $html[]='<tr>';
+            $html[]='<td>'.$topic_id.'</td>';            
+            $html[]='<td>'.$row->topic_list[$i].'</td>';
+            $html[]='<td>'.$topic->score.'</td>';
+            $html[]='</tr>';
+        }
+        $html[]='</table>';
+    }
+    return implode('',$html);
+}
+function social_learning_get_topic_id_by_url($topic){
+    $url=hontza_social_define_url('api/topics');
+    $result=str_replace($url,'',$topic);
+    $result=trim($result,'/');
+    return $result;
+}
+function social_learning_get_resource_mentions_html($row){
+    $html=array();
+    if(isset($row->mentions) && !empty($row->mentions)){
+        $html[]='<table>';
+        $html[]='<tr>';
+        $html[]='<th>'.t('Mention id').'</th>';
+        $html[]='<th>'.t('Profile id').'</th>';        
+        $html[]='<th>'.t('Resource id').'</th>';
+        $html[]='<th>'.t('Mention').'</th>';
+        $html[]='<th>'.t('Card').'</th>';
+        $html[]='</tr>';
+        foreach($row->mentions as $i=>$url){
+            $mentions_id=social_learning_get_mentions_id_by_url($url);
+            $mentions_row=social_learning_get_mentions_row($mentions_id);
+            $html[]='<tr>';
+            $html[]='<td>'.$mentions_id.'</td>';            
+            $html[]='<td>'.social_learning_get_profile_id_by_url($mentions_row->profile).'</td>';
+            $html[]='<td>'.social_learning_get_resource_id_by_url($mentions_row->resource).'</td>';
+            $html[]='<td>'.$mentions_row->mention.'</td>';            
+            $html[]='<td>'.$mentions_row->card.'</td>';
+            $html[]='</tr>';
+        }
+        $html[]='</table>';
+    }
+    return implode('',$html);
+}
+function social_learning_get_mentions_id_by_url($mention){
+    $url=hontza_social_define_url('api/mentions');
+    $result=str_replace($url,'',$mention);
+    $result=trim($result,'/');
+    return $result;
+}
+function social_learning_get_mentions_row($id){
+     $url=hontza_social_define_url('api/mentions/'.$id);
+     $content=file_get_contents($url);
+     $result=json_decode($content);     
+     return $result;
+}
+function social_learning_get_profile_id_by_url($mention){
+    $url=hontza_social_define_url('api/profiles');
+    $result=str_replace($url,'',$mention);
+    $result=trim($result,'/');
+    return $result;
+}
+function social_learning_create_menu(){
+    $html=array();
+    $html[]='<div class="tab-wrapper clearfix primary-only" style="margin-top:0;">';
+    $html[]='<div class="tabs primary" id="tabs-primary-alerta_user">';
+    $html[]='<ul>';
+    //
+    $html[]='<li class="alerta_user_menu_li'.social_learning_get_class_active().'" id="li_social_learning_resources">';
+    $html[]=l(t('Resources'),'social_learning/api/resources');
+    $html[]='</li>';
+    //
+    $html[]='<li class="alerta_user_menu_li'.social_learning_get_class_active().'" id="li_social_learning_topics">';
+    $html[]=l(t('Topics'),'social_learning/api/topics');
+    $html[]='</li>';
+    //
+    $html[]='<li class="alerta_user_menu_li'.social_learning_get_class_active().'" id="li_social_learning_mentions">';
+    $html[]=l(t('Mentions'),'social_learning/api/mentions');
+    $html[]='</li>';
+    //
+    $html[]='<li class="alerta_user_menu_li'.social_learning_get_class_active().'" id="li_social_learning_mentions">';
+    $html[]=l(t('Profiles'),'social_learning/api/profiles');
+    $html[]='</li>';
+    //
+    $html[]='<li class="alerta_user_menu_li'.social_learning_get_class_active().'" id="li_social_learning_hontza_collections">';
+    $html[]=l('Hontza Collections','social_learning/collections');
+    $html[]='</li>';
+    //
+    $html[]='</div>';
+    $html[]='</div>';
+    return implode('',$html);
+}
+function social_learning_get_class_active(){
+    return '';
+}
+function social_learning_my_admin_access_callback(){
+    if(!hontza_social_is_grupo_semantico_social()){
+        return FALSE;
+    }
+    if(user_access('root')){
+        return TRUE;
+    }
+    return FALSE;    
+}
+function social_learning_get_resource_topics($resource_id,$topics_array){
+    $result=array();
+    if(!empty($topics_array)){
+        foreach($topics_array as $i=>$topic_row){
+            if(isset($topic_row->relevance) && !empty($topic_row->relevance)){
+                foreach($topic_row->relevance as $i=>$relevance_row){
+                    $konp_resource_id=social_learning_get_resource_id_by_url($relevance_row->resource);
+                    if($resource_id==$konp_resource_id){
+                        $r=new stdClass();
+                        $r->topic=$topic_row->topic;
+                        $r->name=$topic_row->name;
+                        $r->score=$relevance_row->score;
+                        $result[]=$r;
+                    }
+                }
+            }
+        }
+    }
+    return $result;
+}
+function social_learning_my_admin_grupo_access_callback(){
+    if(!hontza_social_is_grupo_semantico_social()){
+        return FALSE;
+    }
+    if(social_learning_admin_grupo_access()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function social_learning_admin_grupo_access(){
+    if(is_administrador_grupo(1)){
+        return 1;
+    }
+    return 0;
+}
+function social_learning_cron(){
+    social_learning_collections_download_all_collection_items();
+}

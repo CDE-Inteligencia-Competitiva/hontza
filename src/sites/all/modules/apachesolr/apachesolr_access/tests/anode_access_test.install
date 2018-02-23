@@ -1,0 +1,58 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the node_access_test module.
+ */
+
+
+/**
+ * Implements hook_install().
+ */
+function anode_access_test_install() {
+  drupal_install_schema('anode_access_test');
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function anode_access_test_uninstall() {
+  drupal_uninstall_schema('anode_access_test');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function anode_access_test_schema() {
+  $schema['node_access_test'] = array(
+    'description' => 'The base table for node_access_test.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The {node}.nid this record affects.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'private' => array(
+        'description' => 'Boolean indicating whether the node is private (visible to administrator) or not (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'nid' => array('nid'),
+    ),
+    'primary key' => array('nid'),
+    'foreign keys' => array(
+      'versioned_node' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+    ),
+  );
+
+  return $schema;
+}

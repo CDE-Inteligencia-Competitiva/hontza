@@ -1,0 +1,15 @@
+<?php
+// $Id: profile_permission.install,v 1.2 2009/01/20 05:52:04 boombatower Exp $
+/**
+ * @file
+ * Restrict editing of profile fields.
+ *
+ * Copyright 2008 by Jimmy Berry ("boombatower", http://drupal.org/user/214218)
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function profile_permission_uninstall() {
+  variable_del('profile_permission_fields');
+}

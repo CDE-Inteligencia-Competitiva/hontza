@@ -1,0 +1,672 @@
+<?php
+require_once('contenidos.fuentes.inc.php');
+require_once('contenidos.canales.inc.php');
+require_once('contenidos.items.inc.php');
+require_once('contenidos.noticias.inc.php');
+require_once('contenidos.debates.inc.php');
+require_once('contenidos.collaboration.inc.php');
+require_once('contenidos.reports.inc.php');
+require_once('contenidos.ideas.inc.php');
+require_once('contenidos.oportunidades.inc.php');
+require_once('contenidos.proyectos.inc.php');
+function contenidos_perm() {
+  return array();
+}
+function contenidos_menu() {
+    $items=array();
+    $items['contenidos'] = array(
+    'title' => 'All My Contents',
+    'page callback' => 'contenidos_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+    $items['contenidos/fuentes'] = array(
+    'title' => 'My Sources',
+    'page callback' => 'contenidos_fuentes_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/canales'] = array(
+    'title' => 'My Channels',
+    'page callback' => 'contenidos_canales_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/items'] = array(
+    'title' => 'My News',
+    'page callback' => 'contenidos_items_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/noticias'] = array(
+    'title' => 'My User News',
+    'page callback' => 'contenidos_noticias_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/debates'] = array(
+    'title' => 'My Discussions',
+    'page callback' => 'contenidos_debates_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/collaboration'] = array(
+    'title' => 'My Wikis',
+    'page callback' => 'contenidos_collaboration_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/reports'] = array(
+    'title' => 'My Reports',
+    'page callback' => 'contenidos_reports_callback',
+    'access callback'=>'contenidos_reports_custom_access',    
+  ); 
+     $items['contenidos/ideas'] = array(
+    'title' => 'My Ideas',
+    'page callback' => 'contenidos_ideas_callback',
+    'access callback'=>'contenidos_custom_access',    
+  ); 
+     $items['contenidos/oportunidades'] = array(
+    'title' => 'My Opportunities',
+    'page callback' => 'contenidos_oportunidades_callback',
+    'access callback'=>'contenidos_custom_access',    
+  ); 
+     $items['contenidos/proyectos'] = array(
+    'title' => 'My Projects',
+    'page callback' => 'contenidos_proyectos_callback',
+    'access callback'=>'contenidos_custom_access',    
+  );
+     $items['contenidos/canales/delete_canales_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_canales_delete_canales_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/canales/activate_confirm']=array(
+    'title'=>t('Activated channel'),
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('contenidos_canales_activate_confirm_form'),
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/canales/deactivate_confirm']=array(
+    'title'=>t('Deactivate channel'),
+    'page callback' => 'drupal_get_form',
+    'page arguments'   => array('contenidos_canales_deactivate_confirm_form'),
+    'access callback'=>'contenidos_custom_access',
+    );
+  $items['contenidos/items/delete_items_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_items_delete_items_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/items/publish_post_items_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_items_publish_post_items_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/items/unpublish_post_items_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_items_unpublish_post_items_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/noticias/delete_noticias_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_noticias_delete_noticias_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/noticias/publish_post_noticias_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_noticias_publish_post_noticias_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/noticias/unpublish_post_noticias_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_noticias_unpublish_post_noticias_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/fuentes/delete_fuentes_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_fuentes_delete_fuentes_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/fuentes/publish_post_fuentes_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_fuentes_publish_post_fuentes_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/fuentes/unpublish_post_fuentes_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_fuentes_unpublish_post_fuentes_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/debates/delete_debates_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_debates_delete_debates_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/debates/publish_post_debates_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_debates_publish_post_debates_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/debates/unpublish_post_debates_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_debates_unpublish_post_debates_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/collaboration/delete_collaboration_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_collaboration_delete_collaboration_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/collaboration/publish_post_collaboration_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_collaboration_publish_post_collaboration_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/collaboration/unpublish_post_collaboration_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_collaboration_unpublish_post_collaboration_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/reports/delete_reports_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_reports_delete_reports_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/reports/publish_post_reports_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_reports_publish_post_reports_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/reports/unpublish_post_reports_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_reports_unpublish_post_reports_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/ideas/delete_ideas_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_ideas_delete_ideas_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/ideas/publish_post_ideas_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_ideas_publish_post_ideas_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/ideas/unpublish_post_ideas_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_ideas_unpublish_post_ideas_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/oportunidades/delete_oportunidades_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_oportunidades_delete_oportunidades_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/oportunidades/publish_post_oportunidades_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_oportunidades_publish_post_oportunidades_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/oportunidades/unpublish_post_oportunidades_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_oportunidades_unpublish_post_oportunidades_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/proyectos/delete_proyectos_confirm'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_proyectos_delete_proyectos_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/proyectos/publish_post_proyectos_confirm'] = array(
+    'title' => 'Publish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_proyectos_publish_post_proyectos_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  $items['contenidos/proyectos/unpublish_post_proyectos_confirm'] = array(
+    'title' => 'Unpublish Post',
+    'page callback' => 'drupal_get_form',
+    'page arguments'=>array('contenidos_proyectos_unpublish_post_proyectos_confirm_form'), 
+    'access callback'=>'contenidos_custom_access',
+  );
+  //intelsat-2015
+  $items['contenidos/items/publish_post/%']=array(
+    'title' => 'Publish',
+    'page callback' => 'contenidos_items_publish_post_callback',
+    'access callback'=>'contenidos_custom_access',     
+    );
+  $items['contenidos/items/unpublish_post/%']=array(
+    'title' => 'Publish',
+    'page callback' => 'contenidos_items_unpublish_post_callback',
+    'access callback'=>'contenidos_custom_access',     
+    );
+  return $items;
+}
+function contenidos_custom_access(){
+    if(hontza_is_user_anonimo()){
+        return FALSE;
+    }
+    return TRUE;
+}
+function contenidos_callback(){
+    global $user;
+    
+    $output='';
+    
+    $headers=array();
+    $headers[0]=array('data'=>t('Title'),'field'=>'node_title');
+    $headers[1]=array('data'=>t('Type'),'field'=>'node_type');
+    $headers[2]=array('data'=>t('Group'),'field'=>'og_ancestry_group_nid');
+    //$headers[3]=array('data'=>t('Source Type'),'field'=>'node_data_field_fuente_canal_field_fuente_canal_value');
+    $headers[3]=array('data'=>t(t('Date')),'field'=>'node_changed');
+    //$headers[5]=t('Published');
+    $headers[4]=t('Actions');
+    
+    $my_limit=30;
+    
+    $sort='asc';
+    $field='node_title';
+    $is_numeric=0;
+    if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
+        $sort=$_REQUEST['sort'];
+    }
+    if(isset($_REQUEST['order']) && !empty($_REQUEST['order'])){
+        $order=$_REQUEST['order'];
+        if($order==t('Title')){
+            $field='node_title';
+        }else if($order==t('Source Type')){
+            $field='node_data_field_fuente_canal_field_fuente_canal_value';
+        }else if($order==t('Date')){
+            $field='node_changed';
+        }   
+    }
+    
+   $filter_fields=contenidos_define_filter_fields();
+    
+   $where=array();
+   $where[]='1';
+   $where[]='users.uid = '.$user->uid;
+   
+   if(!empty($filter_fields)){
+       foreach($filter_fields as $k=>$f){
+           $v=hontza_get_gestion_usuarios_filter_value($f,'contenidos_filtro');
+           if(!empty($v)){
+                switch($f){
+                    case 'grupo_nid':
+                        //intelsat-2016
+                        //$where[]='og_ancestry.group_nid='.$v;
+                        $grupo_nid_array=array_keys($v);
+                        $where[]='og_ancestry.group_nid IN('.implode(',',$grupo_nid_array).')'; 
+                        break;
+                    case 'text':
+                        $where[]='(node.title LIKE "%%'.$v.'%%" OR node_revisions.body LIKE "%%'.$v.'%%")';
+                        break;
+                    /*case 'fecha_ini':
+                    case 'fecha_fin':    
+                        $where[]=hontza_get_usuarios_acceso_where_time('node.changed','contenidos_filtro','fecha_ini','fecha_fin');
+                        break;*/
+                }
+           } 
+       }
+   }
+    
+    $where[]=hontza_get_usuarios_acceso_where_time('node.changed','contenidos_filtro','fecha_inicio','fecha_fin');
+   
+    $sql='SELECT node.nid AS nid,
+    node.title AS node_title,
+    node.language AS node_language,
+    node.type AS node_type,
+    og_ancestry.nid AS og_ancestry_nid,
+    node_data_field_fuente_canal.field_fuente_canal_value AS node_data_field_fuente_canal_field_fuente_canal_value,
+    node.vid AS node_vid,
+    node.created AS node_created,
+    node.status AS node_status,
+    node.uid AS node_uid,
+    node_revisions.format AS node_revisions_format,
+    node.changed AS node_changed,
+    og_ancestry.group_nid AS og_ancestry_group_nid 
+    FROM {node} node 
+    INNER JOIN {users} users ON node.uid = users.uid 
+    LEFT JOIN {og_ancestry} og_ancestry ON node.nid = og_ancestry.nid 
+    LEFT JOIN {content_field_fuente_canal} node_data_field_fuente_canal ON node.vid = node_data_field_fuente_canal.vid 
+    LEFT JOIN {node_revisions} node_revisions ON node.vid = node_revisions.vid 
+    WHERE '.implode(' AND ',$where).'    
+    ORDER BY '.$field.' '.$sort;
+    
+    $res=db_query($sql);        
+    
+    $rows=array();
+    $kont=0;
+    while ($r = db_fetch_object($res)) {
+      $rows[$kont]=array();
+      $rows[$kont][0]=l(red_funciones_resumir_titulo($r->node_title),'node/'.$r->nid);
+      //intelsat-2015
+      $type_label=contenidos_get_node_type_label($r->node_type);
+      $rows[$kont][1]=$type_label;
+      //        
+      $grupo_nid=$r->og_ancestry_group_nid;
+      $rows[$kont][2]=contenidos_get_grupo_link($grupo_nid,$grupo_title);
+      //$rows[$kont][3]=$r->node_data_field_fuente_canal_field_fuente_canal_value;
+      $rows[$kont][3]=date('Y-m-d H:i',$r->node_changed);
+      //$rows[$kont][5]=panel_admin_grupos_get_published_label($r->node_status);
+      $rows[$kont][4]=array('data'=>contenidos_define_acciones($r),'style'=>'white-space:nowrap;'); 
+      $rows[$kont]['grupo_title']=$grupo_title;
+      //intelsat-2015
+      $rows[$kont]['type_label']=$type_label;
+      //
+      $kont++;
+    }
+    //
+    if($order==t('Group')){
+        $rows=array_ordenatu($rows,'grupo_title', $sort,0);        
+    //intelsat-2015        
+    }else if($order==t('Type')){
+        $rows=array_ordenatu($rows,'type_label', $sort,0);        
+    }
+    //
+    $rows=my_set_estrategia_pager($rows, $my_limit);
+    $rows=hontza_unset_array($rows,array('grupo_title','type_label'));
+    //$rows=contenidos_set_fields($rows);
+    if (count($rows)>0) {
+        $output .= theme('table',$headers,$rows,array('class'=>'table_panel_admin_grupos'));
+        $output .= theme('pager', NULL, $my_limit);    
+    }else {
+        $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+    }
+    //
+    drupal_set_title(t('All My Contents'));
+    //
+    $output=contenidos_my_menu().contenidos_define_filtro().$output;
+    return $output;
+}
+function contenidos_get_grupo_link($grupo_nid,&$grupo_title){
+    $grupo_title='';
+    $grupo_node=node_load($grupo_nid);
+    if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+        $grupo_title=$grupo_node->title;
+        return l($grupo_node->title,'node/'.$grupo_nid);
+    }
+    return '';
+}
+function contenidos_set_fields($rows_in){    
+    $result=$rows_in;
+    if(!empty($result)){
+        foreach($result as $i=>$row){
+            $grupo_nid=$row[2];
+            $result[$i][2]=contenidos_get_grupo_link($grupo_nid);
+            $result[$i][5]=array('data'=>contenidos_define_acciones($result[$i][5]),'style'=>'white-space:nowrap;');
+        }
+    }
+    return $result;
+}
+function contenidos_define_acciones($r,$destination='destination=contenidos'){
+    $html=array();
+    $html[]=l(my_get_icono_action('edit',t('Edit')),'node/'.$r->nid.'/edit',array('query'=>$destination,'html'=>true));
+    $html[]=l(my_get_icono_action('delete',t('Delete')),'node/'.$r->nid.'/delete',array('query'=>$destination,'html'=>true));
+    $html[]=panel_admin_items_define_accion_publish($r,$destination);
+    return implode('&nbsp;',$html);
+}
+function contenidos_get_node_type_label($node_type){
+    $node_type_label_array=contenidos_define_node_type_label_array();
+    if(isset($node_type_label_array[$node_type]) && !empty($node_type_label_array[$node_type])){
+        return t($node_type_label_array[$node_type]);
+    }
+    return $node_type;
+}
+function contenidos_my_menu(){
+    return '';
+    $canal_nid=arg(1);
+    $html=array();
+    $html[]='<div class="tab-wrapper clearfix primary-only">';
+    $html[]='<div id="tabs-primary" class="tabs primary">';
+    $html[]='<ul>';
+    $html[]='<li'.contenidos_menu_class('all').'>'.l(t('My Contents'),'contenidos').'</li>';
+    $html[]='<li'.contenidos_menu_class('fuentes').'>'.l(t('My Sources'),'contenidos/fuentes').'</li>';
+    $html[]='<li'.contenidos_menu_class('canales').'>'.l(t('My Channels'),'contenidos/canales').'</li>';
+    $html[]='<li'.contenidos_menu_class('items').'>'.l(t('My News'),'contenidos/items').'</li>';
+    $html[]='<li'.contenidos_menu_class('noticias').'>'.l(t('My User News'),'contenidos/noticias').'</li>';
+    $html[]='<li'.contenidos_menu_class('debates').'>'.l(t('My Discussions'),'contenidos/debates').'</li>';
+    $html[]='<li'.contenidos_menu_class('collaboration').'>'.l(t('My Wikis'),'contenidos/collaboration').'</li>';
+    //
+    $html[]='</ul>';
+    $html[]='</div>';
+    $html[]='</div>';
+    $output=implode('',$html);
+    return $output;
+}
+function contenidos_menu_class($arg_type,$param_in=''){
+    $result=0;
+    if(empty($param_in)){
+        $param=arg(1);
+    }else{
+        $param=$param_in;
+    }
+    if(empty($param)){
+        if($arg_type=='all'){
+            $result=1;
+        }
+    }else{
+        if($param==$arg_type){
+            $result=1;
+        }
+    }    
+    if($result){
+        return ' class="active"';
+    }
+    return '';
+}
+function contenidos_left_title(){
+    return t('My Contents');
+}
+function contenidos_get_block_content(){
+    $html=array();
+    //intelsat-2015
+    if(!hontza_canal_rss_is_usuario_basico()){
+        $html[]=l(t('All My Contents'),'contenidos');
+    }
+    //$html[]=l(t('My Sources'),'contenidos/fuentes');
+    $html[]=l(t('My Channels'),'contenidos/canales');
+    $html[]=l(t('My News'),'contenidos/items');
+    $html[]=l(t('My User News'),'contenidos/noticias');
+    $html[]=l(t('My Discussions'),'contenidos/debates');
+    $html[]=l(t('My Wikis'),'contenidos/collaboration');
+    if(contenidos_reports_custom_access()){
+        $html[]=l(t('My Reports'),'contenidos/reports');
+    }
+    $html[]=l(t('My Ideas'),'contenidos/ideas');
+    $html[]=l(t('My Opportunities'),'contenidos/oportunidades');
+    $html[]=l(t('My Projects'),'contenidos/proyectos');
+    return implode('<br>',$html);
+}
+function contenidos_define_node_type_label_array(){
+    $result=array(
+    'alerta'=>'Custom Alert',
+    'boletin_grupo'=>'Group Bulletin',
+    'boletin_grupo_despedida'=>'Bulletin Footer',
+    'boletin_grupo_introduccion'=>'Bulletin Header',
+    'bookmark_temporal'=>'Bookmark',
+    'bulletin_text'=>'Bulletin Content',
+    'canal_busqueda'=>'Search Channel',
+    'canal_de_supercanal'=>'Pipe Channel',
+    'canal_de_yql'=>'Rss Filter',
+    'collection'=>'Collection',
+    'collection_feed'=>'Collection Feed',
+    'collection_file'=>'Collection File',
+    'collection_item'=>'Collection News',
+    'collection_resource'=>'Collection Document',
+    'collection_temporal'=>'Collection Temporal',
+    'collection_topic'=>'Collection Topic',
+    'debate'=>'Discussion',
+    'decision'=>'Decision',
+    'despliegue'=>'Subchallenge',
+    'estrategia'=>'Challenge',
+    'faq'=>'Faq',
+    'fuentehtml'=>'Html Source',
+    'grupo'=>'Group',
+    'idea'=>'Idea',
+    'informacion'=>'Key Question',
+    'item'=>'News',
+    'my_help'=>'Help',
+    'my_report'=>'Report',
+    'noticia'=>'User News',
+    'noticias_portada'=>'Public News',
+    'oportunidad'=>'Opportunity',
+    'post_frase_consultores_en_inteli'=>'Welcome Consultant',
+    'post_frase_facilitadores'=>'Welcome Expert',
+    'post_frase_probar_hontza_online'=>'Welcome Test',
+    'proyecto'=>'Project',
+    'rss_feed'=>'Highlighted News',
+    'servicio'=>'Expert',
+    'supercanal'=>'Pipe Source',
+    'wiki'=>'Wiki');
+    return $result;    
+}
+function contenidos_filtro_form(){
+    $form=array();
+    $fs_title=t('Search');
+    if(contenidos_is_filter_activated()){
+        $fs_title=t('Filter Activated');
+        $class='file_buscar_fs_vigilancia_class fs_search_activated';
+    }else{
+        $fs_title=t('Filter');
+        $class='file_buscar_fs_vigilancia_class';        
+    }    
+    //           
+    $form=array();
+    $form['file_buscar_fs']=array('#type'=>'fieldset','#title'=>$fs_title,'#attributes'=>array('id'=>'file_buscar_fs','class'=>$class));    
+    contenidos_add_filter_form_fields('contenidos_filtro',$form);
+    
+    
+    $form['file_buscar_fs']['my_submit']=array(
+        '#type'=>'submit',
+        '#value'=>t('Apply'),
+    );
+    $form['file_buscar_fs']['limpiar']=array(
+        '#type'=>'submit',
+        '#name'=>'limpiar',
+        '#value'=>t('Reset'),
+    );
+    return $form;
+}
+function contenidos_define_filter_fields(){
+    $filter_fields=array('grupo_nid','text','fecha_inicio','fecha_fin');
+    return $filter_fields;
+}
+function contenidos_filtro_form_submit(&$form, &$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+        $name=$form_state['clicked_button']['#name'];
+        $key='contenidos_filtro';
+        if(strcmp($name,'limpiar')==0){
+            if(isset($_SESSION[$key]['filter']) && !empty($_SESSION[$key]['filter'])){
+                unset($_SESSION[$key]['filter']);
+            }
+        }else{
+            $_SESSION[$key]['filter']=array();
+            $fields=contenidos_define_filter_fields();
+            if(count($fields)>0){
+                foreach($fields as $i=>$f){
+                    $v=$form_state['values'][$f];
+                    if(!empty($v)){
+                        $_SESSION[$key]['filter'][$f]=$v;
+                    }
+                }
+            }
+        }        
+    }
+}
+function contenidos_get_filter_value($field,$key){
+    return hontza_get_gestion_usuarios_filter_value($field,$key);
+}
+function contenidos_define_filtro(){
+    my_add_buscar_js();
+    return drupal_get_form('contenidos_filtro_form');
+}
+function contenidos_is_filter_activated(){
+    $fields=contenidos_define_filter_fields();
+    if(count($fields)>0){
+        foreach($fields as $i=>$f){
+            if(isset($_SESSION['contenidos_filtro']['filter'][$f]) && !empty($_SESSION['contenidos_filtro']['filter'][$f])){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function contenidos_add_filter_form_fields($key,&$form,$with_grupo=1,$is_grupo_multiple=1){
+    if($with_grupo){
+        $form['file_buscar_fs']['grupo_nid']=array(
+            '#type'=>'select',
+            '#title'=>t('Filter by group'),
+            '#options'=>panel_admin_items_define_filtro_grupo_options(),
+            '#default_value'=>contenidos_get_filter_value('grupo_nid',$key),
+        );
+        //intelsat-2016
+        if($is_grupo_multiple){
+            $form['file_buscar_fs']['grupo_nid']['#multiple']=TRUE;
+            $form['file_buscar_fs']['grupo_nid']['#attributes']=contenidos_get_grupo_multiple_attributes();
+        }
+        if(in_array($key,array('gestion_canales'))){
+            $form['file_buscar_fs']['is_activated']=array(
+                '#title'=>t('Activated'),
+                '#type'=>'select',
+                '#options'=>hontza_registrar_yes_no_options(1,1),
+                '#default_value'=>contenidos_get_filter_value('is_activated',$key),
+            );
+            $form['file_buscar_fs']['grupo_nid']['#prefix']='<div><div style="float:left">';
+            $form['file_buscar_fs']['grupo_nid']['#suffix']='</div>';
+            $form['file_buscar_fs']['is_activated']['#prefix']='<div style="float:left;padding-left:20px;">';
+            $form['file_buscar_fs']['is_activated']['#suffix']='</div></div>';            
+        }        
+    }
+    $fecha_inicio=contenidos_get_filter_value('fecha_inicio',$key);    
+    $fecha_fin=contenidos_get_filter_value('fecha_fin',$key);
+      
+    $form['file_buscar_fs']['fecha_inicio']=array(
+			'#type' => 'date_select',
+			'#date_format' => 'Y-m-d',
+			'#date_label_position' => 'within',
+			'#title'=>t('From'),
+			'#default_value'=>  $fecha_inicio,
+                        '#prefix'=>'<div style="float:left;width:100%;"><div style="float:left;width:50%;">',
+                        '#suffix'=>'</div>');
+    $form['file_buscar_fs']['fecha_fin']=array(
+			'#type' => 'date_select',
+			'#date_format' => 'Y-m-d',
+			'#date_label_position' => 'within',
+			'#title'=>t('To'),
+			'#default_value'=>$fecha_fin,
+                        '#prefix'=>'<div style="float:left;width:50%;">',
+                        '#suffix'=>'</div>');
+    
+    $form['file_buscar_fs']['text']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Text'),
+        '#default_value'=>hontza_get_gestion_usuarios_filter_value('text',$key),
+    );
+}
+//intelsat-2016
+function contenidos_get_grupo_multiple_attributes(){
+    $result=array();
+    $result['style']='height:200px;';
+    return $result;
+}

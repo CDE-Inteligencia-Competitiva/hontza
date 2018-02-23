@@ -1,0 +1,14 @@
+<?php
+require_once('red_red_login.proba.inc.php');
+function red_red_login_perm() {
+    return array('access red_red_login');
+}
+function red_red_login_menu() {
+    $items=array(); 
+    $items['red_red_login/proba'] = array(
+        'title' => 'Test network',
+        'page callback'=>'red_red_login_proba_callback',    
+        'access arguments' => array('access red_red_login'),
+    );  
+    return $items;
+}

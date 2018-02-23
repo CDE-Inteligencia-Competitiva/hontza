@@ -1,0 +1,367 @@
+<?php
+require_once('sites/all/libraries/MCAPI-PHP-master/examples/inc/MCAPI.class.php');
+function hontza_mcapi_perm() {
+  return array();
+}
+function hontza_mcapi_menu() {
+  $items=array();
+  $items['hontza_mcapi/settings'] = array(
+    'title' => 'MailChimp Settings',
+    'page arguments'=>array('hontza_mcapi_settings_form'),  
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'hontza_mcapi_custom_admin_access',
+  );
+   $items['hontza_mcapi/%/view_html'] = array(
+    'title' => 'View Html',
+    'page callback' => 'hontza_mcapi_view_html_callback',
+    'access callback' => TRUE,
+  );
+  return $items;
+}
+function hontza_mcapi_my_send_mail($mail_to_in,$subject,$body_in,$send_method,$is_recibir,$historico_nid,$is_mail_externo,$br_in){
+    $campaignId=hontza_mcapi_campaignCreate($subject,$body_in,$br_in);
+    hontza_mcapi_campaignSendNow($campaignId);
+}
+function hontza_mcapi_campaignCreate($subject,$body_in,$br_in){
+$api=hontza_mcapi_create_api();
+
+
+$type = 'regular';
+    
+//$opts['list_id'] = '23c961e1b4';
+$opts['list_id'] = $br_in->mailchimp_list_id;
+$opts['subject'] = $subject;
+//$opts['from_email'] = 'bulegoa@netkam.com';
+//$from_email=variable_get('my_from_default_mail','hontza@hontza.es');
+$from_email=variable_get('my_mailchimp_from_email','hontza@hontza.es');
+$opts['from_email'] = $from_email;
+
+//$from_name='Hontza';
+$from_name=variable_get('my_mailchimp_from_name','Hontza');
+$opts['from_name'] = $from_name;
+
+//$opts['tracking']=array('opens' => true, 'html_clicks' => true, 'text_clicks' => false);
+
+$opts['authenticate'] = true;
+//$opts['analytics'] = array('google'=>'my_google_analytics_key');
+$opts['title'] = $subject;
+//$opts['template_id']=74425;
+//$opts['template_id']=75465;
+//$opts['template_id']=75681;
+$mailchimp_template_id=$br_in->mailchimp_template_id;
+if(!empty($mailchimp_template_id)){
+    //$body_in='Vamos a ver como llega';
+    //$body_in=file_get_contents('sites/all/modules/despacho/informatica_boletin_report_resumen_word/Boletin_OT_ITI.html');
+    //print $body_in;exit();
+    $opts['template_id']=$mailchimp_template_id;
+    $hontza_mcapi_email_id=hontza_mcapi_save_hontza_mcapi_email($api,'','');
+    $content = array('html_main'=>$body_in,
+    'html_titulo_email' => $subject,    
+    //'text' => 'Texto'
+    //'html_mytexto'=>$body_in,
+    //'HTML_MYTEXTO'=>$body_in,
+    'html_my_archive'=>'<a href="http://iti.hontza.es/hontza_mcapi/'.$hontza_mcapi_email_id.'/view_html">Ver este correo en el navegador</a>',   
+    );
+}else{
+    $content = array('html'=>$body_in, 
+		  //'text' => 'Texto'
+    );
+}
+
+
+/** OR we could use this:
+$content = array('html_main'=>'some pretty html content',
+		 'html_sidecolumn' => 'this goes in a side column',
+		 'html_header' => 'this gets placed in the header',
+		 'html_footer' => 'the footer with an *|UNSUB|* message', 
+		 'text' => 'text content text content *|UNSUB|*'
+		);
+$opts['template_id'] = "1";
+**/
+
+$retval = $api->campaignCreate($type, $opts, $content);
+
+    if ($api->errorCode){
+            $msg="Unable to Create New Campaign!";
+            $msg.="<br>Code=".$api->errorCode;
+            $msg.="<br>".$api->errorMessage;
+            drupal_set_message($msg);
+    } else {
+            drupal_set_message("New Campaign ID:".$retval);
+    }
+    
+    //if(user_access('root')){
+        //echo print_r($api->campaignContent($retval),1);exit();
+        hontza_mcapi_save_hontza_mcapi_email($api,$retval,$hontza_mcapi_email_id);
+    //}
+    
+    return $retval;
+}
+function hontza_mcapi_get_apikey(){
+    //$result="4dc50eae734b6bb1e09a8afa36314053-us13";
+    $result=variable_get('hontza_mcapi_apikey','');
+    return $result;
+}
+function hontza_mcapi_campaignSendNow($campaignId){
+    $api=hontza_mcapi_create_api();
+    $retval = $api->campaignSendNow($campaignId);
+    if ($api->errorCode){
+            $msg="Unable to Send Campaign!";
+            $msg.="<br>Code=".$api->errorCode;
+            $msg.="<br>Msg=".$api->errorMessage;
+            drupal_set_message($msg);
+    } else {
+            drupal_set_message("Campaign Sent!");
+    }
+}
+function hontza_mcapi_custom_admin_access(){
+    if(red_funciones_is_administrador_grupo()){
+        return TRUE;
+    }
+    return FALSE;
+}
+function hontza_mcapi_settings_form(){
+    $form=array();
+    $form['apikey']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp API Key'),
+        '#default_value'=>hontza_mcapi_get_apikey(),
+        '#required'=>TRUE,
+    );
+
+    $form['from_email']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp From Email'),
+        '#default_value'=>variable_get('my_mailchimp_from_email', 'no-reply@hontza.es'),
+        '#required'=>TRUE,
+    );
+
+    $form['from_name']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp From Name'),
+        '#default_value'=>variable_get('my_mailchimp_from_name', 'Hontza'),
+        '#required'=>TRUE,
+    );
+
+    $form['save_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Save'),
+        '#name'=>'save_btn',
+    );
+    return $form;
+}
+function hontza_mcapi_add_alerta_settings_block_links(&$html){
+    $html[]=l('MailChimp settings','hontza_mcapi/settings',array('query'=>drupal_get_destination()));    
+}
+function hontza_mcapi_create_api(){
+    $apikey=hontza_mcapi_get_apikey();
+    $api = new MCAPI($apikey);
+    return $api;
+}
+
+function hontza_mcapi_settings_form_submit($form, &$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button']) && $form_state['clicked_button']['#name']=='save_btn'){
+        variable_set('hontza_mcapi_apikey',$form_state['values']['apikey']);
+        variable_set('my_mailchimp_from_email',$form_state['values']['from_email']);
+        variable_set('my_mailchimp_from_name',$form_state['values']['from_name']);
+        drupal_set_message(t('Saved'));
+    }
+}
+function hontza_mcapi_add_boletin_report_form_fields($row,&$form){
+    $form['boletin_report_receptores_fs']['#prefix']='<div style="display:none;">';
+    $form['boletin_report_receptores_fs']['#suffix']='</div>';
+    $form['boletin_report_receptores_mcapi_fs']=array(
+    '#type'=>'fieldset',
+    '#title'=>t('Recipients'),
+    '#collapsible'=>TRUE,
+    '#attributes'=>array('id'=>'id_boletin_report_receptores_fs'),    
+    );
+    $form['boletin_report_receptores_mcapi_fs']['mailchimp_list_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp List id'),
+        '#default_value'=>$row->mailchimp_list_id,
+    );
+    $form['boletin_report_receptores_mcapi_fs']['mailchimp_template_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp Template id'),
+        '#default_value'=>$row->mailchimp_template_id,
+    );
+    $form['boletin_report_colors_mcapi_fs']=array(
+    '#type'=>'fieldset',
+    '#title'=>'Colores MailChimp',
+    '#collapsible'=>TRUE,
+    '#attributes'=>array('id'=>'id_boletin_report_colors_fs'),    
+    );
+    //intelsat-mailchimp-color
+    $mailchimp_colors=hontza_mcapi_define_mailchimp_colors();
+    $mailchimp_color_bola=$mailchimp_colors['mailchimp_color_bola'];
+    if(isset($row->mailchimp_color_bola) && !empty($row->mailchimp_color_bola)){
+        $mailchimp_color_bola=$row->mailchimp_color_bola;
+    }
+    $mailchimp_color_fondo_tipo_documento=$mailchimp_colors['mailchimp_color_fondo_tipo_documento'];
+    if(isset($row->mailchimp_color_fondo_tipo_documento) && !empty($row->mailchimp_color_fondo_tipo_documento)){
+        $mailchimp_color_fondo_tipo_documento=$row->mailchimp_color_fondo_tipo_documento;
+    }
+    $mailchimp_color_letra_tipo_documento=$mailchimp_colors['mailchimp_color_letra_tipo_documento'];
+    if(isset($row->mailchimp_color_letra_tipo_documento) && !empty($row->mailchimp_color_letra_tipo_documento)){
+        $mailchimp_color_letra_tipo_documento=$row->mailchimp_color_letra_tipo_documento;
+    }
+    $mailchimp_color_titulo_noticia=$mailchimp_colors['mailchimp_color_titulo_noticia'];
+    if(isset($row->mailchimp_color_titulo_noticia) && !empty($row->mailchimp_color_titulo_noticia)){
+        $mailchimp_color_titulo_noticia=$row->mailchimp_color_titulo_noticia;
+    }
+    $mailchimp_color_titulo_fuente=$mailchimp_colors['mailchimp_color_titulo_fuente'];
+    if(isset($row->mailchimp_color_titulo_fuente) && !empty($row->mailchimp_color_titulo_fuente)){
+        $mailchimp_color_titulo_fuente=$row->mailchimp_color_titulo_fuente;
+    }
+
+    $form['boletin_report_colors_mcapi_fs']['mailchimp_color_bola']=array(
+        '#type'=>'textfield',
+        '#title'=>'Color bola',
+        '#default_value'=>$mailchimp_color_bola,
+    );
+    $form['boletin_report_colors_mcapi_fs']['mailchimp_color_fondo_tipo_documento']=array(
+        '#type'=>'textfield',
+        '#title'=>'Color fondo tipo documento',
+        '#default_value'=>$mailchimp_color_fondo_tipo_documento,
+    );
+    $form['boletin_report_colors_mcapi_fs']['mailchimp_color_letra_tipo_documento']=array(
+        '#type'=>'textfield',
+        '#title'=>'Color tipo documento',
+        '#default_value'=>$mailchimp_color_letra_tipo_documento,
+    );
+    $form['boletin_report_colors_mcapi_fs']['mailchimp_color_titulo_noticia']=array(
+        '#type'=>'textfield',
+        '#title'=>'Color título noticia',
+        '#default_value'=>$mailchimp_color_titulo_noticia,
+    );
+    $form['boletin_report_colors_mcapi_fs']['mailchimp_color_titulo_fuente']=array(
+        '#type'=>'textfield',
+        '#title'=>'Color fuente',
+        '#default_value'=>$mailchimp_color_titulo_fuente,
+    );
+}
+function hontza_mcapi_save_mailchimp_list_id($id,$values){
+    $mailchimp_list_id='';
+    if(isset($values['mailchimp_list_id']) && !empty($values['mailchimp_list_id'])){
+        $mailchimp_list_id=$values['mailchimp_list_id'];
+    }
+    db_query('UPDATE {boletin_report_array} SET mailchimp_list_id="%s" WHERE id=%d',$mailchimp_list_id,$id);
+}
+function hontza_mcapi_get_forward_user_mail_array($user_mail_array_in){
+    $result=$user_mail_array_in;
+    if(empty($result)){
+        $result[]='hontza@hontza.es';
+    }
+    return $result;
+}
+function hontza_mcapi_add_boletin_report_forward_form_fields($id,&$form){
+    $row=boletin_report_get_row($id);
+    $form['forward_receptores_fs']['#prefix']='<div style="display:none;">';
+    $form['forward_receptores_fs']['#suffix']='</div>';
+    $form['boletin_report_receptores_mcapi_fs']['mailchimp_list_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp List id'),
+        '#default_value'=>$row->mailchimp_list_id,
+    );
+    $form['boletin_report_receptores_mcapi_fs']['mailchimp_template_id']=array(
+        '#type'=>'textfield',
+        '#title'=>t('MailChimp Template id'),
+        '#default_value'=>$row->mailchimp_template_id,
+    );
+}
+function hontza_mcapi_save_mailchimp_fields($id,$values){
+    hontza_mcapi_save_mailchimp_list_id($id,$values);
+    hontza_mcapi_save_mailchimp_template_id($id,$values);
+    hontza_mcapi_save_mailchimp_colors($id,$values);
+}
+function hontza_mcapi_save_mailchimp_template_id($id,$values){
+    $mailchimp_template_id='';
+    if(isset($values['mailchimp_template_id']) && !empty($values['mailchimp_template_id'])){
+        $mailchimp_template_id=$values['mailchimp_template_id'];
+    }
+    db_query('UPDATE {boletin_report_array} SET mailchimp_template_id="%s" WHERE id=%d',$mailchimp_template_id,$id);
+}
+//intelsat-mailchimp-color
+function hontza_mcapi_define_mailchimp_colors(){
+    $result=array();
+    $result['mailchimp_color_bola']='#FF7100';
+    $result['mailchimp_color_fondo_tipo_documento']='#FF8500';
+    $result['mailchimp_color_letra_tipo_documento']='#FFFFFF';
+    $result['mailchimp_color_titulo_noticia']='#2E74B5';
+    $result['mailchimp_color_titulo_fuente']='#7F7F7F';
+    return $result;
+}
+//intelsat-mailchimp-color
+function hontza_mcapi_save_mailchimp_colors($id,$values){
+    $mailchimp_colors=hontza_mcapi_define_mailchimp_colors();
+    $mailchimp_color_bola=$mailchimp_colors['mailchimp_color_bola'];
+    if(isset($values['mailchimp_color_bola']) && !empty($values['mailchimp_color_bola'])){
+        $mailchimp_color_bola=$values['mailchimp_color_bola'];
+    }
+    $mailchimp_color_fondo_tipo_documento=$mailchimp_colors['mailchimp_color_fondo_tipo_documento'];
+    if(isset($values['mailchimp_color_fondo_tipo_documento']) && !empty($values['mailchimp_color_fondo_tipo_documento'])){
+        $mailchimp_color_fondo_tipo_documento=$values['mailchimp_color_fondo_tipo_documento'];
+    }
+    $mailchimp_color_letra_tipo_documento=$mailchimp_colors['mailchimp_color_letra_tipo_documento'];
+    if(isset($values['mailchimp_color_letra_tipo_documento']) && !empty($values['mailchimp_color_letra_tipo_documento'])){
+        $mailchimp_color_letra_tipo_documento=$values['mailchimp_color_letra_tipo_documento'];
+    }
+    $mailchimp_color_titulo_noticia=$mailchimp_colors['mailchimp_color_titulo_noticia'];
+    if(isset($values['mailchimp_color_titulo_noticia']) && !empty($values['mailchimp_color_titulo_noticia'])){
+        $mailchimp_color_titulo_noticia=$values['mailchimp_color_titulo_noticia'];
+    }
+    $mailchimp_color_titulo_fuente=$mailchimp_colors['mailchimp_color_titulo_fuente'];
+    if(isset($values['mailchimp_color_titulo_fuente']) && !empty($values['mailchimp_color_titulo_fuente'])){
+        $mailchimp_color_titulo_fuente=$values['mailchimp_color_titulo_fuente'];
+    }
+    db_query('UPDATE {boletin_report_array} SET mailchimp_color_bola="%s",mailchimp_color_fondo_tipo_documento="%s",mailchimp_color_letra_tipo_documento="%s",mailchimp_color_titulo_noticia="%s",mailchimp_color_titulo_fuente="%s" WHERE id=%d',$mailchimp_color_bola,$mailchimp_color_fondo_tipo_documento,$mailchimp_color_letra_tipo_documento,$mailchimp_color_titulo_noticia,$mailchimp_color_titulo_fuente,$id);
+}
+function hontza_mcapi_save_hontza_mcapi_email($api,$cid,$hontza_mcapi_email_id){
+    global $base_url;
+    $html='';
+    if(empty($hontza_mcapi_email_id)){
+        $created=time();    
+        db_query('INSERT INTO hontza_mcapi_email(html,created) VALUES("%s",%d)',$html,$created);
+        $id=db_last_insert_id('batch','bid');
+    }else{
+        $campaign_content=$api->campaignContent($cid);
+        $html=$campaign_content['html'];
+        $html=base64_encode($html);    
+        db_query('UPDATE hontza_mcapi_email SET html="%s" WHERE id=%d',$html,$hontza_mcapi_email_id);
+    }
+    /*$url=$base_url.'hontza_mcapi/'.$id.'/view_html';
+    return $url;*/
+    return $id;
+}
+function hontza_mcapi_view_html_callback(){
+    $id=arg(1);
+    //print $id;
+    //exit();
+    $hontza_mcapi_email_row=hontza_mcapi_save_hontza_mcapi_row($id);
+    if(isset($hontza_mcapi_email_row->id) && !empty($hontza_mcapi_email_row->id)){
+        $html=base64_decode($hontza_mcapi_email_row->html);
+        print $html;
+        exit();
+    }
+    return '';
+}
+function hontza_mcapi_save_hontza_mcapi_row($id){
+    $hontza_mcapi_array=hontza_mcapi_save_hontza_mcapi_array($id);
+    if(count($hontza_mcapi_array)>0){
+        return $hontza_mcapi_array[0];
+    }
+    return '';
+}
+function hontza_mcapi_save_hontza_mcapi_array($id){
+    $result=array();
+    $where=array();
+    $where[]='1';
+    $where[]='id='.$id;
+    $sql='SELECT * FROM {hontza_mcapi_email} WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}    

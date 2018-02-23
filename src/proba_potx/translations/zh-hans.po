@@ -1,0 +1,139 @@
+# $Id: zh-hans.po,v 1.1.2.1 2010/06/02 07:04:34 makara Exp $
+#
+# Chinese, Simplified translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  potx.inc,v 1.1.2.17.2.7.2.19.4.8 2009/11/17 12:25:18 goba
+#  potx.module,v 1.1.2.12.2.2.2.10.4.2 2009/08/24 07:33:08 goba
+#  potx.install,v 1.1.2.1.4.2 2009/08/23 10:25:37 goba
+#  potx.info,v 1.1.2.3.2.2.2.1 2009/04/02 11:05:29 goba
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2009-11-09 10:16+0100\n"
+"PO-Revision-Date: 2010-06-02 14:54+0800\n"
+"Last-Translator: Makara <makara15@gmail.com>\n"
+"Language-Team: Chinese, Simplified <EMAIL@ADDRESS>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: potx.module:20
+msgid "This page allows you to generate translation templates for module and theme files. Select the module or theme you wish to generate a template file for. A single Gettext Portable Object (Template) file is generated, so you can easily save it and start translation."
+msgstr "您可以使用这个页面为模块和主题生成翻译模版。请选择您要生成模版文件的模块或主题。这将会生成一个单一的“Gettext Portable Object”（模版）文件，您可以保存它并开始翻译。"
+
+#: potx.module:52
+msgid "Language independent template"
+msgstr "与语言无关的模版"
+
+#: potx.module:58
+msgid "Template file for !langname translations"
+msgstr "翻译为“!langname”的模版"
+
+#: potx.module:62
+msgid "Template language"
+msgstr "模版语言"
+
+#: potx.module:65
+msgid "Export a language independent or language dependent (plural forms, language team name, etc.) template."
+msgstr "导出一个和语言无关的模版，或是为某个语言准备的（包括复数形式、翻译小组等）模版。"
+
+#: potx.module:69
+msgid "Include translations"
+msgstr "包含翻译"
+
+#: potx.module:70
+msgid "Include translations of strings in the file generated. Not applicable for language independent templates."
+msgstr "在生成的文件中包含翻译。与语言无关的模版不会包含翻译。"
+
+#: potx.module:76;29
+msgid "Extract"
+msgstr "提取"
+
+#: potx.module:87
+msgid "You should select a component to export."
+msgstr "请选择一个要导出的组件。"
+
+#: potx.module:188
+msgid "Extract from %name in the %directory directory"
+msgstr "从目录“%directory”内的“%name”中提取"
+
+#: potx.module:189
+msgid "Generates output from all files found in this directory."
+msgstr "使用位于这个目录内的全部文件生成模版。"
+
+#: potx.module:204
+msgid "Extract from all in directory \"@directory\""
+msgstr "从目录“@directory”内的全部组件中提取"
+
+#: potx.module:205
+msgid "To extract from a single component in this directory, choose the desired entry in the fieldset below."
+msgstr "要使用此目录内的某一个组件生成模版，请在下面选择。"
+
+#: potx.module:214
+msgid "Directory \"@directory\""
+msgstr "目录“@directory”"
+
+#: potx.module:235
+msgid "Extract from %name"
+msgstr "从“%name”中提取"
+
+#: potx.module:236
+msgid "Extract from files named %pattern in the %directory directory."
+msgstr "从目录“%directory”内的“%pattern”中提取"
+
+#: potx.module:306
+msgid "Interface text translatability"
+msgstr "界面可翻译"
+
+#: potx.module:350
+msgid "Read the documentation"
+msgstr "阅读文档"
+
+#: (duplicate) potx.install:22
+msgid "PHP tokenizer for Translation template extractor"
+msgstr "翻译模版提取器需要“PHP tokenizer”"
+
+#: (duplicate) potx.install:23
+msgid "Available"
+msgstr "可用"
+
+#: (duplicate) potx.install:23
+msgid "Not available"
+msgstr "不可用"
+
+#: (duplicate) potx.install:26
+msgid "The <a href=\"@tokenizer\">PHP tokenizer functions</a> are required."
+msgstr "<a href=\"@tokenizer\">“PHP tokenizer”软件支持</a>是必需的。"
+
+#: (duplicate) potx.install:38
+msgid "Localization Server"
+msgstr "本地化服务器"
+
+#: (duplicate) potx.install:39
+msgid "Translation template extractor compatible version"
+msgstr "与翻译模版提取器兼容的版本"
+
+#: (duplicate) potx.install:42
+msgid "The Localization Server should be from a development snapshot later then July 19th, 2009 or at least 6.x-1.0-alpha4 to be compatible with this Translation template extractor."
+msgstr "只有2009年7月19日以后的开发版本或是最低“6.x-1.0-alpha4”发行版本才能与翻译模版提取器兼容。"
+
+#: (duplicate) potx.install:44
+msgid "Not compatible with Translation template extractor"
+msgstr "不兼容"
+
+#: potx.info:0
+msgid "Translation template extractor"
+msgstr "翻译模版提取器"
+
+#: potx.info:0
+msgid "Provides a web interface and an API to extract translatable text from the sources of installed components."
+msgstr "提供界面和API用来从源代码中提取可翻译的文本。"
+
+#: potx.info:0
+msgid "Multilanguage"
+msgstr "多语言"
+

@@ -1,0 +1,3 @@
+<?php
+
+include_once('hz_home_og.features.inc');

@@ -1,0 +1,10 @@
+name = Mobile Theme
+description = Choose a mobile theme to use when the user is vising on a mobile device.
+core = 6.x
+
+; Information added by drupal.org packaging script on 2013-05-09
+version = "6.x-1.3-alpha1"
+core = "6.x"
+project = "mobile_theme"
+datestamp = "1368117615"
+

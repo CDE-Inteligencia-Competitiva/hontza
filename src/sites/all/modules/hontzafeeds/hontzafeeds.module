@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * @file
+ * Main API functions.
+ *
+ * Variables:
+ *
+ * Name: extractor_engine
+ */
+
+/**
+ * Implementation of hook_ctools_plugin_api().
+ */
+function hontzafeeds_ctools_plugin_api($owner, $api) {
+  if ($owner == 'feeds' && $api == 'plugins') {
+    return array('version' => 1);
+  }
+}
+
+
+/**
+ * Implementation of hook_ctools_plugin_plugins().
+ *
+ * Psuedo hook defintion plugin system options and defaults.
+ */
+function hontzafeeds_ctools_plugin_plugins() {
+  return array(
+    'cache' => TRUE,
+    'use hooks' => TRUE,
+  );
+}
+
+/**
+ * Implementation of hook_plugins().
+ */
+function hontzafeeds_feeds_plugins() {
+  $info['HontzafeedsParser'] = array(
+    'name' => 'Parsear un YQL',
+    'description' => 'parser de  yql',
+    'handler' => array(
+      'parent' => 'FeedsParser',
+      'class' => 'HontzafeedsParser',
+      'file' => 'HontzafeedsParser.inc',
+      'path' => drupal_get_path('module', 'hontzafeeds'),
+    ),
+  );
+  return $info;
+}
+

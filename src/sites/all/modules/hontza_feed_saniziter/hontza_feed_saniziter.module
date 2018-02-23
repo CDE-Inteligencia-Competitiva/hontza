@@ -1,0 +1,120 @@
+<?php
+function hontza_feed_saniziter_menu(){
+    $items=array();
+    $items['hontza_feed_saniziter/sanitize'] = array(
+    'title' => 'Sanitize',
+    'page callback' => 'hontza_feed_saniziter_sanitize_callback',
+    'access callback' => TRUE,
+    );
+    return $items;
+}
+function hontza_feed_saniziter_is_feed_saniziter_activado(){
+    if(defined('_IS_FEED_SANIZITER') && _IS_FEED_SANIZITER==1){
+        return 1;
+    }
+    return 0;
+}
+function hontza_feed_saniziter_yql_wizard_add_apply_feed_saniziter_form_field(&$form){
+    $form['apply_feed_saniziter']=array('#type'=>'checkbox','#title'=>'<b>'.t('Apply Feed Saniziter').'</b>');
+}
+function hontza_feed_saniziter_yql_wizard_set_apply_feed_saniziter_value_on_yql_canal_form_submit(&$fuente,$form_state){
+   if(!isset($fuente->field_apply_feed_saniziter[0]['value'])){
+      $fuente->field_apply_feed_saniziter=array();
+      $fuente->field_apply_feed_saniziter[0]['value']=0;
+   }   
+      if(isset($form_state['values']['apply_feed_saniziter']) && !empty($form_state['values']['apply_feed_saniziter'])){
+          $fuente->field_apply_feed_saniziter[0]['value']=1;
+      }
+}
+function hontza_feed_saniziter_set_feed_saniziter_url($url_in,$canal_nid){
+   $url=$url_in; 
+   $canal_node=node_load($canal_nid);
+   if(hontza_feed_saniziter_is_field_apply_feed_saniziter($canal_node)){
+        //print $url;exit();
+        if(!hontza_feed_saniziter_is_url_with_feed_saniziter($url)){
+            $url=hontza_feed_saniziter_set_my_feed_saniziter_url($url);
+            //$url.='&format='.$format;
+            //print $url;exit();
+        }
+        //print $url;exit();    
+   }
+   return $url; 
+}
+function hontza_feed_saniziter_is_field_apply_feed_saniziter($canal_node){
+    if(isset($canal_node->field_apply_feed_saniziter[0]['value']) && !empty($canal_node->field_apply_feed_saniziter[0]['value'])){
+        return 1;
+    }
+    return 0;
+}
+function hontza_feed_saniziter_get_base_url(){
+    global $base_url;
+    $result='http://needsanitizer.appspot.com/sanitize';
+    //$result='http://iti.hontza.es/hontza_feed_saniziter/sanitize'; 
+    //$result=$base_url.'/hontza_feed_saniziter/sanitize';    
+    return $result;
+}
+function hontza_feed_saniziter_is_url_with_feed_saniziter($url){
+    $is_ok=0;
+    $feed_saniziter_base_url=hontza_feed_saniziter_get_base_url();
+    $pos=strpos($url,$feed_saniziter_base_url);    
+    if($pos===FALSE){
+        //return 0;
+        $is_ok=1;
+    }
+    if($is_ok){
+        $pos=strpos($url,'query.yahooapis.com');
+        if($pos===FALSE){
+            //return 0;
+            $is_ok=1;
+        }else{
+            $is_ok=0;
+        }
+    }
+    if($is_ok){
+        return 0;
+    }    
+    return 1;
+}
+function hontza_feed_saniziter_yql_wizard_set_feed_saniziter_rss_url_array($result_in,$form_state,$is_filtro_rss,$yql_obj){
+    $result=$result_in;
+    if(hontza_feed_saniziter_is_field_apply_feed_saniziter($yql_obj)){
+        foreach($result as $i=>$url){
+          if(hontza_feed_saniziter_is_url_with_feed_saniziter($url)){
+            continue;
+          }else{
+            $result[$i]=hontza_feed_saniziter_set_my_feed_saniziter_url($url,1);
+            //print $result[$i];exit();
+            //$result[$i]=$url_atom2rss.urlencode($url);
+          }
+        }        
+    }
+    return $result;
+}
+function hontza_feed_saniziter_set_my_feed_saniziter_url($url_in,$is_encode=0){
+    $url=$url_in;
+    $feed_saniziter_base_url=hontza_feed_saniziter_get_base_url();   
+    $format='rss';
+            require_once('sites/all/modules/hontza/wizards/yql.wizard.inc');
+            if(yql_wizard_is_atom($url)){
+                $format='atom';
+            }
+            /*if($is_encode){
+                $url=$feed_saniziter_base_url.'?url='.$url;
+                //$url=$url.'?url='.$url;
+                //print $url;exit();
+            }else{*/
+                $url=$feed_saniziter_base_url.'?url='.urlencode($url);
+                //$url=$feed_saniziter_base_url.'?source='.urlencode($url);
+                //print $url;exit();
+            //}    
+    return $url;        
+}
+function hontza_feed_saniziter_sanitize_callback(){
+    $source=$_REQUEST['source'];
+    $url='http://needsanitizer.appspot.com/sanitize?url='.$source;
+    //$content=file_get_contents($url);
+    //$content=str_replace(' xmlns:atom="http://www.w3.org/2005/Atom"','',$content);
+    $content=hontza_atom2rrs($url);    
+    print $content;
+    exit();
+}

@@ -1,0 +1,161 @@
+/* $Id$ */
+/**
+ * Sky
+ * http://drupal.org/project/sky
+ * http://drupal.org/user/88931
+ *
+ * Credits:
+ * Icons: http://www.icojoy.com/articles/44/
+ * Icons: http://www.icojoy.com/articles/46/
+ * http://meyerweb.com/eric/thoughts/2008/01/15/resetting-again/
+ * 
+ */
+/* @group Reset */
+html, body, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  vertical-align: baseline;
+  background: transparent;
+}
+html, body {
+  height: 100%;
+}
+blockquote, q {
+  quotes: none;
+}
+/* remember to define focus styles! */
+:focus {
+  outline: 0;
+}
+/* remember to highlight inserts somehow! */
+ins {
+  text-decoration: none;
+}
+del {
+  text-decoration: line-through;
+}
+/* tables still need 'cellspacing="0"' in the markup */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+/* @end */
+/* @group Layout */
+#wrapper {
+  height: auto !important;
+  min-height: 100%;
+  width: 960px;
+  margin: 0 auto -1em;
+}
+/* @group Footer */
+#footer {
+  clear: both;
+  min-height: 2em;
+  
+}
+/* @end */
+#sidebar-left,
+#sidebar-right {
+  overflow: hidden;
+}
+.push {
+  clear: both;
+  height: 1em;
+}
+.main-inner {
+  padding: 1em 2em;
+}
+.sidebar .inner {
+  padding: 1em 1.25em;
+}
+/* @group Both Sidebars */
+.both #sidebar-left {
+  width: 20%;
+  float: left;
+}
+.both #main {
+  width: 60%;
+  float: left;
+}
+.both #sidebar-right {
+  width: 20%;
+  float: right;
+}
+/* @end */
+
+/* @group Left Sidebar */
+.left #sidebar-left {
+  width: 25%;
+  float: left;
+}
+.left #main {
+  width: 74%;
+  float: left;
+  border-left:1px solid #CCCCCC;
+  background-color:#FFFFFF;
+  min-height: 800px;
+  padding-left:0.6em;
+}
+/* @end */
+
+/* @group Right Sidebar */
+.right #main {
+  width: 75%;
+  float: left;
+}
+.right #sidebar-right {
+  width: 25%;
+  float: right;
+}
+/* @end */
+
+/* @group No Sidebars */
+.no-sidebar #main {
+  width: 95%;
+  margin: 0 auto;
+}
+/* @end */
+/* @end */
+.container {
+  zoom: 1;
+}
+#content-top,
+#content-bottom {
+  margin: 25px 0;
+}
+#main {
+  overflow: hidden;
+}
+/* @group Clearfix */
+/* slightly enhanced, universal clearfix hack */
+.clearfix:after,
+.clear-block:after,
+.layout-region:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
+}
+.clearfix,
+.clear-block,
+.layout-region {
+  display: inline-block;
+}
+/* start commented backslash hack \*/
+* html .clearfix,
+* html .clear-block,
+* html .layout-region {
+  height: 1%;
+  zoom: 1;
+}
+.clearfix,
+.clear-block,
+.layout-region {
+  display: block;
+}
+/* close commented backslash hack */
+/* @end */

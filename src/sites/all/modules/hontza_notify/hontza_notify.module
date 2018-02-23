@@ -1,0 +1,271 @@
+<?php
+
+/**
+ *
+ */
+function hontza_notify_perm() {
+  return array('channel subscription');
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function hontza_notify_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'hontza_notify'),
+  );
+}
+
+/**
+ * Implementation of hook_menu
+ */
+function hontza_notify_menu() {
+  $items['suscribir/%user/%node'] = array(
+    'page callback' => 'canal_suscribir',
+    'page arguments' => array(1, 2),
+    'access arguments' => array('channel subscription'),
+  );
+  $items['desuscribir/%user/%node'] = array(
+    'page callback' => 'canal_desuscribir',
+    'page arguments' => array(1, 2),
+    'access arguments' => array('channel subscription'),
+  );
+  //gemini
+  /*$items['user/%user/suscripciones'] = array(
+    'title' => t('View my subscriptions'),
+    'page callback' => 'hontza_suscripciones_page',
+    'page arguments' => array(1),
+    'access arguments' => array('channel subscription'),
+    'type' => MENU_LOCAL_TASK,
+  );*/
+  //
+  $items['user/suscripciones'] = array(
+    'title' => t('View my subscriptions'),
+    'page callback' => 'hontza_suscripciones_page',
+    'access arguments' => array('channel subscription'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['prueba'] = array(
+    'title' => 'title',
+    'page callback' => 'prueba',
+    'access arguments' => array('access content'),
+  );
+  //gemini
+  $items['my_call_hontza_notify_cron']= array(
+    'title' => 'my_call_hontza_notify_cron',
+    'page callback' => 'my_call_hontza_notify_cron',
+    'access arguments' => array('suscribirse a canal'),
+  );
+  //
+  return $items;
+}
+
+function hontza_suscripciones_page($user = NULL) {
+  if (empty($user))
+    global $user;
+  $row = db_fetch_object(db_query("SELECT * FROM {canal_suscripcion} WHERE uid = %d", $user->uid));
+  $suscripciones = unserialize($row->suscripciones);
+  if (empty($suscripciones))
+    return t('No tienes ninguna suscripción activa en este momento');
+  $output = '';
+  $header = array(
+      t('Name of Channel'),
+      t('Ver canal'),
+      t('Eliminar suscripcion'),
+    );
+  foreach ($suscripciones as $suscripcion) {
+    $node = node_load($suscripcion);
+    //gemini
+    if(isset($node->nid) && !empty($node->nid)){
+    //
+        $purl = db_result(db_query("SELECT value FROM {purl} WHERE id = %d", array_pop($node->og_groups)));
+        $rows[] = array(
+          $node->title,
+          l(t('Ver canal'), $purl .'/canales/'. $node->nid),
+          //gemini
+              //l(t('Eliminar suscripción'), 'desuscribir'. $user->uid .'/'. $node->nid, array('query' => array('destination' => $_GET['q']))),
+          l(t('Eliminar suscripción'), 'desuscribir/'. $user->uid .'/'. $node->nid, array('query' => array('destination' => $_GET['q']))),
+              //
+            );
+    }
+  }
+  $output .= theme('table', $header, $rows, array(), t('Tus suscripciones a canales'));
+  return $output;
+}
+
+/**
+ *Implementation of hook_cron
+ */
+function hontza_notify_cron() {
+  my_call_hontza_notify_cron();
+}
+
+/**
+ *Implementation of hook_mail
+ */
+function hontza_notify_mail($key, &$message, $params) {
+  //gemini
+  /*global $base_url;
+  switch ($key) {
+    case 'canal-suscripcion':
+      $message['subject'] = t('Items actualizados');
+      $body[] = t('Estimado !username estas son las actualizaciones de tus suscripciones', array('!username' => $params['user']->name));
+      foreach ($params['suscripciones'] as $nid => $items) {
+        $canal = node_load($nid);
+        $body[] = t('Resultados de la última semana para el canal !canal', array('!canal' => $canal->title));
+        foreach ($items as $item) {
+          $body[] = $item->node_title;
+          $body[] = t('Lee más en : !link', array('!link' => $base_url .'/'. drupal_get_path_alias('node/'. $item->nid)));
+        }
+        $body[] = '';
+      }
+      $message['body'] = $body;
+      break;
+  }*/
+}
+
+function hontza_notify_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'insert':
+      /*$row = array(
+        'uid' => $account->uid,
+        'suscripciones' => array(),
+        'send_interval' => 604800,
+        'next_run' => strtotime('next monday'),
+      );
+      drupal_write_record('canal_suscripcion', $row);*/
+      break;
+    case 'delete':
+      db_query("DELETE FROM {canal_suscripcion} WHERE uid = %d", $account->uid);
+      break;
+  }
+}
+
+/**
+ *Función de preprocess para generar el enlace en el tpl
+ */
+function hontza_notify_preprocess_node(&$vars) {
+  if (in_array($vars['type'], array('canal_de_supercanal', 'canal_de_yql'))) {
+    global $user;
+    $vars['link_suscripcion'] = link_notify($user->uid, $vars['nid']);
+  }
+}
+
+function hontza_notify_preprocess_views_view(&$vars) {
+  if ($vars['view']->name == 'og_canales' AND $vars['display_id'] == 'page_1') {
+    $vars['header'] = link_notify($vars['user']->uid, $vars['view']->args[0], $_GET['q']);
+  }
+  
+}
+
+/**
+ *Función auxiliar para suscribir
+ */
+function canal_suscribir($user, $node) {
+  $row = db_fetch_object(db_query("SELECT * FROM {canal_suscripcion} WHERE uid = %d", $user->uid));
+  if ($row->uid) {
+    $suscripciones = unserialize($row->suscripciones);
+    if (in_array($node->nid, $suscripciones))
+      drupal_set_message(t('Ya estás suscrito a este canal.'));
+    else {
+      $suscripciones[] = $node->nid;
+      $suscripcion = array(
+        'uid' => $user->uid,
+        'suscripciones' => $suscripciones,
+      );
+      drupal_write_record('canal_suscripcion', $suscripcion, array('uid'));
+    }
+  }
+  else {
+    $suscripcion = array(
+      'uid' => $user->uid,
+      'suscripciones' => array($node->nid),
+      'send_interval' => 604800,
+      'next_run' => strtotime('next monday'),
+    );
+    drupal_write_record('canal_suscripcion', $suscripcion);
+  }
+  drupal_goto('node/'. $node->nid);
+}
+
+/**
+ *Función auxiliar para desuscribir
+ */
+function canal_desuscribir($user, $node) {
+  $row = db_fetch_object(db_query("SELECT * FROM {canal_suscripcion} WHERE uid = %d", $user->uid));
+  $row->suscripciones = unserialize($row->suscripciones);
+  unset($row->suscripciones[array_search($node->nid, $row->suscripciones)]);
+  drupal_write_record('canal_suscripcion', $row, array('uid'));
+  drupal_goto('node/'. $node->nid);
+  }
+
+//intelsat-2015
+//function link_notify($uid, $nid, $destination = NULL) {
+function link_notify($uid, $nid, $destination = NULL,$is_alerta_usuario=0,$canal_usuario_uid='') {
+  //gemini
+  /*$options = array();
+  if ($destination)
+    $options['query'] = array('destination' => $destination);
+    $suscripciones = db_result(db_query("SELECT suscripciones FROM {canal_suscripcion} WHERE uid = %d", $uid));
+  if (!db_affected_rows() || !in_array($nid, unserialize($suscripciones))) {
+    $html = '<span class="suscripcion">';
+    $html .= l(t('Subscribe to this channel'), 'suscribir/'. $uid .'/'. $nid, $options);
+    $html .= '</span>';
+    return $html;;
+  } 
+  else {
+
+    $html = '<span class="desuscripcion">';
+    $html .=  l(t('Des-suscribirse de este canal'), 'desuscribir/'. $uid .'/'. $nid, $options);
+    $html .= '</span>';
+    return $html;
+  }*/
+  return alerta_link_notify($uid, $nid, $destination,$is_alerta_usuario,$canal_usuario_uid);
+}
+
+
+function prueba() {
+  return '';
+}
+function my_call_hontza_notify_cron(){
+  $time=time();
+  //simulatzeko
+  //$time=1329091200+20;
+  //
+  $sql=sprintf("SELECT * FROM {canal_suscripcion} WHERE next_run < %d LIMIT 30", $time);
+  $result = db_query($sql);
+  //print $sql;exit();
+  while ($row = db_fetch_object($result)) {
+    $params = array();
+    $suscripciones = unserialize($row->suscripciones);
+    /*echo print_r($suscripciones,1);
+    continue;*/
+    if (!empty($suscripciones)) {
+    
+      $user = user_load($row->uid);
+      foreach ($suscripciones AS $suscripcion) {
+        $resultados = array();
+        $view = views_get_view('items_validos_notify', TRUE);
+        $view->args[] = $suscripcion;
+        $view->build('block_1');
+        $items = db_query_range($view->build_info['query'], $view->build_info['query_args'], 0 , 10);
+        while ($item = db_fetch_object($items)) {
+          $resultados[] = $item;
+        }
+        if (!empty($resultados))
+          $params['suscripciones'][$suscripcion] = $resultados;
+      }
+      $params['user'] = $user;
+      if (!empty($params['suscripciones'])){
+        //echo print_r($params,1);
+        drupal_mail('hontza_notify', 'canal-suscripcion', $user->mail, '', $params);
+      }
+    }
+    //exit();
+    $row->next_run = strtotime('next monday');
+    $row->suscripciones = $suscripciones;
+    drupal_write_record('canal_suscripcion', $row, array('uid'));
+   
+  }
+}

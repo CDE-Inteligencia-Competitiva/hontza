@@ -1,0 +1,86 @@
+Wysiwyg SpellCheck Module Installation
+
+To enable this module, follow these instructions:
+
+1. Upload the "Wysiwyg SpellCheck" module to your sites/all/modules folder.
+
+2. Enable the "Wysiwyg SpellCheck" module on the admin/build/modules page.
+
+3. Install spellchecker plugin
+In order to use Spell Checker, you will need to download and install spellchecker plugin appropriate for your editor.
+
+TinyMCE spellchecker plugin
+===========================
+
+Browser-side TinyMCE spellchecker plugin (steps numbered BST#):
+NOTE:
+TinyMCE ver 3.4.4 has the default option for browser-side spellchecker on supported browsers,
+but it is not yet supported by this module. It might work on some browsers, but was not tested.
+BST1. Instructions TBD.
+
+Server-side TinyMCE spellchecker plugin (steps numbered SST#):
+(These instructions explain how to install and enable server-side spellchecker)
+
+SST1. Download, extract and copy spellchecker plugin from
+from http://www.tinymce.com/download/download.php
+(Once you are on the download page, download "PHP Spellchecker" 2.x which is listed in the "Other components" section)
+
+into
+sites/all/libraries/tinymce/jscripts/tiny_mce/plugins/
+(overwrite files that came with TinyMCE)
+
+After installation it should be found in sites/all/libraries/tinymce/jscripts/tiny_mce/plugins/spellchecker/
+
+As a quick check, the following files should be present in the above path:
+- editor_plugin.js
+- config.php
+
+SST2. Edit sites/all/libraries/tinymce/jscripts/tiny_mce/plugins/spellchecker/config.php
+
+Uncomment one of the lines that select which spellchecker to use:
+
+*It comes with defaults using Google spellchecker.
+
+*Other options: TBD
+
+SST3. Visit http://YOURSITE/admin/reports/status, verify that Wysiwyg TinyMCE spellchecker reports "Installed correctly".
+
+SST4. Visit http://YOURSITE/sites/all/libraries/tinymce/jscripts/tiny_mce/plugins/spellchecker/rpc.php,
+you should see a string in curly braces {"result":null,...}.
+If you don't see the expected {"result":null,...}, you will have to figure out access permissions or other problems with your webserver or ISP.
+
+SST5. Configure one of your WYSIWYG profiles to show TinyMCE spellcheck button
+
+SST6. Verify that TinyMCE shows the new button when you edit a page using your WYSISWYG profile, and this button works.
+
+
+CKEditor ASpell plugin
+======================
+
+Browser-side CKEditor spellchecker plugin (steps numbered BSC#):
+NOTE:
+CKEditor has the default option for browser-side spellchecker on supported browsers,
+but it is not yet supported by this module. It might work on some browsers, but was not tested.
+BSC1. Instructions TBD.
+
+Server-side CKEditor spellchecker plugin (steps numbered SSC#):
+(These instructions explain how to install and enable server-side spellchecker)
+
+SSC1. Aspell library (http://aspell.net) must be installed and working on the server. Do not proceed until it works.
+
+SSC2. Download CKEditor aspell plugin from http://cksource.com/forums/download/file.php?id=512&sid=5cc3ef8ceca1432ebc4459b4241c84aa
+
+SSC3. Unzip the contents of the zip file into sites/all/libraries/ckeditor/plugins so that you have sites/all/libraries/ckeditor/plugins/aspell directory
+
+SSC4. Visit http://YOURSITE/admin/reports/status, verify that Wysiwyg CKEditor spellchecker reports "Installed correctly".
+
+SSC5. Visit http://YOURSITE/sites/all/libraries/ckeditor/plugins/aspell/spellerpages/server-scripts/spellchecker.php,
+you should see an empty page. If you inspect source, it should have "function init_spell() {..." inside the head section.
+If you don't see the expected "function init_spell() {", you will have to figure out access permissions or other problems with your webserver or ISP.
+
+SSC6. If you aren't using PHP for server-side script (this is rarely needed), edit aspell/dialogs/aspell.js, locate oSpeller.spellCheckScript and change it as appropriate. Redo step #SSC5 for selected script.
+
+SST7. Configure one of your WYSIWYG profiles to show CKEditor spellcheck button (checkbox "Server Side Spell Check")
+
+SST8. Verify that CKEditor shows the new button when you edit a page using your WYSISWYG profile, and this button works.
+

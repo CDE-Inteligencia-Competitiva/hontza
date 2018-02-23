@@ -1,0 +1,4 @@
+name = Hontza Forms
+description = Module to hide fields using alter form,
+package = Hontza Forms
+core = 6.x

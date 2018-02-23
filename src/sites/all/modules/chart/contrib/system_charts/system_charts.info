@@ -1,0 +1,14 @@
+; $Id: system_charts.info,v 1.5 2009/07/16 21:23:12 boombatower Exp $
+name = Drupal System Charting
+description = Charting for various core modules.
+package = Charting
+core = 6.x
+php = 5
+dependencies[] = chart
+
+; Information added by drupal.org packaging script on 2010-11-16
+version = "6.x-1.3"
+core = "6.x"
+project = "chart"
+datestamp = "1289940382"
+

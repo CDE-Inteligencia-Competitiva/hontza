@@ -1,0 +1,31 @@
+<?php
+function informatica_perm() {
+  return array();
+}
+function informatica_menu() {
+  $items=array();  
+  return $items;
+}
+function informatica_is_informatica_activado(){
+    if(defined('_IS_INFORMATICA') && _IS_INFORMATICA==1){
+        return 1;
+    }
+    return 0;  
+}
+function informatica_alerta_save_mailchimp_fields($my_id,$values,$is_alerta_user=1){
+	$mailchimp_list_id='';
+    if(isset($values['mailchimp_list_id']) && !empty($values['mailchimp_list_id'])){
+    	$mailchimp_list_id=$values['mailchimp_list_id'];
+    }
+    if(isset($values['mailchimp_template_id']) && !empty($values['mailchimp_template_id'])){
+    	$mailchimp_template_id=$values['mailchimp_template_id'];
+    }
+    if($is_alerta_user){
+      db_query('UPDATE {alerta_user} SET mailchimp_list_id="%s",mailchimp_template_id="%s" WHERE id=%d',$mailchimp_list_id,$mailchimp_template_id,$my_id);
+    }else{
+      db_query('UPDATE {boletin_grupo_array} SET mailchimp_list_id="%s",mailchimp_template_id="%s" WHERE id=%d',$mailchimp_list_id,$mailchimp_template_id,$my_id);
+    }
+}
+function informatica_boletin_grupo_save_mailchimp_fields($my_id,$values){
+  informatica_alerta_save_mailchimp_fields($my_id,$values,0);
+}

@@ -1,0 +1,208 @@
+<?php
+function compartir_servidor_documentos_perm() {
+  return array();
+}
+function compartir_servidor_documentos_menu() {
+  $items=array();
+  $items['compartir_servidor_documentos/%/%']=array(
+    'title'=>'Home',
+    'page arguments'=>array('compartir_servidor_documentos_form'),  
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'compartir_servidor_documentos_custom_access',
+  );
+  return $items;
+}
+function compartir_servidor_documentos_custom_access(){
+    if(hontza_is_user_anonimo()){
+        return FALSE;
+    }
+    return TRUE;
+}
+function compartir_servidor_documentos_form(){
+    $form=array();
+    $title=t('Select group to import');
+    if(compartir_servidor_documentos_is_caducado() || compartir_servidor_documentos_is_submited()){
+        $form['my_message']=array(
+            '#value'=>'<p>'.t('This link has expired').'</p>',
+        );
+        drupal_set_title($title);
+        return $form;        
+    }
+    $node_type=arg(1);
+    //$rss_url=base64_decode(arg(2));
+    $rss_url=arg(2);
+    $mail_from=arg(4);
+    $form['node_type']=array(
+        '#type'=>'hidden',
+        '#default_value'=>$node_type,
+    );
+    $form['rss_url']=array(
+        '#type'=>'hidden',
+        '#default_value'=>$rss_url,
+    );
+    $params=compartir_servidor_documentos_get_params_by_arg();
+    $form['params']=array(
+        '#type'=>'hidden',
+        '#default_value'=>$params,
+    );
+    $form['mail_from']=array(
+        '#type'=>'hidden',
+        '#default_value'=>$mail_from,
+    );
+    $form['seleccionar_grupo']=array(
+        '#value'=>compartir_servidor_documentos_get_seleccionar_grupo_html(),
+    );
+    $form['send_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Select'),
+    );
+    compartir_servidor_documentos_add_value_txek_array_js();
+    drupal_set_title($title);    
+    return $form;
+}
+function compartir_servidor_documentos_get_seleccionar_grupo_html(){
+    $rows=hontza_grupos_mis_grupos_form(1);
+    $rows=compartir_servidor_documentos_create_ordenar_fields($rows);
+    $rows=array_ordenatu($rows,'servidor','asc',0,1,'grupo_title');        
+    $html=array();
+    $html[]='<table>';
+    if(!empty($rows)){
+        $html[]='<tr>';
+        $html[]='<th></th>';
+        $html[]='<th>'.t('Type').'</th>';
+        $html[]='<th>'.t('Server').'</th>';
+        $html[]='<th>'.t('Name').'</th>';
+        $html[]='</tr>';
+        $kont=0;
+        foreach($rows as $i=>$row){
+            //$servidor=strip_tags($row[1]);
+            if(!compartir_servidor_documentos_is_subdominio_servidor_central($servidor)){
+                $value=base64_encode(serialize($row));
+                $html[]='<tr>';
+                $html[]='<td><input type="checkbox" id="value_txek_array_'.$kont.'" name="value_txek_array['.$kont.']" class="value_txek_array_class" value="'.$value.'"></td>';
+                $html[]='<td>'.$row[0].'</td>';
+                $html[]='<td>'.$row['servidor'].'</td>';
+                $html[]='<td>'.$row['grupo_title'].'</td>';
+                $html[]='</tr>';
+                $kont++;
+            }    
+        }
+    }
+    $html[]='</table>';
+    return implode('',$html);
+}
+function compartir_servidor_documentos_form_submit($form, &$form_state){
+    $node_type=$form_state['values']['node_type'];
+    $rss_url=$form_state['values']['rss_url'];
+    $params=$form_state['values']['params'];
+    $mail_from=$form_state['values']['mail_from'];
+    $row=compartir_servidor_documentos_get_grupo_post_value();
+    /*echo print_r($row,1);
+    exit();*/
+    $url=compartir_servidor_documentos_get_href($row[2]);
+    $url.='&compartir_documentos_url='.$rss_url.'&compartir_documentos_node_type='.$node_type.'&mail_from='.$mail_from;
+    compartir_servidor_documentos_submited_save($params);
+    drupal_goto($url);
+}
+function compartir_servidor_documentos_get_grupo_post_value(){
+    $result=array();
+    if(isset($_POST['value_txek_array'])){
+        $value_txek_array=array_values($_POST['value_txek_array']);
+        if(isset($value_txek_array[0])){
+            $result=unserialize(base64_decode($value_txek_array[0]));
+        }
+    }
+    return $result;
+}
+function compartir_servidor_documentos_get_href($html){
+   /*preg_match("/href=\"(.*?)\"/i",$html, $matches);
+   return $matches[1];*/
+   return red_copiar_get_href($html); 
+}
+function compartir_servidor_documentos_add_value_txek_array_js(){
+    $js='$(document).ready(function()
+			{
+                            $(".value_txek_array_class").click(function()
+                            {
+                                set_beste_value_txek_array_class_checked($(this).attr("id"),false);
+                            });
+                            function set_beste_value_txek_array_class_checked(konp_id,my_value){
+                                var my_id="";
+                                $(".value_txek_array_class").each(function() {
+                                    my_id=$(this).attr("id");
+                                    if(my_id!=konp_id){
+                                        $(this).attr("checked",my_value)
+                                    }
+                                });
+                            }
+                        });';
+			drupal_add_js($js,'inline');	
+}
+function compartir_servidor_documentos_is_subdominio_servidor_central($servidor){
+    $servidor_central_url=red_get_servidor_central_url();
+    $servidor_central_url=str_replace('http://','',$servidor_central_url);
+    $servidor_central_url=str_replace('https://','',$servidor_central_url);
+    if($servidor==$servidor_central_url){
+        return 1;
+    }
+    return 0;
+}
+function compartir_servidor_documentos_is_caducado(){
+    $documento_time=arg(3);
+    if(!empty($documento_time)){
+        $documento_time=base64_decode($documento_time);
+        $max=24*3600;
+        //simulando
+        //$max=4;
+        //$max=300;
+        $time=time();
+        $result=$time-$documento_time;        
+        if($result>$max){
+            return 1;
+        }
+        return 0;
+    }
+    return 1;
+}
+function compartir_servidor_documentos_create_ordenar_fields($rows){
+    $result=array();
+    if(!empty($rows)){
+        foreach($rows as $i=>$row){
+            $result[$i]=$row;
+            $result[$i]['servidor']=strip_tags($row[1]);
+            $result[$i]['grupo_title']=strip_tags($row[2]);        
+        }
+    }
+    return $result;
+}
+function compartir_servidor_documentos_submited_save($params){
+    global $user;
+    //compartir_servidor_documentos_submited
+    $compartir_servidor_documentos_submited_array=compartir_servidor_documentos_compartir_servidor_documentos_submited_array($params,$user->uid);
+    if(empty($compartir_servidor_documentos_submited_array)){
+        $fecha=time();
+        db_query($sql=sprintf('INSERT INTO {compartir_servidor_documentos_submited}(params,uid,fecha) VALUES("%s",%d,%d)',$params,$user->uid,$fecha));
+        //print $sql;exit();
+    }
+}
+function compartir_servidor_documentos_compartir_servidor_documentos_submited_array($params,$uid){
+    $result=array();
+    $res=db_query('SELECT * FROM {compartir_servidor_documentos_submited} WHERE params="%s" AND uid=%d',$params,$uid);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function compartir_servidor_documentos_is_submited(){
+    global $user;
+    $params=compartir_servidor_documentos_get_params_by_arg();
+    $compartir_servidor_documentos_submited_array=compartir_servidor_documentos_compartir_servidor_documentos_submited_array($params,$user->uid);
+    if(empty($compartir_servidor_documentos_submited_array)){
+        return 0;
+    }
+    return 1;
+}
+function compartir_servidor_documentos_get_params_by_arg(){
+    $result=arg(2).'/'.arg(3);
+    return $result;
+}        

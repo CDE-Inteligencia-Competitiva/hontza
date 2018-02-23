@@ -1,0 +1,6 @@
+/* $Id: quant.css,v 1.1 2010/08/10 02:39:35 mikestefff Exp $ */
+div.quant-chart {
+  float: left;
+  padding: 10px;
+}
+.form-item { display: inline; padding-right: 5px; }

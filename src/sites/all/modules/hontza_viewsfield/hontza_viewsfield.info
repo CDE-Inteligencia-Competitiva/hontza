@@ -1,0 +1,7 @@
+; $Id: hontza_viewsfield.info,v 1.1.4.2 2010/31/09 18:32:33 investic Exp $
+name = Hontza views field
+description = "Own views field"
+core = 6.x
+package = Hontza
+dependencies[] = views
+

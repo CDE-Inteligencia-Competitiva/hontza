@@ -1,0 +1,3219 @@
+<?php
+require_once('idea.enlazar.inc');
+/**
+ * @file
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in idea_schema().
+ */
+
+/**
+ * @defgroup idea Example: Node
+ * @ingroup examples
+ * @{
+ * Creating a new content type in a module. (drupal 6)
+ *
+ * This is an example outlining how a module can be used to define a new
+ * node type.
+ *
+ * (Note that custom node types are most often created with CCK in recent
+ * versions of Drupal.)
+ *
+ * Our example node type will allow users to specify a "color" and a "quantity"
+ * for their nodes; some kind of rudimentary inventory-tracking system, perhaps?
+ * To store this extra information, we need an auxiliary database table as
+ * defined in idea_schema().
+ *
+ * This example is part of the Examples for Developers Project which you can download
+ * and experiment with here: http://drupal.org/project/examples
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function idea_menu() {
+  $items['ideas'] = array(
+    'title' => 'ideas',
+    'page callback' => 'ideas_list_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver ideas_list'),
+  );
+  $items['ideas/estadisticas'] = array(
+    'title' => 'ideas_estadisticas',
+    'page callback' => 'ideas_estadisticas_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver ideas_estadisticas'),
+  );
+  $items['ideas/arbol'] = array(
+    'title' => 'ideas_arbol',
+    'page callback' => 'ideas_arbol_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver ideas_arbol'),
+  );
+  $items['ideas/adherirse/%'] = array(
+    'title' => t('Support the idea'),
+    'page callback' => 'ideas_adherirse_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver ideas_adherirse'),
+  );
+  $items['ideas/no_adherirse/%'] = array(
+    'title' => t('Not supporting the Idea'),
+    'page callback' => 'ideas_no_adherirse_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver ideas_no_adherirse'),
+  );
+  $items['ideas/no_promocionada'] = array(
+    'title' => t('Non promoted Idea'),
+    'page callback' => 'ideas_no_promocionada_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver ideas_no_promocionada'),
+  );
+  $items['ideas/respuestas_a_retos'] = array(
+    'title' => t('Proposals to Challenges'),
+    'page callback' => 'respuestas_a_retos_callback',
+    //'access callback' => TRUE,
+    'access arguments' => array('Ver respuestas_a_retos'),
+  );
+  $items=idea_enlazar_menu_items($items);
+  return $items;
+}
+
+/**
+ * Explain how the module demonstrates a new node type.idea.test
+ */
+function ideas_list_callback() {
+  global $user;
+  //echo print_r($user,1);
+  //
+  idea_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  if(is_idea('oportunidades') || is_idea('oportunidades_mas_valoradas')){
+      return oportunidad_list_callback();
+  }else if(is_idea() && in_array(arg(1),array('borrador','aprobados','no_aprobados'))){
+      return proyecto_list_callback();
+  }
+  /*
+  $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="idea"'; 
+  //
+  $search=my_get_request_value('search');
+  if(!empty($search)){
+    $where[]='(n.title LIKE "%%'.$search.'%%" OR nr.body LIKE "%%'.$search.'%%")';
+  }
+  //
+  $my_grupo=og_get_group_context();
+  $grupo_seleccionado=0;
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]='idea.grupo_nid='.$my_grupo->nid;
+        $grupo_seleccionado=1;
+  }
+  if(is_user_invitado()){
+    $where[]='ii.uid='.$user->uid;
+  }else{
+    if($user->uid!=1){
+        $where[]='(idea.is_todo_subgrupo=1 OR s.uid='.$user->uid.')';
+    }
+  }
+  //
+  $order_fields='n.sticky DESC, n.created DESC';  
+  if(is_idea('mas_comentadas')){
+      //$order_by=' ORDER BY comment_num DESC, n.sticky DESC, n.created DESC';
+      $order_fields='comment_num DESC,'.$order_fields;
+  }else if(is_idea('mas_valoradas')){
+      //$order_by=' ORDER BY votingapi_cache_node_average_value DESC, n.sticky DESC, n.created DESC';
+      $order_fields='votingapi_cache_node_average_value DESC,'.$order_fields;
+  }
+  $order_by=' ORDER BY '.$order_fields;
+  //
+  $sql='SELECT n.nid, n.sticky, n.created,COUNT(c.cid) as comment_num,
+  votingapi_cache_node_average.value AS votingapi_cache_node_average_value
+  FROM {node} n
+  LEFT JOIN {idea} idea ON n.nid=idea.nid
+  LEFT JOIN {idea_invitados} ii ON idea.nid=ii.idea_nid
+  LEFT JOIN {idea_subgrupo} s ON idea.nid=s.idea_nid
+  LEFT JOIN {comments} c ON n.nid=c.nid
+  LEFT JOIN votingapi_cache votingapi_cache_node_average ON n.nid = votingapi_cache_node_average.content_id AND (votingapi_cache_node_average.content_type = "node" AND votingapi_cache_node_average.function = "average")
+  LEFT JOIN {node_revisions} nr ON (n.nid=nr.nid AND n.vid=nr.vid)
+  WHERE '.implode(' AND ',$where).'
+  GROUP BY n.nid '.$order_by;*/
+  
+  $grupo_seleccionado=0;
+  $sql=idea_define_list_sql('','',$grupo_seleccionado);
+  /*if(user_access('root')){
+    print $sql;
+  }*/  
+    
+  $my_limit=variable_get('default_nodes_main', 10);
+
+  //if(is_idea('mas_valoradas')){
+    $result = db_query($sql);
+    $my_list=array();
+    $output = '';
+    $output = create_menu_ideas();
+    $num_rows = FALSE;
+    $kont=0;
+    while ($node = db_fetch_object($result)) { 
+      $my_node=node_load($node->nid);
+      //gemini-2013
+      $my_list[$kont]=new stdClass();
+      //$my_node->votingapi_cache_node_average_value=$node->votingapi_cache_node_average_value;
+      $my_list[$kont]->view= node_view($my_node, 1);
+      $votos_list=get_idea_votos_list($node->nid);
+      $my_list[$kont]->suma_votos= get_suma_votos($votos_list);
+      $kont++;
+      $num_rows = TRUE;
+    }
+    if(!$grupo_seleccionado){
+        $num_rows = FALSE;
+        $my_list=array();
+    }
+    if(is_idea('mas_valoradas')){
+        $my_list=array_ordenatu($my_list,'suma_votos','desc',1);
+    }
+    $my_list=my_set_estrategia_pager($my_list,$my_limit);
+    $output.=get_mas_valoradas_output_html($my_list);
+  /*}else{
+   
+    $result = pager_query(db_rewrite_sql($sql), $my_limit);
+  
+    $output = '';
+    $output = create_menu_ideas();
+    $num_rows = FALSE;
+    while ($node = db_fetch_object($result)) {
+      //print_r($node);
+      $my_node=node_load($node->nid);
+      //$my_node->votingapi_cache_node_average_value=$node->votingapi_cache_node_average_value;
+      $output .= node_view($my_node, 1);
+      $num_rows = TRUE;
+    }
+  }*/
+
+  if ($num_rows) {
+    /*$feed_url = url('idea_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/      
+    $output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+ 
+    $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+  }
+  //drupal_set_title(t('Listado de ideas'));
+  $my_title=get_lista_ideas_title();
+  drupal_set_title($my_title);
+  return $output;
+}
+/**
+ * Implementation of hook_node_info().
+ *
+ * This is a required node hook. This function describes the nodes provided by
+ * this module.
+ *
+ * The required attributes are:
+ * - "name" provides a human readable name for the node,
+ * - "module" tells Drupal how the module's functions map to hooks (i.e. if the
+ *   module is idea_foo then idea_foo_insert will be called
+ *   when inserting the node).
+ * - "description" provides a brief description of the node type, which is
+ *   shown when a user accesses the "Create content" page for that node type.
+ *
+ * The other optional, attributes:
+ * - "has_title" boolean that indicates whether or not this node type has a
+ *   title field.
+ * - "title_label": the label for the title field of this content type.
+ * - "has_body": boolean that indicates whether or not this node type has a
+ *   body field.
+ * - "body_label": the label for the body field of this content type.
+ * - "min_word_count": the minimum number of words for the body field to be
+ *   considered valid for this content type.
+ *
+ * The key in this example, "example_node_type_1", is the "machine name" of the
+ * node type and is stored in {node}.type. The node's type value cannot be
+ * changed through the admin interface.
+ *
+ */
+function idea_node_info() {
+  return array(
+    'idea' => array(
+      'name' => t('Idea'),
+      'module' => 'idea',
+      'description' => t("An example node type with a few fields."),
+      'has_title' => TRUE,
+      'title_label' => t('Title of idea'),
+      'has_body' => TRUE,
+      'body_label' => t('Full Text'),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_access().
+ *
+ * Node modules may implement node_access() to determine the operations
+ * users may perform on nodes. This example uses a very common access pattern.
+ */
+function idea_access($op, $node, $account) {
+  if ($op == 'create') {
+    return user_access('create idea', $account);
+  }
+
+  if ($op == 'update') {
+    if (user_access('edit any idea', $account) || (user_access('edit own idea', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+
+  if ($op == 'delete') {
+    if (user_access('delete any idea', $account) || (user_access('delete own idea', $account) && ($account->uid == $node->uid))) {
+      return TRUE;
+    }
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Since we are limiting the ability to create new nodes to certain users,
+ * we need to define what those permissions are here. We also define a permission
+ * to allow users to edit the nodes they created.
+ */
+function idea_perm() {
+  $result=array(
+    'create idea',
+    'delete own idea',
+    'delete any idea',
+    'edit own idea',
+    'edit any idea',
+    'Ver ideas_list',
+    'Ver ideas_estadisticas',
+    'Ver ideas_arbol',
+    'Ver ideas_adherirse',
+    'Ver ideas_no_adherirse',
+    'Ver ideas_no_promocionada',
+    'Ver respuestas_a_retos',
+  );
+  $result=idea_enlazar_hontza_perm($result);
+  return $result;
+}
+
+/**
+ * Implementation of hook_form().
+ *
+ * Now it's time to describe the form for collecting the information
+ * specific to this node type. This hook requires us to return an array with
+ * a sub array containing information for each element in the form.
+ */
+function idea_form(&$node, $form_state) {
+  // The site admin can decide if this node type has a title and body, and how
+  // the fields should be labeled. We need to load these settings so we can
+  // build the node form correctly.
+  //gemini-2014  
+  if(isset($node->nid) && !empty($node->nid)){
+      drupal_set_title(estrategia_set_title_max_len($node->title));
+  }  
+  idea_active_tabs_access();
+  $type = node_get_types('type', $node);
+
+  $form['#attributes']['autocomplete'] = 'off';
+  
+  if ($type->has_title) {
+    $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => -5,
+      //gemini-2014  
+      '#maxlength'=>175,  
+    );
+  }
+  
+  if ($type->has_body) {
+    // In Drupal 6, we use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.    
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
+//echo print_r($node->plazo_del_reto,1);
+  //gemini
+  /*$form['reto_al_que_responde'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Associated Challenge'),
+    '#default_value' => $node->reto_al_que_responde    
+  );*/
+  if(isset($node->nid) && !empty($node->nid)){
+      $form['plazo_del_reto'] = array(
+        '#type' => 'date',
+        '#title' => t('Control Date'),
+        '#default_value' => $node->plazo_del_reto
+      );
+  }
+
+  $form['invitados'] = array(
+  '#type' => 'select',
+  '#title' => t('Guests'),
+  '#default_value' => $node->invitados,
+  '#options'=>my_get_idea_invitados_options(),
+  '#multiple'=>TRUE,
+  '#size'=>10,
+  '#required' => FALSE
+  );
+  //
+  idea_add_crear_invitado_fieldset_form_field($form);
+  //
+  //$subgrupo=set_subgrupo_default_value($node->subgrupo);
+  $form['subgrupo'] = array(
+  '#type' => 'select',
+  '#title' => t('Subgroup'),
+  '#default_value' => $node->subgrupo,
+  '#options'=>my_get_idea_subgrupo_options(),
+  '#multiple'=>TRUE,
+  '#size'=>10,
+  '#required' => FALSE
+);
+//
+$form['categorias_tematicas_fieldset']=create_categorias_tematicas_fieldset('',1,$node->nid,'idea');
+$form['categorias_tematicas_fieldset']['#attributes']=array('id'=>'idea_categorias_tematicas_fs');
+$form['noticia_nid'] = array('#type' => 'hidden', '#value' => arg(3));
+
+$form['reto_al_que_responde_id']=array(
+    //'#title' => t('Associated Challenge'),
+    '#value'=>get_reto_al_que_responde_html(),
+ );
+
+$form['enlaces_html']=array(
+        '#value'=>hontza_get_enlaces_view_html($node,1),
+        //'#weight'=>-3,
+    );
+
+
+$form['enlace_fieldset']=array(
+  '#type'=>'fieldset',
+  '#title'=>t('Link to the news'),
+  '#collapsible'=>true,
+  '#collapsed'=>true,
+);
+$form['enlace_fieldset']['enlace_title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Link to the news Title'),
+      '#required' => FALSE,
+      '#default_value' => set_idea_default_value_enlace($node->enlace_title,'title',$node->nid),
+      //'#weight' => -5
+      //intelsat-2015
+      '#maxlength'=>red_solr_inc_get_node_title_maxlength(),  
+    );
+
+$form['enlace_fieldset']['enlace_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Link to the news Url'),
+      '#required' => FALSE,
+      '#default_value' => set_idea_default_value_enlace($node->enlace_url,'url',$node->nid),
+      //'#weight' => -5
+    );
+
+if(isset($node->nid) && !empty($node->nid)){
+    //
+}else{
+    drupal_set_title(t('Add Idea'));
+}
+//
+  return $form;
+}
+
+/**
+ * Implementation of hook_validate().
+ *
+ * Our "quantity" field requires a number to be entered. This hook lets
+ * us ensure that the user entered an appropriate value before we try
+ * inserting anything into the database.
+ *
+ * Errors should be signaled with form_set_error().
+ */
+function idea_validate($node, &$form) {  
+  validate_invitado_new($node,$form,array());
+  //validate_idea_categorias_tematicas($node,$form);
+  validate_idea_reto_al_que_responde($form);
+}
+
+/**
+ * Implementation of hook_insert().
+ *
+ * As a new node is being inserted into the database, we need to do our own
+ * database inserts.
+ */
+function idea_insert($node) {
+  //gemini
+  global $user;  
+  //$fecha=date('Y-m-d H:i:s');
+  $fecha=mktime();
+  $origen_uid=$user->uid;
+  $grupo_nid=0;
+  $my_grupo=og_get_group_context(); 
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$grupo_nid=$my_grupo->nid; 
+  }  
+  //
+  $responde_array=$_REQUEST['estrategia'];
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      $responde_values=explode('_',$responde_keys[0]);
+      //echo print_r($responde_values,1);exit();
+      $responde_estrategia_nid=get_responde_value($responde_values,0);
+      $responde_despliegue_nid=get_responde_value($responde_values,1);
+      $responde_decision_nid=get_responde_value($responde_values,2);
+      $responde_informacion_nid=get_responde_value($responde_values,3);
+  }
+  //
+  if(isset($node->plazo_del_reto)){  
+    $plazo_del_reto_in=$node->plazo_del_reto;
+  }else{
+    $plazo_del_reto_in=get_plazo_del_reto_by_estrategia($responde_estrategia_nid);
+  }
+  $plazo_del_reto=my_mktime($plazo_del_reto_in);
+  //
+  $sql=sprintf("INSERT INTO {idea} (vid, nid, fecha, origen_uid,grupo_nid,plazo_del_reto,noticia_nid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid,enlace_title,enlace_url) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,'%s','%s')", $node->vid, $node->nid, $fecha, $origen_uid,$grupo_nid,$plazo_del_reto,$node->noticia_nid,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid,addslashes($node->enlace_title),$node->enlace_url);
+  //print $sql;exit();
+  db_query($sql);
+  $idea_nid=$node->nid;
+  save_idea_invitados($idea_nid,$node->invitados,$node);
+  save_idea_subgrupo($idea_nid,$node->subgrupo);
+  save_idea_categorias_tematicas($idea_nid,$node);
+  save_idea_responde_array($idea_nid,$responde_array);
+  idea_enlazar_on_save('insert',$node);
+  //
+}
+
+/**
+ * Implementation of hook_update().
+ *
+ * As an existing node is being updated in the database, we need to do our own
+ * database updates.
+ */
+function idea_update($node) {
+  //echo print_r($_REQUEST,1);exit();
+  //gemini
+  $plazo_del_reto=my_mktime($node->plazo_del_reto);
+  /*if(user_access('root')){
+    echo 'plazo_del_reto='.print_r($node->plazo_del_reto,1);exit();
+  }*/  
+  $responde_array=$_REQUEST['estrategia'];
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){     
+      $responde_keys=array_keys($responde_array);
+      $responde_values=explode('_',$responde_keys[0]);
+      //echo print_r($responde_values,1);exit();
+      $responde_estrategia_nid=get_responde_value($responde_values,0);
+      $responde_despliegue_nid=get_responde_value($responde_values,1);
+      $responde_decision_nid=get_responde_value($responde_values,2);
+      $responde_informacion_nid=get_responde_value($responde_values,3);
+  }
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    idea_insert($node);
+  }
+  else {
+    db_query("UPDATE {idea} SET plazo_del_reto = %d, noticia_nid = %d,responde_estrategia_nid=%d,responde_despliegue_nid=%d,responde_decision_nid=%d,responde_informacion_nid=%d,enlace_title='%s',enlace_url='%s' WHERE vid = %d", $plazo_del_reto, $node->noticia_nid ,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid,$node->enlace_title,$node->enlace_url,$node->vid);
+  }
+  //save_emtpy_categoria_tematica($node);
+  $idea_nid=$node->nid;
+  save_idea_invitados($idea_nid,$node->invitados,$node);
+  save_idea_subgrupo($idea_nid,$node->subgrupo);
+  save_idea_categorias_tematicas($idea_nid,$node);
+  save_idea_responde_array($idea_nid,$responde_array);
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * When a node revision is deleted, we need to remove the corresponding record
+ * from our table. The only way to handle revision deletion is by implementing
+ * hook_nodeapi().
+ */
+function idea_nodeapi(&$node, $op, $teaser, $page) {
+  switch ($op) {
+    case 'delete revision':
+      // Notice that we're matching a single revision based on the node's vid.
+      db_query('DELETE FROM {idea} WHERE vid = %d', $node->vid);
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ *
+ * When a node is deleted, we need to remove all related records from our table.
+ */
+function idea_delete($node) {
+  // Notice that we're matching all revision, by using the node's nid.
+  $idea_nid=$node->nid;
+  db_query('DELETE FROM {idea} WHERE nid = %d', $node->nid);
+  my_delete_idea_invitados($idea_nid);
+  my_delete_idea_subgrupo($idea_nid);
+  delete_oportunidad_list($idea_nid);
+  delete_idea_categorias_tematicas($idea_nid);
+  delete_idea_responde_array($idea_nid);
+}
+
+/**
+ * Implementation of hook_load().
+ *
+ * Now that we've defined how to manage the node data in the database, we
+ * need to tell Drupal how to get the node back out. This hook is called
+ * every time a node is loaded, and allows us to do some loading of our own.
+ */
+function idea_load($node) {
+  //gemini
+  $sql=sprintf('SELECT idea.nid as idea_nid,idea.vid as idea_vid,idea.fecha,idea.origen_uid,idea.grupo_nid,idea.plazo_del_reto,idea.noticia_nid 
+      ,votingapi_cache_node_average.value AS votingapi_cache_node_average_value
+      ,idea.responde_estrategia_nid,idea.responde_despliegue_nid,idea.responde_decision_nid,idea.responde_informacion_nid
+      ,idea.enlace_title,idea.enlace_url,idea.is_todo_subgrupo
+      FROM {idea} idea
+      LEFT JOIN votingapi_cache votingapi_cache_node_average ON idea.nid = votingapi_cache_node_average.content_id AND (votingapi_cache_node_average.content_type = "node" AND votingapi_cache_node_average.function = "average")
+      WHERE vid = %d', $node->vid);
+  $additions = db_fetch_object(db_query($sql));
+  if(isset($additions->idea_nid) && !empty($additions->idea_nid)){
+        $info3=get_adheridas_uid_array($additions->idea_nid);
+	$additions->adheridas=$info3['adheridas'];
+	$additions->adheridas_list=$info3['adheridas_list'];
+        //
+  	$info=get_invitados_uid_array($additions->idea_nid);
+	$additions->invitados=$info['invitados'];
+	$additions->invitados_list=$info['invitados_list'];
+        //
+        $info2=get_subgrupo_uid_array($additions->idea_nid);
+	$additions->subgrupo=$info2['subgrupo'];
+	$additions->subgrupo_list=$info2['subgrupo_list'];
+        //
+	$additions->plazo_del_reto=set_date_array($additions->plazo_del_reto);
+        $additions->categorias_tematicas=get_idea_categorias_tematicas_array($additions->idea_nid);
+        $additions->categorias_tematicas_html=get_categorias_tematicas_html($additions->categorias_tematicas);
+        $additions->noticia_name=get_noticia_name($additions->noticia_nid);
+        $additions->es_mi_idea=get_es_mi_idea($node,$additions);
+        $additions->my_stars=get_mi_idea_html($additions->idea_nid);
+        $additions->reto_al_que_responde=get_reto_al_que_responde_by_estrategia($additions);
+        $votos_list=get_idea_votos_list($additions->idea_nid);
+        $additions->suma_votos=get_suma_votos($votos_list);
+        //$additions->puntuacion_total=calcular_idea_puntuacion_total($additions);
+        //$additions->suma_votos=$additions->puntuacion_total;
+  }
+  //echo print_r($node,1);
+  //
+  return $additions;
+}
+
+/**
+ * Implementation of hook_view().
+ *
+ * This is a typical implementation that simply runs the node text through
+ * the output filters.
+ */
+function idea_view($node, $teaser = FALSE, $page = FALSE) {
+  $node = node_prepare($node, $teaser);
+  $node->content['myfield'] = array(
+    '#value' => theme('idea_order_info', $node),
+    '#weight' => 1,
+  );
+
+  return $node;
+}
+
+/**
+ * Implementation of hook_theme().
+ *
+ * This lets us tell Drupal about our theme functions and their arguments.
+ */
+function idea_theme() {
+  return array(
+    'idea_order_info' => array(
+      'arguments' => array('node'),
+    ),
+  );
+}
+
+/**
+ * A custom theme function.
+ *
+ * By using this function to format our node-specific information, themes
+ * can override this presentation if they wish. We also wrap the default
+ * presentation in a CSS class that is prefixed by the module name. This
+ * way, style sheets can modify the output without requiring theme code.
+ */
+function theme_idea_order_info($node) {
+  $output = '<div class="idea_order_info">';
+  $output .= t('The order is for %quantity %color items.', array('%quantity' => check_plain($node->quantity), '%color' => check_plain($node->color)));
+  $output .= '</div>';
+  //gemini
+  $output='';
+  //
+  return $output;
+}
+
+/**
+ * @} End of "defgroup idea".
+ */
+ 
+//gemini
+function idea_block($op = 'list', $delta = 0, $edit = array()) {
+ 	switch ($op) {
+    	case 'list':
+ 		
+                        $blocks[100]['info'] = t('Ideas');
+                        $blocks[900]['info'] = t('Simple Search of Ideas');
+                        $blocks[1300]['info'] = t('Proposals');
+			return $blocks;
+			break;
+                
+		case 'view':
+			$block=my_idea_view_block($delta);
+   			return $block;
+		default:
+			break;
+	}
+}
+//gemini
+function my_idea_view_block($delta){
+	$block=array();
+	switch($delta){
+		case 100:
+                        if(user_access('Ver ideas_list')){
+                            //intelsat-2015
+                            $title=t('Ideas');
+                            $block['subject'] = get_idea_bombilla_img(1,$title,'idea_left').$title;
+                            //
+                            $block['content'] = get_gestionar_ideas_content();
+                        }
+			break;
+                case 900:
+                        if(user_access('Ver ideas_list')){
+
+                            //$block['subject'] = t('Búsqueda Simple Ideas');
+                            $block['subject'] = hontza_solr_search_busqueda_simple_left_title();
+                            
+                            $block['content'] = get_busqueda_simple_ideas_content();
+                        }
+			break;
+                 case 1300:
+                        //if(user_access('Ver ideas_list')){
+                            //intelsat-2015
+                            $title=t('Proposals');
+                            $block['subject'] = get_idea_bombilla_img(1,$title,'proposals_left').$title;
+                            //
+                            $block['content'] = get_gestionar_respuesta_content();
+                        //}
+			break;
+		default:
+			break;	 
+ 	}
+    return $block;
+}
+//gemini
+function get_gestionar_ideas_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+	$result=array();
+        if(!hontza_solr_search_is_usuario_lector()){
+            //intelsat-2015
+            $title=t('Add Idea');
+            $icono=my_get_icono_action('add_left',$title).'&nbsp;';
+            //
+            $result[]=$icono.l(t('Add Idea'),'node/add/idea');
+        }
+        $result[]=l(t('List of Ideas'),'ideas');
+        //$result[]=l(t('Statistics of ideas'),'ideas/estadisticas');
+        $result[]=l(t('Deploy Ideas'),'ideas/arbol');
+	return implode('<BR>',$result);
+}
+//gemini
+function is_idea_left(){
+	if(is_idea()){
+		return 1;
+	}
+	$node=my_get_node();
+	//echo print_r($node,1);exit();
+	if(!empty($node) && isset($node->nid) && !empty($node->nid) && strcmp(arg(2),'edit')==0){
+		//if(in_array($node->type,array('item'))){
+		if(strcmp($node->type,'idea')==0){			
+			return 1;
+		}
+	}
+	
+	if(is_ficha_node_left('idea','idea')){
+		return 1;
+	}			
+	return 0;
+}
+//gemini
+function is_idea($param_ideas=''){
+	if(strcmp(arg(0),'idea')==0){
+		return 1;
+	}
+	if(strcmp(arg(0),'ideas')==0){
+            if(empty($param_ideas)){
+                return 1;
+            }else if(strcmp(arg(1),$param_ideas)==0){
+                return 1;
+            }
+        }
+	if(is_ficha_node('idea')){
+            if(idea_is_origenes()){                
+                return 0;
+            }else{
+            	return 1;
+            }  
+	}
+        if(idea_in_pantallas_enlace()){
+            return 1;
+        }
+        //gemini-2014
+        if(strcmp(arg(0),'criterios_de_evaluacion')==0){
+		return 1;
+	}
+        //
+	return 0;
+}
+//gemini
+function add_js_idea(){
+	if(is_idea()){
+            my_add_active_trail_js('id_a_idea');
+            add_js_profundidad_categoria_tematica();
+        }
+        if(is_idea_left()){
+            add_busqueda_simple_idea_js();
+        }
+}
+//gemini
+function my_class_primera_idea($node,$page){
+	if(empty($page) && is_node_primera_ayuda($node,array('idea'))){
+		return ' my_primera_noticia';
+	}
+	return '';
+}
+//gemini
+function my_help_primera_idea($node){
+	if(is_node_primera_ayuda($node,array('idea'))){
+		if(is_add_primera_idea(0,'idea')){
+			$my_is_mouse_over=1;
+			//$my_is_mouse_over=0;
+			//return help_popup_window(13179, 'help',my_get_help_link_object(),0,0,2,$my_is_mouse_over);
+			return help_popup_window('', 'help',my_get_help_link_object(),0,0,3,$my_is_mouse_over);
+		}
+	}	
+	return '';
+}
+//gemini
+function idea_form_alter(&$form, &$form_state, $form_id) {
+    if(strcmp($form_id,'idea_node_form')==0){
+        unset($form['taxonomy']['tags']);
+        $form['title']['#title']=t('Title of idea');
+        $form['body_field']['body']['#title']=t('Details');       
+    }
+}
+//gemini
+function delete_oportunidad_list($idea_nid){
+	$oportunidad_list=get_idea_oportunidad_list($idea_nid);
+	if(count($oportunidad_list)>0){
+		foreach($oportunidad_list as $i=>$row){
+			$node=node_load($row->nid);
+			oportunidad_delete($node);
+			//print $node->nid.'<BR>';
+			node_delete($node->nid);
+		}
+	}
+}
+//gemini
+function get_idea_oportunidad_list($idea_nid){
+	$result=array();
+	$where=array();
+	$where[]="1";
+  if(is_numeric($idea_nid)){
+	 $where[]='o.idea_nid='.$idea_nid;
+  }else{
+    if($idea_nid=='proyecto_add_oportunidad_sin_idea_row'){
+      $result=proyecto_get_oportunidad_sin_idea_list();
+      return $result;
+    }
+  }	
+  $sql="SELECT n.* 
+	FROM {node} n LEFT JOIN {oportunidad} o ON (n.nid=o.nid AND n.vid=o.vid)
+	WHERE ".implode(" AND ",$where).' GROUP BY n.nid';
+	//print $sql;exit();
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function my_mktime($date_array){
+    if(empty($date_array)){
+        return mktime();
+    }
+    //print $date_array['month'].'-'.$date_array['day'].'-'.$date_array['year'].'<BR>';exit();
+    $result=mktime (0,0,0,(int) $date_array['month'],(int) $date_array['day'],(int) $date_array['year']);
+    /*if(user_access('root')){
+        print 'my_date='.date('Y-m-d',$result);exit();
+    }*/
+    return $result;
+}
+//gemini
+function set_date_array($param){ 
+  $date_array=array();
+  $plazo_del_reto=date('Y-m-d',$param);
+  $my_array=explode('-',$plazo_del_reto);
+  //
+  $date_array['year']=(int) $my_array[0];
+  $date_array['month']=(int) $my_array[1];
+  $date_array['day']=((int) $my_array[2]);
+  //
+  return $date_array;
+}
+//gemini
+function my_get_idea_invitados_options(){
+    $result=array();
+    $user_list=my_get_user_invitados_list();
+    if(count($user_list)>0){
+        foreach($user_list as $i=>$u){
+            if(is_invitado_de_mi_subgrupo($u->uid)){
+                $result[$u->uid]=$u->name;
+            }
+        }
+    }
+    //echo print_r($result,1);
+    return $result;
+}
+//gemini
+function my_get_user_invitados_list($grupo_nid=''){
+    $result=array();
+    //
+    $where=array();
+    $where[]='1';
+    $where[]='r.name="Invitado"';
+    $where[]='og_uid.is_active=1';
+    if(empty($grupo_nid)){
+        $my_grupo=og_get_group_context();
+	if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $where[]='(og_uid.nid = '.$my_grupo->nid.')';
+	}
+    }else{
+        $where[]='(og_uid.nid = '.$grupo_nid.')';
+    }
+    //
+    $sql='SELECT u.*
+    FROM {users} u
+    LEFT JOIN {users_roles} ur ON u.uid=ur.uid
+    LEFT JOIN {role} r ON ur.rid=r.rid
+    LEFT JOIN {og_uid} og_uid ON u.uid=og_uid.uid
+    WHERE '.implode(' AND ',$where).' ORDER BY u.name ASC';
+    $res= db_query($sql);
+    //
+    while ($row = db_fetch_object($res)) {
+        $result[]=$row;
+    }
+    //echo print_r($result,1);
+    //print $sql;
+    return $result;
+}
+//gemini
+function insert_idea_invitados($idea_nid,$uid){
+    $sql='INSERT idea_invitados(idea_nid,uid) VALUES('.$idea_nid.','.$uid.')';
+    db_query($sql);
+}
+//gemini
+function save_idea_invitados($idea_nid,$invitados,$node){
+	my_delete_idea_invitados($idea_nid);
+	if(count($invitados)>0){
+            foreach($invitados as $i=>$uid){
+                insert_idea_invitados($idea_nid,$uid);
+            }
+	}
+        $new_uid=save_new_invitado($node);
+        if(!empty($new_uid)){
+            $my_grupo=og_get_group_context();
+            if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+                og_save_subscription($my_grupo->nid, $new_uid, array('is_active' => 1));
+            }
+            //
+            insert_idea_invitados($idea_nid,$new_uid);
+        }
+}
+//gemini
+function my_delete_idea_invitados($idea_nid){
+    $sql='DELETE FROM {idea_invitados} WHERE idea_nid='.$idea_nid;
+    db_query($sql);
+}
+//gemini
+function get_invitados_uid_array($idea_nid){
+	$invitados=array();
+	$invitados_list=array();
+	$my_list=get_idea_invitados_list($idea_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$invitados[]=$row->uid;
+			$invitados_list[]=$row;
+		}
+	}
+	$info['invitados']=$invitados;
+	$info['invitados_list']=$invitados_list;
+	return $info;
+}
+//gemini
+function get_idea_invitados_list($idea_nid='',$uid=''){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	if(!empty($idea_nid)){
+		$where[]="ii.idea_nid=".$idea_nid;
+	}
+	if(!empty($uid)){
+		$where[]="ii.uid=".$uid;
+	}
+	//
+	$sql="SELECT ii.*,u.name as username FROM {idea_invitados} ii LEFT JOIN {users} u ON ii.uid=u.uid WHERE ".implode(" AND ",$where)." ORDER BY u.name ASC";
+	//
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function is_user_invitado($my_user=''){
+    global $user;
+    //
+    $konp='Invitado';
+    if(!empty($my_user) && isset($my_user->uid) && !empty($my_user->uid)){
+        if(in_array($konp,$my_user->roles)){
+          //intelsat
+          if(red_is_user_invitado($konp,$my_user->roles)){            
+            return 1;
+          }
+        }
+    }
+    //
+    if(in_array($konp,$user->roles)){
+        //intelsat
+        if(red_is_user_invitado($konp,$user->roles)){ 
+          return 1;
+        }
+    }
+    return 0;
+}
+//gemini
+function my_get_idea_subgrupo_options(){
+	/*$result=array();
+	$user_list=my_get_og_grupo_user_list();
+	if(count($user_list)>0){
+		foreach($user_list as $i=>$u){
+			$result[$u->uid]=$u->name;
+		}
+	}
+	//echo print_r($result,1);
+	return $result;*/
+    return my_get_oportunidad_personas_options();
+}
+//gemini
+function save_idea_subgrupo($idea_nid,$subgrupo){
+	global $user;
+        //
+        $is_todo_subgrupo=1;
+        my_delete_idea_subgrupo($idea_nid);
+	if(count($subgrupo)>0){
+            foreach($subgrupo as $i=>$uid){
+                insert_idea_subgrupo($idea_nid,$uid);
+            }
+            $is_todo_subgrupo=0;
+            if(!is_user_in_subgrupo($user->uid,$subgrupo)){
+                insert_idea_subgrupo($idea_nid,$user->uid);
+            }
+	}
+        update_is_todo_subgrupo($idea_nid,$is_todo_subgrupo);
+}
+//gemini
+function my_delete_idea_subgrupo($idea_nid){
+	$sql='DELETE FROM {idea_subgrupo} WHERE idea_nid='.$idea_nid;
+	db_query($sql);
+}
+//gemini
+function insert_idea_subgrupo($idea_nid,$uid){
+	$sql='INSERT idea_subgrupo(idea_nid,uid) VALUES('.$idea_nid.','.$uid.')';
+	db_query($sql);
+}
+//gemini
+function get_subgrupo_uid_array($idea_nid){
+	$subgrupo=array();
+	$subgrupo_list=array();
+	$my_list=get_idea_subgrupo_list($idea_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$subgrupo[]=$row->uid;
+			$subgrupo_list[]=$row;
+		}
+	}
+	$info['subgrupo']=$subgrupo;
+	$info['subgrupo_list']=$subgrupo_list;
+	return $info;
+}
+//gemini
+function get_idea_subgrupo_list($idea_nid='',$uid=''){
+	$result=array();
+	$where=array();
+	$where[]="1";
+	if(!empty($idea_nid)){
+		$where[]="s.idea_nid=".$idea_nid;
+	}
+	if(!empty($uid)){
+		$where[]="s.uid=".$uid;
+	}
+	//
+	$sql="SELECT s.*,u.name as username FROM {idea_subgrupo} s LEFT JOIN {users} u ON s.uid=u.uid WHERE ".implode(" AND ",$where)." ORDER BY u.name ASC";
+	//print $sql;
+        //
+	$res=db_query($sql);
+	while($row=db_fetch_object($res)){
+		$result[]=$row;
+	}
+	return $result;
+}
+//gemini
+function set_subgrupo_default_value($subgrupo){
+    $result=array();
+    if(empty($subgrupo)){
+        $my_list=my_get_oportunidad_personas_options();
+        //echo print_r($my_list,1);
+    }
+    return $result;
+}
+//gemini
+function update_is_todo_subgrupo($idea_nid,$is_todo_subgrupo){
+    $sql="UPDATE idea SET is_todo_subgrupo=".$is_todo_subgrupo." WHERE nid=".$idea_nid;
+    db_query($sql);
+}
+//gemini
+function create_menu_ideas(){
+    $html=array();
+    $html[]='<div class="tab-wrapper-flechas clearfix primary-only" style="margin-top:0;">';
+    $html[]='<div class="tabs primary" id="tabs-primary">';
+    $html[]='<ul class="ul-ideas">';
+    //
+    if(is_idea() && !is_ficha_node('idea') && !in_array(arg(1),array('mas_valoradas','mas_comentadas','oportunidades','borrador','aprobados','no_aprobados','oportunidades_mas_valoradas'))){
+        $html[]='<li class="ideas_menu_li active" id="li_ultimas_ideas">';                    
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_ultimas_ideas">';
+    }
+    //$html[]=l('Latest Ideas','ideas');
+    //intelsat-2016
+    //$html[]=l(t('.Last'),'ideas');
+    $html[]=l(t('.Latest'),'ideas');
+    $html[]='</li>';
+    //
+    if(is_idea('mas_valoradas') && !is_ficha_node('idea')){
+        $html[]='<li class="ideas_menu_li active"  id="li_mas_valoradas">';
+    }else{
+        $html[]='<li class="ideas_menu_li"  id="li_mas_valoradas">';
+    }
+    $html[]=l(t('Top Rated'),'ideas/mas_valoradas');
+    $html[]='</li>';
+     //
+    /*if(is_idea('mas_comentadas')){
+        $html[]='<li class="ideas_menu_li active" id="li_mas_comentadas">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_mas_comentadas">';
+    }
+    $html[]=l('+Comentadas','ideas/mas_comentadas');
+    $html[]='</li>';*/
+    //   
+    if((is_idea('oportunidades') && !is_ficha_node('idea')) || (is_oportunidad() && !is_ficha_node('oportunidad'))){
+        $html[]='<li class="ideas_menu_li active" id="li_oportunidades">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_oportunidades">';
+    }
+    //intelsat-2016
+    //$html[]=l(t('.Last'),'ideas/oportunidades');
+    $html[]=l(t('.Latest'),'ideas/oportunidades');
+    $html[]='</li>';
+    //
+    if((is_idea('oportunidades_mas_valoradas') && !is_ficha_node('idea')) || (is_oportunidad('mas_valoradas') && !is_ficha_node('oportunidad'))){
+        $html[]='<li class="ideas_menu_li active" id="li_oportunidades_mas_valoradas">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_oportunidades_mas_valoradas">';
+    }
+    $html[]=l(t('Top Rated'),'ideas/oportunidades_mas_valoradas');
+    $html[]='</li>';
+    //
+    if((is_idea('proyectos') && !is_ficha_node('idea')) || (is_proyecto() && !is_ficha_node('proyecto'))){
+        $html[]='<li class="ideas_menu_li active" id="li_proyectos">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_proyectos">';
+    }
+    //$html[]=l('Last','ideas/proyectos');
+    //intelsat-2016
+    //$html[]=l(t('Last'),'proyectos/todas');
+    $html[]=l(t('Latest'),'proyectos/todas');
+    $html[]='</li>';
+    //
+    if(is_idea('borrador') && !is_ficha_node('idea')){
+        $html[]='<li class="ideas_menu_li active" id="li_borrador">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_borrador">';
+    }
+    $html[]=l(t('Drafts'),'ideas/borrador');
+    $html[]='</li>';
+    //
+    if(is_idea('aprobados') && !is_ficha_node('idea')){
+        $html[]='<li class="ideas_menu_li active" id="li_aprobados">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_aprobados">';
+    }
+    $html[]=l(t('Approved'),'ideas/aprobados');
+    //
+    if(is_idea('no_aprobados') && !is_ficha_node('idea')){
+        $html[]='<li class="ideas_menu_li active" id="li_no_aprobados">';
+    }else{
+        $html[]='<li class="ideas_menu_li" id="li_no_aprobados">';
+    }
+    $html[]=l(t('Not Approved'),'ideas/no_aprobados');
+    $html[]='</li>';
+    //
+    $html[]='</ul>';
+    $html[]='</div></div>';
+    //
+    $aurretik='';
+    $aurretik=get_idea_menu_aurretik();
+    return $aurretik.implode('',$html);
+}
+function my_idea_taxonomy_form_alter(&$form, &$form_state, $form_id){
+     $vid='';
+     $my_grupo=og_get_group_context();
+     if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $vid = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s", $my_grupo->nid));
+     }
+     //
+     if(!empty($vid)){
+            //print $form_id.'<BR>';
+            //echo print_r($form['taxonomy'],1);exit();
+            unset($form['taxonomy']['tags']);
+            $form['taxonomy'][$vid]["#type"]='checkboxes';
+            $form['taxonomy'][$vid]["#required"]=false;
+            $form['taxonomy']["#title"]=t('Thematic Categories');
+            unset($form['taxonomy'][$vid]['#theme']);
+            //$form['taxonomy'][$vid]['#theme']='taxonomy_term_checkboxes';
+            $my_options=$form['taxonomy'][$vid]["#options"];
+            $my_list=array();
+            $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+            foreach($my_options as $i=>$row){
+                /*$key_array=array_keys($row->option);
+                $value_array=array_values($row->option);
+                $my_list[$key_array[0]]=$value_array[0];*/
+                if(count($row->option)>0){
+                    foreach($row->option as $tid=>$label){
+                        if($tid==$indefinida_tid){
+                            continue;
+                        }
+                        $my_list[$tid]=ltrim($label,'-');
+                    }
+                }
+            }
+            //echo print_r($form['taxonomy'][$vid]["#options"],1);exit();
+            $form['taxonomy'][$vid]["#options"]=array();
+            $form['taxonomy'][$vid]["#options"]=$my_list;
+            //
+            $categorias=taxonomy_get_tree($vid);
+            //echo print_r($categorias,1);exit();
+            /*
+            add_js_profundidad_categoria_tematica($vid,$indefinida_tid,$categorias);*/
+     }
+}
+//gemini
+function add_js_profundidad_categoria_tematica($vid_in='',$indefinida_tid_in='',$categorias_in=array()){
+    if((strcmp(arg(0),'node')==0 && strcmp(arg(1),'add')==0 && strcmp(arg(2),'idea')==0) || (strcmp(arg(0),'node')==0 && is_numeric(arg(1)) && strcmp(arg(2),'edit')==0)){
+         $vid=$vid_in;
+         $indefinida_tid=$indefinida_tid_in;
+         $categorias=$categorias_in;
+         //
+         $my_grupo=og_get_group_context();
+         if(empty($vid) && !empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+            $vid = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s", $my_grupo->nid));
+         }
+        //
+        if(empty($indefinida_tid)){
+            $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+        }
+        if(!empty($vid) && !empty($indefinida_tid)){
+            //
+            if(count($categorias)<1){
+                $categorias=taxonomy_get_tree($vid);
+                //echo print_r( $categorias,1);
+            }
+            //$indefinida_tid=999;
+            //
+            drupal_add_js(array('idea'=>$categorias),'setting');
+            $js='
+                var idea_vid='.$vid.';
+                var idea_indefinida_tid='.$indefinida_tid.';
+                                $(document).ready(function()
+                                {
+                                  var i;
+                                  var term;
+                                  var my_class;
+                                  for(i in Drupal.settings.idea){
+                                    term=Drupal.settings.idea[i];
+                                    if(term.tid!=idea_indefinida_tid){
+                                        //alert(term.tid);
+                                        my_class=$("#edit-taxonomy-"+idea_vid+"-"+term.tid+"-wrapper").attr("class");
+                                        my_class=my_class+" taxo"+term.depth;
+                                        //alert(my_class);
+                                        $("#edit-taxonomy-"+idea_vid+"-"+term.tid+"-wrapper").attr("class",my_class);
+                                    }
+                                  }
+                                });';
+
+            drupal_add_js($js,'inline');
+        }
+    }
+}
+//gemini
+function save_emtpy_categoria_tematica(&$node){
+  $vid='';
+  //
+  $my_grupo=og_get_group_context();
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+    $vid = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s", $my_grupo->nid));
+  }
+  $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+  //
+  if(!empty($vid) && !empty($indefinida_tid)){
+    if(!isset($node->taxonomy[$vid]) || count($node->taxonomy[$vid])<1 || all_array_values_empty($node->taxonomy[$vid])){
+        //$node->taxonomy[$vid][$indefinida_tid]=1;
+        //echo print_r($node,1);exit();
+        //node_save($node);
+        //my_insert_term_node($node->nid,$node->vid,$indefinida_tid);
+    }
+  }
+}
+//gemini
+function all_array_values_empty($my_array){
+    if(count($my_array)>0){
+        foreach($my_array as $key=>$value){
+            if(!empty($value)){
+               return 0;
+            }
+        }
+    }
+    return 1;
+}
+//gemini
+function my_insert_term_node($nid,$vid,$tid){
+    $sql='INSERT INTO term_node(nid,vid,tid) VALUES('.$nid.','.$vid.','.$tid.')';
+    //print $sql;exit();
+    db_query($sql);
+    //exit();
+}
+//gemini
+function my_node_form_submit(&$form, &$form_state) {
+  $vid='';
+  //
+  $my_grupo=og_get_group_context();
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+    $vid = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid=%s", $my_grupo->nid));
+  }
+  $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+  //
+  if(!empty($vid) && !empty($indefinida_tid)){
+    //echo print_r($form,1);exit();
+    //echo print_r($form_state,1);exit();
+    if(all_array_values_empty($form_state['node']['taxonomy'][$vid])){
+        $form_state['node']['taxonomy'][$vid][$indefinida_tid]=1;
+        //echo print_r($form_state['node']['taxonomy'][$vid],1);
+    }
+    if(all_array_values_empty($form_state['values']['taxonomy'][$vid])){
+        $form_state['values']['taxonomy'][$vid][$indefinida_tid]=1;
+        //echo print_r($form_state['values']['taxonomy'][$vid],1);
+    }
+    //exit();
+  }
+}
+//gemini
+function is_add_primera_idea($my_kont,$type){
+    return is_add_primera_ayuda($my_kont, $type);
+}
+//gemini
+function save_idea_categorias_tematicas($idea_nid,$node){
+    delete_idea_categorias_tematicas($idea_nid);
+    $is_categoria_indefinida=1;
+    foreach($node as $field=>$value){
+       if(is_numeric($field)){
+           $term=taxonomy_get_term($field);
+           if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+               //print 'tid='.$term->tid.'<BR>';
+               if(!empty($value)){
+                    $is_categoria_indefinida=0;
+                    insert_idea_categorias_tematicas($idea_nid,$term->tid);
+               }
+           }
+       }
+    }
+    if($is_categoria_indefinida){
+         $indefinida_tid=my_get_term_data_tid('Categoria indefinida');
+         if(!empty($indefinida_tid)){
+            insert_idea_categorias_tematicas($idea_nid,$indefinida_tid);
+         }
+    }
+}
+//gemini
+function delete_idea_categorias_tematicas($idea_nid){
+    $sql='DELETE FROM idea_categorias_tematicas WHERE idea_nid='.$idea_nid;
+    db_query($sql);
+}
+//gemini
+function insert_idea_categorias_tematicas($idea_nid,$tid){
+    $sql='INSERT INTO idea_categorias_tematicas(idea_nid,tid) VALUES('.$idea_nid.','.$tid.')';
+    db_query($sql);
+}
+//gemini
+function es_categoria_tematica_de_la_idea($idea_nid,$tid){
+    $my_array=get_idea_categorias_tematicas_array($idea_nid,$tid);
+    if(count($my_array)>0){
+        return 1;
+    }
+    return 0;
+}
+//gemini
+function get_idea_categorias_tematicas_array($idea_nid,$tid=''){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    $where[]="ic.idea_nid=".$idea_nid;
+    if(!empty($tid)){
+        $where[]="ic.tid=".$tid;
+    }
+    $sql="SELECT *,td.name
+    FROM {idea_categorias_tematicas} ic
+    LEFT JOIN {term_data} td ON ic.tid=td.tid
+    WHERE ".implode(" AND ",$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+//gemini
+function get_categorias_tematicas_html($categorias_tematicas){
+    $html=array();
+    if(count($categorias_tematicas)>0){
+        $html[]='<ul>';
+        $num=count($categorias_tematicas);
+        foreach($categorias_tematicas as $i=>$row){
+            //print $row->name.'<BR>';
+            $atzizkia='';
+            if($i<1){
+                $atzizkia=' first';
+            }else if($i==($num-1)){
+                $atzizkia=' last';
+            }
+            //
+            $class='taxonomy_term_'.$row->tid.$atzizkia;
+            $html[]='<li class="'.$class.'">';
+            $html[]=$row->name;
+            $html[]='</li>';
+        }
+        $html[]='</ul>';
+    }
+    return implode('',$html);
+}
+//gemini
+function get_noticia_name($noticia_nid){
+    if(!empty($noticia_nid)){
+        $node=node_load($noticia_nid);
+        if(isset($node->nid) && !empty($node->nid)){
+            return $node->title;
+        }
+    }
+    return '';
+}
+//gemini
+function get_es_mi_idea($node,$additions){
+    global $user;
+    if($user->uid==$additions->origen_uid){
+        return 1;
+    }
+    return 0;
+}
+//gemini
+function my_get_stars_idea($idea){    
+    //echo print_r($idea,1);exit();
+    $v=$idea->votingapi_cache_node_average_value;
+    if(empty($v)){
+        $v=0;
+    }
+    //print $v.'<BR>';
+    $v=($v/20);
+    $result=my_create_stars_idea($v,1);
+    //print $result.'<BR>';
+    return $result;
+}
+//gemini
+function my_create_stars_idea($v,$is_star=1){
+	if(!$is_star){
+		return $v;
+	}
+
+	$result='<div class="fivestar-widget-static fivestar-widget-static-vote fivestar-widget-static-5 clear-block" style="text-align:center;">';
+	//$result.='<table style="border:0px;width:51px;"><tr>';
+	/*if($is_fuente_table){
+		$result.='<div style="width:51px;">';
+	}else{
+		$result.='<div>';
+	}*/
+	for($i=0;$i<5;$i++){
+		$on='off';
+		if($i<$v){
+                    //$on='on';
+                    $on='red';
+		}
+		//$result.='<td style="border-bottom:0px;padding:0px;border-right: 0px;width:17px;height:15px;">';
+		//
+		//$img='<img src="/hontza3/sites/all/themes/buho/images/star.gif" style="background-repeat:no-repeat;"/>';
+		//if($on=='on'){
+			if($i>0){
+				$even='even';
+				if(($i%2)==1){
+					$even='odd';
+				}
+				
+				$result.='<div class="star star-1 star-odd star-'.$even.'">';
+				
+				$result.='<span class="'.$on.'"></span>';
+				//$result.=$img;
+			}else{
+				$result.='<div class="star star-1 star-odd star-first">';
+				//$result.='<span class="'.$on.'">'.$v.'</span>';
+				$result.='<span class="'.$on.'"></span>';
+				//$result.=$img;
+			}
+			$result.='</div>';
+                //}
+	}
+	//$result.='</tr></table>';
+	$result.='</div>';
+	$result.='</div>';
+	return $result;
+}
+//gemini
+function get_mi_idea_html($idea_nid){
+    //return fivestar_static('node', $idea_nid, NULL, 'idea');
+    return traducir_average(fivestar_static('node', $idea_nid, NULL, 'idea'));
+}
+//gemini
+function save_new_invitado($node){
+    $fields=create_invitado_fields();
+    $required_fields=$fields;
+    if(validate_invitado_new_without_form($node,$required_fields)){
+        $user_info=array();
+        $user_info['status']=1;
+        foreach($fields as $i=>$f){
+            $name=str_replace('invitado_','',$f);
+            $user_info[$name]=$node->$f;
+        }
+        $user_info['roles']=get_role_list_invitado_user();
+        $my_user=user_save('',$user_info);
+        if(!empty($my_user) && isset($my_user->uid) && !empty($my_user->uid)){
+            return $my_user->uid;
+        }
+    }
+    return '';
+}
+//gemini
+function validate_invitado_new($node,&$form,$required_fields_in=array()){
+    //echo print_r($node,1);exit();
+    //form_set_error('invitado_mail',t('The field must be filled'));
+    $required_fields=$required_fields_in;
+    $num=count($required_fields);
+    if($num<1){
+        $required_fields=create_invitado_fields();
+    }
+    $num=count($required_fields);
+    if($num>0){
+      $empty_array=array();
+      foreach($required_fields as $i=>$f){
+        if(empty($node->$f)){
+            //return 0;
+            $empty_array[]=$f;
+        }
+      }
+      $len=count($empty_array);
+      if($num==$len){
+        return 0;
+      }else if($len>0){
+          //echo print_r($empty_array,1);exit();
+          foreach($empty_array as $k=>$field){
+              form_set_error($field,idea_get_invidato_field_label($field).': '.t('The field must be filled'));
+          }
+          return 0;
+      }
+    }
+    //
+    return 1;
+}
+//gemini
+function get_role_list_invitado_user(){
+    $where=array();
+    $where[]="1";
+    $where[]="r.name IN('authenticated user','Invitado')";
+    $sql="SELECT * FROM {role} r WHERE ".implode(" AND ",$where);
+    $res=db_query($sql);
+    $result=array();
+    while($row=db_fetch_object($res)){
+        $result[$row->rid]=1;
+    }
+    return $result;
+}
+//gemini
+function get_menutop_invitado(){
+    //gemini-2014    
+    //$result=menu_primary_links();
+    $result=red_funciones_define_menu_primary_links();
+    $result=menu_by_lang($result);
+    $kont=0;
+    $atzizkia='';
+    $my_array=array();
+    if(count($result)>0){
+        foreach($result as $i=>$row){
+           $s='';
+           if($kont<1){
+                $atzizkia=' first';
+            }else if($kont==($num-1)){
+                $atzizkia=' last';
+            }else{
+                $atzizkia='';
+            }
+           if(strcmp($row['href'],'ideas')==0){
+                $s=' active-trail';
+                $my_array[$kont]='<li class="leaf'.$s.$atzizkia.'">'.l(t($row['title']),$row['href']).'</li>';
+		$kont++;
+           }
+        }
+    }
+    return implode('',$my_array);
+}
+//gemini
+function create_invitado_fields(){
+    //return array('invitado_name','invitado_mail','pass','profile_nombre','profile_apellidos','profile_empresa','responsable');
+    $result=array_keys(idea_define_invidato_fields_labels());
+    return $result;
+}
+//gemini
+function validate_invitado_new_without_form($node,$required_fields){     
+    $num=count($required_fields);
+    if($num>0){      
+      foreach($required_fields as $i=>$f){
+        if(empty($node->$f)){
+            return 0;           
+        }
+      }    
+    }
+    //
+    return 1;
+}
+//gemini
+//intelsat-2016
+//function get_reto_al_que_responde_html(){
+function get_reto_al_que_responde_html($is_required=0){
+    $html=array();
+    //intelsat-2015
+    //if(hontza_grupos_is_activo_pestana('estrategia')){
+    if(estrategia_inc_is_show_reto_al_que_responde_html()){
+        $html[]='<div id="edit-reto_al_que_responde_id-wrapper" class="form-item form-item-table">';
+        //gemini-2014
+        //if(hontza_is_canal_formulario() || red_is_item_formulario()){
+        //intelsat-2015
+        //if(hontza_is_canal_formulario() || red_is_item_formulario() || red_is_noticia_de_usuario_formulario()){
+        $my_label='';
+        if(estrategia_inc_is_reto_responde_formulario()){
+            //$html[]='<label>'.t('Key Questions').': </label>';
+            $my_label=t('Key Questions');
+        }else{
+            //$html[]='<label>'.t('Associated Challenges').': </label>';
+            $my_label=t('Associated Challenges');
+        }
+        if($is_required){
+            $my_label.=':<span class="form-required" title="This field is required.">*</span>';
+        }
+        $html[]='<label>'.$my_label.'</label>';
+        $html[]=estrategia_arbol_callback();
+        $html[]='</div>';
+    }
+    return implode('',$html);
+}
+//gemini
+function get_responde_value($responde_values,$pos){
+    $num=count($responde_values);
+    if($pos<$num){
+        //print 'pos='.$responde_values[$pos].'<BR>';
+        return $responde_values[$pos];
+    }
+    return '';
+}
+//gemini
+function get_reto_al_que_responde_by_estrategia($idea){
+    if(!empty($idea->responde_estrategia_nid)){
+        $node=node_load($idea->responde_estrategia_nid);
+        return $node->title;
+    }
+    return '';
+}
+//gemini
+function get_plazo_del_reto_by_estrategia($estrategia_nid){
+    if(!empty($estrategia_nid)){
+        $node=node_load($estrategia_nid);
+        //echo print_r($node,1);exit();
+        if(isset($node->nid) && !empty($node->nid)){
+            return $node->fecha_cumplimiento;
+        }
+    }
+    return '';
+}
+function ideas_estadisticas_callback() {
+  idea_active_tabs_access();  
+  $output='';
+  drupal_set_title(t('Statistics of ideas'));
+  if(is_usuarios_estadisticas(1)){
+    $user_list=my_get_og_grupo_user_list('',1,arg(1));
+  }else{
+    $user_list=my_get_og_grupo_user_list('',1);
+  }
+  $output=get_estadisticas_user_html($user_list);
+  return $output;
+}
+function get_estadisticas_user_html(&$user_list){
+    $html=array();
+    $html[]=create_usuarios_estadisticas_menu();
+    $html[]='<div style="width:100%">';
+    $html[]='<table>';
+    $html[]='<tr>';
+    //$headers=array("Usuario","N. I","N. O","N. P","N. vetted","Avg. idea rating","Highest rated idea");
+    $headers=array("Usuario","N. I","N. O","N. P","N. vetted","Avg. idea rating","Idea más valorada");
+    foreach($headers as $a=>$h){
+        $html[]='<th>'.t($h).'</th>';
+    }
+    //
+    if(count($user_list)>0){
+        foreach($user_list as $i=>$u){
+            //$num_ideas=get_user_ideas_num($u->uid);
+            $idea_list=get_user_idea_list($u->uid);
+            $num_ideas=count($idea_list);
+            //
+            $oportunidad_list=get_user_oportunidad_list($u->uid);
+            $num_oportunidades=count($oportunidad_list);
+            //
+            $proyectos_list=get_user_proyectos_list($u->uid);
+            $num_proyectos=count($proyectos_list);
+            //
+            $vetted_list=get_vetted_list($idea_list);
+            $num_vetted=count($vetted_list);
+            $avg_idea_rating=get_avg_idea_rating_list($idea_list);
+            $high_rated_idea=get_high_rated_idea_list($idea_list);
+            /*if($num_ideas<1){
+                continue;
+            }*/
+            //
+            $html[]='<tr>';
+            if(is_usuarios_estadisticas()){
+                //$html[]='<td>'.$u->nombre.' '.$u->apellidos.'</td>';
+                $html[]='<td>'.l($u->nombre.' '.$u->apellidos,'user/'.$u->uid).'</td>';
+            }else{
+                $html[]='<td>'.$u->name.'</td>';
+            }
+            $html[]='<td>'.$num_ideas.'</td>';
+            $html[]='<td>'.$num_oportunidades.'</td>';
+            $html[]='<td>'.$num_proyectos.'</td>';
+            $html[]='<td>'.$num_vetted.'</td>';
+            $html[]='<td>'.$avg_idea_rating.'</td>';
+            $html[]='<td>'.$high_rated_idea.'</td>';
+            $html[]='</tr>';
+            $user_list[$i]->num_ideas=$num_ideas;
+        }
+    }
+    //
+    $html[]='</tr>';
+    $html[]='</table>';
+    $html[]='</div>';
+    $html[]='<div style="width:100%">';
+    $html[]='<div style="width:58%;float:left;">';
+    $html[]=get_ideas_mas_valoradas_html();
+    $html[]='</div>';
+    $html[]='<div style="width:2%;float:left;">&nbsp</div>';
+    $html[]='<div style="width:40%;float:left;">';
+    $html[]='<div style="width:100%;">';
+    $html[]=get_top_idea_submitters_html($user_list);
+    $html[]='</div>';
+    $html[]='<div style="width:100%;">';
+    $html[]=get_number_of_ideas_voted_on_html($user_list);
+    $html[]='</div>';
+    $html[]='</div>';
+    $html[]='</div>';
+    $html[]='</div>';
+    $html[]='</div>';
+    return implode('',$html);
+}
+function get_user_ideas_num($uid){
+    $idea_list=get_user_idea_list($uid);
+    return count($idea_list);
+}
+function get_user_idea_list($uid=''){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    if(!empty($uid)){
+        $where[]="i.origen_uid=".$uid;
+    }
+    //
+    $my_grupo=og_get_group_context();
+    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $where[]='(i.grupo_nid = '.$my_grupo->nid.')';
+    }
+    //
+    $sql='SELECT * FROM idea i WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function get_vetted_list($idea_list){
+    $result=array();
+    if(count($idea_list)>0){
+        $row_estado=get_estado_del_proyecto_by_field(array('field'=>'name','value'=>'Aprobado'));
+        foreach($idea_list as $i=>$idea){
+            $proyectos=get_idea_proyectos_list($idea->nid,$row_estado);
+            if(count($proyectos)){
+                $result[]=$idea;
+            }
+        }
+    }
+    return $result;
+}
+function get_idea_proyectos_list($idea_nid,$row_estado){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    if(!empty($idea_nid)){
+        $where[]='o.idea_nid='.$idea_nid;
+    }
+    if(!empty($row_estado) && isset($row_estado['value']) && !empty($row_estado['value'])){
+        $where[]='p.estado_del_proyecto_id='.$row_estado['value'];
+    }
+    //
+    $sql="SELECT o.idea_nid,p.nid,p.oportunidad_nid
+    FROM {proyecto} p
+    LEFT JOIN {oportunidad} o ON p.oportunidad_nid=o.nid
+    WHERE ".implode(" AND ",$where);
+    //
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    //echo print_r($result,1);
+    //
+    return $result;
+}
+function get_ideas_mas_valoradas_html(){
+    $html=array();
+    $html[]='<table>';
+    //$html[]='<tr><th colspan="2">'.t('Highest rated ideas').'</th></tr>';
+    $html[]='<tr><th colspan="2">'.t('Top Rated ideas').'</th></tr>';
+    $idea_list=get_user_idea_list('');
+    $idea_list=set_suma_votos($idea_list);
+    $idea_list=array_slice($idea_list,0,5);
+    //echo print_r($idea_list,1);
+    if(count($idea_list)>0){
+        foreach($idea_list as $i=>$row){
+            $node=node_load($row->nid);
+            $u=user_load($row->origen_uid);
+            $html[]='<tr>';
+            $html[]='<td>'.$node->title.'<br><b>'.$u->name.'</b></td>';
+            $html[]='<td>'.$row->my_value.'</td>';
+            $html[]='</tr>';
+        }
+    }
+    $html[]='</table>';
+    return implode('',$html);
+}
+function set_suma_votos($idea_list){
+    $result=array();
+    if(count($idea_list)>0){
+        foreach($idea_list as $i=>$idea){
+            $votos_list=get_idea_votos_list($idea->nid);
+            $result[$i]=$idea;
+            $result[$i]->my_value=get_suma_votos($votos_list);
+            //print 'my_value='.$result[$i]->my_value.'<BR>';
+        }
+    }
+    $result=array_ordenatu($result,'my_value','desc',1);
+    //echo print_r($result,1);
+    return $result;
+}
+function get_idea_votos_list($idea_nid){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    $where[]="v.content_type='node'";
+    $where[]="v.tag='vote'";
+    $where[]="v.content_id=".$idea_nid;
+    $sql="SELECT v.* FROM {votingapi_vote} v WHERE ".implode(" AND ",$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function get_suma_votos($votos_list){
+    $result=0;
+    if(count($votos_list)>0){
+        foreach($votos_list as $i=>$v){
+            $result+=$v->value;
+        }
+    }
+    return $result;
+}
+function get_top_idea_submitters_html($user_list_in){
+    $html=array();
+    $html[]='<table>';
+    $html[]='<tr><th colspan="2">'.t('Top idea submitters').'</th></tr>';
+    $user_list=array_ordenatu($user_list_in,'num_ideas','desc',1);
+    if(count($user_list)>0){
+        $user_list=array_slice($user_list,0,5);
+    }
+    if(count($user_list)>0){
+        foreach($user_list as $i=>$u){
+            $html[]='<tr>';
+            $html[]='<td>'.$u->name.'</td>';
+            $html[]='<td>'.$u->num_ideas.'</td>';
+            $html[]='</tr>';
+        }
+    }
+    $html[]='</table>';
+    return implode('',$html);
+}
+function get_number_of_ideas_voted_on_html($user_list_in){
+    $html=array();
+    $html[]='<table>';
+    $html[]='<tr><th colspan="2">'.t('% of ideas voted on').'</th></tr>';
+    $user_list=array_ordenatu($user_list_in,'num_ideas','desc',1);
+    if(count($user_list)>0){
+        $user_list=array_slice($user_list,0,5);
+    }
+    if(count($user_list)>0){
+        foreach($user_list as $i=>$u){
+            $html[]='<tr>';
+            $html[]='<td>'.$u->name.'</td>';
+            $html[]='<td>'.$u->num_ideas.'</td>';
+            $html[]='</tr>';
+        }
+    }
+    $html[]='</table>';
+    return implode('',$html);
+}
+function get_avg_idea_rating_list($idea_list){
+    $result=0;
+    $num=count($idea_list);
+    if($num>0){
+        $sum=0;
+        $kont=0;
+        foreach($idea_list as $i=>$idea){
+            $avg_row=get_avg_idea_rating($idea->nid);
+            if(isset($avg_row->vote_cache_id) && !empty($avg_row->vote_cache_id)){
+               $sum+=$avg_row->value;
+               $kont++;
+            }
+        }
+        //AVISO::::todas las ideas
+        //$result=$sum/$num;
+        //AVISO::::solo las ideas votadas
+        if($kont>0){
+            $result=$sum/$kont;
+        }
+        //
+        $result=round($result,2);
+    }
+    return $result;
+}
+function get_avg_idea_rating($idea_nid){
+    /*$where=array();
+    $where[]="1";
+    $where[]="v.content_type='node'";
+    $where[]="v.tag='vote'";
+    $where[]="v.function='average'";
+    $where[]="v.content_id=".$idea_nid;
+    $sql="SELECT v.* FROM {votingapi_cache} v WHERE ".implode(" AND ",$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        //$result[]=$row;
+        return $row;
+    }
+    //
+    $my_result=(object) array();
+    return $my_result;*/
+    return hontza_get_avg_rating($idea_nid);
+}
+function get_high_rated_idea_list($idea_list){
+    $result=0;
+    if(count($idea_list)>0){
+        $idea_list=set_suma_votos($idea_list);
+        return $idea_list[0]->my_value;
+    }
+    return $result;
+}
+function get_mas_valoradas_output_html($my_list){
+    return set_array_view_html($my_list);
+}
+function get_user_oportunidad_list($uid){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    if(!empty($uid)){
+        $where[]="o.origen_uid=".$uid;
+    }
+    //
+    $my_grupo=og_get_group_context();
+    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $where[]='(o.grupo_nid = '.$my_grupo->nid.')';
+    }
+    //
+    $sql='SELECT * FROM {oportunidad} o WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function get_user_proyectos_list($uid){
+    $result=array();
+    $where=array();
+    $where[]="1";
+    if(!empty($uid)){
+        $where[]="p.origen_uid=".$uid;
+    }
+    //
+    $my_grupo=og_get_group_context();
+    if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $where[]='(p.grupo_nid = '.$my_grupo->nid.')';
+    }
+    //
+    $sql='SELECT * FROM {proyecto} p WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function ideas_arbol_callback(){
+  idea_active_tabs_access();
+  //gemini-2014
+  hontza_grupo_shared_active_tabs_access();
+  global $user;
+  //echo print_r($user,1);
+  //
+  if(is_idea('oportunidades')){
+      return oportunidad_list_callback();
+  }else if(is_idea() && in_array(arg(1),array('borrador','aprobados','no_aprobados'))){
+      return proyecto_list_callback();
+  }
+
+  //$my_limit=variable_get('default_nodes_main', 100);
+  $my_limit=100;
+
+  /*$where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="idea"';
+  //
+  $my_grupo=og_get_group_context();
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]='idea.grupo_nid='.$my_grupo->nid;
+  }
+  if(is_user_invitado()){
+    $where[]='ii.uid='.$user->uid;
+  }else{
+    $where[]='(idea.is_todo_subgrupo=1 OR s.uid='.$user->uid.')';
+  }
+  //
+  $order_fields='n.sticky DESC, n.created DESC';
+  if(is_idea('mas_comentadas')){
+      //$order_by=' ORDER BY comment_num DESC, n.sticky DESC, n.created DESC';
+      $order_fields='comment_num DESC,'.$order_fields;
+  }else if(is_idea('mas_valoradas')){
+      //$order_by=' ORDER BY votingapi_cache_node_average_value DESC, n.sticky DESC, n.created DESC';
+      $order_fields='votingapi_cache_node_average_value DESC,'.$order_fields;
+  }
+  $order_by=' ORDER BY '.$order_fields;
+  //
+  $sql='SELECT n.nid, n.sticky, n.created,COUNT(c.cid) as comment_num,
+  votingapi_cache_node_average.value AS votingapi_cache_node_average_value
+  FROM {node} n
+  LEFT JOIN {idea} idea ON n.nid=idea.nid
+  LEFT JOIN {idea_invitados} ii ON idea.nid=ii.idea_nid
+  LEFT JOIN {idea_subgrupo} s ON idea.nid=s.idea_nid
+  LEFT JOIN {comments} c ON n.nid=c.nid
+  LEFT JOIN votingapi_cache votingapi_cache_node_average ON n.nid = votingapi_cache_node_average.content_id AND (votingapi_cache_node_average.content_type = "node" AND votingapi_cache_node_average.function = "average")
+  WHERE '.implode(' AND ',$where).'
+  GROUP BY n.nid '.$order_by;
+
+  
+
+  //if(is_idea('mas_valoradas')){
+    $result = db_query($sql);
+    $my_list=array();
+    $output = '';
+    //$output = create_menu_ideas();
+    $num_rows = FALSE;
+    $kont=0;
+    while ($node = db_fetch_object($result)) {
+      $my_node=node_load($node->nid);
+      $my_list[]=$my_node;
+      //
+      $num_rows = TRUE;
+    }
+
+  $rows=create_ideas_arbol($my_list);*/
+  $rows=get_idea_arbol_rows();
+  //print $my_limit;
+  $rows=my_set_estrategia_pager($rows,$my_limit);
+
+  
+  //if ($num_rows) {
+  if (count($rows)>0) {
+    /*$feed_url = url('idea_rss.xml', array('absolute' => TRUE));
+    drupal_add_feed($feed_url, variable_get('site_name', 'Drupal') . ' ' . t('RSS'));*/
+    //$headers=array(t('Title'),t('Type'),t('Actions'));
+    $headers=array(get_idea_bombilla_img(1).t('Ideas').'&nbsp;'.get_menu_gezia_img(2).get_oportunidad_simbolo_img(1).t('Opportunities').'&nbsp;'.get_menu_gezia_img(2).get_proyecto_simbolo_img(1).t('Projects').'&nbsp;'.get_menu_gezia_img(2),t('Status'),t('Action'));
+    $output .= theme('table',$headers,$rows);
+    $output .= theme('pager', NULL, $my_limit);
+  }
+  else {
+
+    $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+  }
+  drupal_set_title(t('Deploy Ideas'));
+
+  return $output;
+}
+function create_ideas_arbol($my_list,$is_link=1,$sel_type='',$tipo_adheridos=''){
+    $arbol=array();
+    $my_padding=50;
+    //$idea_convertir_data_row=0;
+    /*if($is_link){
+        $idea_convertir_data_row=1;
+    }*/
+    	if(count($my_list)>0){
+		$kont=0;
+		foreach($my_list as $i=>$node){
+                        $oportunidad_list=get_idea_oportunidad_list($node->nid);                        
+                        //
+                        if(strcmp($sel_type,'seleccionar_oportunidad')==0 && (count($oportunidad_list)<1 || !in_seleccionar_oportunidad_list($oportunidad_list,$tipo_adheridos))){
+                            continue;
+                        }
+			//print $node->nid.'<BR>';
+                        $my_link=$node->title;
+                        $my_link=estrategia_set_title_max_len($node->title);
+                        $arbol[$kont][0]=get_idea_bombilla_img().$my_link;
+                        if($is_link){
+                            $my_link=get_idea_bombilla_img().l($my_link,'node/'.$node->nid,array('query'=>drupal_get_destination()));
+                            $arbol[$kont][0]='<div>'.$my_link.'</div>';
+                        }
+                        
+                        //$arbol[$kont][1]=t('Idea');
+                        /*$arbol[$kont][1]=l(t('Delete Idea'),'node/'.$node->nid.'/delete',array('query'=>drupal_get_destination()));
+                        $arbol[$kont][1].='<BR>'.l(t('Edit Idea'),'node/'.$node->nid.'/edit');
+                        $arbol[$kont][1].='<BR>'.l(t('Add Opportunity'),'node/add/oportunidad/'.$node->nid);
+                        */
+                        $arbol[$kont][1]=l(my_get_icono_action("delete",t('Delete Idea')),'node/'.$node->nid.'/delete',array('html'=>true,'query'=>drupal_get_destination()));
+                        $arbol[$kont][1].='&nbsp;'.l(my_get_icono_action("edit",t('Edit Idea')),'node/'.$node->nid.'/edit',array('html'=>true,'query'=>drupal_get_destination()));
+                        $arbol[$kont][1].='&nbsp;'.l(my_get_icono_action("add",t('Add Opportunity')),'node/add/oportunidad/'.$node->nid,array('html'=>true));
+                        
+                        $arbol[$kont][1]=idea_add_div_actions($arbol[$kont][1]);
+                        //
+                        if(!$is_link){
+
+                            $arbol[$kont][2]=1;
+                            $arbol[$kont][3]=$node->nid;
+                        }else{
+                            $arbol[$kont][2]=$arbol[$kont][1];
+                            $arbol[$kont][1]=idea_get_status_color($node);                            
+                        }
+                        $kont++;
+                        //
+                        
+                        if(count($oportunidad_list)>0){
+                             foreach($oportunidad_list as $k=>$oportunidad){
+                                 if(!in_seleccionar_oportunidad($oportunidad->nid, $tipo_adheridos)){
+                                     continue;
+                                 }
+                                 
+
+                                 //$my_link=$oportunidad->title;
+                                 $my_link=estrategia_set_title_max_len($oportunidad->title);
+                                 $arbol[$kont][0]=get_oportunidad_simbolo_img().$my_link;
+                                 if($is_link){
+                                    $my_link=get_oportunidad_simbolo_img().l($my_link,'node/'.$oportunidad->nid,array('query'=>drupal_get_destination()));
+                                    $arbol[$kont][0]='<div style="padding-left:'.$my_padding.'px">'.$my_link.'</div>';
+                                 }
+                                 
+                                 //$arbol[$kont][1]='Oportunidad';
+                                 /*$arbol[$kont][1]=l(t('Delete Opportunity'),'node/'.$oportunidad->nid.'/delete',array('query'=>drupal_get_destination()));
+                                 $arbol[$kont][1].='<BR>'.l(t('Edit Opportunity'),'node/'.$oportunidad->nid.'/edit');
+                                 $arbol[$kont][1].='<BR>'.l(t('Add Project'),'node/add/proyecto/'.$oportunidad->nid);
+                                 */
+                                 $arbol[$kont][1]=l(my_get_icono_action("delete",t('Delete Opportunity')),'node/'.$oportunidad->nid.'/delete',array('html'=>true,'query'=>drupal_get_destination()));
+                                 $arbol[$kont][1].='&nbsp;'.l(my_get_icono_action("edit",t('Edit Opportunity')),'node/'.$oportunidad->nid.'/edit',array('html'=>true,'query'=>drupal_get_destination()));
+                                 $arbol[$kont][1].='&nbsp;'.l(my_get_icono_action("add",t('Add Project')),'node/add/proyecto/'.$oportunidad->nid,array('html'=>true));
+                                 $arbol[$kont][1]=idea_add_div_actions($arbol[$kont][1]);
+                                 //
+                                 if(!$is_link){
+                                    $arbol[$kont][2]=2;
+                                    $arbol[$kont][3]=$oportunidad->nid;
+                                 }else{
+                                    $my_oportunidad=node_load($oportunidad->nid);
+                                    $arbol[$kont][2]=$arbol[$kont][1];
+                                    $arbol[$kont][1]=oportunidad_get_status_color($my_oportunidad);                                    
+                                 }
+                                 $kont++;
+                                 //
+                                 $proyecto_list=get_oportunidad_proyecto_list($oportunidad->nid);
+                                 if(count($proyecto_list)>0){
+                                     foreach($proyecto_list as $a=>$proyecto){
+                                         //$my_link=$proyecto->title;
+                                         $my_link=estrategia_set_title_max_len($proyecto->title);
+                                         $arbol[$kont][0]=get_proyecto_simbolo_img().$my_link;
+                                         if($is_link){
+                                            $my_link=get_proyecto_simbolo_img().l($my_link,'node/'.$proyecto->nid,array('query'=>drupal_get_destination()));
+                                            $arbol[$kont][0]='<div style="padding-left:'.($my_padding*2).'px">'.$my_link.'</div>';
+
+                                         }
+                                         //$arbol[$kont][1]='Proyecto';
+                                         //$arbol[$kont][1]='';
+                                         /*$arbol[$kont][1]=l(t('Delete Project'),'node/'.$proyecto->nid.'/delete',array('query'=>drupal_get_destination()));
+                                         $arbol[$kont][1].='<BR>'.l(t('Edit Project'),'node/'.$proyecto->nid.'/edit');
+                                         $arbol[$kont][1].='<BR>&nbsp';*/
+                                         $arbol[$kont][1]=l(my_get_icono_action('delete',t('Delete Project')),'node/'.$proyecto->nid.'/delete',array('html'=>true,'query'=>drupal_get_destination()));
+                                         $arbol[$kont][1].='&nbsp;'.l(my_get_icono_action('edit',t('Edit Project')),'node/'.$proyecto->nid.'/edit',array('html'=>true,'query'=>drupal_get_destination()));
+                                         $arbol[$kont][1]=idea_add_div_actions($arbol[$kont][1]);
+                                         //
+                                         if(!$is_link){
+                                            $arbol[$kont][2]=3;
+                                            $arbol[$kont][3]=$proyecto->nid;
+                                         }else{
+                                            $my_proyecto=node_load($proyecto->nid); 
+                                            $arbol[$kont][2]=$arbol[$kont][1];
+                                            $arbol[$kont][1]=proyecto_get_status_color($my_proyecto);                            
+                                         }
+                                         $kont++;
+                                     }
+                                 }
+                             }
+                        }
+                }
+        }
+    /*    
+    if($idea_convertir_data_row){
+        $arbol=idea_convertir_data_row($arbol);
+    }*/      
+ 
+    return $arbol;
+}
+function get_idea_menu_aurretik(){
+    $html=array();
+    $html[]='<div class="tab-wrapper-flechas clearfix primary-only" style="margin-bottom:0;">';
+    $html[]='<div class="tabs primary" id="tabs-primary-aurretik">';
+    $html[]='<ul class="ul-ideas">';
+    $active='';
+    if(is_idea() && !in_array(arg(1),array('oportunidades','borrador','aprobados','no_aprobados','oportunidades_mas_valoradas'))){
+        $active=' active';
+    }
+    //gemini-2014
+    //$html[]='<li class="ideas_menu_li'.$active.'" id="ideas_aurretik" style="margin-right:0px;">'.l(t('IDEAS').get_menu_gezia_img(1),'ideas',array('html'=>true)).'</li>';    
+    $html[]='<li class="ideas_menu_li'.$active.'" id="ideas_aurretik" style="margin-right:0px;">'.l(t('IDEAS'),'ideas').'</li>';        
+    //
+    /*$html[]='<li class="ideas_menu_li" id="ideas_aurretik_arrow">';
+    $html[]=get_menu_gezia_img();
+    $html[]='</li>';*/
+    //
+    $active='';
+    //if((is_idea('oportunidades') || is_oportunidad() || is_idea('oportunidades_mas_valoradas')){
+    if(((is_idea('oportunidades') || is_idea('oportunidades_mas_valoradas')) && !is_ficha_node('idea')) || is_oportunidad()){
+        $active=' active';
+    }
+    //gemini-2014
+    //$html[]='<li class="ideas_menu_li'.$active.'" id="oportunidades_aurretik">'.l(t('OPPORTUNITIES').get_menu_gezia_img(1),'ideas/oportunidades',array('html'=>true)).'</li>';
+    $html[]='<li class="ideas_menu_li'.$active.'" id="oportunidades_aurretik">'.l(t('OPPORTUNITIES'),'ideas/oportunidades',array('html'=>true)).'</li>';    
+    //
+    /*$html[]='<li class="ideas_menu_li" id="oportunidades_aurretik_arrow">';
+    $html[]=get_menu_gezia_img();
+    $html[]='</li>';*/
+    $active='';
+    //if(is_idea('proyectos') || is_idea('borrador') || is_idea('aprobados') || is_idea('no_aprobados') || is_proyecto()){
+    if(((is_idea('proyectos') || is_idea('borrador') || is_idea('aprobados') || is_idea('no_aprobados')) && !is_ficha_node('idea')) || is_proyecto()){
+        $active=' active';
+    }
+    //intelsat-2015
+    //$html[]='<li class="ideas_menu_li'.$active.'" id="proyectos_aurretik">'.l(t('PROJECTS'),'ideas/borrador').'</li>';
+    $html[]='<li class="ideas_menu_li'.$active.'" id="proyectos_aurretik">'.l(t('PROJECTS'),'proyectos/todas').'</li>';
+    //
+    $html[]='</ul>';
+    $html[]='</div></div>';
+    //
+    $js='
+               
+                                $(document).ready(function()
+                                {
+                                    var my_temp=10;
+                                    var idea_wa=$("#li_ultimas_ideas").outerWidth(true);
+                                    idea_wa=idea_wa+$("#li_mas_valoradas").outerWidth(true);
+                                    //idea_wa=idea_wa+$("#li_mas_comentadas").outerWidth(true);
+                                    var op_wa=$("#li_oportunidades").outerWidth(true);
+                                    op_wa=op_wa+$("#li_oportunidades_mas_valoradas").outerWidth(true)+my_temp;
+                                    var proyectos_wa=$("#li_proyectos").outerWidth(true);
+                                    proyectos_wa=proyectos_wa+$("#li_borrador").outerWidth(true);
+                                    proyectos_wa=proyectos_wa+$("#li_aprobados").outerWidth(true);
+                                    proyectos_wa=proyectos_wa+$("#li_no_aprobados").outerWidth(true);
+                                    //AVISO::::a ojo
+                                    proyectos_wa=proyectos_wa-4-my_temp;
+                                    $("#ideas_aurretik").css("width",idea_wa);
+                                    $("#ideas_aurretik a").css("width",idea_wa);
+                                    $("#oportunidades_aurretik").css("width",op_wa);
+                                    $("#oportunidades_aurretik a").css("width",op_wa);
+                                    $("#proyectos_aurretik").css("width",proyectos_wa);
+                                    $("#proyectos_aurretik a").css("width",proyectos_wa);
+                                });';
+
+            //drupal_add_js($js,'inline');
+    return implode('',$html);
+}
+function get_idea_bombilla_img($is_taula_header=0,$title_in='',$file_name_in=''){
+    //intelsat-2016
+    global $base_url;
+    $html=array();
+    //intelsat-2015
+    if(empty($title_in)){
+         $title=t('Idea');   
+    }else{
+         $title=$title_in;
+    }
+    if(empty($file_name_in)){
+        $file_name='idea';
+    }else{
+        $file_name=$file_name_in;
+    }
+    //
+    //gemini-2014
+    if($is_taula_header){
+       $style=idea_get_simbolo_style($is_taula_header); 
+    }
+    //
+    $html[]='<img '.$style.' src="'.$base_url.'/sites/default/files/my_images/'.$file_name.'.png" alt="'.$title.'" title="'.$title.'"/>';
+    //gemini-2014
+    if(!$is_taula_header){
+        $html[]='&nbsp;';
+    }
+    return implode('',$html);
+}
+function get_title_idea_bombilla_img(){
+    global $base_url;
+    $html=array();
+    //$html[]='<div style="float:left;">';
+    $html[]='<img src="'.$base_url.'/sites/default/files/my_images/idea_title.png"/>';
+    //$html[]='</div>';
+    return implode('',$html);
+}
+//function get_idea_arbol_rows($is_link=1,$sel_type='',$tipo_adheridos='',$is_solo_proyectos=0){
+function get_idea_arbol_rows($is_link=1,$sel_type='',$tipo_adheridos='',$is_solo_proyectos=0,$is_oportunidad_sin_ideas=0){  
+  global $user;
+ $where=array();
+  //
+  $where[]='n.promote = 1';
+  $where[]='n.status = 1';
+  $where[]='n.type="idea"';
+  //
+  $search=my_get_request_value('search');
+  if(!empty($search)){
+      $where[]='(n.title LIKE "%%'.$search.'%%" OR nr.body LIKE "%%'.$search.'%%")';
+  }
+  //
+  $my_grupo=og_get_group_context();
+  $grupo_seleccionado=0;
+  if(!empty($my_grupo) && isset($my_grupo->nid) && !empty($my_grupo->nid)){
+	$where[]='idea.grupo_nid='.$my_grupo->nid;
+        $grupo_seleccionado=1;
+  }
+  if(is_user_invitado()){
+    $where[]='ii.uid='.$user->uid;
+  }else{
+    if($user->uid!=1){  
+        $where[]='(idea.is_todo_subgrupo=1 OR s.uid='.$user->uid.')';
+    }
+  }
+  //
+  $order_fields='n.sticky DESC, n.created DESC';
+  if(is_idea('mas_comentadas')){
+      //$order_by=' ORDER BY comment_num DESC, n.sticky DESC, n.created DESC';
+      $order_fields='comment_num DESC,'.$order_fields;
+  }else if(is_idea('mas_valoradas')){
+      //$order_by=' ORDER BY votingapi_cache_node_average_value DESC, n.sticky DESC, n.created DESC';
+      $order_fields='votingapi_cache_node_average_value DESC,'.$order_fields;
+  }
+  $order_by=' ORDER BY '.$order_fields;
+  //
+  $sql='SELECT n.nid, n.sticky, n.created,COUNT(c.cid) as comment_num,
+  votingapi_cache_node_average.value AS votingapi_cache_node_average_value
+  FROM {node} n
+  LEFT JOIN {idea} idea ON n.nid=idea.nid
+  LEFT JOIN {idea_invitados} ii ON idea.nid=ii.idea_nid
+  LEFT JOIN {idea_subgrupo} s ON idea.nid=s.idea_nid
+  LEFT JOIN {comments} c ON n.nid=c.nid
+  LEFT JOIN votingapi_cache votingapi_cache_node_average ON n.nid = votingapi_cache_node_average.content_id AND (votingapi_cache_node_average.content_type = "node" AND votingapi_cache_node_average.function = "average")
+  LEFT JOIN {node_revisions} nr ON (n.nid=nr.nid AND n.vid=nr.vid)
+  WHERE '.implode(' AND ',$where).'
+  GROUP BY n.nid '.$order_by;
+  /*if(user_access('root') && hontza_is_sareko_id('ROOT')){  
+    print $sql;
+    //exit();
+  }*/              
+  //if(is_idea('mas_valoradas')){
+    $result = db_query($sql);
+    $my_list=array();
+    $output = '';
+    //$output = create_menu_ideas();
+    $num_rows = FALSE;
+    $kont=0;
+    while ($node = db_fetch_object($result)) {
+      $my_node=node_load($node->nid);
+      if(in_seleccionar_idea($my_node,$tipo_adheridos)){
+          $my_list[]=$my_node;
+          //
+          $num_rows = TRUE;
+      }
+    }
+
+    if(!$grupo_seleccionado){
+        $num_rows = FALSE;
+        $my_list=array();
+    }
+ 
+
+    /*if(user_access('root') && hontza_is_sareko_id('ROOT')){  
+        foreach($my_list as $k=>$a){
+            print $a->title.'<br>';
+        }
+    }*/
+    
+  if($is_oportunidad_sin_ideas){
+    $my_list=proyecto_add_oportunidad_sin_idea_row($my_list);
+  }  
+
+  $rows=create_ideas_arbol($my_list,$is_link,$sel_type,$tipo_adheridos);
+  //print 'is_oportunidad_sin_ideas='.$is_oportunidad_sin_ideas;exit();
+    
+  /*echo print_r($rows,1);
+  exit();*/
+  if($is_solo_proyectos){
+      
+    
+      $rows=idea_set_proyectos_arbol($rows);
+  }
+  return $rows;
+}
+/*function get_idea_adheridas_list($node){
+    $html=array();   
+    $invitados=create_field_array($node->invitados_list,'username');
+    $subgrupo=create_field_array($node->subgrupo_list,'username');
+    $result=array_merge($invitados,$subgrupo);
+    $html=my_array_field_values($result,'username');
+    return implode(",",$html);
+}*/
+function create_field_array($my_array,$field){
+    $result=array();
+    if(count($my_array)>0){
+        foreach($my_array as $i=>$row){
+            $result[$i]->$field=$row->$field;
+        }
+    }
+    return $result;
+}
+function my_array_field_values($my_array,$field){
+    $result=array();
+    if(count($my_array)>0){
+        foreach($my_array as $i=>$row){
+            $result[$i]=$row->$field;
+        }
+    }
+    return $result;
+}
+function calcular_idea_puntuacion_total($idea){
+    $result=0;
+    $idea_list=get_idea_oportunidad_list($idea->idea_nid);
+    if(count($idea_list)>0){
+        foreach($idea_list as $i=>$idea){
+            $node=node_load($idea->nid);
+            //print 'ahora='.$node->puntuacion_total.'<br>';
+            if(isset($node->nid) && !empty($node->nid)){
+                $result+=$node->puntuacion_total;
+            }
+        }
+    }
+    //print 'pt='.$result.'<BR>';
+    return $result;
+}
+function is_user_in_subgrupo($uid,$subgrupo){
+    if(in_array($uid,$subgrupo)){
+        return 1;
+    }
+    return 0;
+}
+function get_lista_ideas_title(){
+    $result='List of Ideas';
+    $param=arg(1);
+    if(strcmp(arg(0),'ideas')==0 && empty($param)){
+        //$result.='-Last';
+        $result='Latest Ideas';
+    }else if(is_idea('mas_valoradas')){
+        //$result.='-Top Rated';
+        $result='Top Rated Ideas';
+    }else if(is_idea('mas_comentadas')){
+        $result.='-Most comment';
+    }
+    return t($result);
+}
+function traducir_average($v,$is_estrategia=0){
+    $result=$v;
+    //intelsat-2015
+    if($is_estrategia){
+         $result=str_replace(t('Average').':','',$result);
+    }else{
+    //    
+        $result=str_replace('Average',t('Rating'),$result);
+    }
+    return $result;
+}
+function get_idea_subgrupo_string_list($node){
+    //echo print_r($node->subgrupo_list,1);
+    //$subgrupo=create_field_array($node->subgrupo_list,'username');
+    $result=array_ordenatu($node->subgrupo_list,'username',0,'desc');
+    $html=my_array_field_values($result,'username');
+    return implode(", ",$html);
+}
+function get_idea_invitados_string_list($node){
+    //echo print_r($node->invitados_list,1);
+    //$invitados=create_field_array($node->invitados_list,'username');
+    $result=array_ordenatu($node->invitados_list,'username',0,'asc');
+    $html=my_array_field_values($result,'username');
+    return implode(", ",$html);
+}
+function save_idea_responde_array($idea_nid,$responde_array){
+  delete_idea_responde_array($idea_nid);
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      foreach($responde_keys as $i=>$v){
+          $responde_values=explode('_',$responde_keys[$i]);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+          $sql=sprintf("INSERT INTO idea_responde_array(idea_nid,responde_estrategia_nid,responde_despliegue_nid,responde_decision_nid,responde_informacion_nid) VALUES(%d,%d,%d,%d,%d)",$idea_nid,$responde_estrategia_nid,$responde_despliegue_nid,$responde_decision_nid,$responde_informacion_nid);
+          db_query($sql);
+      }
+  }
+}
+function delete_idea_responde_array($idea_nid){
+  $sql="DELETE FROM idea_responde_array WHERE idea_nid=".$idea_nid;
+  db_query($sql);
+}
+function get_reto_al_que_responde_fieldset($node){
+  $responde_array=get_idea_responde_konp_array($node->nid);
+  $matriz_array=create_idea_responde_keys_array($responde_array);
+  //echo print_r($matriz_array,1);
+  if(count($matriz_array)>0){
+      $html=array();
+      $padding_hasi=15;
+      $my_padding='50';
+      $html[]='<fieldset id="my_camino">';
+      if(hontza_is_canal_formulario()){
+        $label=t('Key Questions');
+      }else{
+        $label=t('Associated Challenges');  
+      }    
+      $html[]='<legend class="my_camino_legend">'.$label.'</legend>';
+      $html[]='<div>';
+      foreach($matriz_array as $estrategia_nid=>$despliegue_array){
+          //$estrategia=node_load($estrategia_nid);
+          $html[]=get_estrategia_camino_html($estrategia_nid,$padding_hasi,$my_padding);
+          if(count($despliegue_array)>0){
+              foreach($despliegue_array as $despliegue_nid=>$decision_array){
+                $html[]=get_despliegue_camino_html($despliegue_nid,$padding_hasi,$my_padding);
+                if(count($decision_array)>0){
+                    foreach($decision_array as $decision_nid=>$informacion_array){
+                        $html[]=get_decision_camino_html($decision_nid,$padding_hasi,$my_padding);
+                        if(count($informacion_array)>0){
+                            foreach($informacion_array as $informacion_nid=>$v){
+                                $html[]=get_link_camino_html($informacion_nid,$padding_hasi,$my_padding,3);
+                            }
+                        }
+                    }
+                }
+              }
+          }
+      }
+      $html[]='</div>';
+      $html[]='</fieldset>';
+      return implode('',$html);
+  }
+}
+function create_idea_responde_keys_array($responde_array){
+    $result=array();
+    //echo print_r($responde_array,1);
+    if(count($responde_array)>0){     
+      $responde_keys=$responde_array;
+      //echo print_r($responde_keys,1);exit();
+      foreach($responde_keys as $i=>$v_in){
+          $v=str_replace('estrategia_','',$v_in);
+          $responde_values=explode('_',$v);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+          //
+          if(!empty($responde_estrategia_nid)){
+              if(!isset($result[$responde_estrategia_nid])){
+                $result[$responde_estrategia_nid]=array();
+              }
+          }
+          //
+          if(!empty($responde_despliegue_nid)){
+              if(!isset($result[$responde_estrategia_nid][$responde_despliegue_nid])){
+                $result[$responde_estrategia_nid][$responde_despliegue_nid]=array();
+              }
+          }
+          //
+          if(!empty($responde_decision_nid)){
+              if(!isset($result[$responde_estrategia_nid][$responde_despliegue_nid][$responde_decision_nid])){
+                $result[$responde_estrategia_nid][$responde_despliegue_nid][$responde_decision_nid]=array();
+              }
+          }
+          //
+          if(!empty($responde_informacion_nid)){
+              if(!isset($result[$responde_estrategia_nid][$responde_despliegue_nid][$responde_decision_nid][$responde_informacion_nid])){
+                $result[$responde_estrategia_nid][$responde_despliegue_nid][$responde_decision_nid][$responde_informacion_nid]=1;
+              }
+          }
+      }
+    }
+    return $result;
+}
+function my_help_idea(){
+    $param=arg(1);
+    //
+    if(strcmp(arg(0),'node')==0 && strcmp(arg(1),'add')==0 && strcmp(arg(2),'idea')==0){
+        return help_popup_window(15326, 'help',my_get_help_link_object());
+    }else if(strcmp(arg(0),'ideas')==0 && (empty($param) || strcmp(arg(1),'todas')==0) || is_numeric($param)){
+        return help_popup_window(15327, 'help',my_get_help_link_object());
+    }else if(is_idea('arbol')){
+        return help_popup_window(15328, 'help',my_get_help_link_object());
+    }else if(is_idea('mas_valoradas')){
+        return help_popup_window(15334, 'help',my_get_help_link_object());
+    }else if(is_idea('oportunidades')){
+        return help_oportunidad_list();
+    }else if(is_idea('oportunidades_mas_valoradas')){
+        return help_popup_window(15335, 'help',my_get_help_link_object());
+    }else if(is_idea('borrador')){
+        return help_popup_window(15336, 'help',my_get_help_link_object());
+    }else if(is_idea('aprobados')){
+        return help_popup_window(15337, 'help',my_get_help_link_object());
+    }else if(is_idea('no_aprobados')){
+        return help_popup_window(15338, 'help',my_get_help_link_object());
+    }
+    //
+    return '';
+}
+function link_adherirse($node,$aurrizkia_in=''){
+    global $user;
+    if(isset($node->nid) && !empty($node->nid) && $node->uid!=$user->uid){
+        $html=array();
+        $aurrizkia='';
+        if(!empty($aurrizkia_in)){
+            $aurrizkia=$aurrizkia_in.'-';
+        }
+        $label='';
+        if(estoy_adherido_idea($node->nid,$user->uid)){
+            $html[]='<div class="'.$aurrizkia.'item-no-adherir">';
+            //$html[]=l(t('Not Support'),'ideas/no_adherirse/'.$node->nid,array('query'=>drupal_get_destination()));
+            $url='ideas/no_adherirse/'.$node->nid;
+            $attributes=array('title'=>t('Not Support'),'alt'=>t('Not Support'));
+        }else{
+            $html[]='<div class="'.$aurrizkia.'item-adherir">';
+            //$html[]=l(t('Support'),'ideas/adherirse/'.$node->nid,array('query'=>drupal_get_destination()));
+            $url='ideas/adherirse/'.$node->nid;
+            $attributes=array('title'=>t('Support'),'alt'=>t('Support'));
+        }
+        //gemini-2014
+        $attributes['id']='id_a_adherirse_'.$node->nid.'_'.$user->uid;
+        $html[]=l($label,$url,array('query'=>drupal_get_destination(),'attributes'=>$attributes));
+        $html[]='</div>';
+        idea_add_adherirse_ajax($attributes['id'],$aurrizkia,$node->nid);
+        return implode('',$html);
+    }
+    return '';
+}
+function estoy_adherido_idea($nid,$uid){
+    $my_list=get_idea_adheridas_array($nid,$uid);
+    if(count($my_list)>0){
+        return 1;
+    }
+    return 0;
+}
+function get_idea_adheridas_array($nid,$uid=''){
+    $where=array();
+    $where[]='1';
+    $where[]='ia.idea_nid='.$nid;
+    if(!empty($uid)){
+        $where[]='ia.uid='.$uid;
+    }
+    $sql='SELECT ia.*,u.name as username FROM {idea_adheridas} ia LEFT JOIN {users} u ON ia.uid=u.uid WHERE '.implode(' AND ',$where);
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function ideas_adherirse_callback(){
+    global $user;
+    idea_active_tabs_access();
+    //
+    $html=array();
+    //
+    $idea_nid=arg(2);
+    //print 'idea_nid='.$idea_nid.'<BR>';
+    save_idea_adherida($idea_nid,$user->uid);
+    $html[]=t('You have supported the idea');
+    $destination=drupal_get_destination();
+    $destination=str_replace('destination=','',$destination);
+    $destination=urldecode($destination);
+    $html[]=l(t('Return'),$destination,array('attributes' => array('class'=>'back_left')));
+    return implode('<BR>',$html);
+}
+function ideas_no_adherirse_callback(){
+    global $user;
+    idea_active_tabs_access();
+    //
+    $idea_nid=arg(2);
+    //print 'idea_nid='.$idea_nid.'<BR>';
+    save_idea_no_adherida($idea_nid,$user->uid);
+    $html[]=t('You have not supported the idea');
+    $destination=drupal_get_destination();
+    $destination=str_replace('destination=','',$destination);
+    $destination=urldecode($destination);
+    $html[]=l(t('Return'),$destination,array('attributes' => array('class'=>'back_left')));
+    return implode('<BR>',$html);
+}
+function save_idea_adherida($idea_nid,$uid){
+    delete_idea_adherida($idea_nid,$uid);
+    insert_idea_adherida($idea_nid,$uid);
+}
+function save_idea_no_adherida($idea_nid,$uid){
+    delete_idea_adherida($idea_nid,$uid);
+}
+function delete_idea_adherida($idea_nid,$uid){
+    $sql='DELETE FROM idea_adheridas WHERE idea_nid='.$idea_nid.' AND uid='.$uid;
+    db_query($sql);
+}
+function insert_idea_adherida($idea_nid,$uid){
+    $sql='INSERT INTO idea_adheridas(idea_nid,uid) VALUES('.$idea_nid.','.$uid.')';
+    db_query($sql);
+}
+function get_idea_adheridas_string_list($node){
+    //echo print_r($node->adheridas_list,1);exit();
+    $result=array_ordenatu($node->adheridas_list,'username',0,'asc');
+    $html=my_array_field_values($result,'username');
+    //intelsat-2015
+    $idea_adheridas=implode(", ",$html);
+    /*if($is_cortar){
+        $max=66;
+        //$max=5;
+        $len=strlen($idea_adheridas);
+        if($len>=$max){
+            $idea_adheridas=substr($idea_adheridas,0,$max).'...';
+        }
+    }*/    
+    return $idea_adheridas;
+    //
+}
+//gemini
+function get_adheridas_uid_array($idea_nid){
+	$adheridas=array();
+	$adheridas_list=array();
+	$my_list=get_idea_adheridas_array($idea_nid,'');
+	if(count($my_list)>0){
+		foreach($my_list as $i=>$row){
+			$adheridas[]=$row->uid;
+			$adheridas_list[]=$row;
+		}
+	}
+	$info['adheridas']=$adheridas;
+	$info['adheridas_list']=$adheridas_list;
+	//echo print_r($info,1);
+        return $info;
+}
+function link_add_oportunidad($node,$aurrizkia_in=''){
+    $min=get_min_promocionar_idea();
+    //print 'min='.$min.'<BR>';
+    $num=count($node->adheridas_list);
+    //if($num>=$min){
+        //l(t('Add Opportunity'),'node/add/oportunidad/'.$node->nid);
+        $html=array();
+        $aurrizkia='';
+        if(!empty($aurrizkia_in)){
+            $aurrizkia=$aurrizkia_in.'-';
+        }
+        $label='';
+        $attributes=array('title'=>t('Add Opportunity'),'alt'=>t('Add Opportunity'),'id'=>'id_add_oportunidad_'.$node->nid);
+        if($num<$min){
+            $attributes['style']='display:none;';
+        }        
+        $html[]='<div class="'.$aurrizkia.'item-oportunidad">';
+        //$html[]=l(t('Add Opportunity'),'node/add/oportunidad/'.$node->nid,array('query'=>drupal_get_destination()));
+        $html[]=l($label,'node/add/oportunidad/'.$node->nid,array('query'=>drupal_get_destination(),'attributes'=>$attributes));
+        $html[]='</div>';
+        return implode('',$html);
+    //}
+    return '';
+}
+function es_idea_promocionada($idea_nid,$oportunidad_node){    
+    if(isset($oportunidad_node->nid) && !empty($oportunidad_node->nid)){
+        return 1;
+    }else{
+        if(!empty($idea_nid) && $idea_nid!='todas'){
+            $node=node_load($idea_nid);
+            $num=count($node->adheridas_list);
+            //print 'num='.$num.'<BR>';
+            $min=get_min_promocionar_idea();
+             if($num>=$min){
+                return 1;
+             }else{                 
+                return 0;
+             }
+        }
+    }
+    return 1;
+}
+function get_min_promocionar_idea(){
+    //gemini-2014
+    $row=idea_create_criterios_de_ponderacion();
+    if(isset($row->promocionar_idea_min) && !empty($row->promocionar_idea_min)){
+        return $row->promocionar_idea_min;
+    }
+    return 2;
+}
+function ideas_no_promocionada_callback(){
+    idea_active_tabs_access();
+    return t('Opportunities can not be added because the idea has insufficient support');
+}
+function my_get_parametrizacion_ideas_content($is_panel_gestion=1){
+    global $user;
+    //gemini-2014
+    if($is_panel_gestion){
+        return '';
+    }
+    //
+    $html=array();
+    //$html[]=l(t('Parametrización de Ideas'),'admin/content/hontza/my_idea_settings');
+    //gemini-2014
+    //if(is_administrador_grupo() || isset($user->roles[ADMINISTRADOR_DE_GRUPO])){
+    if(idea_criterios_de_ponderacion_access()){
+        //gemini-2014
+        //if($is_panel_gestion){
+            //gemini-2014
+            //$html[]=l(t('Promotion Criteria'),'admin/content/hontza/my_idea_settings');
+            $html[]=l(t('Promotion Criteria'),'ideas/criterios_de_ponderacion');
+        //}
+        //if(is_administrador_grupo()){
+        $html[]=l(t('Weighting Criteria'),'criterios_de_evaluacion');
+    }
+    return implode('<br>',$html);
+}
+function get_busqueda_simple_ideas_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+        $value='';
+	$value=my_get_request_value('search');
+	//
+        $html='<input type="text" id="busqueda_simple_idea_txt" name="busqueda_simple_idea_txt" value="'.$value.'"/>';
+	$html.='<BR><input type="button" id="busqueda_simple_idea_btn" name="busqueda_simple_idea_btn" value="'.t('Search').'"/>';
+	$html.='&nbsp;<input type="button" id="limpiar_idea_btn" name="limpiar_idea_btn" value="'.t('Clean').'"/>';
+        //$html.='&nbsp;'.l('Advanced','busqueda');
+	//$html.='&nbsp;'.l('Advanced','busqueda',array('query'=>'is_avanzada=1'));
+	return $html;
+}
+function add_busqueda_simple_idea_js(){
+        $my_url=url('ideas');
+        if(is_idea('arbol')){
+            $my_url=url('ideas/arbol');
+        }else if(is_idea('mas_valoradas')){
+            $my_url=url('ideas/mas_valoradas');
+        }else if(is_idea('oportunidades')){
+            $my_url=url('ideas/oportunidades');
+        }else if(is_idea('oportunidades_mas_valoradas')){
+            $my_url=url('ideas/oportunidades_mas_valoradas');
+        }else if(is_idea('borrador')){
+            $my_url=url('ideas/borrador');
+        }else if(is_idea('aprobados')){
+            $my_url=url('ideas/aprobados');
+        }else if(is_idea('no_aprobados')){
+            $my_url=url('ideas/no_aprobados');
+        }
+        //
+	$js='
+			var url_busqueda_simple_idea="'.$my_url.'";
+			$(document).ready(function()
+			{
+			 	$("#busqueda_simple_idea_btn").click(function(){
+                                       var v=$("#busqueda_simple_idea_txt").attr("value");
+					location.href=url_busqueda_simple_idea+"?search="+v;
+				});
+                                $("#limpiar_idea_btn").click(function(){
+                                       location.href=url_busqueda_simple_idea;
+				});
+			});';
+
+			drupal_add_js($js,'inline');
+}
+function validate_idea_categorias_tematicas($node,&$form){
+    $selected_categoria=0;
+    foreach($node as $field=>$value){
+       if(is_numeric($field)){
+           $term=taxonomy_get_term($field);
+           if(!empty($term) && isset($term->tid) && !empty($term->tid)){
+               //print 'tid='.$term->tid.'<BR>';
+               if(!empty($value)){
+                    $selected_categoria=1;
+               }
+           }
+       }
+    }
+    //
+    if(!$selected_categoria){
+        form_set_error('idea_categorias_tematicas_fs',t('Thematic Categories is a required field'));
+    }
+}
+function validate_idea_reto_al_que_responde(&$form){
+  $result=0;
+  $responde_estrategia_nid=0;
+  $responde_despliegue_nid=0;
+  $responde_decision_nid=0;
+  $responde_informacion_nid=0;
+  $responde_array=$_REQUEST['estrategia'];
+ 
+  if(count($responde_array)>0){
+      $responde_keys=array_keys($responde_array);
+      foreach($responde_keys as $i=>$v){
+          $responde_values=explode('_',$responde_keys[$i]);
+          //echo print_r($responde_values,1);exit();
+          $responde_estrategia_nid=get_responde_value($responde_values,0);
+          $responde_despliegue_nid=get_responde_value($responde_values,1);
+          $responde_decision_nid=get_responde_value($responde_values,2);
+          $responde_informacion_nid=get_responde_value($responde_values,3);
+          //
+          if($responde_estrategia_nid || $responde_despliegue_nid || $responde_decision_nid || $responde_informacion_nid){
+              $result=1;
+          }
+      }
+  }
+  if(!$result){
+      form_set_error('reto_al_que_responde',t('Associated Challenges is a required field'));
+  }
+}
+function get_gestionar_respuesta_content(){
+    if(!repase_access(1)){
+        return '';
+    }
+    //gemini-2014
+    if(!hontza_grupo_shared_active_tabs_access(1)){
+        return '';
+    }
+    $result=array();
+    $result[]=l(t('Proposals to Challenges'),'ideas/respuestas_a_retos');
+    $result[]=my_get_parametrizacion_ideas_content(0);
+    return implode('<BR>',$result);    
+}
+function respuestas_a_retos_callback(){
+    idea_active_tabs_access();
+    //gemini-2014
+    hontza_grupo_shared_active_tabs_access();
+    $output='';
+    $my_limit=variable_get('default_nodes_main', 100);
+    $is_link=0;
+    $estrategia_list=get_estrategia_arbol_rows($is_link);
+    $rows=array();
+    if(count($estrategia_list)>0){
+        $headers=array(t('Challenge'),t('Proposals'));
+        $kont=0;
+        foreach($estrategia_list as $i=>$e){
+            $rows[$kont]=array();
+            $rows[$kont][0]=get_estrategia_simbolo_img().l($e->title,'node/'.$e->nid,array('query'=>drupal_get_destination()));
+            $rows[$kont][1]=get_reto_respuestas($e->nid,'');
+            $kont++;
+            //$with_grupo=0;
+            $with_grupo=1;
+            $despliegue_list=get_estrategia_despliegue_list($e->nid,$with_grupo);
+            if(count($despliegue_list)){
+                foreach($despliegue_list as $k=>$subreto){
+                    $rows[$kont][0]=get_despliegue_simbolo_img().l($subreto->title,'node/'.$subreto->nid,array('query'=>drupal_get_destination()));
+                    $rows[$kont][1]=get_reto_respuestas($e->nid,$subreto->nid);
+                    $kont++;
+                }
+            }
+        }
+        $rows=my_set_estrategia_pager($rows,$my_limit);
+        $output .= theme('table',$headers,$rows);
+        $output .= theme('pager', NULL, $my_limit);
+    }else{
+        $output = '<div id="first-time">' .t('There are no challenges'). '</div>';
+    }
+    //
+    drupal_set_title(t('Proposals to Challenges'));
+    //
+    return $output;
+}
+function get_reto_respuestas($estrategia_nid,$despliegue_nid=''){
+    $result=array();
+    //
+    $idea_responde_array=get_responde_array($estrategia_nid,$despliegue_nid,"idea");
+    $idea_img=get_idea_bombilla_img();
+    $idea_result=get_reto_respuestas_by_array($idea_responde_array,$idea_img,'idea_nid');
+    $result=array_merge($result,$idea_result);   
+    //
+    $oportunidad_responde_array=get_responde_array($estrategia_nid,$despliegue_nid,"oportunidad");
+    $oportunidad_img=get_oportunidad_simbolo_img();
+    $oportunidad_result=get_reto_respuestas_by_array($oportunidad_responde_array,$oportunidad_img,'oportunidad_nid');
+    $result=array_merge($result,$oportunidad_result);
+    //
+    $proyecto_responde_array=get_responde_array($estrategia_nid,$despliegue_nid,"proyecto");
+    $proyecto_img=get_proyecto_simbolo_img();
+    $proyecto_result=get_reto_respuestas_by_array($proyecto_responde_array,$proyecto_img,'proyecto_nid');
+    $result=array_merge($result,$proyecto_result);
+    //
+    return implode('<BR>',$result);
+}
+function get_responde_array($estrategia_nid,$despliegue_nid,$my_type){
+    $where=array();
+    $where[]="1";
+    if(!empty($estrategia_nid)){
+        $where[]="r.responde_estrategia_nid=".$estrategia_nid;
+    }
+    if(!empty($despliegue_nid)){
+        $where[]="r.responde_despliegue_nid=".$despliegue_nid;
+    }
+    $sql="SELECT r.*
+    FROM {".$my_type."_responde_array} r
+    WHERE ".implode(" AND ",$where)."
+    GROUP BY r.".$my_type."_nid 
+    ORDER BY r.".$my_type."_nid ASC";
+    //
+    $result=array();
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function get_reto_respuestas_by_array($responde_array,$img,$field){
+    $result=array();
+    if(count($responde_array)>0){
+        foreach($responde_array as $i=>$row){
+            $node=node_load($row->$field);
+            if(isset($node->nid) && !empty($node->nid)){
+                $result[]=$img.l($node->title,'node/'.$node->nid,array('query'=>drupal_get_destination()));
+            }
+        }
+    }
+    return $result;
+}
+function in_seleccionar_idea($my_node,$tipo_adheridos){    
+    if(strcmp($tipo_adheridos,'oportunidad_form')==0){
+        $link=link_add_oportunidad($my_node);
+        if(!empty($link)){
+            return 1;
+        }
+        return 0;
+    }
+    return 1;
+}
+function set_idea_default_value_enlace($v,$f,$nid){
+    //intelsat-2016
+    global $base_url;
+    if(!empty($nid)){
+        return $v;
+    }
+    if(empty($v)){
+        $param=arg(3);
+        if(!empty($param) && is_numeric($param)){
+            $node=node_load($param);
+            if(isset($node->nid) && !empty($node->nid)){
+                if($f=='title'){
+                    return $node->$f;
+                }else{
+                    return $base_url.'/node/'.$param;
+                }
+            }
+        }
+        return '';
+    }
+    return $v;
+}
+function set_array_view_html($my_list){
+    $html=array();
+    if(count($my_list)>0){
+        foreach($my_list as $i=>$row){
+            $html[]=$row->view;
+        }
+    }
+    return implode('',$html);
+}
+function get_user_and_invitado_idea_nid_array($uid,$invitado_uid,$og_groups){
+    $where=array();
+    $where[]='1';
+    $og_nid_array=array();
+    if(!empty($og_groups)){
+        $og_nid_array=array_keys($og_groups);       
+    }
+    //
+    if(count($og_nid_array)>0){
+        $where[]='(s.uid='.$uid.' OR (i.is_todo_subgrupo=1 AND i.grupo_nid IN('.implode(',',$og_nid_array).')))';
+    }else{
+        $where[]='s.uid='.$uid;
+    }
+    //
+    $where[]='ii.uid='.$invitado_uid;
+    //
+    $sql='SELECT i.nid 
+    FROM {idea} i
+    LEFT JOIN {idea_subgrupo} s ON i.nid=s.idea_nid
+    LEFT JOIN {idea_invitados} ii ON i.nid=ii.idea_nid
+    WHERE '.implode(' AND ',$where).'
+    GROUP BY i.nid';
+    //print $sql;exit();
+    //
+    $result=array();
+    //
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row->nid;
+    }
+    return $result;
+}
+function idea_add_crear_invitado_fieldset_form_field(&$form){
+    $form['crear_invitado_fieldset']=array(
+      '#type'=>'fieldset',
+      '#title'=>t('Create guest'),
+      '#collapsed'=>true,
+      '#collapsible'=>true,
+  );
+  $form['crear_invitado_fieldset']['account'] = array('#type' => 'fieldset',
+    '#title' => t('Account information'),
+    //'#weight' => -10,
+  );
+   $form['crear_invitado_fieldset']['account']['invitado_name'] = array('#type' => 'textfield',
+      //'#title' => t('Username'),
+      '#title' => idea_get_invidato_field_label('invitado_name'),
+      //'#default_value' => $node->invitado_name,
+      '#maxlength' => USERNAME_MAX_LENGTH,
+      '#description' => t('Spaces are allowed; punctuation is not allowed except for periods, hyphens, and underscores.'),
+      //'#required' => TRUE,
+    );
+    //
+    $form['crear_invitado_fieldset']['account']['invitado_name']['#default_value']='';
+    if(isset($node->invitado_name) && !empty($node->invitado_name)){
+        $form['crear_invitado_fieldset']['account']['invitado_name']['#default_value']=$node->invitado_name;
+    }
+    //
+    $form['crear_invitado_fieldset']['account']['invitado_mail'] = array('#type' => 'textfield',
+    //'#title' => t('E-mail address'),
+    '#title' => idea_get_invidato_field_label('invitado_mail'),    
+    //'#default_value' => $node->invitado_mail,
+    '#maxlength' => EMAIL_MAX_LENGTH,
+    '#description' => t('A valid e-mail address. All e-mails from the system will be sent to this address. The e-mail address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by e-mail.'),
+    //'#attributes'=>array('autocomplete'=>'off'),
+    //'#required' => TRUE,
+  );
+    //
+    $form['crear_invitado_fieldset']['account']['invitado_mail']['#default_value']='';    
+    if(isset($node->invitado_mail) && !empty($node->invitado_mail)){
+        $form['crear_invitado_fieldset']['account']['invitado_mail']['#default_value']=$node->invitado_mail;
+    }
+    //
+   $form['crear_invitado_fieldset']['account']['pass'] = array('#type' => 'password_confirm',
+      '#description' => t('To change the current user password, enter the new password in both fields.'),
+      '#size' => 25,
+    );
+   $form['crear_invitado_fieldset']['datos_personales'] = array('#type' => 'fieldset',
+    '#title' => t('Personal data'),
+    //'#weight' => -10,
+  );
+   $form['crear_invitado_fieldset']['datos_personales']['profile_nombre'] = array('#type' => 'textfield',
+      //'#title' => t('Name'),
+      '#title' => idea_get_invidato_field_label('profile_nombre'), 
+      '#default_value' => $node->profile_nombre,
+      //'#required' => TRUE,
+    );
+   $form['crear_invitado_fieldset']['datos_personales']['profile_apellidos'] = array('#type' => 'textfield',
+      //'#title' => t('Surname'),
+      '#title' => idea_get_invidato_field_label('profile_apellidos'),  
+      '#default_value' => $node->profile_apellidos,
+      //'#required' => TRUE,
+    );
+    $form['crear_invitado_fieldset']['empresa'] = array('#type' => 'fieldset',
+    '#title' => t('Organisation'),
+    //'#weight' => -10,
+  );
+  $form['crear_invitado_fieldset']['empresa']['profile_empresa'] = array('#type' => 'textfield',
+      '#title' => t('Organisation'),
+      '#default_value' => $node->profile_empresa,
+      //'#required' => TRUE,
+    );
+   $form['crear_invitado_fieldset']['empresa']['responsable'] = array('#type' => 'textfield',
+      '#title' => t('Email of responsible person'),
+      '#default_value' => $node->responsable,
+      //'#required' => TRUE,
+    );
+}

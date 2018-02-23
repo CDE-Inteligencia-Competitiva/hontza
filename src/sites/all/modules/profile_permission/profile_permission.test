@@ -1,0 +1,105 @@
+<?php
+// $Id: profile_permission.test,v 1.4 2010/11/18 16:01:25 boombatower Exp $
+/**
+ * @file
+ * Restrict editing of profile fields.
+ *
+ * Copyright 2008 by Jimmy Berry ("boombatower", http://drupal.org/user/214218)
+ */
+
+class ProfilePermissionTestCase extends DrupalWebTestCase {
+  /**
+   * Implementation of getInfo().
+   */
+  public static function getInfo() {
+    return array(
+      'name' => t('Profile permission'),
+      'description' => t('Test the visibility/editablity of a field based on its role settings.'),
+      'group' => t('Profile'),
+    );
+  }
+
+  /**
+   * Implementation of setUp().
+   */
+  protected function setUp() {
+    parent::setUp('profile', 'profile_permission');
+  }
+
+  /**
+   * Test the visibility of a field based on its role settings.
+   */
+  protected function testFieldVisibility() {
+    // Create and login user.
+    $admin_user = $this->drupalCreateUser(array('administer users', 'administer permissions'));
+    $this->drupalLogin($admin_user);
+
+    // Create profile field.
+    $this->drupalget('admin/user/profile');
+    $this->clickLink(t('single-line textfield'));
+
+    $field = array();
+    $field['category'] = $this->randomName();
+    $field['title'] = $this->randomName();
+    $field['name'] = $this->randomName();
+    $this->drupalPost(NULL, $field, t('Save field'));
+    $this->assertText(t('The field has been created.'));
+
+    // Attempt to field when editting profile.
+    $this->drupalGet('user/' . $admin_user->uid . '/edit/' . $field['category']);
+    $this->assertFieldByName($field['name'], '', t('Field editable.'));
+
+    // Set a value for the field so it will display.
+    $edit = array();
+    $edit[$field['name']] = $this->randomName();
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Attempt to view field on view page.
+    $this->drupalGet('user/' . $admin_user->uid);
+    $this->assertTrue($this->xpath('.//dt[@class="profile-' . $field['name'] . '"]'), t('Field visible.'));
+
+    // Create profile field.
+    $this->drupalget('admin/user/profile');
+    $this->clickLink(t('single-line textfield'));
+
+    // Restrict field: require permission to view.
+    $field = array();
+    $field['category'] = $this->randomName();
+    $field['title'] = $this->randomName();
+    $field['name'] = $this->randomName();
+    $field['profile_permission'] = TRUE;
+    $this->drupalPost(NULL, $field, t('Save field'));
+    $this->assertText(t('The field has been created.'));
+
+    // Attempt to field when editting profile.
+    $this->drupalGet('user/' . $admin_user->uid . '/edit/' . $field['category']);
+    $this->assertNoFieldByName($field['name'], '', t('Field not editable.'));
+
+    // Give user access to field.
+    $edit = array();
+    $edit[DRUPAL_AUTHENTICATED_RID . '[edit ' . $field['name'] . ' field]'] = TRUE;
+    $this->drupalPost('admin/user/permissions', $edit, t('Save permissions'));
+
+    // Attempt to field when editting profile.
+    $this->drupalGet('user/' . $admin_user->uid . '/edit/' . $field['category']);
+    $this->assertFieldByName($field['name'], '', t('Field editable.'));
+
+    // Set a value for the field so it will display.
+    $edit = array();
+    $edit[$field['name']] = $this->randomName();
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Attempt to view field on view page.
+    $this->drupalGet('user/' . $admin_user->uid);
+    $this->assertFalse($this->xpath('.//dt[@class="profile-' . $field['name'] . '"]'), t('Field not visible.'));
+
+    // Give user access to view field.
+    $edit = array();
+    $edit[DRUPAL_AUTHENTICATED_RID . '[view ' . $field['name'] . ' field]'] = TRUE;
+    $this->drupalPost('admin/user/permissions', $edit, t('Save permissions'));
+
+    // Attempt to view field on view page.
+    $this->drupalGet('user/' . $admin_user->uid);
+    $this->assertTrue($this->xpath('.//dt[@class="profile-' . $field['name'] . '"]'), t('Field visible.'));
+  }
+}

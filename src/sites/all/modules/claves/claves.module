@@ -1,0 +1,1057 @@
+<?php
+function claves_perm() {
+  return array('Admin Keys','access claves validez');
+}
+function claves_menu() {
+    $items=array();
+    
+     $items['claves/vigencia_maxima_msg'] = array(
+    'title' => 'Expiration',
+    'page callback' => 'vigencia_maxima_msg_callback',
+    'access arguments' => array('access content'),
+  );
+     
+     $items['gestion/claves'] = array(
+    'title' => 'Password Settings',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('claves_gestion_form'),
+    'access arguments' => array('Admin Keys'),
+  );
+     
+     $items['gestion/claves/validez'] = array(
+    'title' => 'Management of Passwords',
+    'page callback' => 'claves_gestion_validez_callback',    
+    'access arguments' => array('access claves validez'),
+  );
+     
+      $items['claves_gestion_validez_user/autocomplete']=array(
+             'title' => 'User autocomplete',
+            'page callback' => 'claves_gestion_validez_user_autocomplete_callback',
+            'access callback' => 'user_access',
+            'access arguments' => array('access user profiles'),
+            'type' => MENU_CALLBACK,
+      );
+      //intelsat-2015
+      $items['gestion/claves/restart/%']=array(
+        'title' => 'Management of Passwords',
+        'page callback' => 'claves_restart_callback',    
+        'access callback' => 'claves_admin_access',
+      );
+      //
+    return $items;
+}
+function claves_save_users_pass($account){
+    $created=time();
+    db_query('INSERT INTO {users_pass}(uid,pass,created) VALUES(%d,"%s",%d)',$account->uid,$account->pass,$created);
+}
+function claves_save_users_pass_by_edit($account,$values){   
+    if(claves_is_pass_changed($account,$values)){
+        $new_pass=md5($values['pass']);
+        $row=new stdClass();
+        $row->uid=$account->uid;
+        $row->pass=$new_pass;
+        claves_save_users_pass($row);
+    }
+}
+function claves_is_pass_changed($account,$values){
+    if(isset($values['pass']) && !empty($values['pass'])){
+        $old_pass=$account->pass;
+        $new_pass=md5($values['pass']);
+        if($old_pass==$new_pass){
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+function claves_user_pass_validate($form, &$form_state) {
+  $values=$form_state['values'];
+  $account=$form_state['values']['_account'];
+  $category=$form_state['values']['_category'];
+  $new_pass_orig='';
+  $new_pass=claves_get_new_pass_by_values($values,$new_pass_orig);
+  if(!empty($category) && $category=='account'){
+      if(claves_is_pass_changed($account,$values)){
+          //if(claves_apply_module()){
+            if(claves_is_vigencia_minima($account)){
+                $vigencia_minima_dias=claves_get_vigencia_minima_dias();
+                form_set_error('pass',t('You have to keep your password at least !days days before changing it',array('!days'=>$vigencia_minima_dias)));
+                return;
+            }
+            if(!claves_is_nuevas_exclusivas($account->uid,$new_pass)){
+                $num_exclusivas=variable_get('claves_num_exclusivas',24);
+                form_set_error('pass',t('You have to use at least !different different passwords before using again an old password',array('!different'=>$num_exclusivas)));
+                return;
+            }
+            if(!claves_is_pass_min_len($new_pass_orig)){
+                //form_set_error('pass',t('It is recommended to choose a password that contains at least eight characters. It should include numbers, punctuation, and both upper and lowercase letters.'));
+                form_set_error('pass',t('Password must contain at least 8 characters'));
+                return;
+            }
+            if(claves_is_tres_caracteres_del_username($account,$values,$new_pass_orig)){
+                $maximo=variable_get('claves_maximo_caracteres_username',3); 
+                form_set_error('pass',t('Your password must contain less than !characters characters from your username',array('!characters'=>$maximo)));
+                return;
+            }
+            if(!claves_is_tres_de_cinco_clases($new_pass_orig)){
+                form_set_error('pass',claves_define_tres_de_cinco_clases_error_msg());
+                return;
+            }
+          //}   
+      }
+  }
+}
+function claves_is_vigencia_minima($account){
+    $claves_apply_vigencia_minima=variable_get('claves_apply_vigencia_minima',0);
+    if(!$claves_apply_vigencia_minima){
+        return 0;
+    }
+    $segundos=2*24*60*60;
+    //simulando
+    //$segundos=1;
+    $vigencia_minima=variable_get('claves_vigencia_minima',$segundos);
+    $row=claves_get_last_user_pass_row($account->uid);
+    if(isset($row->id) && !empty($row->id)){
+        $now=time();
+        $konp=$now-$row->created;
+        if($konp<=$vigencia_minima){
+            return 1;
+        }
+    }
+    return 0;
+}
+function claves_get_last_user_pass_row($uid,$pass=''){
+    $where=array();
+    $where[]='uid='.$uid;
+    if(!empty($pass)){
+        $where[]='pass="'.$pass.'"';
+    }
+    $sql='SELECT up.* FROM {users_pass} up WHERE '.implode(' AND ',$where).' ORDER BY up.created DESC';
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    $result=new stdClass();
+    return $result;
+}
+function claves_repase_vigencia_maxima_pass(){
+   global $user;
+   //if(claves_apply_module()){
+    if(isset($user->uid) && !empty($user->uid)){
+        if(!claves_no_repasar_vigencia_maxima()){     
+             //intelsat-2015
+             if(claves_is_restart_clave($user->uid) || claves_is_vigencia_maxima($user->uid)){
+             //    
+                 drupal_goto('claves/vigencia_maxima_msg');
+                 exit();
+             }
+        }     
+    //}
+   } 
+}
+function claves_is_vigencia_maxima($uid){
+    $claves_apply_vigencia_maxima=variable_get('claves_apply_vigencia_maxima',0);
+    if(!$claves_apply_vigencia_maxima){
+        return 0;
+    }
+    $segundos=90*24*60*60;
+    //simulando
+    //$segundos=1;
+    $vigencia_maxima=variable_get('claves_vigencia_maxima',$segundos);
+    $row=claves_get_last_user_pass_row($uid);
+    if(isset($row->id) && !empty($row->id)){
+        $now=time();
+        $konp=$now-$row->created;
+        if($konp>$vigencia_maxima){
+            return 1;
+        }
+    }
+    return 0;
+}
+function vigencia_maxima_msg_callback(){
+    global $user;
+    $segundos=90*24*60*60;
+    $vigencia_maxima=variable_get('claves_vigencia_maxima',$segundos);
+    $days=round($vigencia_maxima/(24*60*60));
+    $html=array();
+    //
+    if(claves_is_restart_clave($user->uid)){
+        drupal_set_title(t('Reset password'));
+        $msg=t('The group owner has reset your password. You have to change it');
+    }else{
+        drupal_set_title(t('Expiration'));    
+        $msg=t('You have used your password for more than !days days. You have to change it', array('!days' => $days));
+    }
+    //$msg=t('You have used your password for more than xx days. You have to change it');
+    $html[]='<p>'.$msg.'</p>';
+    $html[]='<p>'.l(t('Change password'),'user/'.$user->uid.'/edit').'</p>';
+    return implode('',$html);
+}
+function claves_no_repasar_vigencia_maxima(){
+    if(hontza_is_pantalla('claves')){
+        $param1=arg(1);
+        if(!empty($param1) && $param1=='vigencia_maxima_msg'){
+            return 1;
+        }
+    }    
+    if(hontza_is_pantalla('user')){
+        return 1;
+    }
+    if(hontza_is_pantalla('logout')){
+        return 1;
+    }
+    return 0;
+}
+function claves_is_nuevas_exclusivas($uid,$new_pass){
+    $claves_apply_num_exclusivas=variable_get('claves_apply_num_exclusivas',0);
+    if(!$claves_apply_num_exclusivas){
+        return 1;
+    }
+    if(claves_hay_users_pass($uid)){
+        $last_row=claves_get_last_user_pass_row($uid,$new_pass);
+        if(isset($last_row->id) && !empty($last_row->id)){
+            $nuevas=claves_get_users_pass_by_uid($uid,$last_row->created);
+            $num_exclusivas=variable_get('claves_num_exclusivas',24);
+            //simulando
+            //$num_exclusivas=0;
+            $num=count($nuevas);
+            if($num>=$num_exclusivas){
+                return 1;
+            }
+            return 0;
+        }
+    }        
+    return 1;
+}
+function claves_get_new_pass_by_values($values,&$new_pass_orig){
+    if(isset($values['pass']) && !empty($values['pass'])){
+        $new_pass_orig=$values['pass'];
+        $new_pass=md5($new_pass_orig);
+        return $new_pass;
+    }
+    return '';
+}
+function claves_hay_users_pass($uid){
+    $result=claves_get_users_pass_by_uid($uid);
+    if(count($result)>0){
+        return 1;
+    }
+    return 0;
+}
+function claves_get_users_pass_by_uid($uid,$created=''){
+    $result=array();
+    $where=array();
+    $where[]='up.uid='.$uid;
+    if(!empty($created)){
+        $where[]='up.created>'.$created;
+    }
+    $sql='SELECT up.* FROM {users_pass} up WHERE '.implode(' AND ',$where).' ORDER BY up.created DESC';
+    $res=db_query($sql);
+    while($row=db_fetch_object($res)){
+        $result[]=$row;
+    }
+    return $result;
+}
+function claves_is_pass_min_len($new_pass_orig){
+    $claves_apply_pass_len_minima=variable_get('claves_apply_pass_len_minima',0);
+    if(!$claves_apply_pass_len_minima){
+        return 1;
+    }
+    $pass_min_len=variable_get('claves_pass_len_minima',8);
+    $len=strlen($new_pass_orig);
+    if($len>=$pass_min_len){
+       return 1; 
+    }
+    return 0;
+}
+function claves_is_tres_caracteres_del_username($account,$values,$new_pass_orig){
+    $claves_apply_maximo_caracteres_username=variable_get('claves_apply_maximo_caracteres_username',0);
+    if(!$claves_apply_maximo_caracteres_username){
+        return 0;
+    }
+    if(isset($values['name']) && !empty($values['name'])){
+        $maximo=variable_get('claves_maximo_caracteres_username',3);            
+        $username=$values['name'];
+        if(strlen($username)<$maximo){
+            return 0;
+        }
+        $caracteres=claves_get_distintos_caracteres($username);
+        $my_array=claves_create_array_by_string($new_pass_orig);
+        $kont_array=array();
+        if(count($caracteres)>0){
+            foreach($caracteres as $i=>$c){
+                if(!isset($kont_array[$c])){
+                    $kont_array[$c]=0;
+                }
+                //
+                if(in_array($c,$my_array)){
+                    $kont_array[$c]=$kont_array[$c]+1;
+                }
+            }
+            $kont=claves_get_kont($kont_array);
+            if($kont>$maximo){
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+function claves_get_distintos_caracteres($s){
+    $result=array();
+    $len=strlen($s);
+    for($i=0;$i<$len;$i++){
+        if(!in_array($s[$i],$result)){
+            $result[]=$s[$i];
+        }
+    }
+    return $result;
+}
+function claves_create_array_by_string($s){
+    $result=array();
+    $len=strlen($s);
+    for($i=0;$i<$len;$i++){
+        //if(!in_array($s[$i],$result)){
+        $result[]=$s[$i];
+        //}
+    }
+    return $result;
+}
+function claves_get_kont($kont_array){
+    $result=0;
+    if(!empty($kont_array)){
+        foreach($kont_array as $c=>$v){
+            if(!empty($v)){
+                $result=$result+1;
+            }
+        }
+    }
+    return $result;
+}
+function claves_is_tres_de_cinco_clases($pass){
+    $claves_apply_is_tres_de_cinco_clases=variable_get('claves_apply_is_tres_de_cinco_clases',0);
+    if(!$claves_apply_is_tres_de_cinco_clases){
+        return 1;
+    }
+		$num=strlen($pass);
+		//if($num>=8){
+			$mayus = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			$minus = "abcdefghijklmnopqrstuvwxyz";
+			$numeros= "1234567890";
+			$simbolos="@$#%()=?!+";
+
+			$is_mayus=0;
+			$is_minus=0;
+			$is_numeros=0;
+			$is_simbolos=0;
+                        $is_unicode=0;   
+
+			for($i=0;$i<$num;$i++){
+				$is_current_mayus=0;
+				$is_current_minus=0;
+				$is_current_numeros=0;
+				$is_current_simbolos=0;
+				//
+				$letra=$pass[$i];
+				//
+				$pos_mayus=strpos($mayus,$letra);
+				if($pos_mayus===false){
+					//
+				}else{
+					$is_mayus=1;
+					$is_current_mayus=1;
+				}
+				//
+				$pos_minus=strpos($minus,$letra);
+				if($pos_minus===false){
+					//
+				}else{
+					$is_minus=1;
+					$is_current_minus=1;
+				}
+				//
+				
+				$pos_numeros=strpos($numeros,$letra);
+				if($pos_numeros===false){
+					//
+				}else{
+					$is_numeros=1;
+					$is_current_numeros=1;
+				}
+				
+				
+				$pos_simbolos=strpos($simbolos,$letra);
+				if($pos_simbolos===false){
+					//
+				}else{
+					$is_simbolos=1;
+					$is_current_simbolos=1;
+				}
+				/*
+                                //ikurrik ez
+				if(!$is_current_mayus && !$is_current_minus && !$is_current_numeros && !$is_current_simbolos ){
+					return 0;
+				}*/		
+			}
+			//if($is_mayus && $is_minus && $is_numeros && $is_simbolos ){
+			if(ctype_alnum($pass)){
+                            $is_simbolos=0;
+                        }
+                        if(claves_detectUTF8($pass)){
+                            $is_unicode=1;                            
+                        }
+                        
+                        $suma=$is_mayus+$is_minus+$is_numeros+$is_simbolos+$is_unicode;
+                       
+                        $minimo_clases=variable_get('claves_minimo_clases',3);
+                        if($suma>=$minimo_clases){
+                            return 1;
+			}			
+		//}
+		return 0;
+}
+function claves_detectUTF8($string)
+{
+        return preg_match('%(?:
+        [\xC2-\xDF][\x80-\xBF]        # non-overlong 2-byte
+        |\xE0[\xA0-\xBF][\x80-\xBF]               # excluding overlongs
+        |[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}      # straight 3-byte
+        |\xED[\x80-\x9F][\x80-\xBF]               # excluding surrogates
+        |\xF0[\x90-\xBF][\x80-\xBF]{2}    # planes 1-3
+        |[\xF1-\xF3][\x80-\xBF]{3}                  # planes 4-15
+        |\xF4[\x80-\x8F][\x80-\xBF]{2}    # plane 16
+        )+%xs', $string);
+}
+function claves_gestion_form(){
+    $form=array();
+    //intelsat-2015
+    drupal_set_title(t('Password Settings'));
+    //
+    /*$claves_apply=variable_get('claves_apply_module',0);
+    $form['claves_apply_module']=array(
+              '#type'=>'checkbox',
+              '#title'=>'<b>'.t('Apply Management - Passwords').'</b>',
+            );
+            if(!empty($claves_apply_module)){
+                $form['claves_apply_module']['#attributes']=array('checked'=>'checked');
+            }*/
+    //intelsat-2015
+    $prefix_checkbox='<div style="float:left;clear:both;width:100%;"><div style="float:left;width:5%;">';
+    $suffix_checkbox='</div>';
+    $attributes_textfield=array('style'=>'width:100px;margin-left:5px;');
+    $prefix_textfield='<div style="float:left;width:95%;margin-left:-20px;">';
+    $suffix_textfield='</div></div>';
+    //
+    $claves_apply_vigencia_minima=variable_get('claves_apply_vigencia_minima',0);
+    $form['claves_apply_vigencia_minima']=array(
+              '#type'=>'checkbox',
+              //'#title'=>'<b>'.t('Apply Minimum validity').'</b>',
+              '#prefix'=>$prefix_checkbox,
+              '#suffix'=>$suffix_checkbox,
+            );
+            if(!empty($claves_apply_vigencia_minima)){
+                $form['claves_apply_vigencia_minima']['#attributes']=array('checked'=>'checked');
+            }
+    //intelsat-2015
+    $claves_vigencia_minima_value=claves_get_vigencia_minima_value_days();
+    //
+    $form['claves_vigencia_minima']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Min. period of validity'),
+        //intelsat-2015
+        //'#description'=>t('(Value in seconds) Default is 2 days. It sets the number of days a user must keep a new password before changing it'),
+        '#description'=>t('Default is 2 days. It sets the number of days a user must keep a new password before changing it'),
+        '#default_value'=>$claves_vigencia_minima_value,
+        '#required'=>TRUE,
+        '#attributes'=>$attributes_textfield,
+        '#prefix'=>$prefix_textfield,
+        '#suffix'=>$suffix_textfield,
+    );
+    //
+    $claves_apply_vigencia_maxima=variable_get('claves_apply_vigencia_maxima',0);
+    $form['claves_apply_vigencia_maxima']=array(
+              '#type'=>'checkbox',
+              //'#title'=>'<b>'.t('Apply Maximum validity').'</b>',
+              '#prefix'=>$prefix_checkbox,
+              '#suffix'=>$suffix_checkbox,
+            );
+            if(!empty($claves_apply_vigencia_maxima)){
+                $form['claves_apply_vigencia_maxima']['#attributes']=array('checked'=>'checked');
+            }    
+    //
+    $claves_vigencia_maxima_value=claves_get_vigencia_maxima_value_days();
+    $form['claves_vigencia_maxima']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Expiration'),
+        //intelsat-2015
+        //'#description'=>t('(Value in seconds) Default is 90 days. It sets the number of days a user can use a password before being required to change it'),
+        '#description'=>t('Default is 90 days. It sets the number of days a user can use a password before being required to change it'),        
+        '#default_value'=>$claves_vigencia_maxima_value,
+        '#required'=>TRUE,
+        '#attributes'=>$attributes_textfield,
+        '#prefix'=>$prefix_textfield,
+        '#suffix'=>$suffix_textfield,
+    );
+    //
+    $claves_apply_num_exclusivas=variable_get('claves_apply_num_exclusivas',0);
+    $form['claves_apply_num_exclusivas']=array(
+              '#type'=>'checkbox',
+              //'#title'=>'<b>'.t('Apply Number of different passwords').'</b>',
+              '#prefix'=>$prefix_checkbox,
+              '#suffix'=>$suffix_checkbox,
+            );
+            if(!empty($claves_apply_num_exclusivas)){
+                $form['claves_apply_num_exclusivas']['#attributes']=array('checked'=>'checked');
+            }    
+    //
+    $claves_num_exclusivas=24;
+    $form['claves_num_exclusivas']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Number of different passwords'),
+        '#description'=>t('Default is 24. It sets the number of different passwords a user must use before using again an old password'),
+        '#default_value'=>variable_get('claves_num_exclusivas',$claves_num_exclusivas),
+        '#required'=>TRUE,
+        '#attributes'=>$attributes_textfield,
+        '#prefix'=>$prefix_textfield,
+        '#suffix'=>$suffix_textfield,
+    );
+    //
+    $claves_apply_pass_len_minima=variable_get('claves_apply_pass_len_minima',0);
+    $form['claves_apply_pass_len_minima']=array(
+              '#type'=>'checkbox',
+              //'#title'=>'<b>'.t('Apply minimum length of password').'</b>',
+              '#prefix'=>$prefix_checkbox,
+              '#suffix'=>$suffix_checkbox,
+            );
+            if(!empty($claves_apply_pass_len_minima)){
+                $form['claves_apply_pass_len_minima']['#attributes']=array('checked'=>'checked');
+            }
+    //
+    $claves_pass_len_minima=8;
+    $form['claves_pass_len_minima']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Min. length'),
+        '#description'=>t('Default is 8. It sets the minimum number of characters of a password'),
+        '#default_value'=>variable_get('claves_pass_len_minima',$claves_pass_len_minima),
+        '#required'=>TRUE,
+        '#attributes'=>$attributes_textfield,
+        '#prefix'=>$prefix_textfield,
+        '#suffix'=>$suffix_textfield,
+    );
+    //
+    $claves_apply_maximo_caracteres_username=variable_get('claves_apply_maximo_caracteres_username',0);
+    $form['claves_apply_maximo_caracteres_username']=array(
+              '#type'=>'checkbox',
+              //'#title'=>'<b>'.t('Apply Number of characters').'</b>',
+              '#prefix'=>$prefix_checkbox,
+              '#suffix'=>$suffix_checkbox,
+            );
+            if(!empty($claves_apply_maximo_caracteres_username)){
+                $form['claves_apply_maximo_caracteres_username']['#attributes']=array('checked'=>'checked');
+            }   
+    //
+    $claves_maximo_caracteres_username=3;
+    $form['claves_maximo_caracteres_username']=array(
+        '#type'=>'textfield',
+        '#title'=>t('Max. number of shared characters'),
+        '#description'=>t('Default is 3. It sets the maximum number of shared characters between userid and password'),
+        '#default_value'=>variable_get('claves_maximo_caracteres_username',$claves_maximo_caracteres_username),
+        '#required'=>TRUE,
+        '#attributes'=>$attributes_textfield,
+        '#prefix'=>$prefix_textfield,
+        '#suffix'=>$suffix_textfield,
+    );
+    //
+    $claves_apply_is_tres_de_cinco_clases=variable_get('claves_apply_is_tres_de_cinco_clases',0);
+    $form['claves_apply_is_tres_de_cinco_clases']=array(
+              '#type'=>'checkbox',
+              //intelsat-2015
+              //'#title'=>'<b>'.t('Number of types of characters').'</b>',
+              '#title'=>'<b>'.t('Three types of characters').'</b>',
+              //
+              '#description'=>claves_define_tres_de_cinco_clases_label(),
+              //'#prefix'=>'<div style="float:left;">',
+              //'#suffix'=>'</div>',
+            );
+            if(!empty($claves_apply_is_tres_de_cinco_clases)){
+                $form['claves_apply_is_tres_de_cinco_clases']['#attributes']=array('checked'=>'checked');
+            }   
+    //
+    $form['claves_gestion_submit']=array(
+        '#type'=>'submit',
+        '#default_value'=>t('Save'),
+    );
+    //
+    return $form;
+}
+function claves_gestion_form_submit($form,&$form_state){
+    if(isset($form_state['clicked_button']) && !empty($form_state['clicked_button'])){
+       $values=$form_state['values'];
+       $claves_vigencia_minima_days=claves_gestion_set_days($values['claves_vigencia_minima']);
+       $claves_vigencia_maxima_days=claves_gestion_set_days($values['claves_vigencia_maxima']);        
+       variable_set('claves_vigencia_minima',$claves_vigencia_minima_days);
+       variable_set('claves_vigencia_maxima',$claves_vigencia_maxima_days);
+       variable_set('claves_num_exclusivas',$values['claves_num_exclusivas']);
+       variable_set('claves_pass_len_minima',$values['claves_pass_len_minima']);
+       variable_set('claves_maximo_caracteres_username',$values['claves_maximo_caracteres_username']);
+       //
+       $claves_apply_vigencia_minima=0;
+       if(isset($values['claves_apply_vigencia_minima']) && !empty($values['claves_apply_vigencia_minima'])){
+           $claves_apply_vigencia_minima=$values['claves_apply_vigencia_minima'];
+       }
+       variable_set('claves_apply_vigencia_minima',$claves_apply_vigencia_minima);
+       //
+       $claves_apply_vigencia_maxima=0;
+       if(isset($values['claves_apply_vigencia_maxima']) && !empty($values['claves_apply_vigencia_maxima'])){
+           $claves_apply_vigencia_maxima=$values['claves_apply_vigencia_maxima'];
+       }
+       variable_set('claves_apply_vigencia_maxima',$claves_apply_vigencia_maxima);
+       //
+       $claves_apply_num_exclusivas=0;
+       if(isset($values['claves_apply_num_exclusivas']) && !empty($values['claves_apply_num_exclusivas'])){
+           $claves_apply_num_exclusivas=$values['claves_apply_num_exclusivas'];
+       }
+       variable_set('claves_apply_num_exclusivas',$claves_apply_num_exclusivas);
+       //
+       $claves_apply_maximo_caracteres_username=0;
+       if(isset($values['claves_apply_maximo_caracteres_username']) && !empty($values['claves_apply_maximo_caracteres_username'])){
+           $claves_apply_maximo_caracteres_username=$values['claves_apply_maximo_caracteres_username'];
+       }
+       variable_set('claves_apply_maximo_caracteres_username',$claves_apply_maximo_caracteres_username);
+       //
+       $claves_apply_pass_len_minima=0;
+       if(isset($values['claves_apply_pass_len_minima']) && !empty($values['claves_apply_pass_len_minima'])){
+           $claves_apply_pass_len_minima=$values['claves_apply_pass_len_minima'];
+       }
+       variable_set('claves_apply_pass_len_minima',$claves_apply_pass_len_minima);
+       //
+       $claves_apply_is_tres_de_cinco_clases=0;
+       if(isset($values['claves_apply_is_tres_de_cinco_clases']) && !empty($values['claves_apply_is_tres_de_cinco_clases'])){
+           $claves_apply_is_tres_de_cinco_clases=$values['claves_apply_is_tres_de_cinco_clases'];
+       }
+       variable_set('claves_apply_is_tres_de_cinco_clases',$claves_apply_is_tres_de_cinco_clases);
+       //
+       /*$claves_apply_module=0;
+       if(isset($values['claves_apply_module']) && !empty($values['claves_apply_module'])){
+           $claves_apply=$values['claves_apply_module'];
+       }
+       variable_set('claves_apply_module',$claves_apply_module);*/
+    }
+    //drupal_goto('gestion');
+}
+function claves_get_vigencia_minima_dias(){
+    $result=0;
+    $segundos=2*24*60*60;
+    $vigencia_minima=variable_get('claves_vigencia_minima',$segundos);
+    $result=round($vigencia_minima/(24*60*60));
+    return $result;
+}
+function claves_define_tres_de_cinco_clases_error_msg($is_label=0,$is_claves_info=0){
+    $html=array();
+    if($is_label){
+        //intelsat-2015
+        //$html[]=t('Apply Number of types of characters');
+        $div_style='padding-left:30px;';
+        $ul_style='padding-left:45px;';
+        if($is_claves_info){
+            $div_style='padding-left:0px;';
+            $ul_style='padding-left:15px;';
+        }
+        //
+        //$html[]='<div style="'.$div_style.'">'.t('The key must contain characters of at least three of the following five types of characters').'</div>';
+        $html[]='<div style="'.$div_style.'">'.t('The password must contain at least three of the following types of characters').'</div>';
+        $html[]='<ul style="'.$ul_style.'">'; 
+    }else{
+        $html[]='<p>'.t('The key does not contain characters of at least three of the following five types of characters').':</p>';    
+        $html[]='<ul>';        
+    }    
+    $html[]='<li>'.t('Uppercase characters from english alphabet (A - Z)').'</li>';
+    $html[]='<li>'.t('Lowercase characters from english alphabet (a - z)').'</li>';
+    $html[]='<li>'.t('Digits in base 10 (0 - 9)').'</li>';
+    $html[]='<li>'.t('Non-alphanumeric characters (for example: !, $, # or %)').'</li>';
+    $html[]='<li>'.t('Unicode Characters').'</li>';
+    $html[]='</ul>';
+    return implode('',$html);          
+}
+function claves_define_tres_de_cinco_clases_label(){
+    return claves_define_tres_de_cinco_clases_error_msg(1);    
+}
+function claves_apply_module(){
+    return hontza_claves_apply_module();
+}
+function claves_gestion_validez_callback(){
+    $output='';
+    
+    $headers=array();
+    $headers[0]=array('data'=>t('User'),'field'=>'name');
+    $headers[1]=array('data'=>t('Last Update'),'field'=>'name');
+    $headers[2]=array('data'=>t('Days'),'field'=>'name');
+    //$headers[3]=t('Restart');
+    $headers[3]=t('Actions');
+    
+    $my_limit=40;
+    
+    $sort='asc';
+    $field='name';
+    if(isset($_REQUEST['sort']) && !empty($_REQUEST['sort'])){
+        $sort=$_REQUEST['sort'];
+    }
+    $order='';
+    if(isset($_REQUEST['order']) && !empty($_REQUEST['order'])){
+        $order=$_REQUEST['order'];        
+    }
+                
+    $rows=array();
+            
+    $filter_fields=claves_gestion_validez_define_filter_fields();
+    
+    $where=array();
+    $where[]="1";
+    $where[]="users.uid not in ('0', '1')";
+    
+    if(!empty($filter_fields)){
+       foreach($filter_fields as $k=>$f){
+           $v=claves_gestion_validez_get_filter_value($f);
+           if(!empty($v)){
+                switch($f){
+                    case 'uid':
+                        $where[]="users.name='".$v."'";
+                        break;                   
+                    default:
+                        break;
+                }
+           } 
+       }
+   }
+        
+    $sql="SELECT users.*,
+    (SELECT p.created FROM {users_pass} p WHERE p.uid=users.uid ORDER BY p.created DESC LIMIT 0,1) AS last_created,
+    (SELECT p.is_restart FROM {users_pass} p WHERE p.uid=users.uid ORDER BY p.created DESC LIMIT 0,1) AS is_restart 
+    FROM {users} users
+    WHERE ".implode(" AND ",$where)."
+    ORDER BY ".$field." ".strtoupper($sort);    
+    
+    //print $sql;exit();
+    $res=db_query($sql);
+    $kont=0;
+    while($r=db_fetch_object($res)){
+        $rows[$kont][0]=$r->name;
+        $last_created=$r->created;
+        if(!empty($r->last_created)){
+            $last_created=$r->last_created;
+        }        
+        $rows[$kont][1]='';
+        if(!empty($last_created)){
+            $rows[$kont][1]=date('d-m-Y H:i',$last_created);        
+        }
+        $dias=claves_gestion_get_dias($last_created);
+        $rows[$kont][2]=$dias;
+        //$rows[$kont][3]=claves_get_is_restart_label($r->is_restart);
+        //intelsat-2015
+        $rows[$kont][3]=array('data'=>claves_gestion_validez_get_acciones($r),'style'=>'white-space:nowrap;');
+        //
+        $rows[$kont]['last_created']=$last_created;
+        $rows[$kont]['dias']=$dias;
+        $kont++;
+    }
+        
+    if(!empty($order)){
+        if($order==t('Last Update')){
+            $rows=array_ordenatu($rows,'last_created',$sort,1);
+        }else if($order==t('Days')){
+            $rows=array_ordenatu($rows,'dias',$sort,1);
+        }       
+    }
+    $rows=hontza_unset_array($rows,array('last_created','dias'));
+        
+    $rows=my_set_estrategia_pager($rows, $my_limit);
+    if (count($rows)>0) {
+      $output .= theme('table',$headers,$rows,array('class'=>'table_clave_validez'));
+      $output .= theme('pager', NULL, $my_limit);    
+    }
+    else {
+
+      $output.= '<div id="first-time">' .t('There are no contents'). '</div>';
+    }
+    drupal_set_title(t('Management of Passwords'));
+    //
+    $output=claves_gestion_validez_define_header().$output;
+    
+    return $output;
+}
+function claves_gestion_validez_define_header(){
+    $html=array();
+    //$html[]='<div class="view-header">';
+    //intelsat-2015
+    if(hontza_canal_rss_is_show_volver_gestion()){
+        if(is_super_admin()){
+            $html[]=l(t('Back to management panel'),'gestion',array('attributes'=>array('class'=>'back')));
+        }
+    }    
+    $html[]=claves_gestion_validez_define_filtro();
+    //$html[]='<div>';
+    return implode('',$html);
+}
+function claves_gestion_get_dias($last_time){
+     if(empty($last_time)){
+         return 0;
+     }   
+     $now = time(); // or your date as well
+     $datediff = $now - $last_time;
+     return floor($datediff/(60*60*24));
+}   
+function claves_gestion_validez_define_filtro(){
+    my_add_buscar_js();
+    return drupal_get_form('claves_gestion_validez_filtro_form');    
+}
+function claves_gestion_validez_filtro_form(){
+    $fs_title=t('Search');
+    if(!claves_gestion_validez_is_filter_activated()){
+        $fs_title=t('Filter');
+        $class='file_buscar_fs_vigilancia_class';
+    }else{
+        $fs_title=t('Filter Activated');
+        $class='file_buscar_fs_vigilancia_class fs_search_activated';
+    }
+    //        
+    $form=array();
+    $form['file_buscar_fs']=array('#type'=>'fieldset','#title'=>$fs_title,'#attributes'=>array('id'=>'file_buscar_fs','class'=>$class));
+    $form['file_buscar_fs']['uid']= array(
+	  '#title' => t('User'),
+	  '#type' => 'textfield',
+	  '#maxlength' => 255,
+	  '#autocomplete_path' => 'claves_gestion_validez_user/autocomplete',
+	  '#default_value' => claves_gestion_validez_get_filter_value('uid')
+	);       
+    //
+    $form['file_buscar_fs']['submit']=array('#type'=>'submit','#value'=>t('Search'),'#name'=>'buscar');
+    $form['file_buscar_fs']['reset']=array('#type'=>'submit','#value'=>t('Clean'),'#name'=>'limpiar');
+    return $form;
+}
+function claves_gestion_validez_get_filter_value($f){
+    return hontza_get_gestion_usuarios_filter_value($f,'claves_gestion_validez');
+}
+function claves_gestion_validez_is_filter_activated(){
+            $fields=claves_gestion_validez_define_filter_fields();
+            if(count($fields)>0){
+                foreach($fields as $i=>$f){
+                    if(isset($_SESSION['claves_gestion_validez']['filter'][$f]) && !empty($_SESSION['claves_gestion_validez']['filter'][$f])){
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+}
+function claves_gestion_validez_define_filter_fields(){
+    $filter_fields=array('uid');
+    return $filter_fields;
+}
+function claves_gestion_validez_filtro_form_submit($form_id,&$form){
+    if(isset($form['clicked_button']) && !empty($form['clicked_button'])){
+        $name=$form['clicked_button']['#name'];
+        if(strcmp($name,'limpiar')==0){
+            if(isset($_SESSION['claves_gestion_validez']['filter']) && !empty($_SESSION['claves_gestion_validez']['filter'])){
+                unset($_SESSION['claves_gestion_validez']['filter']);
+            }
+        }else{
+            $_SESSION['claves_gestion_validez']['filter']=array();
+            $fields=claves_gestion_validez_define_filter_fields();
+            if(count($fields)>0){
+                foreach($fields as $i=>$f){
+                    $v=$form['values'][$f];
+                    if(!empty($v)){
+                        $_SESSION['claves_gestion_validez']['filter'][$f]=$v;
+                    }
+                }
+            }
+        }
+    } 
+}
+function claves_gestion_validez_user_autocomplete_callback(){
+    require_once 'sites/all/modules/user/user.pages.inc';
+    $find=arg(2);
+    user_autocomplete($find);
+}
+function claves_is_restart_clave($uid_in=''){
+    global $user;
+    if(!empty($uid_in)){
+        $uid=$uid_in;
+    }else{
+        $uid=$user->uid;
+    }
+    $res=db_query('SELECT * FROM {users_pass} WHERE uid=%d ORDER BY id DESC',$uid);
+    while($row=db_fetch_object($res)){
+        if(isset($row->is_restart) && !empty($row->is_restart)){
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+//intelsat-2015
+function claves_gestion_validez_get_acciones($r){
+    $html=array();
+    if(!claves_is_restart_clave($r->uid)){
+        $html[]=l(my_get_icono_action('clave_restart',t('Restart')),'gestion/claves/restart/'.$r->uid,array('html'=>true,'query'=>drupal_get_destination()));
+    }else{
+        $html[]=my_get_icono_action('sent',t('Sent'));
+    }
+    return implode('&nbsp;',$html);
+}
+//intelsat-2015
+function claves_admin_access(){
+    if(user_access('access claves validez')){
+        return TRUE;
+    }
+    return FALSE;
+}
+//intelsat-2015
+function claves_restart_callback(){
+    global $base_url;
+    $uid=arg(3);
+    $my_user=user_load($uid);
+    $users_pass_row=claves_get_users_pass_last_row($uid);
+    if(isset($users_pass_row->id) && !empty($users_pass_row->id)){
+        claves_update_users_pass_restart($users_pass_row->id,1);
+    }else{
+        claves_insert_users_pass_restart($uid,1,$my_user);
+    }
+    $mail_to=$my_user->mail;
+    $subject=t('The group owner has reset your password');
+    $login_url=$base_url.'/user';
+    $message=t('The group owner has reset your password. Please login and change your password').'<BR><BR>';
+    $message.=l(t('Login'),$login_url,array('absolute'=>TRUE));
+    //intelsat-2016
+    red_copiar_send_mail($mail_to,$subject,$message,'mimemail','');
+    drupal_goto('gestion/claves/validez');
+}    
+function claves_get_users_pass_last_row($uid){
+    $res=db_query('SELECT * FROM {users_pass} WHERE uid=%d ORDER BY id DESC',$uid);
+    while($row=db_fetch_object($res)){
+        return $row;
+    }
+    //
+    $my_result=new stdClass();
+    return $my_result;
+}
+function claves_update_users_pass_restart($users_pass_id,$value){
+    db_query('UPDATE {users_pass} SET is_restart=%d WHERE id=%d',$value,$users_pass_id);
+}
+//intelsat-2015
+function claves_get_is_restart_label($is_restart){
+    if($is_restart){
+        //return t('Yes');
+        return my_get_icono_action('sent',t('Sent'));
+    }
+    return t('No');
+}
+//intelsat-2015
+function claves_insert_users_pass_restart($uid,$value,$my_user_in=''){
+    $my_user='';
+    if(isset($my_user_in->uid) && !empty($my_user_in->uid)){
+        $my_user=$my_user_in;
+    }else{    
+        $my_user=user_load($uid);
+    }
+    db_query('INSERT INTO {users_pass}(uid,pass,created,is_restart) VALUES(%d,"%s",%d,%d)',$uid,$my_user->pass,$my_user->created,$value);
+}
+//intelsat-2015
+function claves_is_restart_clave_diferente($uid,$edit){
+    if(claves_is_restart_clave($uid)){
+        $new_pass=md5($edit['pass']);
+        $users_pass_row=claves_get_users_pass_last_row($uid);
+        if(isset($users_pass_row->id) && !empty($users_pass_row->id)){
+            if($new_pass==$users_pass_row->pass){
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+//intelsat-2015
+function claves_get_vigencia_minima_value_days($field='claves_vigencia_minima',$dias=2){
+    $segundos=24*60*60;
+    $claves_vigencia_minima=$dias*$segundos;    
+    $claves_vigencia_minima_value=variable_get($field,$claves_vigencia_minima);
+    $claves_vigencia_minima_value=$claves_vigencia_minima_value/$segundos;
+    $result=round($claves_vigencia_minima_value,0,PHP_ROUND_HALF_UP);
+    return $result;
+}
+//intelsat-2015
+function claves_get_vigencia_maxima_value_days(){   
+    return claves_get_vigencia_minima_value_days('claves_vigencia_maxima',90);        
+}
+//intelsat-2015
+function claves_gestion_set_days($value_in){
+    $segundos=24*60*60;
+    $result=$segundos*$value_in;
+    return $result;
+}
+//intelsat-2015
+function claves_get_claves_info_html(){
+    $claves_apply_vigencia_minima=variable_get('claves_apply_vigencia_minima',0);
+    $claves_apply_vigencia_maxima=variable_get('claves_apply_vigencia_maxima',0);
+    $claves_apply_num_exclusivas=variable_get('claves_apply_num_exclusivas',0);
+    $claves_apply_maximo_caracteres_username=variable_get('claves_apply_maximo_caracteres_username',0);
+    $claves_apply_pass_len_minima=variable_get('claves_apply_pass_len_minima',0);
+    $claves_apply_is_tres_de_cinco_clases=variable_get('claves_apply_is_tres_de_cinco_clases',0);
+    if($claves_apply_vigencia_minima || $claves_apply_vigencia_maxima || $claves_apply_num_exclusivas || $claves_apply_maximo_caracteres_username
+    || $claves_apply_pass_len_minima || $claves_apply_is_tres_de_cinco_clases){
+        $html=array();
+        //my_add_buscar_js();
+        $html[]='<div style="float:left;width:48%;padding-left:10px;">';
+        $html[]='<fieldset id="file_buscar_fs">';
+        $html[]='<legend>'.t('Password Settings').'</legend>';
+        $html[]='<div class="fieldset-wrapper">';
+        if($claves_apply_vigencia_minima){
+            $claves_vigencia_minima_value=claves_get_vigencia_minima_value_days();
+            $description=t('Default is 2 days. It sets the number of days a user must keep a new password before changing it');
+            $html[]=claves_get_claves_info_item_html('edit-claves-vigencia-minima-wrapper','edit-claves-vigencia-minima',t('Min. period of validity'),$claves_vigencia_minima_value,'claves_vigencia_minima',$description);
+        }
+        if($claves_apply_vigencia_maxima){
+            $claves_vigencia_maxima_value=claves_get_vigencia_maxima_value_days();
+            $description=t('Default is 90 days. It sets the number of days a user can use a password before being required to change it');
+            $html[]=claves_get_claves_info_item_html('edit-claves-vigencia-maxima-wrapper','edit-claves-vigencia-maxima',t('Expiration'),$claves_vigencia_maxima_value,'claves_vigencia_maxima',$description);
+        }
+        if($claves_apply_num_exclusivas){
+            $claves_num_exclusivas=24;
+            $claves_num_exclusivas=variable_get('claves_num_exclusivas',$claves_num_exclusivas);
+            $description=t('Default is 24. It sets the number of different passwords a user must use before using again an old password');
+            $html[]=claves_get_claves_info_item_html('edit-claves-num-exclusivas-wrapper','edit-claves-num-exclusivas',t('Number of different passwords'),$claves_num_exclusivas,'claves_num_exclusivas',$description);
+            
+        }
+        if($claves_apply_pass_len_minima){
+            $claves_pass_len_minima=8;
+            $claves_pass_len_minima=variable_get('claves_pass_len_minima',$claves_pass_len_minima);
+            $description=t('Default is 8. It sets the minimum number of characters of a password');
+            $html[]=claves_get_claves_info_item_html('edit-claves-pass-len-minima-wrapper','edit-claves-pass-len-minima',t('Min. length'),$claves_pass_len_minima,'claves_pass_len_minima',$description);            
+        }
+        if($claves_apply_maximo_caracteres_username){            
+            $claves_maximo_caracteres_username=3;
+            $claves_maximo_caracteres_username=variable_get('claves_maximo_caracteres_username',$claves_maximo_caracteres_username);
+            $description=t('Default is 3. It sets the maximum number of shared characters between userid and password');
+            $html[]=claves_get_claves_info_item_html('edit-claves-maximo-caracteres-username-wrapper','edit-claves-maximo-caracteres-username',t('Max. number of shared characters'),$claves_maximo_caracteres_username,'claves_maximo_caracteres_username',$description);                    
+        }
+        if($claves_apply_is_tres_de_cinco_clases){
+            $html[]='<div id="edit-claves-apply-is-tres-de-cinco-clases-wrapper" class="form-item form-item-checkbox">
+ <label for="edit-claves-apply-is-tres-de-cinco-clases" class="option"><b>'.t('Number of types of characters').'</b></label>
+ <div class="description">'.claves_define_tres_de_cinco_clases_error_msg(1,1).'</div>
+</div>';
+        }
+        $html[]='</div>';
+        $html[]='</fieldset>';
+        $html[]='</div>';
+        $html[]='</div>';
+        return implode('',$html);
+    }
+    return '';
+}
+//intelsat-2015
+function claves_get_claves_info_item_html($edit_claves_vigencia_minima_wrapper,$edit_claves_vigencia_minima,$label,$claves_vigencia_minima_value,$input_name,$description){
+    $result='<div style="float:left;width:95%;"><div id="'.$edit_claves_vigencia_minima_wrapper.'" class="form-item form-item-textfield form-item-required">
+     <label for="'.$edit_claves_vigencia_minima.'" style="margin-left:-10px;">'.$label.': </label>
+     <input type="text" class="form-text required" style="width:100px;margin-left:5px;" value="'.$claves_vigencia_minima_value.'" size="60" readonly="readonly" id="'.$edit_claves_vigencia_minima.'" name="'.$input_name.'" maxlength="128">
+     <div class="description">'.$description.'</div>
+    </div>
+    </div>';
+    return $result;
+}            
