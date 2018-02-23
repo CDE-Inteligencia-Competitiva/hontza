@@ -1,4 +1,0 @@
-// $Id: TODO.txt,v 1.2 2008/01/15 13:19:08 sanduhrs Exp $
-
-* Vcard Import
-* PHOTO support

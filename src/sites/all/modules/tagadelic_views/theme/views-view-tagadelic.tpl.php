@@ -1,1 +1,0 @@
-<div class="tagadelic_views"><?php echo $output;?></div>
