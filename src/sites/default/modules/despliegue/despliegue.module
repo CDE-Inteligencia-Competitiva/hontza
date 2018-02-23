@@ -103,9 +103,8 @@ function despliegue_list_callback($is_array=0) {
       //$order_by=' ORDER BY n.sticky DESC, n.created DESC';
       //$order_by=' ORDER BY n.sticky DESC, n.created ASC';
       //$order_by=' ORDER BY d.peso ASC,n.sticky DESC, n.created ASC';
-      //hemen beheko honekin ondo ikusten da decision. 
-      $order_by=' ORDER BY  n.created ASC';
-      //$order_by=' ORDER BY d.importancia_despliegue ASC,n.sticky DESC, n.created ASC'; nik kendutakoa
+      $order_by=' ORDER BY d.importancia_despliegue ASC,n.sticky DESC, n.created ASC';
+      //
       $sql='SELECT n.nid, n.sticky, n.created
       FROM {node} n
       LEFT JOIN {despliegue} d ON n.nid=d.nid
@@ -685,8 +684,6 @@ function get_despliegue_decision_list($despliegue_nid){
 	$where[]='d.despliegue_nid='.$despliegue_nid;
 	//$sql="SELECT n.*,d.peso,d.despliegue_nid,d.grupo_seguimiento_nid
 	//intelsat-2016
-
-   
         $order_by=" ORDER BY d.peso ASC,n.created ASC";
         //intelsat-2016
         $order_by=decision_inc_get_order_by($order_by);

@@ -613,8 +613,7 @@ function estrategia_create_menu_resumen_preguntas_clave_canales_para_ordenar(){
     $html[]='<li class="alerta_user_menu_li'.$active.'" id="li_resumen_preguntas_clave_canales" style="width:25%;">';
     $html[]=l(t('By Hierarchy'),$url_canales_pregunta,array('attributes'=>array('style'=>$a_style.$add_style)));
     $html[]='</li>';
-
-   $active=estrategia_resumen_preguntas_clave_get_class_active($url_canales_pregunta,'order_importance');//nik kenduta
+    $active=estrategia_resumen_preguntas_clave_get_class_active($url_canales_pregunta,'order_importance');
     $add_style='';
     /*if(!empty($active)){
         $add_style='padding-top:0px;';
@@ -633,8 +632,7 @@ function estrategia_create_menu_resumen_preguntas_clave_canales_para_ordenar(){
     $html[]=l(t('By Hierarchy'),$url_pregunta_canales,array('attributes'=>array('style'=>$a_style.$add_style)));
     $html[]='</li>';
     
-
-    $active=estrategia_resumen_preguntas_clave_get_class_active($url_pregunta_canales,'order_importance');//nik kenduta
+    $active=estrategia_resumen_preguntas_clave_get_class_active($url_pregunta_canales,'order_importance');
     $add_style='';
     /*if(!empty($active)){
         $add_style='padding-top:0px;';
@@ -1151,7 +1149,6 @@ function estrategia_crear_decision_by_linea($despliegue,$values){
                         $f=$despliegue->nid;
                         $node->$f=1;
                         node_save($node);
-
                         estrategia_crear_informacion_by_linea($node,$values);
                     }else{
                         estrategia_crear_informacion_by_linea($decision,$values);
@@ -1189,15 +1186,13 @@ function estrategia_crear_informacion_by_linea($decision,$values){
                         }
                         $f=$decision->nid;
                         $node->$f=1;
-                        node_save($node); 
-                        sleep(1);//ea konpontzen duen                   
+                        node_save($node);                    
                     }/*else{
                         print 'existe informacion===='.$title;exit();
                     }*/
                 }    
     }    
 }
-
 function estrategia_is_empty_linea($data_in){
     $num_values=estrategia_importar_define_num_values();    
     $data=array_slice($data_in,0,$num_values);
