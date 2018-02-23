@@ -1,0 +1,609 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  _template.php: n/a
+#  help-popup-js.tpl.php: n/a
+#  templates/overrides/node-debate.tpl.php: n/a
+#  templates/overrides/node-decision.tpl.php: n/a
+#  templates/overrides/node-despliegue.tpl.php: n/a
+#  templates/overrides/node-estrategia.tpl.php: n/a
+#  templates/overrides/node-idea.tpl.php: n/a
+#  templates/overrides/node-informacion.tpl.php: n/a
+#  templates/overrides/node-oportunidad.tpl.php: n/a
+#  templates/overrides/node-proyecto.tpl.php: n/a
+#  templates/overrides/node-wiki.tpl.php: n/a
+#  template.php: n/a
+#  theme-settings.php: n/a
+#  buho.info: n/a
+#  functions/theme-overrides.inc: n/a
+#  preprocess/preprocess-comment-wrapper.inc: n/a
+#  preprocess/preprocess-comment.inc: n/a
+#  preprocess/preprocess-node.inc: n/a
+#  templates/overrides/_node-proyecto.tpl.php: n/a
+#  node.tpl.php,v 1.5 2010/06/06 09:51:29 
+#  templates/overrides/node-canal_de_supercanal.tpl.php: n/a
+#  templates/overrides/node-canal_de_yql.tpl.php: n/a
+#  templates/overrides/node-fuentedapper.tpl.php: n/a
+#  templates/overrides/node-supercanal.tpl.php: n/a
+#  templates/overrides/evaluacion-proyecto.tpl.php: n/a
+#  templates/overrides/comment.tpl.php: n/a
+#  templates/overrides/page.tpl.php: n/a
+#  templates/overrides/page.header.inc: n/a
+#  templates/overrides/user-profile.tpl.php: n/a
+#  views-more.tpl.php,v 1.2 2008/04/11 08:46:26 merlinofchaos
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2012-07-10 12:37+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: _template.php:125
+msgid "Volver a panel de gesti�n"
+msgstr ""
+
+#: help-popup-js.tpl.php:20
+msgid "Cerrar ventana"
+msgstr ""
+
+#: help-popup-js.tpl.php:25 templates/overrides/node-debate.tpl.php:49;119 templates/overrides/node-decision.tpl.php:60;172 templates/overrides/node-despliegue.tpl.php:61;174 templates/overrides/node-estrategia.tpl.php:62;171 templates/overrides/node-idea.tpl.php:130;403 templates/overrides/node-informacion.tpl.php:69;203 templates/overrides/node-oportunidad.tpl.php:91;384 templates/overrides/node-proyecto.tpl.php:72;397 templates/overrides/node-wiki.tpl.php:49;119
+msgid "Editar"
+msgstr ""
+
+#: help-popup-js.tpl.php:27
+msgid "A�adir"
+msgstr ""
+
+#: template.php:127
+msgid "Volver a panel de gestión"
+msgstr ""
+
+#: template.php:404
+msgid "@current of @max"
+msgstr ""
+
+#: template.php:428;448
+msgid "Fuentes del tipo"
+msgstr ""
+
+#: template.php:431
+msgid "Tipos de Fuentes"
+msgstr ""
+
+#: template.php:436
+msgid "Edit Tipo de fuente"
+msgstr ""
+
+#: template.php:454
+msgid "Listado de Usuarios"
+msgstr ""
+
+#: template.php:456
+msgid "Listado de Usuarios de"
+msgstr ""
+
+#: theme-settings.php:59
+msgid "Base Font Size"
+msgstr ""
+
+#: theme-settings.php:62
+msgid "Select the base font size for the theme."
+msgstr ""
+
+#: theme-settings.php:68
+msgid "Base Font"
+msgstr ""
+
+#: theme-settings.php:71
+msgid "Select the base font for the theme."
+msgstr ""
+
+#: theme-settings.php:77
+msgid "Headings Font"
+msgstr ""
+
+#: theme-settings.php:80
+msgid "Select the base font for the heading (block, page titles and heading tags)."
+msgstr ""
+
+#: theme-settings.php:150
+msgid "Verdana"
+msgstr ""
+
+#: theme-settings.php:151
+msgid "Helvetica, Arial"
+msgstr ""
+
+#: theme-settings.php:152
+msgid "Lucida Grande, Lucida Sans Unicode"
+msgstr ""
+
+#: theme-settings.php:153
+msgid "Geneva"
+msgstr ""
+
+#: theme-settings.php:154
+msgid "Tahoma"
+msgstr ""
+
+#: theme-settings.php:155
+msgid "Century Gothic"
+msgstr ""
+
+#: theme-settings.php:158
+msgid "Georgia"
+msgstr ""
+
+#: theme-settings.php:159
+msgid "Palatino Linotype, Book Antiqua"
+msgstr ""
+
+#: theme-settings.php:160
+msgid "Times New Roman"
+msgstr ""
+
+#: buho.info:0
+msgid "Buho"
+msgstr ""
+
+#: buho.info:0
+msgid "Sky is a center aligned, fixed or fluid theme that supports either all sidebar combinations (left, right, both, none)"
+msgstr ""
+
+#: buho.info:0
+msgid "Left sidebar"
+msgstr ""
+
+#: buho.info:0
+msgid "Right sidebar"
+msgstr ""
+
+#: buho.info:0
+msgid "Home Centro"
+msgstr ""
+
+#: buho.info:0
+msgid "Home left"
+msgstr ""
+
+#: buho.info:0
+msgid "Home right"
+msgstr ""
+
+#: buho.info:0
+msgid "Menu usuario"
+msgstr ""
+
+#: buho.info:0
+msgid "Menu top"
+msgstr ""
+
+#: buho.info:0
+msgid "Nombre del grupo"
+msgstr ""
+
+#: buho.info:0
+msgid "Busqueda de grupo"
+msgstr ""
+
+#: buho.info:0
+msgid "Content top"
+msgstr ""
+
+#: buho.info:0
+msgid "Content bottom"
+msgstr ""
+
+#: buho.info:0
+msgid "Content footer"
+msgstr ""
+
+#: functions/theme-overrides.inc:37
+msgid "Subscribe to this feed"
+msgstr ""
+
+#: functions/theme-overrides.inc:39
+msgid "Syndicate content"
+msgstr ""
+
+#: functions/theme-overrides.inc:153
+msgid "« First"
+msgstr ""
+
+#: functions/theme-overrides.inc:154
+msgid "‹ Previous"
+msgstr ""
+
+#: functions/theme-overrides.inc:155
+msgid "Next ›"
+msgstr ""
+
+#: functions/theme-overrides.inc:156
+msgid "Last »"
+msgstr ""
+
+#: functions/theme-overrides.inc:435
+msgid "<a href=\"@link\" title=\"@title\">more</a>"
+msgstr ""
+
+#: (duplicate) functions/theme-overrides.inc:406 
+msgid "This field is required."
+msgstr ""
+
+#: (duplicate) functions/theme-overrides.inc:411 ;414 
+msgid "!title: !required"
+msgstr ""
+
+#: preprocess/preprocess-comment-wrapper.inc:33
+msgid "Comments"
+msgstr ""
+
+#: preprocess/preprocess-comment-wrapper.inc:37
+msgid "comments posted"
+msgstr ""
+
+#: preprocess/preprocess-comment-wrapper.inc:40
+msgid "comment posted"
+msgstr ""
+
+#: preprocess/preprocess-comment.inc:50 preprocess/preprocess-node.inc:74
+msgid "<abbr class=\"created\" title=\"!microdate\">@date</abbr>"
+msgstr ""
+
+#: preprocess/preprocess-comment.inc:58
+msgid "Copy comment link"
+msgstr ""
+
+#: preprocess/preprocess-comment.inc:67
+msgid "Grab this comment's link"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:37;389 templates/overrides/node-decision.tpl.php:64;176 templates/overrides/node-despliegue.tpl.php:65;178 templates/overrides/node-estrategia.tpl.php:66;175 templates/overrides/node-idea.tpl.php:134;406 templates/overrides/node-informacion.tpl.php:73;208 templates/overrides/node-item.tpl.php:305;492 templates/overrides/node-noticia.tpl.php:90;255 templates/overrides/node-oportunidad.tpl.php:95;387 templates/overrides/node-proyecto.tpl.php:76;401
+msgid "Comentar"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:42;394 templates/overrides/node-decision.tpl.php:69;181 templates/overrides/node-despliegue.tpl.php:70;183 templates/overrides/node-estrategia.tpl.php:71;180 templates/overrides/node-idea.tpl.php:141;413 templates/overrides/node-informacion.tpl.php:78;213 templates/overrides/node-item.tpl.php:155;351;542 templates/overrides/node-noticia.tpl.php:130;303 templates/overrides/node-oportunidad.tpl.php:100;392 templates/overrides/node-proyecto.tpl.php:81;406
+msgid "Borrar"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:67 templates/overrides/node-canal_de_supercanal.tpl.php:20 templates/overrides/node-canal_de_yql.tpl.php:19 templates/overrides/node-decision.tpl.php:99 templates/overrides/node-despliegue.tpl.php:100 templates/overrides/node-estrategia.tpl.php:101 templates/overrides/node-fuentedapper.tpl.php:79 templates/overrides/node-idea.tpl.php:205 templates/overrides/node-informacion.tpl.php:103 templates/overrides/node-oportunidad.tpl.php:154 templates/overrides/node-proyecto.tpl.php:106 templates/overrides/node-supercanal.tpl.php:78
+msgid "Fecha de creación"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:78 templates/overrides/node-proyecto.tpl.php:117
+msgid "Estado del proyecto"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:91 templates/overrides/node-decision.tpl.php:112 templates/overrides/node-despliegue.tpl.php:113 templates/overrides/node-estrategia.tpl.php:114 templates/overrides/node-idea.tpl.php:233 templates/overrides/node-informacion.tpl.php:116 templates/overrides/node-oportunidad.tpl.php:167 templates/overrides/node-proyecto.tpl.php:130
+msgid "Argumentacion"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:104 templates/overrides/node-proyecto.tpl.php:164
+msgid "Acronimo"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:115 templates/overrides/node-proyecto.tpl.php:175
+msgid "Imagen o logo"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:128
+msgid "Fases y duracion estimada del proyecto"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:139
+msgid "Conocimiento o Experiencia disponible"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:150
+msgid "Conocimiento o Experiencia necesaria"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:161
+msgid "Tipo"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:172
+msgid "Numero de socios necesarios"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:183 templates/overrides/node-proyecto.tpl.php:258
+msgid "Socios involucrados"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:194 templates/overrides/node-proyecto.tpl.php:269
+msgid "Socios contactados"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:205 templates/overrides/node-proyecto.tpl.php:280
+msgid "Socios potenciales"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:216
+msgid "Tipo2"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:227
+msgid "Numero de validadores"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:235
+msgid "Evaluacion de ideas/teconologias/mercados"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:241 templates/overrides/evaluacion-proyecto.tpl.php:8
+msgid "Nivel de accesibilidad de la tecnologia"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:253 templates/overrides/evaluacion-proyecto.tpl.php:22
+msgid "Nivel de riesgo/complejidad"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:265 templates/overrides/evaluacion-proyecto.tpl.php:35
+msgid "Nivel de inversiones"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:277 templates/overrides/evaluacion-proyecto.tpl.php:49
+msgid "Potencial de mercado"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:289 templates/overrides/evaluacion-proyecto.tpl.php:63
+msgid "Nivel de impacto en el negocio"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:300
+msgid "Otros parametros para evaluar ideas"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:306
+msgid "Alineacion con objetivos"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:318
+msgid "Impacto/alcance en el negocio"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:330
+msgid "Nivel de Presupuesto_complejidad"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:342 templates/overrides/evaluacion-proyecto.tpl.php:77
+msgid "Rapidez de ejecucion"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:356
+msgid "Reto al que responde"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:369
+msgid "Plazo del reto"
+msgstr ""
+
+#: templates/overrides/_node-proyecto.tpl.php:380 templates/overrides/node-debate.tpl.php:103 templates/overrides/node-decision.tpl.php:163 templates/overrides/node-despliegue.tpl.php:165 templates/overrides/node-estrategia.tpl.php:162 templates/overrides/node-idea.tpl.php:393 templates/overrides/node-informacion.tpl.php:194 templates/overrides/node-oportunidad.tpl.php:374 templates/overrides/node-proyecto.tpl.php:387 templates/overrides/node-wiki.tpl.php:103
+msgid "Ficheros adjuntos"
+msgstr ""
+
+#: templates/overrides/comment.tpl.php:41
+msgid "Posted by !author on !date"
+msgstr ""
+
+#: templates/overrides/evaluacion-proyecto.tpl.php:2 templates/overrides/node-oportunidad.tpl.php:298
+msgid "Evaluación"
+msgstr ""
+
+#: templates/overrides/evaluacion-proyecto.tpl.php:89 templates/overrides/node-idea.tpl.php:194;271 templates/overrides/node-oportunidad.tpl.php:205
+msgid "Puntuación total"
+msgstr ""
+
+#: templates/overrides/node-canal_de_supercanal.tpl.php:31 templates/overrides/node-canal_de_yql.tpl.php:30 templates/overrides/node-fuentedapper.tpl.php:90 templates/overrides/node-supercanal.tpl.php:89
+msgid "Clasificaciones"
+msgstr ""
+
+#: templates/overrides/node-canal_de_supercanal.tpl.php:44 templates/overrides/node-canal_de_yql.tpl.php:43
+msgid "Tipo de fuente"
+msgstr ""
+
+#: templates/overrides/node-canal_de_supercanal.tpl.php:57 templates/overrides/node-canal_de_yql.tpl.php:56
+msgid "Responsable de filtrado"
+msgstr ""
+
+#: templates/overrides/node-canal_de_supercanal.tpl.php:70 templates/overrides/node-canal_de_yql.tpl.php:68
+msgid "Nombre de la fuente"
+msgstr ""
+
+#: templates/overrides/node-debate.tpl.php:43;45;113;115 templates/overrides/node-wiki.tpl.php:43;45;113;115
+msgid "Origen"
+msgstr ""
+
+#: templates/overrides/node-debate.tpl.php:55;125 templates/overrides/node-idea.tpl.php:137;409 templates/overrides/node-item.tpl.php:122;127;315;506;514 templates/overrides/node-wiki.tpl.php:55;125
+msgid "Etiquetar"
+msgstr ""
+
+#: templates/overrides/node-decision.tpl.php:37;127
+msgid "Valor de la Decisión"
+msgstr ""
+
+#: templates/overrides/node-decision.tpl.php:43;138 templates/overrides/node-despliegue.tpl.php:44;137 templates/overrides/node-estrategia.tpl.php:44;138 templates/overrides/node-informacion.tpl.php:57;166
+msgid "Grupo de Trabajo"
+msgstr ""
+
+#: templates/overrides/node-decision.tpl.php:49;152 templates/overrides/node-despliegue.tpl.php:50;150 templates/overrides/node-estrategia.tpl.php:50;149 templates/overrides/node-idea.tpl.php:325 templates/overrides/node-oportunidad.tpl.php:361 templates/overrides/node-proyecto.tpl.php:338
+msgid "Fecha de control"
+msgstr ""
+
+#: templates/overrides/node-decision.tpl.php:74;186
+msgid "Añadir Información"
+msgstr ""
+
+#: templates/overrides/node-despliegue.tpl.php:38;126
+msgid "Valor del Subreto"
+msgstr ""
+
+#: templates/overrides/node-despliegue.tpl.php:75;188
+msgid "Añadir Decisión"
+msgstr ""
+
+#: templates/overrides/node-estrategia.tpl.php:38;127
+msgid "Valor del Reto"
+msgstr ""
+
+#: templates/overrides/node-estrategia.tpl.php:76;185
+msgid "Añadir Subreto"
+msgstr ""
+
+#: templates/overrides/node-fuentedapper.tpl.php:107 templates/overrides/node-supercanal.tpl.php:106
+msgid "Resumen"
+msgstr ""
+
+#: templates/overrides/node-fuentedapper.tpl.php:120 templates/overrides/node-supercanal.tpl.php:119
+msgid "Fuente"
+msgstr ""
+
+#: templates/overrides/node-fuentedapper.tpl.php:135
+msgid "extraArgs"
+msgstr ""
+
+#: templates/overrides/node-fuentedapper.tpl.php:154 templates/overrides/node-supercanal.tpl.php:134
+msgid "Argumentos"
+msgstr ""
+
+#: templates/overrides/node-fuentedapper.tpl.php:173 templates/overrides/node-supercanal.tpl.php:154
+msgid "Descripción de los argumentos"
+msgstr ""
+
+#: templates/overrides/node-fuentedapper.tpl.php:192 templates/overrides/node-supercanal.tpl.php:173
+msgid "Grupos"
+msgstr ""
+
+#: templates/overrides/node-idea.tpl.php:43;374 templates/overrides/node-oportunidad.tpl.php:41;216 templates/overrides/node-proyecto.tpl.php:42;349
+msgid "Subgrupo"
+msgstr ""
+
+#: templates/overrides/node-idea.tpl.php:49;336 templates/overrides/node-oportunidad.tpl.php:47;235 templates/overrides/node-proyecto.tpl.php:48;368
+msgid "Invitados"
+msgstr ""
+
+#: templates/overrides/node-idea.tpl.php:55;355 templates/overrides/node-oportunidad.tpl.php:53;254
+msgid "Adheridos"
+msgstr ""
+
+#: templates/overrides/node-idea.tpl.php:64;216 templates/overrides/node-oportunidad.tpl.php:59;273 templates/overrides/node-proyecto.tpl.php:54;143
+msgid "Categorías temáticas"
+msgstr ""
+
+#: templates/overrides/node-idea.tpl.php:69;221 templates/overrides/node-oportunidad.tpl.php:278 templates/overrides/node-proyecto.tpl.php:148
+msgid "Categoria indefinida"
+msgstr ""
+
+#: templates/overrides/node-idea.tpl.php:114;283
+msgid "Etiquetas"
+msgstr ""
+
+#: templates/overrides/node-informacion.tpl.php:45;129
+msgid "Valor de la Información"
+msgstr ""
+
+#: templates/overrides/node-informacion.tpl.php:51;142
+msgid "Accesibilidad de la Información"
+msgstr ""
+
+#: templates/overrides/node-informacion.tpl.php:155
+msgid "Puntuacion total"
+msgstr ""
+
+#: templates/overrides/node-item.tpl.php:96;96;98;98;204;204;206;206;292;292;294;294;478;478;480;480
+msgid "Web"
+msgstr ""
+
+#: templates/overrides/node-item.tpl.php:138;522 templates/overrides/node-noticia.tpl.php:110
+msgid "Debatir"
+msgstr ""
+
+#: templates/overrides/node-item.tpl.php:145;529 templates/overrides/node-noticia.tpl.php:120
+msgid "Colaborar"
+msgstr ""
+
+#: templates/overrides/node-item.tpl.php:160;259;357;548 templates/overrides/node-noticia.tpl.php:135;308
+msgid "Idea"
+msgstr ""
+
+#: templates/overrides/node-noticia.tpl.php:159;286
+msgid "!num_coment comentario"
+msgstr ""
+
+#: templates/overrides/node-noticia.tpl.php:165;292
+msgid "!num_coment comentarios"
+msgstr ""
+
+#: templates/overrides/node-oportunidad.tpl.php:288
+msgid "Beneficios que se consiguen/Riesgos que se corren"
+msgstr ""
+
+#: templates/overrides/node-oportunidad.tpl.php:318
+msgid "Evaluación de la oportunidad"
+msgstr ""
+
+#: templates/overrides/node-oportunidad.tpl.php:332
+msgid "Aplicación al negocio"
+msgstr ""
+
+#: templates/overrides/node-proyecto.tpl.php:188
+msgid "Fases"
+msgstr ""
+
+#: templates/overrides/node-proyecto.tpl.php:199
+msgid "Duración estimada del proyecto"
+msgstr ""
+
+#: templates/overrides/node-proyecto.tpl.php:210
+msgid "Conocimiento disponible"
+msgstr ""
+
+#: templates/overrides/node-proyecto.tpl.php:221
+msgid "Conocimiento necesario"
+msgstr ""
+
+#: templates/overrides/page.tpl.php:85 templates/overrides/page.header.inc:79
+msgid "Primary links"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:58;60
+msgid "Empresa"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:63
+msgid "Datos personales"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:65
+msgid "Nombre"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:67
+msgid "Apellidos"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:70
+msgid "History"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:73
+msgid "Groups"
+msgstr ""
+
+#: templates/overrides/user-profile.tpl.php:80
+msgid "Member for"
+msgstr ""
+
+#: templates/overrides/views-more.tpl.php:16
+msgid "more"
+msgstr ""
+

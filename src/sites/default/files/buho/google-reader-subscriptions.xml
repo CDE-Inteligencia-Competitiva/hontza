@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+    <head>
+        <title>Suscripciones de Ascensores en Google Reader</title>
+    </head>
+    <body>
+        <outline text="(título desconocido)"
+            title="(título desconocido)" type="rss"
+            xmlUrl="https://dl-web.dropbox.com/get/Public/directorcomercial.xml?w=c5f021ce" htmlUrl="http://www.google.com/reader/view/feed%2Fhttps%3A%2F%2Fdl-web.dropbox.com%2Fget%2FPublic%2Fdirectorcomercial.xml%3Fw%3Dc5f021ce"/>
+        <outline text="(título desconocido)"
+            title="(título desconocido)" type="rss"
+            xmlUrl="https://dl-web.dropbox.com/get/Public/comercial.xml?w=6923b0f6" htmlUrl="http://www.google.com/reader/view/feed%2Fhttps%3A%2F%2Fdl-web.dropbox.com%2Fget%2FPublic%2Fcomercial.xml%3Fw%3D6923b0f6"/>
+        <outline text="(título desconocido)"
+            title="(título desconocido)" type="rss"
+            xmlUrl="https://dl-web.dropbox.com/get/Public/directorcomercial.rss?w=d68c555e" htmlUrl="http://www.google.com/reader/view/feed%2Fhttps%3A%2F%2Fdl-web.dropbox.com%2Fget%2FPublic%2Fdirectorcomercial.rss%3Fw%3Dd68c555e"/>
+        <outline text="ascensores" title="ascensores" type="rss"
+            xmlUrl="http://www.feedrinse.com/services/channel/?chanurl=83125b9999b15f9fc9d3f2c127c3184f" htmlUrl="http://www.feedrinse.com/"/>
+        <outline text="ascensoreslift@gmail.com"
+            title="ascensoreslift@gmail.com" type="rss"
+            xmlUrl="https://feedflip.appspot.com/atom/PV0p1A7flJrBta5rswf3800961d54086d878eavYhZ41jjQV66YoLB1GvlKLMNbU?a=hfL0p7lJWyo0Jv4AWLLrOqM73xuWMQAedc9e616b1e7b23" htmlUrl="http://mail.google.com/mail"/>
+        <outline text="ascensoreslift@gmail.com - unread"
+            title="ascensoreslift@gmail.com - unread" type="rss"
+            xmlUrl="https://feedflip.appspot.com/rss/PV0p1A7flJrBta5rswf3800961d54086d878eavYhZ41jjQV66YoLB1GvlKLMNbU?a=DrCgPj0TMzuDEeyaYGwyFrFCUsCoAkXow698ac53195007d6&amp;f=unread" htmlUrl="http://mail.google.com/mail"/>
+        <outline text="Best content in SEO/SEM | Diigo - Groups"
+            title="Best content in SEO/SEM | Diigo - Groups" type="rss"
+            xmlUrl="http://groups.diigo.com/group/seo-sem/rss" htmlUrl="http://groups.diigo.com/group/seo-sem"/>
+        <outline text="CINCODIAS.com - RSS - Última hora"
+            title="CINCODIAS.com - RSS - Última hora" type="rss"
+            xmlUrl="http://www.cincodias.com/rss/feed.html?feedId=17029" htmlUrl="http://www.cincodias.com"/>
+        <outline text="competencia" title="competencia" type="rss"
+            xmlUrl="http://www.feedrinse.com/services/channel/?chanurl=b66c0a6897c2dced60bcbc72882026a6" htmlUrl="http://www.feedrinse.com/"/>
+        <outline
+            text="crisis |41431 resultados de crisis en diariovasco.com"
+            title="crisis |41431 resultados de crisis en diariovasco.com"
+            type="rss"
+            xmlUrl="http://feedity.com/diariovasco-com/UFpVU1pR.rss" htmlUrl="http://www.diariovasco.com/hemeroteca/?qAND=crisis"/>
+        <outline
+            text="crisis |41431 resultados de crisis en diariovasco.com"
+            title="crisis |41431 resultados de crisis en diariovasco.com"
+            type="rss"
+            xmlUrl="http://feedity.com/diariovasco-com/UFpVU1pS.rss" htmlUrl="http://www.diariovasco.com/hemeroteca/?qAND=crisis"/>
+        <outline text="Cultura // elmundo.es"
+            title="Cultura // elmundo.es" type="rss"
+            xmlUrl="http://elmundo.feedsportal.com/elmundo/rss/cultura.xml" htmlUrl="http://www.elmundo.es"/>
+        <outline text="Delicious/ascensoreslift"
+            title="Delicious/ascensoreslift" type="rss"
+            xmlUrl="http://feeds.delicious.com/v2/rss/ascensoreslift" htmlUrl="http://www.delicious.com/ascensoreslift"/>
+        <outline text="Delicious/tag/elevators"
+            title="Delicious/tag/elevators" type="rss"
+            xmlUrl="http://feeds.delicious.com/v2/rss/tag/elevators" htmlUrl="http://www.delicious.com/tag/elevators"/>
+        <outline text="Delicious/tag/lifts+elevators"
+            title="Delicious/tag/lifts+elevators" type="rss"
+            xmlUrl="http://feeds.delicious.com/v2/rss/tag/lifts+elevators" htmlUrl="http://www.delicious.com/tag/lifts+elevators"/>
+        <outline text="Delicious/xkortazar" title="Delicious/xkortazar"
+            type="rss"
+            xmlUrl="http://feeds.delicious.com/v2/rss/xkortazar" htmlUrl="http://www.delicious.com/xkortazar"/>
+        <outline text="Delicious/xkortazar/software"
+            title="Delicious/xkortazar/software" type="rss"
+            xmlUrl="http://feeds.delicious.com/v2/rss/xkortazar/software" htmlUrl="http://www.delicious.com/xkortazar/software"/>
+        <outline text="Delicious/xkortazar/vigilancia"
+            title="Delicious/xkortazar/vigilancia" type="rss"
+            xmlUrl="http://feeds.delicious.com/v2/rss/xkortazar/vigilancia" htmlUrl="http://www.delicious.com/xkortazar/vigilancia"/>
+        <outline text="diariovasco.com - Gente"
+            title="diariovasco.com - Gente" type="rss"
+            xmlUrl="http://www.diariovasco.com/rss/feeds/gente.xml" htmlUrl="http://www.diariovasco.com"/>
+        <outline text="Noticias sobre Baloncesto"
+            title="Noticias sobre Baloncesto" type="rss"
+            xmlUrl="http://elpais.com/tag/rss/baloncesto/a/" htmlUrl="http://elpais.com/tag/baloncesto/a"/>
+        <outline text="Noticias sobre Educación"
+            title="Noticias sobre Educación" type="rss"
+            xmlUrl="http://elpais.com/tag/rss/educacion/a/" htmlUrl="http://elpais.com/tag/educacion/a"/>
+        <outline text="Noticias sobre Fútbol"
+            title="Noticias sobre Fútbol" type="rss"
+            xmlUrl="http://elpais.com/tag/rss/futbol/a/" htmlUrl="http://elpais.com/tag/futbol/a"/>
+        <outline text="Portada de EL PAÍS" title="Portada de EL PAÍS"
+            type="rss"
+            xmlUrl="http://ep00.epimg.net/rss/elpais/portada.xml" htmlUrl="http://economia.elpais.com/rss/elpais/portada.xml"/>
+        <outline text="Portada de Internacional | EL PAÍS"
+            title="Portada de Internacional | EL PAÍS" type="rss"
+            xmlUrl="http://ep00.epimg.net/rss/internacional/portada.xml" htmlUrl="http://internacional.elpais.com/rss/internacional/portada.xml"/>
+        <outline text="WebSite-Watcher" title="WebSite-Watcher"
+            type="rss"
+            xmlUrl="http://dl.dropbox.com/u/2395237/comercial.xml" htmlUrl="http://www.cde.es"/>
+    </body>
+</opml>

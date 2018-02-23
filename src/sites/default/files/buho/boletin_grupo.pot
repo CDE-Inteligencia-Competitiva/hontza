@@ -1,0 +1,249 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  boletin_grupo.module: n/a
+#  boletin_grupo.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2012-07-10 12:39+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: boletin_grupo.module:48
+msgid "Editar Boletin del Grupo"
+msgstr ""
+
+#: boletin_grupo.module:56
+msgid "Ver Boletin del Grupo por web"
+msgstr ""
+
+#: boletin_grupo.module:61
+msgid "Apuntarse/Desapuntarse al boletín del grupo"
+msgstr ""
+
+#: boletin_grupo.module:107
+msgid "Boletin Grupo type 1"
+msgstr ""
+
+#: boletin_grupo.module:109
+msgid "An Boletin Grupo type with a few fields."
+msgstr ""
+
+#: boletin_grupo.module:111
+msgid "Boletin Grupo Type 1 Title"
+msgstr ""
+
+#: boletin_grupo.module:113
+msgid "Boletin Grupo Type 1 Body"
+msgstr ""
+
+#: boletin_grupo.module:197
+msgid "Color"
+msgstr ""
+
+#: boletin_grupo.module:202
+msgid "Quantity"
+msgstr ""
+
+#: boletin_grupo.module:223
+msgid "The quantity must be a number."
+msgstr ""
+
+#: boletin_grupo.module:331
+msgid "The order is for %quantity %color items."
+msgstr ""
+
+#: boletin_grupo.module:344
+msgid "Gestionar Boletín del Grupo"
+msgstr ""
+
+#: boletin_grupo.module:362;373
+msgid "Boletín del Grupo"
+msgstr ""
+
+#: boletin_grupo.module:383
+msgid "Editar"
+msgstr ""
+
+#: boletin_grupo.module:385
+msgid "Web"
+msgstr ""
+
+#: boletin_grupo.module:391;393
+msgid "Introduccion"
+msgstr ""
+
+#: boletin_grupo.module:400;402
+msgid "Despedida"
+msgstr ""
+
+#: boletin_grupo.module:408
+msgid "No recibir"
+msgstr ""
+
+#: boletin_grupo.module:433
+msgid "Receptores del Boletín"
+msgstr ""
+
+#: boletin_grupo.module:438
+msgid "Todos los usuarios"
+msgstr ""
+
+#: boletin_grupo.module:447
+msgid "Usuarios"
+msgstr ""
+
+#: boletin_grupo.module:491
+msgid "Método y Frecuencia"
+msgstr ""
+
+#: boletin_grupo.module:497
+msgid "Seleccionar método de envío"
+msgstr ""
+
+#: boletin_grupo.module:504;825
+msgid "Frecuencia"
+msgstr ""
+
+#: boletin_grupo.module:512;826
+msgid "Hora"
+msgstr ""
+
+#: boletin_grupo.module:522;1005
+msgid "Guardar"
+msgstr ""
+
+#: boletin_grupo.module:527;1016
+msgid "Cancel"
+msgstr ""
+
+#: boletin_grupo.module:687
+msgid "Contenidos"
+msgstr ""
+
+#: boletin_grupo.module:711
+msgid "Todas las informaciones que se validan"
+msgstr ""
+
+#: boletin_grupo.module:714
+msgid "Todas las noticias de usuario"
+msgstr ""
+
+#: boletin_grupo.module:717
+msgid "Todas las informaciones que se comentan"
+msgstr ""
+
+#: boletin_grupo.module:720
+msgid "Todas las entradas en los foros y wikis"
+msgstr ""
+
+#: boletin_grupo.module:723
+msgid "Todas las ideas,oportunidades y proyectos que van saliendo"
+msgstr ""
+
+#: boletin_grupo.module:743
+msgid "Probar boletín"
+msgstr ""
+
+#: boletin_grupo.module:752
+msgid "Límites"
+msgstr ""
+
+#: boletin_grupo.module:762
+msgid "Límite de "
+msgstr ""
+
+#: boletin_grupo.module:769
+msgid "Límite de Noticias Destacadas"
+msgstr ""
+
+#: boletin_grupo.module:789;905
+msgid "Volver"
+msgstr ""
+
+#: boletin_grupo.module:823
+msgid "Grupo"
+msgstr ""
+
+#: boletin_grupo.module:824
+msgid "Método"
+msgstr ""
+
+#: boletin_grupo.module:827
+msgid "Creado"
+msgstr ""
+
+#: boletin_grupo.module:828
+msgid "Acepto Recibir"
+msgstr ""
+
+#: boletin_grupo.module:862
+msgid "No existen boletines grupo para este usuario"
+msgstr ""
+
+#: boletin_grupo.module:992
+msgid "Doy permiso para recibir el Boletín de Grupo"
+msgstr ""
+
+#: boletin_grupo.module:1074
+msgid "Sí"
+msgstr ""
+
+#: boletin_grupo.module:1076
+msgid "No"
+msgstr ""
+
+#: boletin_grupo.module:151
+msgid "create Boletin Grupo"
+msgstr ""
+
+#: boletin_grupo.module:152
+msgid "delete own Boletin Grupo"
+msgstr ""
+
+#: boletin_grupo.module:153
+msgid "delete any Boletin Grupo"
+msgstr ""
+
+#: boletin_grupo.module:154
+msgid "edit own Boletin Grupo"
+msgstr ""
+
+#: boletin_grupo.module:155
+msgid "edit any Boletin Grupo"
+msgstr ""
+
+#: boletin_grupo.module:157
+msgid "Ver boletin_grupo_my_edit_form"
+msgstr ""
+
+#: boletin_grupo.module:158
+msgid "Ver gestion_boletin_grupo_web"
+msgstr ""
+
+#: boletin_grupo.module:159
+msgid "Ver boletin_grupo_my_no_recibir"
+msgstr ""
+
+#: boletin_grupo.module:43 boletin_grupo.info:0
+msgid "Boletin Grupo"
+msgstr ""
+
+#: boletin_grupo.info:0
+msgid "Demonstrates how to define content types."
+msgstr ""
+
+#: boletin_grupo.info:0
+msgid "Hontza"
+msgstr ""
+
