@@ -4,7 +4,9 @@
  *
  */
 
-require_once '/var/www/hontza3/includes/bootstrap.inc';
+//require_once '/var/www/hontza3/includes/bootstrap.inc';
+//makina virtualantzat
+require_once '/var/www/html/hontza/includes/bootstrap.inc';
 
 // Get URL parameters.
 $nid   = $_GET['nid'];
@@ -72,14 +74,18 @@ if($nid=='save_current_search'){
   $node->body=drupal_get_form('hontza_grupos_mi_grupo_contact_form',$_REQUEST['uid'],$_REQUEST['destination_send_message_popup']);
   $helpfound = TRUE;
 //intelsat-2015  
-}else if($nid=='red_exportar_rss_enviar_mail'){
+}
+/////////////////////////////////////////////////////////////////////////////
+else if($nid=='red_exportar_rss_enviar_mail'){
   $node=new stdClass();
   $node->nid='red_exportar_rss_enviar_mail';
   //$node->title=t('Send RSS email');
   $node->title='<b>'.t('Channel exportation').'</b>';
   $node->body=red_exportar_rss_enviar_mail_canales_rss();
   $helpfound = TRUE;
-}else if($nid=='compartir_documentos'){  
+}
+/////////////////////////////////////////////////////////////////////////////
+else if($nid=='compartir_documentos'){  
   $node=new stdClass();
   $node->nid='compartir_documentos';
   $node->title=red_copiar_get_popup_title($_REQUEST['compartir_documentos_nid']);

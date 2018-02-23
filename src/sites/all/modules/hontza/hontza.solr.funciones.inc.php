@@ -856,9 +856,14 @@ function hontza_solr_funciones_get_bookmark_ini($is_solr){
     if(red_solr_inc_is_show_bookmark_reclasificar_tipo_fuente_link()){        
         $html[]=red_solr_inc_get_bookmark_reclasificar_tipo_fuente_link($style);
     }    
-    if(hontza_solr_search_modificar_taxonomia_access()){
+    ////////////////////////
+    //hau soilik adminari azaltzea bakarrik nahiko bagenu, gure kasuan guztiei nahi dugunez komentatu egiten dugu, etorkizunean aldatu nahiko bagenu logika bat egingo genuke settings-arekin
+    /*if(hontza_solr_search_modificar_taxonomia_access()){
         $html[]=hontza_solr_search_get_modificar_taxonomia_link($style);        
-    }
+    }*/
+    $html[]=hontza_solr_search_get_modificar_taxonomia_link($style);
+    ////////////////////
+
     if(is_super_admin()){
       $html[]='<div style="'.$style.'">';
       $html[]=l(my_get_icono_action('delete', t('Delete'),''),'hontza_solr/delete_bookmark_multiple_mode',array('html'=>TRUE,'attributes'=>array('id'=>'id_delete_bookmark_multiple_mode','class'=>'a_class_bookmark_multiple_mode')));    

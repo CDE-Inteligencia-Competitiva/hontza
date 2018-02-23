@@ -1990,8 +1990,8 @@ function hontza_canal_de_supercanal_node_after_build($form, &$form_state) {
 }
 //gemini-2014
 function hontza_yql_field_nombrefuente_canal_form_alter(&$form,&$form_state,$form_id){
-    //if(!is_super_admin()){
-    if(!is_administrador_grupo()){        
+    //if(!is_administrador_grupo()){
+    if(!is_super_admin()){        
         $form['feeds']['FeedsHTTPFetcher']['source']['#attributes']['readonly']='readonly';
     }
     $form['#after_build'][] = 'hontza_canal_de_yql_node_after_build';    
@@ -2263,7 +2263,8 @@ function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form,$form_state=''){
     $form['filtros2'] = array(
       '#title' => t('Apply filter 2 to RSS feeds'),
       '#type' => 'fieldset',
-      '#description' => t(''),
+      '#required' => TRUE,
+      '#description' => t('It is necessary to complete both fields'),
 	  //gemini
 	  '#attributes'=>array('id'=>'my_filtros2'),
 	  //
@@ -2286,7 +2287,7 @@ function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form,$form_state=''){
     $form['filtros3'] = array(
       '#title' => t('Apply filter 3 to RSS feeds'),
       '#type' => 'fieldset',
-      '#description' => t(''),
+      '#description' => t('It is necessary to complete both fields'),
 	   //gemini
 	  '#attributes'=>array('id'=>'my_filtros3'),
 	  //
@@ -2309,7 +2310,7 @@ function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form,$form_state=''){
     $form['filtros4'] = array(
       '#title' => t('Apply filter 4 to RSS feeds'),
       '#type' => 'fieldset',
-      '#description' => t(''),
+      '#description' => t('It is necessary to complete both fields'),
 	  //gemini
 	  '#attributes'=>array('id'=>'my_filtros4'),
 	  //
@@ -2377,11 +2378,22 @@ function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form,$form_state=''){
     //gemini-2013
     //intelsat-2016-hound-filter
     //if($is_hound){
+    //$konprobatzeko = comprobar_dos_campos($form_state, $form);
+  
+    
+
+    //if (isset($form['filtros1'] ) && isset($form['filtros2']['titulo'] ) ){
+     //   drupal_set_message(t('solo se puede elegir un filtro'),'error');
+    //}
+
+
+
     if($is_hound && my_is_simple($form_state)){    
         $form['filtros5']['#prefix']='<div style="display:none;">';
         $form['filtros5']['#suffix']='</div>';        
     }
     if($is_edit){
+
             $node=hontza_get_node_by_form($form);
             $canal_params=hontza_get_canal_yql_parametros_row($node->vid,$node->nid);
             if(!empty($canal_params)){
@@ -2427,6 +2439,7 @@ function hontza_set_form_filtros_yql($is_hound,$is_edit,&$form,$form_state=''){
             }
     }    
 }
+
 //gemini-2013
 function my_encode_yql_filter(&$form,&$form_state){
   //gemini
@@ -2578,3 +2591,11 @@ function my_yql_replace($s){
     $result=str_replace("'","",$result);    
     return $result;
 }
+
+
+//
+
+
+
+
+   

@@ -361,7 +361,10 @@ function alerta_get_settings_block_links(){
     }
     if(is_permiso_gestion_boletin_grupo('')){
         $html[]=l(t('Launch Mail Queue'),'alerta/my_execute_cron');
+       
     }
+
+
     //intelsat-2016
     boletin_report_mcapi_add_alerta_settings_block_links($html);    
     return implode('<BR>',$html);

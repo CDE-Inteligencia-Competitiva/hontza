@@ -223,10 +223,35 @@ function red_servidor_grupo_get_grupos_subdominio($subdominio,$my_user=''){
         }
         $url='http://'.$subdominio;
         $url.='/red_compartir/red_compartir_grupo_get_user_grupos_subdominio_get_contents?user_mail='.base64_encode($user_mail);
+
         /*if(user_access('root')){
             print $url.'<BR>';
             //exit();
         }*/
+        //cubatarrentzat tranpa hemen sartuko genuke. 
+        
+       if($subdominio=='192.169.1.16')
+        {
+             $subdominio.='/hontza';
+             $url='http://'.$subdominio;
+             $url.='/red_compartir/red_compartir_grupo_get_user_grupos_subdominio_get_contents?user_mail='.base64_encode($user_mail);
+
+            //print $url.'<BR>';
+            //YWFAZ21haWwuY29t
+            $content=@file_get_contents($url);
+            $result=unserialize(base64_decode($content));
+            if(!empty($result)){
+            foreach($result as $key=>$row){
+                $result[$key]=$row;
+                $result[$key]->is_grupo_red_alerta=1;
+                $result[$key]->is_grupo_subdominio=1;
+                $result[$key]->subdominio=$subdominio;            
+                                            }
+                                }
+            return $result;
+            //exit();
+        }
+        ///////////////////////////////////////////
         $content=@file_get_contents($url);
         $result=unserialize(base64_decode($content));
         if(!empty($result)){

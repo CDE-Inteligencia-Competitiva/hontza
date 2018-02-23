@@ -214,6 +214,7 @@ function publico_vigilancia_get_source_type_content_html(){
 }
 function publico_vigilancia_get_source_type_content(){
     $html=array();
+    $attributes=array();
     $label='';
     $source_type_array=taxonomy_get_tree(1);
     $source_type_array=publico_vigilancia_order_source_type_array($source_type_array);
@@ -231,7 +232,7 @@ function publico_vigilancia_get_source_type_content(){
                       $description=$term_lang->description;
                   }
                 $style=' style="list-style-image: none;list-style-type: none;"';  
-                $html[]='<li class="nivel0"'.$style.'>'.l($term_name,'publico/canales/tipos_fuente/'.$term->tid).'</li>';
+                $html[]='<li class="nivel0"'.$style.'>'.l($term_name,'publico/canales/tipos_fuente/'.$term->tid, $attributes(array('title' => $description))).'</li>';
             }    
         }
     }

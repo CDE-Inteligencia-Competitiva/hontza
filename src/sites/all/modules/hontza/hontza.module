@@ -1308,9 +1308,14 @@ function hontza_block($op = 'list', $delta = 0, $edit = array(),$is_publico=0) {
               //gemini
               $contenido_name=set_category_name_t($contenido->name);
               $cat_lang=taxonomy_get_term_by_language($contenido->tid);
-              $cat_description='';
+              $tid=$contenido->tid;
+              //$contenido_name=db_result(db_query('SELECT description FROM {term_extra} WHERE tid ="210199"'));
+              
+             //$contenido_name=$cat_lang->name;
+              $cat_description=$contenido->description;
+              //$cat_description="hemen zerbait azaldu beharko luke";
               if(isset($cat_lang->description) && !empty($cat_lang->description)){
-                  $cat_description=$cat_lang->description;
+                 // $cat_description=$cat_lang->description;
               }
               //
 

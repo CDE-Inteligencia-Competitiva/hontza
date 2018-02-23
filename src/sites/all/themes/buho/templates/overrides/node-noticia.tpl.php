@@ -232,14 +232,20 @@
             </div>
           <?php endif;?>
           
-          <?php if(red_despacho_is_show_categorizar_link()):?>
+        
+            <?php if(red_despacho_is_show_categorizar_link()):?>
             <div class="n-item-tipo-fuente">
                 <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
             </div>
+            <?php endif;?>
+            <?php if (red_despacho_is_instalado()):?>
             <div class="n-item-categorizar">
-                <?php print red_despacho_get_categorizar_link($node);?>
+                <?php print despacho_vigilancia_get_categorizar_link($node);;?>
             </div>
             <?php endif;?>
+            
+           
+
           
           <?php if(hontza_solr_funciones_is_bookmark_activado()):?>
             <div class="<?php print hontza_solr_funciones_bookmark_action_class($node);?>">
@@ -538,14 +544,14 @@
                 <?php print boletin_report_inc_noticia_usuario_boletines_link($node);?>
             </div>
           <?php endif;?>
-          <?php if(red_despacho_is_show_categorizar_link()):?>
+          
             <div class="n-item-tipo-fuente">
                 <?php print red_despacho_get_reclasificar_tipo_fuente_link($node);?>
             </div>
             <div class="item-categorizar">
                 <?php print red_despacho_get_categorizar_link($node);?>
             </div>
-        <?php endif;?>
+      
       
       <?php if(hontza_solr_funciones_is_bookmark_activado()):?>
         <div class="<?php print hontza_solr_funciones_bookmark_action_class($node,0);?>">

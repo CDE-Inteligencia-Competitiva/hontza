@@ -708,7 +708,18 @@ function fivestar_vote($type, $cid, $tag, $value) {
     //hontza_validar_con_accion($cid);
     $is_hound_noticia_feed_noticia_email=0;
     $is_value=1;
-    hontza_validar_con_accion($cid,$is_hound_noticia_feed_noticia_email,$is_value,$value);
+    //balidazioana kentzeko. Honekin egingo genuke, bai eta orain sprirentzat bakarrik egitea falta da??
+    if(defined('_IS_FIVESTAR_NOT_VALIDATE')){
+       if(_IS_FIVESTAR_NOT_VALIDATE){
+         }
+         else{
+          hontza_validar_con_accion($cid,$is_hound_noticia_feed_noticia_email,$is_value,$value);
+         }
+    }else
+    {
+      hontza_validar_con_accion($cid,$is_hound_noticia_feed_noticia_email,$is_value,$value);
+    }
+  
     //intelsat-2015
     hontza_solr_funciones_save_bookmark_multiple_vote($node);
     //intelsat-2016
