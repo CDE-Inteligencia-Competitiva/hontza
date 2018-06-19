@@ -287,6 +287,7 @@ function hontza_get_nid_by_form($form){
     $nid=0;
     if(isset($form['nid'])){
         $nid=$form['nid']['#value'];
+ 
     }
     return $nid;
 }

@@ -24,6 +24,12 @@ function canal_json_menu() {
     'page callback' => 'drupal_get_form',
     'access callback' => 'canal_json_crear_access',
   );
+  $items['canal_json/google_sheet']=array(
+    'title'=>'Import from Google sheet',
+    'page arguments'=>array('canal_json_google_crear_form'),  
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'canal_json_crear_access',
+  );
   $items['canal_json/crear/previsualizar_csv']=array(
     'title'=>'Import Json',
     //'page arguments'=>array('canal_json_crear_previsualizar_form'),  
@@ -33,6 +39,108 @@ function canal_json_menu() {
   );
   return $items;
 }
+
+function canal_json_google_crear_form(){
+  $title=t('sheet id');
+  $type=arg(1);
+  $url_type='json';
+  $form['sheet_id']=array(
+       '#type'=>'textarea',
+       '#title'=>t('Google sheet ID'),
+       '#required'=>TRUE,
+  );
+  $form['num_hoja']=array(
+       '#type'=>'textfield',
+       '#title'=>t('Sheet number'),
+       '#required'=>TRUE,
+  );
+  $form['import_btn']=array(
+       '#type'=>'submit',
+       '#value'=>t('Next'),
+  );
+  return $form;
+}
+
+function canal_json_google_crear_form_submit($form, &$form_state){
+if($form_state['values']['sheet_id']){
+      $sheet_id=trim($form_state['values']['sheet_id']);
+      $num_hoja=trim($form_state['values']['num_hoja']);
+      }
+
+      canal_json_google_obtener_form($sheet_id,$num_hoja);
+     // return $sheet_id;
+}
+
+function canal_json_google_obtener_form($sheet_id, $num_hoja){
+   global $base_url,$language,$id,$orria;
+
+   //$url_type=='json';
+   $url_type=='Google sheet';
+
+
+   $id=$sheet_id;
+   $orria=$num_hoja;
+ 
+  $url = 'https://spreadsheets.google.com/feeds/list/'.$id.'/'.$orria.'/public/values?alt=json';
+
+  //'https://spreadsheets.google.com/feeds/list/1nuIMnFRDAxuc_Y3B6Af15PkFIMIBfLt8MV5ebQVqfZw/2/public/values?alt=json';
+
+
+  $file= file_get_contents($url);
+  $json = json_decode($file);
+  $rows = $json->{'feed'}->{'entry'};
+  $json_sortzeko=array();
+  $json_fields=array();
+  $i='0';
+
+ foreach($rows as $row) {
+    $json_sortzeko[$i]['title'] =$row->{'gsx$title'}->{'$t'};
+    $json_sortzeko[$i]['link']=$row->{'gsx$link'}->{'$t'};
+    $json_sortzeko[$i]['description']=$row->{'gsx$description'}->{'$t'};
+    $json_sortzeko[$i]['url_json']=$url;
+    $i++;
+    }
+
+      //cron-erako artxiboa sortzeko
+     
+      $croneako=file_get_contents("http://localhost/hontza/google_sheet/croneako.json");
+      $cronerako=json_decode($croneako,true);
+      $a=count($cronerako);
+      $a=$a+1;
+      $cronerako[$a]=array($id, $orria);
+      $grabatzeko=json_encode($cronerako);
+      file_put_contents('google_sheet/croneako.json', $grabatzeko);
+      ///////////////////////////////////////7
+
+
+      $fitxero='google_sheet/id_'.$id.'_'.$orria.'.json';
+      $bidaltzeko=json_encode($json_sortzeko);
+      file_put_contents($fitxero, $bidaltzeko);
+      //$url='http://192.169.1.17/hontza/google_sheet/id_'.$id.'_'.$orria.'.json';
+      $url='http://localhost/hontza/google_sheet/id_'.$id.'_'.$orria.'.json';
+      
+      $json_fields['title'] ='title';
+      $json_fields['link']='link';
+      $json_fields['description']='description';
+      $json_fields['url_json']=$url;
+
+       $my_grupo=og_get_group_context();
+       if(!empty($my_grupo) && isset($my_grupo->nid)){
+           $grupo_link=$my_grupo->purl;
+       }
+
+       $url_json=base64_encode(json_encode($json_fields));
+
+       $my_lang='/es';
+       if($language->language!='en'){
+           $my_lang='/'.$language->language;
+       }
+       $url=url($base_url.$my_lang.'/'.$grupo_link.'/crear/canal-yql',array('query'=>'simple=1&url_json='.$url_json));   
+  
+       drupal_goto($url);
+}
+
+
 function canal_json_crear_form(){
    $title=t('Url of Json');
    $type=arg(1);

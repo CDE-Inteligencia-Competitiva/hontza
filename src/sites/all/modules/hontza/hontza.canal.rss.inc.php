@@ -1033,7 +1033,7 @@ function hontza_canal_rss_busqueda_rss_access(){
     }    
     return FALSE;
 }
-function  hontza_canal_rss_existe_titulo_fuente_grupo($form_state){
+function hontza_canal_rss_existe_titulo_fuente_grupo($form_state){
     $titulo='';
     $where_grupo='1';
     $my_grupo=og_get_group_context();

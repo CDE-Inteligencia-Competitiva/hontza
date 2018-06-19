@@ -1,0 +1,852 @@
+<?php
+require_once('red_exportar_rss.usuario.inc.php');
+function red_exportar_rss_perm() {
+    return array('access red_exportar_rss');
+}
+function red_exportar_rss_menu() {
+    $items=array(); 
+    $items['red_exportar_rss/canal/%'] = array(
+        'title' => 'Export RSS channel',
+        'page callback'=>'red_exportar_rss_canal_callback',    
+        'access arguments' => array('access red_exportar_rss'),
+    );
+    $items['red_exportar_rss/usuario/%'] = array(
+        'title' => 'Export RSS channel',
+        'page callback'=>'red_exportar_rss_usuario_callback',    
+        'access arguments' => array('access red_exportar_rss'),
+    );
+    
+    $items['red_exportar_rss/exportar_usuarios_tarea'] = array(
+        'title' => 'Export RSS channel',
+        'page callback'=>'red_exportar_rss_exportar_usuarios_tarea_callback',    
+        'access arguments' => array('root'),
+    );
+    
+    return $items;
+}
+function red_exportar_rss_canal_callback(){
+    global $base_url;
+    $canal_nid=arg(2);
+    //$sites_filename='sites/'.strtolower(_SAREKO_ID).'.hontza.es/files/'.'canal_nid_'.$canal_nid.'.xml';
+    //$xml_url=url($base_url.base_path().$sites_filename,array('absolute'=>TRUE));
+    $xml_url=red_exportar_rss_canal_get_xml_url_name($canal_nid);
+    
+    red_exportar_rss_canal_create($canal_nid);
+    
+    drupal_goto($xml_url);
+    exit();
+}
+function red_exportar_rss_get_canal_noticias($canal_nid_in=''){
+ $result=array();
+ $where=array();
+ $where[]="1";
+ $where[]="n.type = 'item'";
+ //intelsat-2015
+ $canal_nid=red_exportar_rss_get_canal_nid($canal_nid_in); 
+ /*$where[]="fn.feed_nid=".$canal_nid; 
+ $res = db_query($sql=sprintf("SELECT n.nid 
+ FROM {node} n
+ LEFT JOIN {feeds_node_item} fn ON n.nid=fn.nid  
+ WHERE ".implode(" AND ",$where))," ORDER BY n.title ASC"
+ );*/
+ $where[]="c.field_item_canal_reference_nid=".$canal_nid;
+ $where[]="flag_content_node.fid = 2";
+ //intelsat-2015
+ //if(red_is_subdominio_red_alerta()){
+ if(red_exportar_rss_is_exportar_destacados()){   
+    $where[]='c.field_is_carpeta_noticia_destaca_value=1';
+ }
+ //$where[]='(c.field_is_carpeta_noticia_destaca_value=1 OR c.field_is_noticia_usuario_destaca_value=1)'; 
+ $res = db_query($sql=sprintf("SELECT n.nid 
+ FROM {node} n
+ LEFT JOIN {content_type_item} c ON n.vid=c.vid 
+ LEFT JOIN {flag_content} flag_content_node ON n.nid = flag_content_node.content_id 
+ WHERE ".implode(" AND ",$where))," ORDER BY n.title ASC"
+ );
+ // 
+ while ($row=db_fetch_object($res)) {		  
+    $result[]=node_load($row->nid);
+ }
+ return $result;
+}
+function red_exportar_rss_get_item_link($node){
+    $url='';
+    if($node->type=='item'){
+        if(isset($node->feeds_node_item) && isset($node->feeds_node_item->guid)){
+            $url=$node->feeds_node_item->guid;
+        }
+        //
+        if(empty($url)){
+            //intelsat-2016
+            $field_red_item_web=red_fields_inc_get_field_item_web_name();
+            if(isset($node->$field_red_item_web)){
+                $row=$node->$field_red_item_web;
+                if(isset($row[0]['value'])){
+                    $url=$row[0]['value'];
+                }
+            }            
+        }
+    }else if($node->type=='noticia'){
+        $is_url=1;
+        $is_crm_exportar=1;
+        $url=hontza_noticia_usuario_web_link($node,$is_url,$is_crm_exportar);
+    }    
+    return $url;
+}
+function red_exportar_rss_canal_get_xml_url_name($canal_nid){
+    global $base_url;
+    //$sites_filename='sites/'.strtolower(_SAREKO_ID).'.hontza.es/files/'.'canal_nid_'.$canal_nid.'.xml';
+    $sites_filename=red_exportar_rss_canal_get_sites_filename($canal_nid);
+    //$xml_url=url($base_url.base_path().$sites_filename,array('absolute'=>TRUE));
+    $xml_url=url($base_url.'/'.$sites_filename,array('absolute'=>TRUE));
+    if(hontza_is_sareko_id('LOKALA')){
+        //intelsat-2015
+        $rss_name=red_exportar_create_canal_rss_name($canal_nid);
+        //$xml_url='http://localhost/proba/canal_rss_xml/canal_nid_'.$canal_nid.'.xml';
+        $xml_url='http://localhost/proba/canal_rss_xml/'.$rss_name.'.xml';
+    }
+    return $xml_url;
+}    
+function red_exportar_rss_canal_create($canal_nid_in){
+    //intelsat-2015
+    $canal_nid=$canal_nid_in;
+    if(empty($canal_nid) || !is_numeric($canal_nid)){
+        $canal_nid=$_REQUEST['canal_nid'];
+    }
+    $sites_filename=red_exportar_rss_canal_get_sites_filename($canal_nid);
+    $xml_url=red_exportar_rss_canal_get_xml_url_name($canal_nid);
+    //print $xml_url.'<BR>';
+    $canal=node_load($canal_nid);
+    $canal_description=$canal->body;
+    
+    //header('Content-Type: application/rss+xml; charset=utf-8');
+    
+    $rssfeed = '<?xml version="1.0" encoding="utf-8"?>';
+    $rssfeed .= '<rss version="2.0">';
+    $rssfeed .= '<channel>';
+    $rssfeed .= '<title>'.check_plain($canal->title).'</title>';
+    $rssfeed .= '<link>'.check_url($xml_url).'</link>';
+    $rssfeed .= '<description><![CDATA['.$canal_description.']]></description>';
+    //$rssfeed .= '<language>en-us</language>';
+    $rssfeed .= '<copyright>Powered by Hontza</copyright>';
+    $rssfeed .= '<creation_date>'.date('Y-m-d H:i:s',$canal->created).'</creation_date>';
+    $rssfeed .= '<date_of_last_content>'.get_canal_last_update_date_format($canal->nid,'mysql').'</date_of_last_content>';
+    $rssfeed .= '<date_of_last_update>'.get_canal_last_import_time_format($canal).'</date_of_last_update>';
+    $rssfeed .= '<thematic_categories>'.red_exportar_rss_get_canal_categorias_tematicas_format_xml($canal).'</thematic_categories>';
+    $rssfeed .= '<source_type>'.red_exportar_rss_get_canal_source_type($canal).'</source_type>';
+    $rssfeed .= '<main_validator>'.hontza_get_canal_validador_principal_name($canal).'</main_validator>';
+    $rssfeed .= '<second_validator>'.hontza_get_canal_segundo_validador_name($canal).'</second_validator>';
+    $is_hound_canal=0;    
+    if($canal->type=='canal_de_supercanal'){
+        $rssfeed .= '<name_of_source>'.red_exportar_rss_get_canal_name_of_source_url($canal).'</name_of_source>';    
+        $rssfeed .= '<name_of_source_url>'.red_exportar_rss_get_canal_feed_url($canal).'</name_of_source_url>';
+    }else{
+        $is_hound_canal=hontza_is_hound_canal($canal->nid);
+        if($is_hound_canal){
+            $rssfeed .= '<name_of_source_url></name_of_source_url>';                        
+        }else{
+            $rssfeed .= '<name_of_source_url>'.red_exportar_rss_get_canal_name_of_source_url($canal).'</name_of_source_url>';
+        }    
+    }
+    $rssfeed .= '<rating>'.hontza_get_node_puntuacion_media_para_txt($canal->nid,1).'</rating>';
+    if(hontza_is_sareko_id_red()){
+        $rssfeed .= '<languages>'.red_idiomas($canal).'</languages>';
+        //intelsat-2016
+        $field_red_periodicidad=red_fields_inc_get_field_periodicidad_name();
+        $field_red_idioma_principal=red_fields_inc_get_field_idioma_principal_name();
+        $field_red_country=red_fields_inc_get_field_country_name();
+        $rssfeed .= '<update_frequency>'.red_get_periodo_view($canal,$field_red_periodicidad).'</update_frequency>';
+        $rssfeed .= '<main_language>'.red_field($canal,$field_red_idioma_principal).'</main_language>';
+        $rssfeed .= '<country_or_region>'.red_field($canal,$field_red_country).'</country_or_region>';
+    }
+    $rssfeed .= '<key_intelligence_questions>'.red_exportar_rss_get_canal_reto_al_que_responde_xml($canal).'</key_intelligence_questions>';
+    $rssfeed .= '<value_of_the_arguments>'.red_exportar_rss_get_canal_value_of_the_arguments($canal).'</value_of_the_arguments>';
+    $rssfeed .= red_exportar_rss_get_canal_hound_format_xml($canal,$is_hound_canal);
+    //    
+    $node_array=red_exportar_rss_get_canal_noticias($canal_nid);
+    if(!empty($node_array)){
+        foreach($node_array as $i=>$node){
+                $title=$node->title;
+                $description=$node->body;
+                $link=red_exportar_rss_get_item_link($node);
+                //
+                $rssfeed .= '<item>';
+                $rssfeed .= '<title>' . check_plain($title) . '</title>';
+                $rssfeed .= '<description><![CDATA[' . $description . ']]></description>';
+                $rssfeed .= '<link>'.check_url($link).'</link>';
+                $rssfeed .= '<pubDate>' . date("D, d M Y H:i:s O",$node->created) . '</pubDate>';
+                $rssfeed .= '<created>' . date("Y-m-d H:i:s",$node->created) . '</created>';
+                $rssfeed .= '<my_channel>'.red_exportar_rss_get_item_canal_title($node).'</my_channel>';
+                $rssfeed .= '<rating>'.hontza_get_node_puntuacion_media_para_txt($node->nid,1).'</rating>';
+                $rssfeed .= '<tags>'.red_exportar_rss_get_item_tags_format_xml($node).'</tags>';                
+                if(hontza_is_sareko_id_red()){
+                    //intelsat-2015
+                    $rssfeed .= '<comments>'.red_exportar_rss_get_item_comments_format_xml($node).'</comments>';
+                    $rssfeed .= '<summary><![CDATA['.red_get_summary($node).']]></summary>';
+                    $rssfeed .= '<news_types>'.red_exportar_rss_get_item_news_type_format_xml($node).'</news_types>';
+                    $rssfeed .= '<units>'.red_exportar_rss_get_item_units_format_xml($node).'</units>';
+                    //intelsat-2016
+                    $field_red_item_web=red_fields_inc_get_field_item_web_name();
+                    $url_address=red_field($node,$field_red_item_web);
+                    if(empty($url_address)){
+                        $url_address=$link;
+                    }
+                    $rssfeed .= '<url_address>'.check_url($url_address).'</url_address>';
+                    $rssfeed .= '<bulletins>'.red_boletines($node).'</bulletins>';
+                    //intelsat-2016
+                    $field_red_fuente_noticia=red_fields_inc_get_field_red_fuente_noticia_name();
+                    $rssfeed .= '<news_source>'.red_field($node,$field_red_fuente_noticia).'</news_source>';
+                    $rssfeed .= '<sectorisation>'.red_sectorizacion($node).'</sectorisation>';
+                    $rssfeed .= '<cnae>'.red_cnae($node).'</cnae>';
+                    $rssfeed .= '<visits>'.red_reads_visitas($node).'</visits>';
+                    $rssfeed .= '<key_intelligence_questions>'.red_exportar_rss_get_canal_reto_al_que_responde_xml($node).'</key_intelligence_questions>';
+                }
+                $rssfeed .= '</item>';                    
+        }
+    }
+    $rssfeed .= '</channel>';
+    $rssfeed .= '</rss>';
+    
+    if(hontza_is_sareko_id('LOKALA')){
+        $sites_filename='/var/www/proba/canal_rss_xml/canal_nid_'.$canal_nid.'.xml';        
+    }
+    
+    $file = fopen($sites_filename,"w");
+    
+    fputs($file,$rssfeed);
+    fclose($file);
+} 
+function red_exportar_rss_canal_get_sites_filename($canal_nid){
+     //intelsat-2015
+     $rss_name=red_exportar_create_canal_rss_name($canal_nid);
+     $sareko_id=strtolower(_SAREKO_ID);
+     //intelsat-2016
+     if(defined('_RED_EXPORTAR_RSS_PREFIJO_SITES')){
+        $sareko_id=_RED_EXPORTAR_RSS_PREFIJO_SITES; 
+     }
+     //intelsat-2016
+     $file_directory_path=variable_get('file_directory_path','');
+     if($sareko_id=='default' || $file_directory_path=='sites/default/files'){
+        $sites_filename='sites/default/files/'.$rss_name.'.xml'; 
+     }else{
+        $sites_filename='sites/'.$sareko_id.'.hontza.es/files/'.$rss_name.'.xml';
+     }     
+     return $sites_filename;
+}
+function red_exportar_rss_cron(){
+    //intelsat-2016
+    if(defined('_RED_EXPORTAR_RSS_CRON') && _RED_EXPORTAR_RSS_CRON!=1){
+        return 0;
+    }
+    $canales=get_all_nodes(array('canal_de_supercanal','canal_de_yql'));
+    if(!empty($canales)){
+        foreach($canales as $i=>$canal){
+            //drupal_set_message('red_exportar_rss canal:'.$canal->title);
+            red_exportar_rss_canal_create($canal->nid);                    
+        }
+    }
+    red_exportar_rss_exportar_usuarios_tarea();
+}
+function red_exportar_rss_get_canal_categorias_tematicas_format_xml($canal){
+    $result=array();
+    $categorias_tematicas_array=hontza_get_canal_categorias_tematicas_array($canal);
+    if(!empty($categorias_tematicas_array)){
+        foreach($categorias_tematicas_array as $tid=>$term){
+            $s=taxonomy_get_term_name_by_language($tid);
+            if(!empty($s)){
+                $result[]='<category>'.$s.'</category>';
+            }
+        }
+    }
+    return implode('',$result);
+}
+function red_exportar_rss_get_canal_source_type($canal){
+    if(isset($canal->field_fuente_canal) && isset($canal->field_fuente_canal[0]) && isset($canal->field_fuente_canal[0]['value'])){
+        return $canal->field_fuente_canal[0]['value'];
+    }
+    return '';
+}
+function red_exportar_rss_get_canal_name_of_source_url($node){
+    /*if(in_array($node->type,array('canal_de_supercanal'))){
+        //         
+    }else if(in_array($node->type,array('canal_de_yql'))){*/
+        if(isset($node->field_nombrefuente_canal[0]['value'])){					
+            $value=$node->field_nombrefuente_canal[0]['value'];            
+            return check_url($value);            
+        }
+    //}
+    return '';
+}
+function red_exportar_rss_get_canal_reto_al_que_responde_xml($node){
+  $responde_array=get_idea_responde_konp_array($node->nid);
+  /*if($node->type=='item'){
+    print '########################################<BR>';
+    print $node->nid.'<BR>';
+    echo print_r($responde_array,1);
+  }*/
+  $matriz_array=create_idea_responde_keys_array($responde_array);
+  if(count($matriz_array)>0){
+      $result=array();
+      foreach($matriz_array as $estrategia_nid=>$despliegue_array){
+          $estrategia=node_load($estrategia_nid);
+          if(isset($estrategia->nid) && !empty($estrategia->nid)){  
+            $result[]='<challenge>';
+            $result[]='<title>'.check_plain($estrategia->title).'</title>';
+            if(count($despliegue_array)>0){
+                foreach($despliegue_array as $despliegue_nid=>$decision_array){
+                  $despliegue=node_load($despliegue_nid);
+                  if(isset($despliegue->nid) && !empty($despliegue->nid)){
+                     $result[]='<subchallenge>';
+                     $result[]='<title>'.check_plain($despliegue->title).'</title>';  
+                     if(count($decision_array)>0){
+                        foreach($decision_array as $decision_nid=>$informacion_array){
+                            $decision=node_load($decision_nid);
+                            if(isset($decision->nid) && !empty($decision->nid)){
+                               $result[]='<decision>';
+                               $result[]='<title>'.check_plain($decision->title).'</title>'; 
+                                if(count($informacion_array)>0){
+                                    foreach($informacion_array as $informacion_nid=>$v){
+                                        $informacion=node_load($informacion_nid);
+                                        if(isset($informacion->nid) && !empty($informacion->nid)){
+                                            $result[]='<key_question>';
+                                            $result[]='<title>'.check_plain($informacion->title).'</title>';
+                                            $result[]='</key_question>';
+                                        }
+                                    }
+                                }
+                                $result[]='</decision>';
+                            }   
+                        }
+                     }
+                     $result[]='</subchallenge>';
+                  }
+                }
+            }
+            $result[]='</challenge>';
+          }   
+      }      
+      return implode('',$result);
+  }
+  return '';
+}
+function red_exportar_rss_get_canal_feed_url($canal){
+    $feeds_source=hontza_get_feeds_source($canal->nid);
+    if(isset($feeds_source->source) && !empty($feeds_source->source)){
+        return check_url($feeds_source->source);
+    }
+    return '';
+}
+function red_exportar_rss_get_item_canal_title($node){
+    return hontza_solr_funciones_get_item_canal_title($node);
+}
+function red_exportar_rss_get_item_tags_format_xml($node){
+    $result=array();
+    $etiquetas_array=hontza_todas_etiquetas_html($node,1);
+    if(!empty($etiquetas_array)){
+        foreach($etiquetas_array as $i=>$tag){
+            $result[]='<tag>'.$tag.'</tag>';
+        }
+    }
+    return implode('',$result);
+}
+function red_exportar_rss_get_item_news_type_format_xml($node){
+    $result=array();
+    $news_type_array=red_get_item_tipo_noticia_html($node,1);
+    if(!empty($news_type_array)){
+        foreach($news_type_array as $i=>$v){
+            $result[]='<news_type>'.$v.'</news_type>';
+        }        
+    }
+    return implode('',$result);
+}
+    
+function red_exportar_rss_get_item_units_format_xml($node){
+    $result=array();
+    $units_array=red_get_item_unidades_html($node,1);
+    if(!empty($units_array)){
+        foreach($units_array as $i=>$v){
+            $result[]='<unit>'.$v.'</unit>';
+        }        
+    }
+    return implode('',$result);
+}
+function red_exportar_rss_get_canal_value_of_the_arguments($node){
+    if($node->type=='canal_de_supercanal'){
+        $canal_params=hontza_get_canal_params($node);
+        if(!empty($canal_params)){
+            foreach($canal_params as $i=>$params){
+                $decode_value=htmlentities(urldecode($params['value']));                
+                $html[]='<param>';
+                $html[]='<description>';
+                $html[]=$params['description'];
+                $html[]='</description>';
+                $html[]='<value>';
+                $html[]=$decode_value;
+                $html[]='</value>';
+                $html[]='</param>';
+            }
+            return implode('',$html);        
+        }    
+    }else if($node->type=='canal_de_yql'){
+        return red_exportar_rss_get_canal_de_yql_value_of_the_arguments($node);
+    }
+    return '';
+}
+function red_exportar_rss_get_canal_de_yql_value_of_the_arguments($node){
+        if($node->type=='canal_de_yql'){
+            $canal_params=hontza_get_canal_yql_parametros_row($node->vid,$node->nid);
+            if(!empty($canal_params)){
+                if(hontza_is_canal_params_filtro1($canal_params)){
+                    $html[]=red_exportar_rss_get_canal_params_filtro1_html($canal_params);            
+                }else if(hontza_is_canal_params_filtro2($canal_params)){
+                    $html[]=red_exportar_rss_get_canal_params_filtro2_html($canal_params);
+                }else if(hontza_is_canal_params_filtro3($canal_params)){
+                    $html[]=red_exportar_rss_get_canal_params_filtro3_html($canal_params);
+                }else if(hontza_is_canal_params_filtro4($canal_params)){
+                    $html[]=red_exportar_rss_get_canal_params_filtro4_html($canal_params);
+                }else if(hontza_is_canal_params_filtro5($canal_params)){
+                    $html[]=red_exportar_rss_get_canal_params_filtro5_html($canal_params);
+                }else{
+                    return '';
+                }
+                return implode('',$html);        
+            }   
+        }
+    return '';
+}
+function red_exportar_rss_get_canal_params_filtro1_html($canal_params){
+    $html=array();
+                $html[]='<param>';
+                $html[]='<filter_type>';
+                $html[]=t('Apply filter 1 to RSS feeds');
+                $html[]='</filter_type>';
+                $html[]='<field>';
+                $html[]=t('General Search');
+                $html[]='</field>';
+                $html[]='<value>';
+                $html[]=$canal_params->todos;
+                $html[]='</value>';
+                $html[]='</param>';
+    return implode('',$html);
+}
+function red_exportar_rss_get_canal_params_filtro2_html($canal_params){
+    $html=array();
+    $yql_op='OR';
+    if(!empty($canal_params->filtrosSI)){
+        $yql_op='AND';
+    }
+    $html[]='<param>';
+                $html[]='<filter_type>';
+                $html[]=t('Apply filter 2 to RSS feeds');
+                $html[]='</filter_type>';
+                $html[]='<fields>';
+                    $html[]='<row>';
+                        $html[]='<field>';
+                        $html[]=t('Contains this word in the title');
+                        $html[]='</field>';
+                        $html[]='<value>';
+                        $html[]=$canal_params->titulo;
+                        $html[]='</value>';
+                    $html[]='</row>';
+                    $html[]='<operator>'.$yql_op.'</operator>';
+                    $html[]='<row>';
+                        $html[]='<field>';
+                        $html[]=t('Contains this word in the description');
+                        $html[]='</field>';
+                        $html[]='<value>';
+                        $html[]=$canal_params->descripcion;
+                        $html[]='</value>';
+                    $html[]='</row>';
+                    
+                $html[]='</fields>';
+                $html[]='</param>';
+ 
+    return implode('',$html);
+}
+function red_exportar_rss_get_canal_params_filtro3_html($canal_params){
+    $html=array();
+    $yql_op='OR';
+    if(!empty($canal_params->filtrosNO)){
+        $yql_op='AND';
+    }
+    $html[]='<param>';
+                $html[]='<filter_type>';
+                $html[]=t('Apply filter 3 to RSS feeds');
+                $html[]='</filter_type>';
+                $html[]='<fields>';
+                    $html[]='<row>';
+                        $html[]='<field>';
+                        $html[]=t('It does not contain this word in the title');
+                        $html[]='</field>';
+                        $html[]='<value>';
+                        $html[]=$canal_params->no_titulo;
+                        $html[]='</value>';
+                    $html[]='</row>';
+                    $html[]='<operator>'.$yql_op.'</operator>';
+                    $html[]='<row>';
+                        $html[]='<field>';
+                        $html[]=t('It does not contain this word in the description');
+                        $html[]='</field>';
+                        $html[]='<value>';
+                        $html[]=$canal_params->no_descripcion;
+                        $html[]='</value>';
+                    $html[]='</row>';
+                    
+                $html[]='</fields>';
+                $html[]='</param>';
+ 
+    return implode('',$html);
+}
+function red_exportar_rss_get_canal_params_filtro4_html($canal_params){
+    $html=array();
+    $contiene_field='title';
+    if(!empty($canal_params->campo_contiene)){
+        $contiene_field='description';
+    }
+    //
+    $no_contiene_field='title';
+    if(!empty($canal_params->campo_no_contiene)){
+        $no_contiene_field='description';
+    }
+    //
+    $yql_op='OR';
+    if(!empty($canal_params->conjuncion)){
+        $yql_op='AND';
+    }
+    //
+    $html[]='<param>';
+    $html[]='<filter_type>';
+    $html[]=t('Apply filter 4 to RSS feeds');
+    $html[]='</filter_type>';
+    $html[]='<fields>';
+    $html[]='<row>';
+    $html[]='<field>';
+    $html[]=t('Contains this word in the '.$contiene_field);
+    $html[]='</field>';
+    $html[]='<value>';
+    $html[]=$canal_params->contiene;
+    $html[]='</value>';
+    $html[]='</row>';
+    $html[]='<operator>'.$yql_op.'</operator>';
+    $html[]='<row>';
+    $html[]='<field>';
+    $html[]=t('It does not contain this word in the '.$no_contiene_field);
+    $html[]='</field>';
+    $html[]='<value>';
+    $html[]=$canal_params->no_contiene;
+    $html[]='</value>';
+    $html[]='</row>';
+    $html[]='</fields>';
+    $html[]='</param>'; 
+    return implode('',$html);
+}
+function red_exportar_rss_get_canal_params_filtro5_html($canal_params){
+    $html=array();
+    $html[]='<param>';
+                $html[]='<filter_type>';
+                $html[]=t('Apply filter 5 to RSS feeds');
+                $html[]='</filter_type>';
+                $html[]='<field>';
+                $html[]=t('Code to create the filter manually');
+                $html[]='</field>';
+                $html[]='<value>';
+                $html[]=$canal_params->area;
+                $html[]='</value>';
+                $html[]='</param>';
+    return implode('',$html);
+}
+function red_exportar_rss_get_canal_hound_format_xml($node,$is_hound_canal){
+    $result=array();
+    if($is_hound_canal){
+        $result[]= '<hound><title>'.hontza_get_hound_title_by_nid($node->nid).'</title>';
+        if(hontza_is_hound_text_input()){
+            $canal_hound_parametros=hound_get_canal_hound_parametros_row($node->nid);
+            if(isset($canal_hound_parametros->hound_id) && !empty($canal_hound_parametros->hound_id)){
+                $result[]='<hound_channel_id>'.$canal_hound_parametros->hound_id.'</hound_channel_id>';                            
+            }
+            if(!$canal_hound_parametros->is_empty){
+                if(isset($canal_hound_parametros->parametros) && !empty($canal_hound_parametros->parametros)){
+                    $parametros=unserialize($canal_hound_parametros->parametros);
+                    if(!empty($parametros)){
+                        foreach($parametros as $param_key=>$param_row){
+                            foreach($param_row as $param_name=>$param_value){
+                                $result[]='<hound_param>';
+                                $result[]='<field>'.hound_api_param_key_label($param_name).' ('.$param_key.')</field>';
+                                $result[]='<value>'.$param_value.'</value>';
+                                $result[]='</hound_param>';
+                            }    
+                        }
+                    }
+                }
+            }    
+        }else{
+            $hound_search_value=hontza_get_hound_search_value_by_nid($node->nid);
+            $hound_search_value=urldecode($hound_search_value);
+            $result[]= '<hound_search>'.$hound_search_value.'</hound_search>';
+        }
+        $result[]= '</hound>';
+    }
+    return implode('',$result);
+}
+//intelsat-2015
+function red_exportar_rss_get_item_comments_format_xml($node){
+    $comments_array=hontza_canal_rss_get_comment_array($node->nid);
+    $result=array();    
+    if(!empty($comments_array)){
+        foreach($comments_array as $i=>$row){
+            $result[]='<comment>';
+            //$result[]='<uid>'.$row->uid.'</uid>';
+            $result[]='<subject>'.$row->subject.'</subject>';
+            $result[]='<text><![CDATA['.$row->comment.']]></text>';
+            $result[]='<timestamp>'.$row->timestamp.'</timestamp>';
+            $result[]='<name>'.$row->name.'</name>';
+            $result[]='</comment>';
+        }
+    }
+    return implode('',$result);
+}
+//intelsat-2015
+function red_exportar_rss_enviar_mail_canales_rss_access(){
+    //intelsat-2016
+    if(!hontza_is_red_hoja()){
+        return false;
+    }
+    $modo_estrategia=1;
+    if(is_administrador_grupo($modo_estrategia)){
+        return true;
+    }
+    //intelsat-2016
+    if(red_crear_usuario_is_rol_administrador_creador_grupo()){
+        return true;
+    }
+    return false;
+}
+//intelsat-2015
+function red_exportar_rss_enviar_mail_canales_rss(){
+    if(red_exportar_rss_enviar_mail_canales_rss_access()){
+        $canal_nid=arg(1);
+        if(empty($canal_nid) || !is_numeric($canal_nid)){
+            $canal_nid=$_REQUEST['canal_nid'];            
+        }
+        if(!is_numeric($canal_nid)){
+            $canal_nid=red_exportar_rss_get_canal_nid($canal_nid);
+        }
+        $canal_node=node_load($canal_nid);
+        //intelsat-2016
+        if(isset($_REQUEST['is_canal_usuarios']) && !empty($_REQUEST['is_canal_usuarios'])){
+            red_exportar_rss_usuario_create($canal_nid);
+        }else if(!in_array($canal_node->type,array('canal_busqueda'))){
+            red_exportar_rss_canal_create($canal_nid);            
+        }        
+        return drupal_get_form('red_exportar_rss_enviar_mail_canales_rss_form');
+    }else{
+        drupal_access_denied();
+        exit();
+    }
+}
+//intelsat-2015
+function red_exportar_rss_enviar_mail_canales_rss_form(){
+    global $base_url;
+    $form=array();
+    $canal_nid=arg(1);
+    $is_popup=0;    
+    if(empty($canal_nid) || !is_numeric($canal_nid)){
+        $is_popup=1;
+        $canal_nid=$_REQUEST['canal_nid'];            
+    }
+    //intelsat-2016
+    $is_canal_usuarios=0;
+    if(isset($_REQUEST['is_canal_usuarios']) && !empty($_REQUEST['is_canal_usuarios'])){
+        $is_canal_usuarios=$_REQUEST['is_canal_usuarios'];
+        $canal_node=user_load($canal_nid);
+    }else{
+        $canal_node=node_load($canal_nid);
+    }
+    $xml_url=red_exportar_rss_canal_get_xml_url_name($canal_nid);
+    $form['canal_nid']=array(
+        '#type'=>'hidden',
+        '#default_value'=>$canal_nid,
+    );
+    //intelsat-2016
+    $form['is_canal_usuarios']=array(
+        '#type'=>'hidden',
+        '#default_value'=>$is_canal_usuarios,
+    );
+    $grupo_node=new stdClass();
+    if(isset($_REQUEST['my_grupo_nid']) && !empty($_REQUEST['my_grupo_nid'])){
+        $grupo_node=node_load($_REQUEST['my_grupo_nid']);
+        if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+            $form['my_grupo_nid']=array(
+            '#type'=>'hidden',
+            '#default_value'=>$grupo_node->nid,
+            );
+        }
+    }
+    $enviar_mail_message=red_copiar_get_enviar_mail_message($canal_node);
+    $form['enviar_mail_message']=array(
+        '#value'=>$enviar_mail_message,
+    );    
+    $form['to']=array(
+        '#type'=>'textfield',
+        '#title'=>t('To'),
+        '#required'=>true,
+    );
+    //intelsat-2016
+    $form['message_text']=array(
+        '#type'=>'textarea',
+        '#title'=>t('Message'),
+        '#required'=>true,
+    );
+    $form['send_btn']=array(
+        '#type'=>'submit',
+        '#value'=>t('Send'),
+    );
+    $url_cancel='vigilancia/pendientes';
+    if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+        $url_cancel=$base_url.'/'.$grupo_node->purl.'/'.$url_cancel;
+    }
+    /*if($is_popup){
+        $url_cancel=l(t('Cancel'),$url_cancel,array('attributes'=>array('onclick'=>'this.close();')));
+    }else{*/
+    //$url_cancel=l(t('Cancel'),$url_cancel);    
+    $url_cancel=red_copiar_get_cancel_link($url_cancel,0,$is_popup);
+    //}            
+    $form['cancel_btn']['#value']=$url_cancel;
+    //intelsat-2016
+    if($canal_node->type=='canal_busqueda'){
+        drupal_set_title(t('Export search'));
+    }
+    return $form;
+}
+function red_exportar_rss_enviar_mail_canales_rss_form_submit($form,&$form_state){
+    global $base_url;
+    global $user;
+    $rss_url='';
+    //intelsat-2016
+    $is_canal_usuarios=$form_state['values']['is_canal_usuarios'];    
+    $uid='';
+    if(isset($form_state['values']['canal_nid'])){ 
+       if($is_canal_usuarios){
+        $uid=$form_state['values']['canal_nid'];   
+        $rss_url=red_exportar_rss_usuario_get_xml_url_name($uid);
+        //print $rss_url;exit();
+       }else{ 
+        $rss_url=red_exportar_rss_canal_get_xml_url_name($form_state['values']['canal_nid']);
+       }  
+    }
+    $to='';
+    if(isset($form_state['values']['to'])){
+       $to=$form_state['values']['to'];
+    }
+    $message_text=$form_state['values']['message_text'];
+    //
+    if(!empty($to) && !empty($rss_url)){
+       $subject=t('Import');
+       //intelsat-2016
+       $servidor_central_url=red_get_servidor_central_url();
+       $is_validar_usuario_network=red_copiar_validar_usuario_mail_network_para_compartir($to);
+       if($is_validar_usuario_network){
+           $caducidad=red_copiar_get_caducidad();
+           $mail_from=base64_encode($user->mail);
+           $compartir_servidor_url=$servidor_central_url.'/compartir_servidor_documentos/canal_de_yql/'.base64_encode($rss_url).'/'.$caducidad.'/'.$mail_from;       
+       }else{
+           $compartir_servidor_url=$rss_url;
+       }
+       //$rss_url=$compartir_servidor_url;       
+       //$message=l($rss_url,$rss_url);
+       if($is_canal_usuarios){
+           $node=user_load($uid);
+       }else{
+           $node=node_load($form_state['values']['canal_nid']);       
+       }
+       $message=red_copiar_get_email_message($to,$compartir_servidor_url,$node,'channel',1,$message_text);
+       //$message=l(t('Import channel'),$rss_url,array('absolute'=>TRUE));
+       //$message='<a href="'.$rss_url.'">'.t('Import').'</a>';
+       //intelsat-2016
+       red_copiar_send_mail($to,$subject,$message,'mimemail','');
+       //intelsat-2016
+       //drupal_set_message(t('Email has been sent'));
+       $message_user=red_copiar_get_enviar_mail_message_user($node,$is_validar_usuario_network,$to);
+       drupal_set_message($message_user);
+    }
+    $url='vigilancia/pendientes';
+    if(isset($form_state['values']['my_grupo_nid']) && !empty($form_state['values']['my_grupo_nid'])){       
+       $grupo_node=node_load($form_state['values']['my_grupo_nid']);
+       if(isset($grupo_node->nid) && !empty($grupo_node->nid)){
+           $url=$base_url.'/'.$grupo_node->purl.'/'.$url;
+       }
+    }
+    $_REQUEST['destination']='';
+    drupal_goto($url);    
+}
+//intelsat-2015
+function red_exportar_create_canal_rss_name($canal_nid){
+    $result=md5('canal_nid_'.$canal_nid);
+    return $result;
+}
+//intelsat-2015
+//intelsat-2016
+//function red_exportar_rss_enviar_mail_add_js($canal_nid){
+//function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$is_view=0){    
+function red_exportar_rss_enviar_mail_add_js($canal_nid,$canal_usuarios_uid='',$is_view=0,$type_in='',$is_return=0){    
+    $my_grupo=og_get_group_context();
+    $my_grupo_nid='';
+    if(isset($my_grupo->nid) && !empty($my_grupo->nid)){
+        $my_grupo_nid=$my_grupo->nid;
+    }
+    $destination=red_copiar_get_popup_destination();
+    //intelsat-2016
+    $my_base_path=hontza_canal_rss_get_base_path_help_popup();
+    $type='';
+    $canal_usuarios_name='_canal_usuarios';
+    if(!empty($type_in)){
+        $type=$type_in.'_';
+        $canal_usuarios_name='';
+    }
+    if(!empty($canal_usuarios_uid)){
+        $view='';
+        if($is_view){
+            $view='view_';
+        }
+        $js="$(document).ready(function()
+         {
+
+             $('#exred_exportar_rss".$canal_usuarios_name."_".$view."enviar_mail_".$type.$canal_usuarios_uid."').jqm({ajax: '".$my_base_path."help_popup.php?nid=red_exportar_rss_enviar_mail&w=500&h=400&canal_nid=".$canal_usuarios_uid."&my_grupo_nid=".$my_grupo_nid.'&is_canal_usuarios=1'.$destination."', trigger: 'a.jqm-trigger-red_exportar_rss".$canal_usuarios_name."_".$view."enviar_mail_".$type.$canal_usuarios_uid."',modal:true, toTop: true, overlay: 0});
+
+         });";
+    }else{
+         $js="$(document).ready(function()
+         {
+
+             $('#exred_exportar_rss_enviar_mail_".$type.$canal_nid."').jqm({ajax: '".$my_base_path."help_popup.php?nid=red_exportar_rss_enviar_mail&w=500&h=400&canal_nid=".$canal_nid."&my_grupo_nid=".$my_grupo_nid.$destination."', trigger: 'a.jqm-trigger-red_exportar_rss_enviar_mail_".$type.$canal_nid."',modal:true, toTop: true, overlay: 0});
+
+         });";
+    }
+    /*if($is_return){
+        return '<script type="text/javascript">'.$js.'</script>';
+    }else{*/    
+     drupal_add_js($js,'inline');
+    //}
+}
+//intelsat-2015
+function red_exportar_rss_get_canal_nid($canal_nid_in){
+    if(!is_numeric($canal_nid_in)){
+        if(isset($_REQUEST['canal_nid']) && !empty($_REQUEST['canal_nid'])){
+            return $_REQUEST['canal_nid'];
+        }
+    }
+    return $canal_nid_in;
+}
+//intelsat-2015
+function red_exportar_rss_is_exportar_destacados(){
+    //intelsat-2016
+    //se ha comentado esto
+    /*if(red_is_subdominio_red_alerta()){
+        return 1;
+    }
+    if(defined(_IS_RED_EXPORTAR_RSS_DESTACADOS) && _IS_RED_EXPORTAR_RSS_DESTACADOS==1){
+        return 1;
+    } 
+    */
+    return 0;
+}

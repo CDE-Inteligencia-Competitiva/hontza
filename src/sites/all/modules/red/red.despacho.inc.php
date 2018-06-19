@@ -1,16 +1,25 @@
 <?php
 function red_despacho_is_activado(){
     if(module_exists('despacho')){
-        if(alerta_solr_is_cron()){
-            //if(hontza_is_sareko_id('DESPACHO')){
+        //hau nik komentatu dut 
+        /*if(alerta_solr_is_cron()){//hemen behekoa lehen komentatuta zegoen
+            if(hontza_is_sareko_id('DESPACHO')){
                 return 1;
-            //}
+            }*/
         }
         if(defined('_IS_DESPACHO')){
             if(_IS_DESPACHO==1){
                 return 1;
             }
         }
+    return 0;
+}
+
+function red_despacho_is_instalado(){
+    if(module_exists('despacho')){
+            //if(hontza_is_sareko_id('DESPACHO')){
+                return 1;
+            //}
     }
     return 0;
 }
@@ -117,13 +126,20 @@ function red_despacho_get_categorizar_link($node){
     }
     return 0;
 }
+function red_despacho_get_categorizar_2_link($node){
+    if(red_despacho_is_instalado()){///hau aldauta
+        return despacho_vigilancia_get_categorizar_link($node);
+    }
+    return 0;
+}
+
 function red_despacho_add_category_checked($node,$contenido,&$form){
-    if(red_despacho_is_activado()){
+    if(red_despacho_is_instalado()){
         despacho_vigilancia_add_category_checked($node,$contenido,$form);
     }
 }
 function red_despacho_on_node_save($op,&$node){
-    if(red_despacho_is_activado()){
+    if(red_despacho_is_activado()){///hau aldauta
         despacho_vigilancia_on_node_save($op,$node);        
     }
     if($node->type=='item'){
@@ -228,7 +244,7 @@ function red_despacho_modificar_taxonomia_save(&$form_state,&$node_array,$node_i
     }
 }
 function red_despacho_is_categorizar_noticia_pantalla($type){
-    if(red_despacho_is_activado()){
+    if(red_despacho_is_instalado()){//hau aldauta
         return despacho_vigilancia_is_categorizar_noticia_pantalla($type);
     }
     return 0;
@@ -240,7 +256,7 @@ function red_despacho_get_wrapper_style(){
     return '';
 }
 function red_despacho_is_on_categorizar_noticia_pantalla($type){
-    if(red_despacho_is_activado()){
+    if(red_despacho_is_activado()){///hau aldauta
         return despacho_vigilancia_is_on_categorizar_noticia_pantalla($type);
     }
     return 0;
@@ -979,7 +995,7 @@ function red_despacho_get_popup_character($is_js){
     return $sep;
 }
 function red_despacho_vigilancia_validar_categorizar_node_array($node_array){
-    if(red_despacho_is_activado()){
+    if(red_despacho_is_activado()){///hau aldauta
         despacho_vigilancia_validar_categorizar_node_array($node_array);
     }
 }

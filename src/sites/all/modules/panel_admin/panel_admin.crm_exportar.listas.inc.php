@@ -302,7 +302,7 @@ function panel_admin_crm_exportar_listas_delete_form(){
             '#type'=>'hidden',
             '#default_value'=>$id,
         );
-       $form['name']=array(
+        $form['name']=array(
         '#type'=>'textfield',
         '#title'=>t('Name'),
         '#default_value'=>$row->name,
@@ -316,6 +316,8 @@ function panel_admin_crm_exportar_listas_delete_form(){
             '#value'=>l(t('Cancel'),'panel_admin/crm_exportar/listas'),
         );
         drupal_set_title(t('Delete Search'));
+        drupal_set_message(t('If you choose to delete the list, the entire content inside will be deleted'));
+
     return $form;
 }
 function panel_admin_crm_exportar_listas_delete_form_submit($form, &$form_state){

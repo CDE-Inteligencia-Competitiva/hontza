@@ -97,8 +97,7 @@ function diccionario_menu() {
     );
      $items['diccionario/diccionario_custom_cron']=array(
     'title'=>t('Migrate dictionary'),
-    'page callback' => 'diccionario_custom_cron_callback',    
-    'access callback' => TRUE,
+    'page callback' => 'diccionario_custom_cron_callback',    'access callback' => TRUE,
     );
      $items['diccionario/fix']=array(
     'title'=>t('Migrate dictionary'),
@@ -131,7 +130,7 @@ function diccionario_form(){
     );
     return $form;
     $options=array(
-        'hontza_blanco'=>'hontza_blanco',        
+        'hontza_blanco'=>'hontza_blanco', 
     );
     $form['my_db']=array(
         '#type'=>'select',
@@ -152,8 +151,10 @@ function diccionario_form_submit($form, &$form_state){
    drupal_goto('diccionario/migrar');    
 }
 function diccionario_migrar(){
+    
     $html=array();
     $my_db=$_SESSION['diccionario']['my_db'];
+    //$my_db="hontza_icbroseta";
     $root_locales_source=diccionario_get_locales_source_array();
     db_set_active($my_db);
     $sub_locales_source=diccionario_get_locales_source_array();    
@@ -167,6 +168,7 @@ function diccionario_migrar(){
     if(!empty($root_locales_source)){
         foreach($root_locales_source as $i=>$row){
             db_set_active($my_db);
+
             $sub_row=diccionario_get_locales_source_row($row->source);
             if(isset($sub_row->lid) && !empty($sub_row->lid)){
                 $update_source_array[$kont_update]=$sub_row;
@@ -174,10 +176,13 @@ function diccionario_migrar(){
                 $kont_update++;
             }else{
                 $insert_source_array[]=$row;
+
             }
             db_set_active();
         }
     }
+    
+
     $html[]=count($insert_source_array).'<BR>';
     $html[]=count($update_source_array).'<BR>';
     $html[]=(count($insert_source_array)+count($update_source_array)).'<BR>';

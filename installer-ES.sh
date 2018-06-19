@@ -44,7 +44,7 @@ download(){
      echo "Url de descarga no valida ${REPO}/${GVERSION}.zip"
      exit 1
     fi
-  
+    
     echo "..*Extraer ficheros del fichero hontza.zip"
     unzip -qq -u hontza.zip
     if [ ${?} -ne 0 ]; then
@@ -57,7 +57,7 @@ download(){
         exit 1
     fi
     mv "./hontza-${GVERSION}/src" './hontza-source'
-    
+##      mv "RAIZ DONDE COPIARAS LA CARPETA QUE DESCARGES EN EL SERVIDOR (PUEDE SER /HOME)/hontza-5.6/src" './hontza-source'
     
 }
 
@@ -257,6 +257,7 @@ addCron(){
     
     CMD='0 * * * * wget -O /dev/null http://'${VHN}'/'${WEBFOLDER}'/cron.php &> /dev/null
 15,30,45 * * * * wget http://'${VHN}'/'${WEBFOLDER}'/hontza_solr/indexar 2>&1 > /dev/null
+15,30,45 * * * * wget http://'${VHN}'/'${WEBFOLDER}'/cron_google_sheet.php 2>&1 > /dev/null
 #5,35,50 * * * * lynx -dump http://'${VHN}'/'${WEBFOLDER}'/red/solr/apachesolr_index_batch_index_remaining 2>&1 > /dev/null' 
 
     cat <(crontab -l|grep -v "cron.php\|indexar\|apachesolr" ) <(echo "${CMD}") | crontab -
@@ -624,6 +625,19 @@ TRUNCATE cache_views_data;
 DELETE FROM '${DB}'.variable WHERE variable.name = "red_registrar_is_registrado_cache";'  | mysql --defaults-extra-file=./${DBUSER_F} -h localhost -u ${DBUSER} ${DB}
 }
 
+function activar_demonio_solr(){
+	echo "activar demonio de solr"
+	cp "${WORKFOLDER}"/hontza-source/sites/all/modules/apachesolr/tomcat /etc/init.d/. 
+	/etc/init.d/tomcat restart
+}
+
+function mysql_conf(){
+echo "cambiar configuración de mysql para desactivar only full group by"
+cp "${WORKFOLDER}"/hontza-source/db/mysql.cnf /etc/mysql/conf.d/mysql.cnf
+service mysql restart
+
+}
+
 
 ######################################################
 #
@@ -831,6 +845,14 @@ echo
 install_tomcat
 install_solr
 install_drupal_solr
+activar_demonio_solr
+
+echo
+echo "---------------------------------------------------------------------"
+echo "8. CAMBIAR CONFIGURACIÓN MYSQL"
+echo "---------------------------------------------------------------------"
+echo
+mysql_conf
 
 echo
 echo

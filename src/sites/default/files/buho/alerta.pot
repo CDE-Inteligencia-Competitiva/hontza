@@ -1,0 +1,542 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  alerta.fun.php: n/a
+#  alerta.module: n/a
+#  alerta.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2012-07-10 12:39+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: alerta.fun.php:233
+msgid "No hay registros en el boletín"
+msgstr ""
+
+#: alerta.fun.php:236
+msgid "No hay registros en la alerta personalizada"
+msgstr ""
+
+#: alerta.fun.php:305
+msgid "Boletín del grupo"
+msgstr ""
+
+#: alerta.fun.php:341
+msgid "NOTICIAS DESTACADAS"
+msgstr ""
+
+#: alerta.fun.php:375
+msgid "Apuntarse/Desapuntarse del boletín de grupo"
+msgstr ""
+
+#: alerta.fun.php:384
+msgid "Apuntarse/Desapuntarse de la alerta personalizada"
+msgstr ""
+
+#: alerta.fun.php:459 alerta.module:1843
+msgid "No hay novedades"
+msgstr ""
+
+#: alerta.fun.php:474
+msgid "Gestión de Mis Alertas"
+msgstr ""
+
+#: alerta.fun.php:507
+msgid "Quienes somos"
+msgstr ""
+
+#: alerta.fun.php:508
+msgid "Condiciones de Uso"
+msgstr ""
+
+#: alerta.fun.php:509
+msgid "Politica Anti-Spam"
+msgstr ""
+
+#: alerta.fun.php:510
+msgid "Politica de privacidad"
+msgstr ""
+
+#: alerta.fun.php:520
+msgid "Recibir Mi Alerta"
+msgstr ""
+
+#: alerta.fun.php:528
+msgid "Sí"
+msgstr ""
+
+#: alerta.fun.php:530
+msgid "No"
+msgstr ""
+
+#: alerta.fun.php:563
+msgid "Ver más resultados"
+msgstr ""
+
+#: alerta.fun.php:619
+msgid "Suscribirse a este canal"
+msgstr ""
+
+#: alerta.fun.php:627
+msgid "Darse de baja en este canal"
+msgstr ""
+
+#: alerta.fun.php:694 alerta.module:1086
+msgid "This action cannot be undone."
+msgstr ""
+
+#: alerta.fun.php:701
+msgid "Des-suscribir"
+msgstr ""
+
+#: alerta.fun.php:706;1001 alerta.module:650;947;1096;1214
+msgid "Cancel"
+msgstr ""
+
+#: alerta.fun.php:765
+msgid "Dar de baja el canal seleccionado en las siguientes alertas"
+msgstr ""
+
+#: alerta.fun.php:782
+msgid "No existen alertas personalizadas para el canal seleccionado"
+msgstr ""
+
+#: alerta.fun.php:788
+msgid "Nombre"
+msgstr ""
+
+#: alerta.fun.php:789
+msgid "Método"
+msgstr ""
+
+#: alerta.fun.php:790;973 alerta.module:620;919;1186
+msgid "Frecuencia"
+msgstr ""
+
+#: alerta.fun.php:791;981 alerta.module:628;927;1194
+msgid "Hora"
+msgstr ""
+
+#: alerta.fun.php:792
+msgid "Creado"
+msgstr ""
+
+#: alerta.fun.php:793
+msgid "Tipo"
+msgstr ""
+
+#: alerta.fun.php:794
+msgid "Creador"
+msgstr ""
+
+#: alerta.fun.php:795
+msgid "Recibir"
+msgstr ""
+
+#: alerta.fun.php:797
+msgid "Acciones"
+msgstr ""
+
+#: alerta.fun.php:891
+msgid "Correo HTML"
+msgstr ""
+
+#: alerta.fun.php:894
+msgid "Página Web"
+msgstr ""
+
+#: alerta.fun.php:897
+msgid "Correo"
+msgstr ""
+
+#: alerta.fun.php:966 alerta.module:613;912;1179
+msgid "Seleccionar método de envío"
+msgstr ""
+
+#: alerta.fun.php:990 alerta.module:639;936;1203
+msgid "Límite"
+msgstr ""
+
+#: alerta.fun.php:996 alerta.module:645;942;1209
+msgid "Guardar"
+msgstr ""
+
+#: alerta.fun.php:1019
+msgid "Seleccionar respuestas"
+msgstr ""
+
+#: alerta.fun.php:1135
+msgid "Ideas"
+msgstr ""
+
+#: alerta.fun.php:1135
+msgid "Oportunidades"
+msgstr ""
+
+#: alerta.fun.php:1135
+msgid "Proyectos"
+msgstr ""
+
+#: alerta.fun.php:1150
+msgid "No existen respuestas"
+msgstr ""
+
+#: alerta.fun.php:1319;1340
+msgid "Alerta personalizada de invitado"
+msgstr ""
+
+#: alerta.module:48;525
+msgid "Gestión de Mis alertas"
+msgstr ""
+
+#: alerta.module:55
+msgid "Añadir alerta canal"
+msgstr ""
+
+#: alerta.module:63
+msgid "Editar alerta canal"
+msgstr ""
+
+#: alerta.module:71
+msgid "Borrar alerta canal"
+msgstr ""
+
+#: alerta.module:79
+msgid "Añadir alerta categoría"
+msgstr ""
+
+#: alerta.module:87
+msgid "Editar alerta categoría"
+msgstr ""
+
+#: alerta.module:95
+msgid "Borrar alerta categoría"
+msgstr ""
+
+#: alerta.module:103
+msgid "Añadir alerta usuario"
+msgstr ""
+
+#: alerta.module:111
+msgid "Editar alerta usuario"
+msgstr ""
+
+#: alerta.module:119
+msgid "Borrar alerta usuario"
+msgstr ""
+
+#: alerta.module:132
+msgid "Ver alerta en la web"
+msgstr ""
+
+#: alerta.module:137
+msgid "Mis boletines de grupo"
+msgstr ""
+
+#: alerta.module:142
+msgid "Des-suscribirse de alerta personalizada de canal"
+msgstr ""
+
+#: alerta.module:150
+msgid "Añadir alerta invitado"
+msgstr ""
+
+#: alerta.module:158
+msgid "Editar alerta invitado"
+msgstr ""
+
+#: alerta.module:172
+msgid "The alerta defines a new node type, \"alerta type 1\", which can be created at !link."
+msgstr ""
+
+#: alerta.module:172
+msgid "node/add/example-node-type-1"
+msgstr ""
+
+#: alerta.module:206
+msgid "alerta type 1"
+msgstr ""
+
+#: alerta.module:208
+msgid "An alerta type with a few fields."
+msgstr ""
+
+#: alerta.module:210
+msgid "alerta Type 1 Title"
+msgstr ""
+
+#: alerta.module:212
+msgid "alerta Type 1 Body"
+msgstr ""
+
+#: alerta.module:310
+msgid "Color"
+msgstr ""
+
+#: alerta.module:315
+msgid "Quantity"
+msgstr ""
+
+#: alerta.module:336
+msgid "The quantity must be a number."
+msgstr ""
+
+#: alerta.module:447
+msgid "The order is for %quantity %color items."
+msgstr ""
+
+#: alerta.module:465
+msgid "No puedes editar la Alerta Personalizada de otro usuario"
+msgstr ""
+
+#: alerta.module:523
+msgid "No existen alertas personalizadas"
+msgstr ""
+
+#: alerta.module:586
+msgid "Seleccionar canales"
+msgstr ""
+
+#: alerta.module:592;806
+msgid "Todos los canales"
+msgstr ""
+
+#: alerta.module:601
+msgid "Canales"
+msgstr ""
+
+#: alerta.module:717;727
+msgid "Diaria"
+msgstr ""
+
+#: alerta.module:719
+msgid "Semanal (Lunes)"
+msgstr ""
+
+#: alerta.module:720
+msgid "Semanal (Martes)"
+msgstr ""
+
+#: alerta.module:721
+msgid "Semanal (Miercoles)"
+msgstr ""
+
+#: alerta.module:722
+msgid "Semanal (Jueves)"
+msgstr ""
+
+#: alerta.module:723
+msgid "Semanal (Viernes)"
+msgstr ""
+
+#: alerta.module:724
+msgid "Semanal (Sabado)"
+msgstr ""
+
+#: alerta.module:725
+msgid "Semanal (Domingo)"
+msgstr ""
+
+#: alerta.module:823;1159
+msgid "Todos los usuarios"
+msgstr ""
+
+#: alerta.module:858
+msgid "Editar"
+msgstr ""
+
+#: alerta.module:859
+msgid "Web"
+msgstr ""
+
+#: alerta.module:860;1091
+msgid "Borrar"
+msgstr ""
+
+#: alerta.module:1153
+msgid "Seleccionar Usuarios"
+msgstr ""
+
+#: alerta.module:1168
+msgid "Usuarios"
+msgstr ""
+
+#: alerta.module:1293
+msgid "Antes de filtrar"
+msgstr ""
+
+#: alerta.module:1302
+msgid "Despues de filtrar"
+msgstr ""
+
+#: alerta.module:1369
+msgid "Boletines de los grupos enviados"
+msgstr ""
+
+#: alerta.module:1370;2040
+msgid "Volver"
+msgstr ""
+
+#: alerta.module:1433
+msgid "No está en su hora"
+msgstr ""
+
+#: alerta.module:1435
+msgid "No está en su frecuencia"
+msgstr ""
+
+#: alerta.module:1856
+msgid "Todas las informaciones validadas"
+msgstr ""
+
+#: alerta.module:1858
+msgid "Todas las noticias de usuario"
+msgstr ""
+
+#: alerta.module:1860
+msgid "Todas las informaciones comentadas"
+msgstr ""
+
+#: alerta.module:1919
+msgid "Categorías seleccionadas"
+msgstr ""
+
+#: alerta.module:1959
+msgid "Noticia borrada con este identificador"
+msgstr ""
+
+#: alerta.module:2079
+msgid "Alerta personalizada de canales"
+msgstr ""
+
+#: alerta.module:2134
+msgid "Alerta personalizada de categorías"
+msgstr ""
+
+#: alerta.module:2192
+msgid "Alerta personalizada de usuarios"
+msgstr ""
+
+#: alerta.module:2220
+msgid "Boletin del grupo"
+msgstr ""
+
+#: alerta.module:250
+msgid "create alerta"
+msgstr ""
+
+#: alerta.module:251
+msgid "delete own alerta"
+msgstr ""
+
+#: alerta.module:252
+msgid "delete any alerta"
+msgstr ""
+
+#: alerta.module:253
+msgid "edit own alerta"
+msgstr ""
+
+#: alerta.module:254
+msgid "edit any alerta"
+msgstr ""
+
+#: alerta.module:256
+msgid "Ver alerta_user"
+msgstr ""
+
+#: alerta.module:257
+msgid "Ver add_alerta_canal"
+msgstr ""
+
+#: alerta.module:258
+msgid "Ver edit_alerta_canal"
+msgstr ""
+
+#: alerta.module:259
+msgid "Ver add_alerta_categoria"
+msgstr ""
+
+#: alerta.module:260
+msgid "Ver edit_alerta_categoria"
+msgstr ""
+
+#: alerta.module:261
+msgid "Ver delete_alerta_canal"
+msgstr ""
+
+#: alerta.module:262
+msgid "Ver delete_alerta_categoria"
+msgstr ""
+
+#: alerta.module:263
+msgid "Ver add_alerta_usuario"
+msgstr ""
+
+#: alerta.module:264
+msgid "Ver edit_alerta_usuario"
+msgstr ""
+
+#: alerta.module:265
+msgid "Ver delete_alerta_usuario"
+msgstr ""
+
+#: alerta.module:266
+msgid "Ver alerta_user_limites"
+msgstr ""
+
+#: alerta.module:267
+msgid "Ver my_execute_cron"
+msgstr ""
+
+#: alerta.module:268
+msgid "Ver alerta_web"
+msgstr ""
+
+#: alerta.module:269
+msgid "Ver mis_boletines_grupo"
+msgstr ""
+
+#: alerta.module:270
+msgid "Ver desuscribir_alerta_canal"
+msgstr ""
+
+#: alerta.module:271
+msgid "Ver add_alerta_invitado"
+msgstr ""
+
+#: alerta.module:272
+msgid "Ver edit_alerta_invitado"
+msgstr ""
+
+#: alerta.module:43
+msgid "alerta"
+msgstr ""
+
+#: alerta.module:127
+msgid "my_execute_cron"
+msgstr ""
+
+#: alerta.info:0
+msgid "Alerta"
+msgstr ""
+
+#: alerta.info:0
+msgid "Demonstrates how to define content types."
+msgstr ""
+
+#: alerta.info:0
+msgid "Hontza"
+msgstr ""
+

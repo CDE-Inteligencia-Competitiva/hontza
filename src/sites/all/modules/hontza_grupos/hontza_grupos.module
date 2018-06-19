@@ -942,7 +942,7 @@ function hontza_grupos_define_mis_grupos_sql($order_by, $uid){
                 term_data.vid AS term_data_vid,
                 term_data.tid AS term_data_tid,
                 p.value AS enlace,
-                (SELECT COUNT(*) FROM og_uid ou INNER JOIN users u ON ou.uid = u.uid WHERE ou.nid = og.nid AND u.status > 0 AND ou.is_active >= 1 AND ou.is_admin >= 0 ) AS member_count
+                (SELECT COUNT(*) FROM og_uid ou INNER JOIN users u ON ou.uid = u.uid WHERE ou.nid = og.nid AND u.status > 0 AND ou.is_active >= 1 AND ou.is_admin >= 0  ) AS member_count
                 FROM node node 
                 LEFT JOIN term_node term_node ON node.vid = term_node.vid
                 LEFT JOIN term_data term_data ON term_node.tid = term_data.tid
